@@ -1,0 +1,770 @@
+/* ==========================================================================
+   THE BLACK CHRONICLE — STYLESHEET
+   ========================================================================== */
+
+:root {
+    /* Day Theme Palette */
+    --color-bg-day: #1a1613;
+    --color-surface-day: #2d241e;
+    --color-border-day: #8c6a3c;
+    --color-border-inner-day: #4e3620;
+    --color-parchment-day: #f4edd4;
+    --color-parchment-text-day: #2b2015;
+    --color-accent-day: #a02c2c;
+    --color-glow-day: rgba(230, 160, 60, 0.2);
+    --map-bg-day: #3d3228;
+
+    /* Night Theme Palette */
+    --color-bg-night: #08070d;
+    --color-surface-night: #12101b;
+    --color-border-night: #443c68;
+    --color-border-inner-night: #201a35;
+    --color-parchment-night: #1c182a;
+    --color-parchment-text-night: #9d91c7;
+    --color-accent-night: #6c429c;
+    --color-glow-night: rgba(108, 66, 156, 0.4);
+    --map-bg-night: #141124;
+
+    /* Active Theme Variables (Defaults to Day Mode) */
+    --color-bg: var(--color-bg-day);
+    --color-surface: var(--color-surface-day);
+    --color-border: var(--color-border-day);
+    --color-border-inner: var(--color-border-inner-day);
+    --color-parchment: var(--color-parchment-day);
+    --color-parchment-text: var(--color-parchment-text-day);
+    --color-accent: var(--color-accent-day);
+    --color-glow: var(--color-glow-day);
+    --map-bg: var(--map-bg-day);
+
+    /* Fonts */
+    --font-gothic: 'Cinzel Decorative', Georgia, serif;
+    --font-pixel-mono: 'Press Start 2P', monospace;
+    --font-pixel-tall: 'VT323', monospace;
+
+    /* Grid & UI */
+    --pixel-size: 4px;
+    --transition-speed: 0.4s;
+}
+
+/* ==========================================================================
+   THEME SWITCHING (Night Mode Overrides)
+   ========================================================================== */
+
+body.night-mode {
+    --color-bg: var(--color-bg-night);
+    --color-surface: var(--color-surface-night);
+    --color-border: var(--color-border-night);
+    --color-border-inner: var(--color-border-inner-night);
+    --color-parchment: var(--color-parchment-night);
+    --color-parchment-text: var(--color-parchment-text-night);
+    --color-accent: var(--color-accent-night);
+    --color-glow: var(--color-glow-night);
+    --map-bg: var(--map-bg-night);
+}
+
+/* ==========================================================================
+   BASE & RESET
+   ========================================================================== */
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: var(--color-bg);
+    color: #e5dcc6;
+    font-family: var(--font-pixel-tall);
+    font-size: 22px;
+    line-height: 1.4;
+    overflow-x: hidden;
+    transition: background-color var(--transition-speed) ease, color var(--transition-speed) ease;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    user-select: none;
+}
+
+/* CRT Screen Effect */
+.crt-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: radial-gradient(circle, rgba(0,0,0,0) 60%, rgba(0,0,0,0.85) 100%);
+    pointer-events: none;
+    z-index: 9999;
+}
+
+.scanlines {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: linear-gradient(
+        rgba(18, 16, 16, 0) 50%, 
+        rgba(0, 0, 0, 0.25) 50%
+    );
+    background-size: 100% 4px;
+    pointer-events: none;
+    z-index: 9998;
+    opacity: 0.6;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 12px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--color-surface);
+    border-left: 4px solid var(--color-border);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--color-border);
+    border: 2px solid var(--color-surface);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--color-accent);
+}
+
+/* ==========================================================================
+   LAYOUT STRUCTURE
+   ========================================================================== */
+
+.game-wrapper {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    padding: 20px;
+    max-width: 1600px;
+    margin: 0 auto;
+    gap: 20px;
+    box-sizing: border-box;
+}
+
+.main-layout {
+    display: grid;
+    grid-template-columns: 320px 1fr 340px;
+    gap: 20px;
+    flex: 1;
+    align-items: stretch;
+}
+
+@media (max-width: 1200px) {
+    .main-layout {
+        grid-template-columns: 1fr 1fr;
+    }
+    .sidebar-right {
+        grid-column: span 2;
+    }
+}
+
+@media (max-width: 768px) {
+    .main-layout {
+        grid-template-columns: 1fr;
+    }
+    .sidebar-right, .sidebar-left {
+        grid-column: span 1;
+    }
+}
+
+/* ==========================================================================
+   HEADER COMPONENT
+   ========================================================================== */
+
+.main-header {
+    position: relative;
+    background-color: var(--color-surface);
+    border: 4px solid var(--color-border);
+    padding: 15px 20px;
+    box-shadow: 0 8px 0 rgba(0,0,0,0.5), inset 0 0 15px var(--color-glow);
+    transition: background-color var(--transition-speed) ease, border-color var(--transition-speed) ease, box-shadow var(--transition-speed) ease;
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+}
+
+.header-center {
+    text-align: center;
+}
+
+.main-title {
+    font-family: var(--font-gothic);
+    font-size: 2.5rem;
+    color: var(--color-border);
+    text-shadow: 3px 3px 0px #000;
+    letter-spacing: 2px;
+    transition: color var(--transition-speed) ease;
+}
+
+.subtitle {
+    font-family: var(--font-pixel-mono);
+    font-size: 0.75rem;
+    color: #8c8275;
+    letter-spacing: 4px;
+    margin-top: 5px;
+    text-shadow: 1px 1px 0px #000;
+}
+
+/* Header Medieval Borders */
+.header-border-top, .header-border-bottom {
+    position: absolute;
+    left: 4px;
+    right: 4px;
+    height: 4px;
+    background-color: var(--color-border-inner);
+}
+.header-border-top { top: 4px; }
+.header-border-bottom { bottom: 4px; }
+
+/* ==========================================================================
+   PIXEL BUTTONS
+   ========================================================================== */
+
+.pixel-btn {
+    background-color: #251d18;
+    color: #e5dcc6;
+    border: 4px solid #503d30;
+    padding: 8px 16px;
+    font-family: var(--font-pixel-mono);
+    font-size: 0.7rem;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 4px 0 #000;
+    transition: all 0.1s ease;
+    image-rendering: pixelated;
+}
+
+.pixel-btn:hover {
+    background-color: var(--color-border-inner);
+    border-color: var(--color-border);
+    color: #fff;
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 #000;
+}
+
+.pixel-btn:active {
+    transform: translateY(4px);
+    box-shadow: none;
+}
+
+/* Toggle Day/Night Visuals */
+body.day-mode .moon-icon { display: none; }
+body.night-mode .sun-icon { display: none; }
+
+body.night-mode .pixel-btn {
+    background-color: #171424;
+    border-color: #383152;
+    color: #9d91c7;
+}
+body.night-mode .pixel-btn:hover {
+    background-color: #27203b;
+    border-color: var(--color-border-night);
+    color: #fff;
+}
+
+/* ==========================================================================
+   CARDS & CONTAINERS
+   ========================================================================== */
+
+.card-container {
+    background-color: var(--color-surface);
+    border: 4px solid var(--color-border);
+    box-shadow: 0 8px 0 rgba(0,0,0,0.5);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transition: background-color var(--transition-speed) ease, border-color var(--transition-speed) ease;
+}
+
+.card-header {
+    background-color: var(--color-border-inner);
+    padding: 10px;
+    border-bottom: 4px solid var(--color-border);
+    text-align: center;
+    image-rendering: pixelated;
+}
+
+.card-header h2 {
+    font-family: var(--font-pixel-mono);
+    font-size: 0.9rem;
+    color: #fff;
+    letter-spacing: 2px;
+    text-shadow: 2px 2px 0px #000;
+}
+
+.card-body {
+    padding: 15px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+/* ==========================================================================
+   LEFT SIDEBAR: FIEF MAP
+   ========================================================================== */
+
+.map-body {
+    padding: 10px;
+    gap: 12px;
+}
+
+.pixel-map {
+    position: relative;
+    height: 280px;
+    background-color: var(--map-bg);
+    border: 4px solid var(--color-border-inner);
+    overflow: hidden;
+    image-rendering: pixelated;
+    transition: background-color var(--transition-speed) ease;
+}
+
+.map-overlay {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle, transparent 50%, rgba(0,0,0,0.4) 100%);
+    pointer-events: none;
+}
+
+/* Pixel Grid Effect on Map */
+.map-grid {
+    position: absolute;
+    inset: 0;
+    background-image: 
+        linear-gradient(to right, rgba(0, 0, 0, 0.15) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(0, 0, 0, 0.15) 1px, transparent 1px);
+    background-size: 16px 16px;
+    pointer-events: none;
+}
+
+/* Location Pins on Map */
+.map-location {
+    position: absolute;
+    cursor: pointer;
+    z-index: 10;
+}
+
+.pixel-pin {
+    width: 12px;
+    height: 12px;
+    background-color: var(--color-accent);
+    border: 2px solid #fff;
+    box-shadow: 0 0 0 2px #000;
+    animation: pinPulse 1.5s infinite steps(2);
+}
+
+.loc-tag {
+    position: absolute;
+    top: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #000;
+    color: #e5dcc6;
+    font-family: var(--font-pixel-mono);
+    font-size: 0.5rem;
+    padding: 2px 6px;
+    border: 1px solid var(--color-border);
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    pointer-events: none;
+}
+
+.map-location:hover .pixel-pin {
+    background-color: #fff;
+    border-color: var(--color-accent);
+    transform: scale(1.2);
+}
+
+.map-location:hover .loc-tag {
+    opacity: 1;
+}
+
+/* Selected / Active Pin Styling */
+.map-location.active-pin .pixel-pin {
+    background-color: #ffd700;
+    border-color: #000;
+    box-shadow: 0 0 8px #ffd700;
+}
+
+.map-location.active-pin .loc-tag {
+    opacity: 1;
+    border-color: #ffd700;
+    color: #ffd700;
+}
+
+@keyframes pinPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+}
+
+/* Location Description Box */
+.location-details {
+    background-color: rgba(0, 0, 0, 0.3);
+    border: 2px solid var(--color-border-inner);
+    padding: 10px;
+    flex: 1;
+}
+
+.location-details h3 {
+    font-family: var(--font-pixel-mono);
+    font-size: 0.75rem;
+    color: var(--color-border);
+    margin-bottom: 6px;
+}
+
+.location-details p {
+    font-size: 1rem;
+    color: #ccc;
+    line-height: 1.3;
+}
+
+/* ==========================================================================
+   CHRONICLE FEED (MANUSCRIPT)
+   ========================================================================== */
+
+.chronicle-body {
+    overflow-y: auto;
+    max-height: 520px;
+    padding: 10px;
+}
+
+.manuscript-entry {
+    position: relative;
+    background-color: var(--color-parchment);
+    color: var(--color-parchment-text);
+    padding: 30px;
+    border: 8px solid transparent;
+    transition: all var(--transition-speed) ease;
+    box-shadow: inset 0 0 20px rgba(0,0,0,0.15);
+}
+
+.manuscript-entry.hidden {
+    display: none;
+}
+
+/* Illuminated Manuscript Corner Decoration styling */
+.manuscript-border {
+    position: absolute;
+    inset: -4px;
+    border: 4px double var(--color-border-inner);
+    pointer-events: none;
+}
+
+.corner {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    background-color: var(--color-accent);
+    border: 2px solid var(--color-border-inner);
+}
+.corner.tl { top: -6px; left: -6px; }
+.corner.tr { top: -6px; right: -6px; }
+.corner.bl { bottom: -6px; left: -6px; }
+.corner.br { bottom: -6px; right: -6px; }
+
+/* Drop Cap styling (Decorative Gothic letter) */
+.manuscript-content {
+    display: flex;
+    gap: 15px;
+    align-items: flex-start;
+}
+
+.drop-cap {
+    font-family: var(--font-gothic);
+    font-size: 4.5rem;
+    line-height: 0.85;
+    color: var(--color-accent);
+    text-shadow: 2px 2px 0px rgba(0,0,0,0.15);
+    background-color: rgba(0,0,0,0.05);
+    border: 2px solid var(--color-border-inner);
+    padding: 6px 10px;
+}
+
+.entry-text h3 {
+    font-family: var(--font-gothic);
+    font-size: 1.8rem;
+    margin-bottom: 10px;
+    letter-spacing: 1px;
+    color: var(--color-accent);
+}
+
+.entry-text p {
+    font-family: var(--font-pixel-tall);
+    font-size: 1.45rem;
+    margin-bottom: 10px;
+    text-align: justify;
+}
+
+/* ==========================================================================
+   RIGHT SIDEBAR: PLAGUE DOCTOR
+   ========================================================================== */
+
+.doctor-body {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.doctor-display {
+    background-color: rgba(0, 0, 0, 0.4);
+    border: 4px solid var(--color-border-inner);
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    flex: 1;
+}
+
+.doctor-sprite-container {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    background-color: rgba(0, 0, 0, 0.5);
+    border: 2px solid var(--color-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Retro Pixel Art Plague Doctor (pure CSS representation) */
+.doctor-sprite {
+    width: 64px;
+    height: 80px;
+    background-color: #151518;
+    position: relative;
+    clip-path: polygon(
+        /* Hat */
+        15% 10%, 85% 10%, 85% 25%, 95% 25%, 95% 35%, 5% 35%, 5% 25%, 15% 25%,
+        /* Mask/Beak */
+        15% 35%, 65% 35%, 75% 45%, 95% 55%, 70% 60%, 55% 50%, 45% 50%,
+        /* Cloak Body */
+        45% 50%, 80% 90%, 80% 100%, 20% 100%, 20% 90%
+    );
+    box-shadow: inset -4px -4px 0px #0a0a0c;
+}
+
+/* Doctor Eyes (Goggles) */
+.doctor-sprite::before {
+    content: '';
+    position: absolute;
+    top: 36%;
+    left: 45%;
+    width: 12px;
+    height: 8px;
+    background-color: #bf1515;
+    border: 2px solid #d4af37;
+    animation: eyeGlow 2s infinite alternate steps(2);
+}
+
+@keyframes eyeGlow {
+    0% { background-color: #800d0d; box-shadow: none; }
+    100% { background-color: #ff1c1c; box-shadow: 0 0 6px #ff1c1c; }
+}
+
+/* Animated Torches flanking Doctor */
+.torch {
+    position: absolute;
+    bottom: 10px;
+    width: 10px;
+    height: 30px;
+    background-color: #5c4033;
+    border: 2px solid #2e1d11;
+}
+
+.torch-left { left: 10px; }
+.torch-right { right: 10px; }
+
+.torch::after {
+    content: '';
+    position: absolute;
+    top: -16px;
+    left: -3px;
+    width: 12px;
+    height: 16px;
+    background-color: #ff8c00;
+    border-radius: 50% 50% 20% 20%;
+    animation: flameBurn 0.4s infinite alternate steps(3);
+    box-shadow: 0 -2px 6px #ff4500;
+}
+
+@keyframes flameBurn {
+    0% { transform: scaleY(1) skewX(-2deg); background-color: #ff8c00; }
+    50% { transform: scaleY(1.2) skewX(2deg); background-color: #ff4500; }
+    100% { transform: scaleY(0.9) skewX(-1deg); background-color: #ffd700; }
+}
+
+/* Speech Bubble */
+.doctor-speech {
+    width: 100%;
+}
+
+.speech-bubble {
+    position: relative;
+    background-color: #000;
+    border: 3px solid var(--color-border);
+    padding: 10px;
+    color: #e5dcc6;
+}
+
+.speech-bubble::after {
+    content: '';
+    position: absolute;
+    top: -14px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 7px;
+    border-style: solid;
+    border-color: transparent transparent var(--color-border) transparent;
+}
+
+.speech-bubble p {
+    font-size: 1.1rem;
+    line-height: 1.3;
+}
+
+/* Doctor Controls */
+.doctor-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* ==========================================================================
+   HUD FOOTER
+   ========================================================================== */
+
+.hud-footer {
+    background-color: var(--color-surface);
+    border: 4px solid var(--color-border);
+    box-shadow: 0 8px 0 rgba(0,0,0,0.5);
+    padding: 12px;
+    transition: background-color var(--transition-speed) ease, border-color var(--transition-speed) ease;
+}
+
+.hud-container {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.hud-stat {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.hud-label {
+    font-family: var(--font-pixel-mono);
+    font-size: 0.7rem;
+    color: #8c8275;
+}
+
+.hud-value {
+    font-family: var(--font-pixel-mono);
+    font-size: 0.85rem;
+    color: #fff;
+    text-shadow: 1px 1px 0 #000;
+}
+
+/* Miasma Level Bar */
+.miasma-bar {
+    width: 120px;
+    height: 16px;
+    background-color: #151210;
+    border: 2px solid var(--color-border-inner);
+    padding: 2px;
+}
+
+.miasma-fill {
+    height: 100%;
+    width: 66%;
+    background-color: #2ca05a;
+    box-shadow: inset 0 0 4px #000;
+    transition: width 0.5s steps(10), background-color var(--transition-speed);
+}
+
+/* Sound Control Pill */
+.sound-pill {
+    background-color: #251d18;
+    color: #a02c2c;
+    border: 2px solid #503d30;
+    font-family: var(--font-pixel-mono);
+    font-size: 0.6rem;
+    padding: 4px 8px;
+    cursor: pointer;
+}
+
+.sound-pill.active {
+    color: #2ca05a;
+    border-color: #2ca05a;
+}
+
+/* ==========================================================================
+   EXTRA FX & INTERACTIONS
+   ========================================================================== */
+
+/* Doom Bell Toll overlay effect */
+.bell-flash-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: #ff0000;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 10000;
+    transition: opacity 0.1s ease-out;
+}
+
+.bell-flash-overlay.active {
+    animation: bellTollFlash 1s forwards ease-out;
+}
+
+@keyframes bellTollFlash {
+    0% { opacity: 0.8; background-color: #fff; }
+    20% { opacity: 0.5; background-color: #ff1c1c; }
+    100% { opacity: 0; }
+}
+
+/* Bell shake animation for header button and whole screen */
+@keyframes screenShake {
+    0% { transform: translate(0, 0); }
+    10% { transform: translate(-4px, 3px); }
+    20% { transform: translate(3px, -2px); }
+    30% { transform: translate(-2px, -3px); }
+    40% { transform: translate(4px, 2px); }
+    50% { transform: translate(-3px, 1px); }
+    60% { transform: translate(2px, -2px); }
+    70% { transform: translate(-4px, 3px); }
+    80% { transform: translate(3px, 2px); }
+    90% { transform: translate(-1px, -1px); }
+    100% { transform: translate(0, 0); }
+}
+
+.bell-shaking {
+    animation: screenShake 0.6s ease-in-out;
+}
+
+/* General Pulse animation */
+.animate-pulse {
+    animation: textPulse 1.5s infinite alternate;
+}
+
+@keyframes textPulse {
+    0% { opacity: 0.7; }
+    100% { opacity: 1; }
+}

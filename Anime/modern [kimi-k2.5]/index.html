@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>INK & FRAME | Anime & Manga Universe</title>
+    
+    <!-- Preconnect for performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
+    <!-- Typography: Bebas Neue for bold headers, Noto Sans JP for authenticity, Space Mono for data -->
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+JP:wght@400;700;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind for utility classes (will be customized in CSS) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- GSAP for animations (loaded in JS but preparing here) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-paper text-ink overflow-x-hidden">
+    <!-- Loading Screen -->
+    <div id="loader" class="fixed inset-0 z-50 flex items-center justify-center bg-ink">
+        <div class="loading-content text-center">
+            <div class="text-paper font-jp text-6xl font-black mb-4 tracking-widest animate-pulse">読み込み中</div>
+            <div class="loading-bar w-64 h-1 bg-gray-800 overflow-hidden">
+                <div class="loading-progress h-full bg-manga-cyan w-0"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Speed Lines Canvas Background -->
+    <canvas id="speed-lines" class="fixed inset-0 pointer-events-none z-0 opacity-30"></canvas>
+    
+    <!-- Halftone Overlay -->
+    <div class="halftone-overlay fixed inset-0 pointer-events-none z-40 opacity-10"></div>
+
+    <!-- Custom Cursor -->
+    <div id="cursor" class="fixed w-8 h-8 border-2 border-manga-magenta rounded-full pointer-events-none z-50 mix-blend-difference hidden md:block transition-transform duration-100"></div>
+    <div id="cursor-dot" class="fixed w-2 h-2 bg-manga-cyan rounded-full pointer-events-none z-50 hidden md:block"></div>
+
+    <!-- Navigation -->
+    <nav id="navbar" class="fixed top-0 w-full z-30 mix-blend-difference text-paper transition-all duration-500">
+        <div class="container mx-auto px-6 py-6 flex justify-between items-center">
+            <a href="#" class="flex items-center gap-3 group">
+                <span class="font-jp text-3xl font-black group-hover:text-manga-cyan transition-colors">漫画</span>
+                <div class="flex flex-col">
+                    <span class="font-display text-2xl tracking-widest leading-none">INK&amp;FRAME</span>
+                    <span class="font-mono text-[10px] tracking-[0.3em] opacity-60">EST. 2024</span>
+                </div>
+            </a>
+            
+            <div class="hidden md:flex items-center gap-8 font-mono text-sm tracking-widest">
+                <a href="#seasonal" class="hover:text-manga-cyan transition-colors relative group">
+                    SEASONAL
+                    <span class="absolute -bottom-1 left-0 w-0 h-px bg-manga-magenta group-hover:w-full transition-all duration-300"></span>
+                </a>
+                <a href="#manga" class="hover:text-manga-cyan transition-colors relative group">
+                    MANGA
+                    <span class="absolute -bottom-1 left-0 w-0 h-px bg-manga-magenta group-hover:w-full transition-all duration-300"></span>
+                </a>
+                <a href="#characters" class="hover:text-manga-cyan transition-colors relative group">
+                    CHARACTERS
+                    <span class="absolute -bottom-1 left-0 w-0 h-px bg-manga-magenta group-hover:w-full transition-all duration-300"></span>
+                </a>
+                <a href="#news" class="hover:text-manga-cyan transition-colors relative group">
+                    NEWS
+                    <span class="absolute -bottom-1 left-0 w-0 h-px bg-manga-magenta group-hover:w-full transition-all duration-300"></span>
+                </a>
+            </div>
+
+            <button id="menu-toggle" class="md:hidden flex flex-col gap-1.5 group">
+                <span class="w-8 h-0.5 bg-paper transition-all group-hover:bg-manga-cyan"></span>
+                <span class="w-6 h-0.5 bg-paper transition-all group-hover:bg-manga-cyan"></span>
+                <span class="w-8 h-0.5 bg-paper transition-all group-hover:bg-manga-cyan"></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Mobile Menu -->
+    <div id="mobile-menu" class="fixed inset-0 bg-ink z-20 flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-500">
+        <div class="flex flex-col items-center gap-8 font-display text-4xl text-paper">
+            <a href="#seasonal" class="mobile-link hover:text-manga-cyan hover:italic transition-all">SEASONAL</a>
+            <a href="#manga" class="mobile-link hover:text-manga-cyan hover:italic transition-all">MANGA</a>
+            <a href="#characters" class="mobile-link hover:text-manga-cyan hover:italic transition-all">CHARACTERS</a>
+            <a href="#news" class="mobile-link hover:text-manga-cyan hover:italic transition-all">NEWS</a>
+        </div>
+    </div>
+
+    <!-- Hero Section -->
+    <header class="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
+        <!-- Background Elements -->
+        <div class="absolute inset-0 bg-gradient-to-b from-ink via-transparent to-paper opacity-20"></div>
+        <div class="absolute top-1/4 -left-20 w-96 h-96 bg-manga-magenta rounded-full blur-[128px] opacity-20 animate-pulse"></div>
+        <div class="absolute bottom-1/4 -right-20 w-96 h-96 bg-manga-cyan rounded-full blur-[128px] opacity-20 animate-pulse delay-1000"></div>
+
+        <div class="container mx-auto px-6 relative z-10">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                <!-- Left Typography -->
+                <div class="lg:col-span-7 space-y-6">
+                    <div class="overflow-hidden">
+                        <p class="font-mono text-manga-cyan tracking-[0.5em] text-sm mb-2 reveal-text">// WEEKLY UPDATES</p>
+                    </div>
+                    <h1 class="font-display text-[15vw] lg:text-[12rem] leading-[0.85] tracking-tight relative">
+                        <span class="block overflow-hidden">
+                            <span class="hero-text inline-block">ANIME</span>
+                        </span>
+                        <span class="block overflow-hidden relative">
+                            <span class="hero-text inline-block text-transparent stroke-text">&amp;</span>
+                            <span class="absolute -top-8 right-0 font-jp text-4xl lg:text-6xl text-manga-magenta opacity-60 rotate-12">アニメ</span>
+                        </span>
+                        <span class="block overflow-hidden">
+                            <span class="hero-text inline-block">MANGA</span>
+                        </span>
+                    </h1>
+                    
+                    <div class="flex items-center gap-4 mt-8">
+                        <div class="h-px bg-ink w-24 opacity-30"></div>
+                        <p class="font-mono text-sm max-w-md opacity-70 leading-relaxed">
+                            Immersive universe tracking. From panel to screen.<br>
+                            Experience the art of visual storytelling.
+                        </p>
+                    </div>
+
+                    <div class="flex gap-4 mt-8">
+                        <button class="group relative px-8 py-4 bg-ink text-paper font-mono text-sm tracking-widest overflow-hidden">
+                            <span class="relative z-10 group-hover:text-manga-cyan transition-colors">EXPLORE NOW</span>
+                            <div class="absolute inset-0 bg-manga-magenta transform translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+                        </button>
+                        <button class="px-8 py-4 border-2 border-ink font-mono text-sm tracking-widest hover:bg-ink hover:text-paper transition-all duration-300">
+                            LATEST ISSUES
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Right Visual -->
+                <div class="lg:col-span-5 relative">
+                    <div class="relative aspect-[3/4] border-4 border-ink bg-gray-100 overflow-hidden group">
+                        <div class="absolute inset-0 bg-gradient-to-tr from-manga-cyan/20 to-manga-magenta/20 mix-blend-overlay"></div>
+                        <img src="https://images.unsplash.com/photo-1578632767115-351597cf2477?w=800&q=80" alt="Anime Style Art" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 scale-110 group-hover:scale-100">
+                        
+                        <!-- Manga Screentone Overlay -->
+                        <div class="absolute inset-0 screentone-pattern opacity-30 mix-blend-multiply pointer-events-none"></div>
+                        
+                        <!-- Action Lines -->
+                        <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                            <div class="action-lines w-full h-full absolute"></div>
+                        </div>
+
+                        <!-- Floating Stats -->
+                        <div class="absolute bottom-4 right-4 bg-paper/90 backdrop-blur p-4 border-2 border-ink transform translate-y-2 group-hover:translate-y-0 transition-transform duration-500">
+                            <div class="font-mono text-xs text-gray-500 mb-1">TRENDING #01</div>
+                            <div class="font-display text-2xl">CYBER PUNK</div>
+                            <div class="font-jp text-sm text-manga-magenta">サイバーパンク</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Decorative Elements -->
+                    <div class="absolute -top-8 -right-8 w-24 h-24 border-t-4 border-r-4 border-manga-cyan"></div>
+                    <div class="absolute -bottom-8 -left-8 w-24 h-24 border-b-4 border-l-4 border-manga-magenta"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scroll Indicator -->
+        <div class="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex flex-col items-center gap-2">
+            <span class="font-mono text-xs tracking-widest animate-bounce">SCROLL</span>
+            <div class="w-px h-12 bg-ink/30 relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-full h-1/2 bg-manga-cyan animate-scroll-line"></div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Seasonal Tracker Section -->
+    <section id="seasonal" class="py-32 relative overflow-hidden">
+        <div class="container mx-auto px-6">
+            <div class="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
+                <div>
+                    <p class="font-mono text-manga-magenta text-sm tracking-[0.3em] mb-2">/// CURRENT SEASON</p>
+                    <h2 class="font-display text-6xl md:text-8xl">WINTER 2024</h2>
+                </div>
+                <div class="flex gap-4">
+                    <button class="season-nav prev w-12 h-12 border-2 border-ink flex items-center justify-center hover:bg-ink hover:text-paper transition-colors">
+                        ←
+                    </button>
+                    <button class="season-nav next w-12 h-12 border-2 border-ink flex items-center justify-center hover:bg-ink hover:text-paper transition-colors">
+                        →
+                    </button>
+                </div>
+            </div>
+
+            <!-- Anime Cards Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" id="seasonal-grid">
+                <!-- Card 1 -->
+                <article class="anime-card group relative bg-white border-2 border-ink hover:border-manga-cyan transition-colors duration-300">
+                    <div class="aspect-video overflow-hidden relative">
+                        <img src="https://images.unsplash.com/photo-1607604276583-eef5f0b7f97f?w=600&q=80" alt="Anime Scene" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500">
+                        <div class="absolute top-2 right-2 bg-manga-magenta text-white font-mono text-xs px-2 py-1">EP 08</div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="font-display text-2xl mb-1 group-hover:text-manga-cyan transition-colors">NEON GENESIS</h3>
+                        <p class="font-jp text-xs text-gray-500 mb-4">新世紀エヴァンゲリオン</p>
+                        <div class="space-y-2">
+                            <div class="flex justify-between font-mono text-xs">
+                                <span>Progress</span>
+                                <span>66%</span>
+                            </div>
+                            <div class="h-1 bg-gray-200 overflow-hidden">
+                                <div class="h-full bg-ink w-2/3 relative overflow-hidden">
+                                    <div class="absolute inset-0 bg-manga-cyan animate-shimmer"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-4 flex gap-2">
+                            <span class="font-mono text-[10px] border border-ink px-2 py-1">ACTION</span>
+                            <span class="font-mono text-[10px] border border-ink px-2 py-1">MECHA</span>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Card 2 -->
+                <article class="anime-card group relative bg-white border-2 border-ink hover:border-manga-cyan transition-colors duration-300 lg:translate-y-8">
+                    <div class="aspect-video overflow-hidden relative">
+                        <img src="https://images.unsplash.com/photo-1613376023733-0a73315d9b06?w=600&q=80" alt="Anime Scene" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500">
+                        <div class="absolute top-2 right-2 bg-manga-cyan text-ink font-mono text-xs px-2 py-1">NEW</div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="font-display text-2xl mb-1 group-hover:text-manga-cyan transition-colors">SOUL HUNTER</h3>
+                        <p class="font-jp text-xs text-gray-500 mb-4">ソウルハンター</p>
+                        <div class="space-y-2">
+                            <div class="flex justify-between font-mono text-xs">
+                                <span>Progress</span>
+                                <span>25%</span>
+                            </div>
+                            <div class="h-1 bg-gray-200 overflow-hidden">
+                                <div class="h-full bg-ink w-1/4"></div>
+                            </div>
+                        </div>
+                        <div class="mt-4 flex gap-2">
+                            <span class="font-mono text-[10px] border border-ink px-2 py-1">FANTASY</span>
+                            <span class="font-mono text-[10px] border border-ink px-2 py-1">SHOUNEN</span>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Card 3 -->
+                <article class="anime-card group relative bg-white border-2 border-ink hover:border-manga-cyan transition-colors duration-300">
+                    <div class="aspect-video overflow-hidden relative">
+                        <img src="https://images.unsplash.com/photo-1560972550-aba3456b5564?w=600&q=80" alt="Anime Scene" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500">
+                        <div class="absolute top-2 right-2 bg-manga-magenta text-white font-mono text-xs px-2 py-1">EP 12</div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="font-display text-2xl mb-1 group-hover:text-manga-cyan transition-colors">MIDNIGHT SUN</h3>
+                        <p class="font-jp text-xs text-gray-500 mb-4">ミッドナイトサン</p>
+                        <div class="space-y-2">
+                            <div class="flex justify-between font-mono text-xs">
+                                <span>Progress</span>
+                                <span>100%</span>
+                            </div>
+                            <div class="h-1 bg-gray-200 overflow-hidden">
+                                <div class="h-full bg-manga-magenta w-full"></div>
+                            </div>
+                        </div>
+                        <div class="mt-4 flex gap-2">
+                            <span class="font-mono text-[10px] border border-ink px-2 py-1">SLICE OF LIFE</span>
+                            <span class="font-mono text-[10px] border border-ink px-2 py-1">DRAMA</span>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Card 4 -->
+                <article class="anime-card group relative bg-white border-2 border-ink hover:border-manga-cyan transition-colors duration-300 lg:translate-y-8">
+                    <div class="aspect-video overflow-hidden relative">
+                        <img src="https://images.unsplash.com/photo-1541562232579-512a21360020?w=600&q=80" alt="Anime Scene" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500">
+                        <div class="absolute top-2 right-2 bg-ink text-paper font-mono text-xs px-2 py-1">EP 05</div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="font-display text-2xl mb-1 group-hover:text-manga-cyan transition-colors">BLADE RUNNER</h3>
+                        <p class="font-jp text-xs text-gray-500 mb-4">ブレードランナー</p>
+                        <div class="space-y-2">
+                            <div class="flex justify-between font-mono text-xs">
+                                <span>Progress</span>
+                                <span>42%</span>
+                            </div>
+                            <div class="h-1 bg-gray-200 overflow-hidden">
+                                <div class="h-full bg-ink w-5/12"></div>
+                            </div>
+                        </div>
+                        <div class="mt-4 flex gap-2">
+                            <span class="font-mono text-[10px] border border-ink px-2 py-1">SCI-FI</span>
+                            <span class="font-mono text-[10px] border border-ink px-2 py-1">THRILLER</span>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <!-- Featured Manga - Panel Layout -->
+    <section id="manga" class="py-32 bg-ink text-paper relative">
+        <div class="absolute inset-0 opacity-5" style="background-image: radial-gradient(circle at 2px 2px, white 1px, transparent 0); background-size: 40px 40px;"></div>
+        
+        <div class="container mx-auto px-6 relative z-10">
+            <div class="mb-16 flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
+                <div>
+                    <p class="font-mono text-manga-cyan text-sm tracking-[0.3em] mb-2">/// FROM THE PAGE</p>
+                    <h2 class="font-display text-6xl md:text-8xl">FEATURED MANGA</h2>
+                </div>
+                <div class="font-mono text-sm text-gray-400 max-w-xs text-right">
+                    Weekly Shonen Jump • Monthly Afternoon • Young Magazine
+                </div>
+            </div>
+
+            <!-- Manga Panel Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 auto-rows-[300px]">
+                <!-- Panel 1: Large -->
+                <div class="manga-panel md:col-span-2 md:row-span-2 group relative overflow-hidden border-4 border-paper cursor-pointer">
+                    <img src="https://images.unsplash.com/photo-1618336753974-aae8e04506aa?w=800&q=80" alt="Manga Panel" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <div class="absolute bottom-0 left-0 p-8 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300 opacity-0 group-hover:opacity-100">
+                        <div class="font-jp text-manga-cyan text-xl mb-2">東京喰種</div>
+                        <h3 class="font-display text-4xl text-white">TOKYO GHOUL</h3>
+                        <p class="font-mono text-sm mt-2 text-gray-300">Chapter 143 • Final Arc</p>
+                    </div>
+                    <div class="absolute top-4 right-4 bg-manga-magenta text-white font-mono text-xs px-3 py-1 transform rotate-3">TRENDING</div>
+                </div>
+
+                <!-- Panel 2 -->
+                <div class="manga-panel group relative overflow-hidden border-4 border-paper cursor-pointer">
+                    <img src="https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=600&q=80" alt="Manga Panel" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
+                    <div class="absolute inset-0 bg-ink/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                        <div class="text-center">
+                            <div class="font-jp text-2xl text-manga-cyan">進撃の巨人</div>
+                            <div class="font-display text-xl">ATTACK ON TITAN</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Panel 3 -->
+                <div class="manga-panel group relative overflow-hidden border-4 border-paper cursor-pointer">
+                    <img src="https://images.unsplash.com/photo-1581833971358-2c8b550f87b3?w=600&q=80" alt="Manga Panel" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 filter contrast-125">
+                    <div class="absolute inset-0 bg-ink/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                        <div class="text-center">
+                            <div class="font-jp text-2xl text-manga-cyan">chainsaw man</div>
+                            <div class="font-display text-xl">CHAINSAW MAN</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Panel 4: Wide -->
+                <div class="manga-panel md:col-span-2 group relative overflow-hidden border-4 border-paper cursor-pointer">
+                    <img src="https://images.unsplash.com/photo-1601850494422-3ed14694b977?w=800&q=80" alt="Manga Panel" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
+                    <div class="absolute inset-0 bg-gradient-to-r from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center">
+                        <div class="p-8">
+                            <div class="font-jp text-manga-cyan text-xl mb-2">鬼滅の刃</div>
+                            <h3 class="font-display text-3xl text-white">DEMON SLAYER</h3>
+                            <p class="font-mono text-sm mt-2 text-gray-300">Entertainment District Arc</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Panel 5 -->
+                <div class="manga-panel group relative overflow-hidden border-4 border-paper cursor-pointer">
+                    <img src="https://images.unsplash.com/photo-1575540325853-4b4874b09cbd?w=600&q=80" alt="Manga Panel" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
+                    <div class="absolute inset-0 bg-ink/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                        <div class="text-center">
+                            <div class="font-jp text-2xl text-manga-cyan">呪術廻戦</div>
+                            <div class="font-display text-xl">JUJUTSU KAISEN</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Read More Button -->
+            <div class="mt-12 text-center">
+                <button class="group relative inline-flex items-center gap-4 font-mono text-sm tracking-widest border-2 border-paper px-8 py-4 overflow-hidden">
+                    <span class="relative z-10 group-hover:text-ink transition-colors">VIEW ALL TITLES</span>
+                    <span class="relative z-10 group-hover:translate-x-2 transition-transform">→</span>
+                    <div class="absolute inset-0 bg-paper transform -translate-x-full group-hover:translate-x-0 transition-transform duration-300"></div>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Character Spotlight Carousel -->
+    <section id="characters" class="py-32 relative overflow-hidden bg-paper">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-16">
+                <p class="font-mono text-manga-magenta text-sm tracking-[0.3em] mb-2">/// CHARACTER DATABASE</p>
+                <h2 class="font-display text-6xl md:text-8xl">SPOTLIGHT</h2>
+            </div>
+
+            <!-- Carousel Container -->
+            <div class="relative max-w-6xl mx-auto">
+                <!-- Character Cards Container -->
+                <div id="character-carousel" class="relative h-[600px] flex items-center justify-center perspective-1000">
+                    
+                    <!-- Character 1 -->
+                    <div class="character-card absolute w-full max-w-2xl bg-white border-4 border-ink p-8 md:p-12 transition-all duration-700" data-index="0">
+                        <div class="grid md:grid-cols-2 gap-8 items-center">
+                            <div class="relative aspect-[3/4] overflow-hidden border-2 border-ink">
+                                <img src="https://images.unsplash.com/photo-1618336753974-aae8e04506aa?w=600&q=80" alt="Character" class="w-full h-full object-cover">
+                                <div class="absolute inset-0 bg-gradient-to-t from-manga-cyan/20 to-transparent"></div>
+                            </div>
+                            <div>
+                                <div class="font-jp text-3xl text-manga-magenta mb-2">主人公</div>
+                                <h3 class="font-display text-5xl mb-4">KAIRO SHIRO</h3>
+                                <p class="font-mono text-sm text-gray-600 mb-6 leading-relaxed">
+                                    The White Ghost of District 9. Former assassin turned vigilante. Master of the Shadow Step technique.
+                                </p>
+                                <div class="space-y-3 font-mono text-xs">
+                                    <div class="flex justify-between border-b border-gray-200 pb-2">
+                                        <span>STRENGTH</span>
+                                        <div class="flex gap-1">
+                                            <span class="w-4 h-4 bg-manga-cyan"></span>
+                                            <span class="w-4 h-4 bg-manga-cyan"></span>
+                                            <span class="w-4 h-4 bg-manga-cyan"></span>
+                                            <span class="w-4 h-4 bg-manga-cyan"></span>
+                                            <span class="w-4 h-4 bg-gray-200"></span>
+                                        </div>
+                                    </div>
+                                    <div class="flex justify-between border-b border-gray-200 pb-2">
+                                        <span>SPEED</span>
+                                        <div class="flex gap-1">
+                                            <span class="w-4 h-4 bg-manga-magenta"></span>
+                                            <span class="w-4 h-4 bg-manga-magenta"></span>
+                                            <span class="w-4 h-4 bg-manga-magenta"></span>
+                                            <span class="w-4 h-4 bg-manga-magenta"></span>
+                                            <span class="w-4 h-4 bg-manga-magenta"></span>
+                                        </div>
+                                    </div>
+                                    <div class="flex justify-between border-b border-gray-200 pb-2">
+                                        <span>INTELLECT</span>
+                                        <div class="flex gap-1">
+                                            <span class="w-4 h-4 bg-ink"></span>
+                                            <span class="w-4 h-4 bg-ink"></span>
+                                            <span class="w-4 h-4 bg-ink"></span>
+                                            <span class="w-4 h-4 bg-gray-200"></span>
+                                            <span class="w-4 h-4 bg-gray-200"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Character 2 -->
+                    <div class="character-card absolute w-full max-w-2xl bg-white border-4 border-ink p-8 md:p-12 transition-all duration-700 opacity-0 scale-90 translate-x-full" data-index="1">
+                        <div class="grid md:grid-cols-2 gap-8 items-center">
+                            <div class="relative aspect-[3/4] overflow-hidden border-2 border-ink">
+                                <img src="https://images.unsplash.com/photo-1578632767115-351597cf2477?w=600&q=80" alt="Character" class="w-full h-full object-cover">
+                                <div class="absolute inset-0 bg-gradient-to-t from-manga-magenta/20 to-transparent"></div>
+                            </div>
+                            <div>
+                                <div class="font-jp text-3xl text-manga-cyan mb-2">拮抗者</div>
+                                <h3 class="font-display text-5xl mb-4">REI AKIRA</h3>
+                                <p class="font-mono text-sm text-gray-600 mb-6 leading-relaxed">
+                                    Cybernetic engineer with a mysterious past. Controls the digital realm with her neural implants.
+                                </p>
+                                <div class="space-y-3 font-mono text-xs">
+                                    <div class="flex justify-between border-b border-gray-200 pb-2">
+                                        <span>HACKING</span>
+                                        <div class="flex gap-1">
+                                            <span class="w-4 h-4 bg-manga-cyan"></span>
+                                            <span class="w-4 h-4 bg-manga-cyan"></span>
+                                            <span class="w-4 h-4 bg-manga-cyan"></span>
+                                            <span class="w-4 h-4 bg-manga-cyan"></span>
+                                            <span class="w-4 h-4 bg-manga-cyan"></span>
+                                        </div>
+                                    </div>
+                                    <div class="flex justify-between border-b border-gray-200 pb-2">
+                                        <span>COMBAT</span>
+                                        <div class="flex gap-1">
+                                            <span class="w-4 h-4 bg-manga-magenta"></span>
+                                            <span class="w-4 h-4 bg-manga-magenta"></span>
+                                            <span class="w-4 h-4 bg-manga-magenta"></span>
+                                            <span class="w-4 h-4 bg-gray-200"></span>
+                                            <span class="w-4 h-4 bg-gray-200"></span>
+                                        </div>
+                                    </div>
+                                    <div class="flex justify-between border-b border-gray-200 pb-2">
+                                        <span>STEALTH</span>
+                                        <div class="flex gap-1">
+                                            <span class="w-4 h-4 bg-ink"></span>
+                                            <span class="w-4 h-4 bg-ink"></span>
+                                            <span class="w-4 h-4 bg-ink"></span>
+                                            <span class="w-4 h-4 bg-ink"></span>
+                                            <span class="w-4 h-4 bg-gray-200"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Character 3 -->
+                    <div class="character-card absolute w-full max-w-2xl bg-white border-4 border-ink p-8 md:p-12 transition-all duration-700 opacity-0 scale-90 translate-x-full" data-index="2">
+                        <div class="grid md:grid-cols-2 gap-8 items-center">
+                            <div class="relative aspect-[3/4] overflow-hidden border-2 border-ink">
+                                <img src="https://images.unsplash.com/photo-1620336655052-bda563654f09?w=600&q=80" alt="Character" class="w-full h-full object-cover">
+                                <div class="absolute inset-0 bg-gradient-to-t from-ink/20 to-transparent"></div>
+                            </div>
+                            <div>
+                                <div class="font-jp text-3xl text-manga-magenta mb-2">守護者</div>
+                                <h3 class="font-display text-5xl mb-4">Sora Kaito</h3>
+                                <p class="font-mono text-sm text-gray-600 mb-6 leading-relaxed">
+                                    Guardian of the Eastern Gate. Wields the legendary blade "Moonfang" and commands respect across all districts.
+                                </p>
+                                <div class="space-y-3 font-mono text-xs">
+                                    <div class="flex justify-between border-b border-gray-200 pb-2">
+                                        <span>SWORD</span>
+                                        <div class="flex gap-1">
+                                            <span class="w-4 h-4 bg-manga-cyan"></span>
+                                            <span class="w-4 h-4 bg-manga-cyan"></span>
+                                            <span class="w-4 h-4 bg-manga-cyan"></span>
+                                            <span class="w-4 h-4 bg-manga-cyan"></span>
+                                            <span class="w-4 h-4 bg-manga-cyan"></span>
+                                        </div>
+                                    </div>
+                                    <div class="flex justify-between border-b border-gray-200 pb-2">
+                                        <span>MAGIC</span>
+                                        <div class="flex gap-1">
+                                            <span class="w-4 h-4 bg-manga-magenta"></span>
+                                            <span class="w-4 h-4 bg-manga-magenta"></span>
+                                            <span class="w-4 h-4 bg-manga-magenta"></span>
+                                            <span class="w-4 h-4 bg-gray-200"></span>
+                                            <span class="w-4 h-4 bg-gray-200"></span>
+                                        </div>
+                                    </div>
+                                    <div class="flex justify-between border-b border-gray-200 pb-2">
+                                        <span>LEADERSHIP</span>
+                                        <div class="flex gap-1">
+                                            <span class="w-4 h-4 bg-ink"></span>
+                                            <span class="w-4 h-4 bg-ink"></span>
+                                            <span class="w-4 h-4 bg-ink"></span>
+                                            <span class="w-4 h-4 bg-ink"></span>
+                                            <span class="w-4 h-4 bg-ink"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Carousel Controls -->
+                <div class="flex justify-center gap-4 mt-8">
+                    <button id="char-prev" class="w-12 h-12 border-2 border-ink flex items-center justify-center hover:bg-ink hover:text-paper transition-colors font-mono">
+                        ←
+                    </button>
+                    <div class="flex gap-2 items-center" id="char-dots">
+                        <span class="w-3 h-3 bg-ink rounded-full cursor-pointer" data-index="0"></span>
+                        <span class="w-3 h-3 bg-gray-300 rounded-full cursor-pointer" data-index="1"></span>
+                        <span class="w-3 h-3 bg-gray-300 rounded-full cursor-pointer" data-index="2"></span>
+                    </div>
+                    <button id="char-next" class="w-12 h-12 border-2 border-ink flex items-center justify-center hover:bg-ink hover:text-paper transition-colors font-mono">
+                        →
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- News Section -->
+    <section id="news" class="py-32 bg-ink text-paper relative">
+        <div class="container mx-auto px-6">
+            <div class="mb-16">
+                <p class="font-mono text-manga-cyan text-sm tracking-[0.3em] mb-2">/// LATEST UPDATES</p>
+                <h2 class="font-display text-6xl md:text-8xl">NEWS &amp; BLOG</h2>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Featured Article -->
+                <article class="group relative border-4 border-paper overflow-hidden cursor-pointer">
+                    <div class="aspect-[16/9] overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1516726817505-f5ed825624d8?w=800&q=80" alt="News" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 grayscale group-hover:grayscale-0">
+                    </div>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent"></div>
+                    <div class="absolute bottom-0 left-0 p-8">
+                        <div class="flex items-center gap-4 mb-4">
+                            <span class="font-mono text-xs bg-manga-magenta text-white px-2 py-1">BREAKING</span>
+                            <span class="font-mono text-xs text-gray-400">JAN 15, 2024</span>
+                        </div>
+                        <h3 class="font-display text-3xl mb-2 group-hover:text-manga-cyan transition-colors">STUDIO GHIBLI ANNOUNCES NEW PROJECT</h3>
+                        <p class="font-mono text-sm text-gray-300 line-clamp-2">
+                            Legendary animation studio returns with an ambitious new fantasy epic set in a world of floating cities and mechanical dragons.
+                        </p>
+                    </div>
+                </article>
+
+                <!-- News List -->
+                <div class="space-y-6">
+                    <article class="group flex gap-6 items-start cursor-pointer border-b border-gray-800 pb-6 hover:border-manga-cyan transition-colors">
+                        <div class="w-24 h-24 flex-shrink-0 overflow-hidden border-2 border-paper">
+                            <img src="https://images.unsplash.com/photo-1560167016-022b78a0258e?w=200&q=80" alt="Thumbnail" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all">
+                        </div>
+                        <div>
+                            <div class="font-mono text-xs text-manga-cyan mb-1">MANGA RELEASE</div>
+                            <h4 class="font-display text-xl group-hover:text-manga-cyan transition-colors">ONE PIECE REACHES FINAL SAGA</h4>
+                            <p class="font-mono text-xs text-gray-500 mt-2">Eiichiro Oda confirms the end is near...</p>
+                        </div>
+                    </article>
+
+                    <article class="group flex gap-6 items-start cursor-pointer border-b border-gray-800 pb-6 hover:border-manga-cyan transition-colors">
+                        <div class="w-24 h-24 flex-shrink-0 overflow-hidden border-2 border-paper">
+                            <img src="https://images.unsplash.com/photo-1514539079130-25950c84965d?w=200&q=80" alt="Thumbnail" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all">
+                        </div>
+                        <div>
+                            <div class="font-mono text-xs text-manga-cyan mb-1">ANIME EXPO</div>
+                            <h4 class="font-display text-xl group-hover:text-manga-cyan transition-colors">COSPLAY COMPETITION WINNERS</h4>
+                            <p class="font-mono text-xs text-gray-500 mt-2">The most impressive costumes from this year's event...</p>
+                        </div>
+                    </article>
+
+                    <article class="group flex gap-6 items-start cursor-pointer border-b border-gray-800 pb-6 hover:border-manga-cyan transition-colors">
+                        <div class="w-24 h-24 flex-shrink-0 overflow-hidden border-2 border-paper">
+                            <img src="https://images.unsplash.com/photo-1578632767115-351597cf2477?w=200&q=80" alt="Thumbnail" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all">
+                        </div>
+                        <div>
+                            <div class="font-mono text-xs text-manga-cyan mb-1">REVIEW</div>
+                            <h4 class="font-display text-xl group-hover:text-manga-cyan transition-colors">BLUE EYE SAMURAI SEASON 2</h4>
+                            <p class="font-mono text-xs text-gray-500 mt-2">Netflix's animated masterpiece returns...</p>
+                        </div>
+                    </article>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Newsletter Section -->
+    <section class="py-32 bg-paper relative overflow-hidden">
+        <div class="absolute inset-0 flex items-center justify-center opacity-5 pointer-events-none">
+            <span class="font-display text-[20vw] whitespace-nowrap">SUBSCRIBE</span>
+        </div>
+
+        <div class="container mx-auto px-6 relative z-10 text-center">
+            <h2 class="font-display text-5xl md:text-7xl mb-6">STAY UPDATED</h2>
+            <p class="font-mono text-sm text-gray-600 mb-8 max-w-md mx-auto">
+                Get weekly manga recommendations and anime release alerts delivered to your inbox.
+            </p>
+
+            <form class="max-w-lg mx-auto flex flex-col md:flex-row gap-4">
+                <input type="email" placeholder="ENTER EMAIL" class="flex-1 bg-transparent border-2 border-ink px-6 py-4 font-mono text-sm focus:outline-none focus:border-manga-cyan transition-colors placeholder-gray-400">
+                <button type="submit" class="bg-ink text-paper px-8 py-4 font-mono text-sm tracking-widest hover:bg-manga-magenta transition-colors">
+                    SUBSCRIBE
+                </button>
+            </form>
+
+            <div class="mt-8 flex justify-center gap-6 font-mono text-xs text-gray-400">
+                <span>No spam, ever.</span>
+                <span>•</span>
+                <span>Unsubscribe anytime.</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-ink text-paper py-16 border-t border-gray-800">
+        <div class="container mx-auto px-6">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+                <div class="md:col-span-2">
+                    <div class="flex items-center gap-3 mb-6">
+                        <span class="font-jp text-3xl font-black text-manga-cyan">漫画</span>
+                        <span class="font-display text-2xl tracking-widest">INK&amp;FRAME</span>
+                    </div>
+                    <p class="font-mono text-sm text-gray-400 max-w-sm leading-relaxed">
+                        The ultimate destination for manga and anime enthusiasts. Curating the finest visual storytelling from East to West.
+                    </p>
+                </div>
+
+                <div>
+                    <h4 class="font-display text-xl mb-4">NAVIGATION</h4>
+                    <ul class="space-y-2 font-mono text-sm text-gray-400">
+                        <li><a href="#seasonal" class="hover:text-manga-cyan transition-colors">Seasonal</a></li>
+                        <li><a href="#manga" class="hover:text-manga-cyan transition-colors">Manga</a></li>
+                        <li><a href="#characters" class="hover:text-manga-cyan transition-colors">Characters</a></li>
+                        <li><a href="#news" class="hover:text-manga-cyan transition-colors">News</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="font-display text-xl mb-4">SOCIAL</h4>
+                    <ul class="space-y-2 font-mono text-sm text-gray-400">
+                        <li><a href="#" class="hover:text-manga-cyan transition-colors">Twitter / X</a></li>
+                        <li><a href="#" class="hover:text-manga-cyan transition-colors">Instagram</a></li>
+                        <li><a href="#" class="hover:text-manga-cyan transition-colors">Discord</a></li>
+                        <li><a href="#" class="hover:text-manga-cyan transition-colors">YouTube</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+                <p class="font-mono text-xs text-gray-500">© 2024 INK &amp; FRAME. All rights reserved.</p>
+                <div class="flex gap-6 font-mono text-xs text-gray-500">
+                    <a href="#" class="hover:text-paper transition-colors">Privacy</a>
+                    <a href="#" class="hover:text-paper transition-colors">Terms</a>
+                    <a href="#" class="hover:text-paper transition-colors">Contact</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="scripts.js"></script>
+</body>
+</html>

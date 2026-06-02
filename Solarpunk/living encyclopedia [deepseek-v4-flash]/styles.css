@@ -1,0 +1,675 @@
+/* ===== styles.css ===== */
+/* solarpunk wiki – organic, luminous, rewilded */
+
+/* ---- reset & base ---- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  /* sunlight meter palette – shifts via JS */
+  --sun-level: 0.65; /* 0..1 */
+  --sun-warm: calc(0.45 + var(--sun-level) * 0.55);
+  --sun-bright: calc(0.5 + var(--sun-level) * 0.5);
+
+  --clr-bg: hsl(80, 30%, 92%);
+  --clr-surface: hsl(75, 25%, 96%);
+  --clr-card: hsl(70, 20%, 94%);
+  --clr-text: hsl(120, 20%, 12%);
+  --clr-text-soft: hsl(120, 12%, 28%);
+  --clr-accent: hsl(95, 45%, 40%);
+  --clr-accent-soft: hsl(95, 35%, 70%);
+  --clr-vine: hsl(130, 40%, 35%);
+  --clr-seed: hsl(40, 60%, 50%);
+  --clr-card-border: hsl(80, 15%, 70%);
+  --clr-surface-raised: hsl(80, 18%, 94%);
+  --clr-glow: hsla(95, 60%, 70%, 0.15);
+  --font-display: 'Gloock', 'Times New Roman', serif;
+  --font-body: 'Karla', 'Helvetica Neue', sans-serif;
+  --transition-slow: 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  --transition-fast: 0.25s ease;
+}
+
+/* ---- global reset & base ---- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  font-size: 16px;
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: #eef4e0;
+  background-image: radial-gradient(circle at 20% 30%, rgba(160, 190, 120, 0.15) 0%, transparent 50%),
+                    radial-gradient(circle at 80% 70%, rgba(120, 160, 90, 0.1) 0%, transparent 50%);
+  color: #1e2a1a;
+  line-height: 1.6;
+  min-height: 100vh;
+  padding: 0;
+  margin: 0;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* plant-fiber texture overlay */
+.wiki-layout::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(120, 100, 60, 0.015) 2px,
+      rgba(120, 100, 60, 0.015) 4px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 3px,
+      rgba(100, 80, 40, 0.01) 3px,
+      rgba(100, 80, 40, 0.01) 5px
+    );
+  pointer-events: none;
+}
+
+/* grain overlay */
+.grain-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 999;
+  opacity: 0.06;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 256px 256px;
+  mix-blend-mode: multiply;
+}
+
+/* ---- typography ---- */
+h1, h2, h3, h4 {
+  font-family: 'Gloock', 'Times New Roman', serif;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+
+a {
+  color: #3b6b2b;
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+a:hover {
+  color: #2a4f1e;
+  text-decoration: underline wavy rgba(60, 120, 40, 0.3) 1px;
+  text-underline-offset: 4px;
+}
+
+/* ---- photosynthesis loader ---- */
+.loader-overlay {
+  position: fixed;
+  inset: 0;
+  background: #dce8cc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  transition: opacity 0.8s ease, visibility 0.8s ease;
+}
+.loader-overlay.hidden {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.leaf-loader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.leaf-spinner {
+  width: 60px;
+  height: 60px;
+  border-radius: 50% 0 50% 0;
+  background: linear-gradient(135deg, #7cb342, #558b2f);
+  animation: leafSpin 1.8s ease-in-out infinite, pulseGlow 2.4s ease-in-out infinite;
+  box-shadow: 0 0 0 8px rgba(120, 180, 60, 0.1), 0 0 0 16px rgba(120, 180, 60, 0.05);
+}
+
+@keyframes leafSpin {
+  0% { transform: rotate(0deg) scale(1); border-radius: 50% 0 50% 0; }
+  50% { transform: rotate(180deg) scale(1.08); border-radius: 0 50% 0 50%; }
+  100% { transform: rotate(360deg) scale(1); border-radius: 50% 0 50% 0; }
+}
+
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 0 8px rgba(100, 160, 50, 0.08), 0 0 0 16px rgba(100, 160, 50, 0.03); }
+  50% { box-shadow: 0 0 0 14px rgba(100, 160, 50, 0.18), 0 0 0 24px rgba(100, 160, 50, 0.06); }
+}
+
+.loader-text {
+  font-family: 'Gloock', serif;
+  font-size: 1rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #3a5a2a;
+  opacity: 0.7;
+  animation: pulseText 2s ease-in-out infinite;
+}
+
+@keyframes pulseText {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+/* ---- sunlight meter ---- */
+.sunlight-meter {
+  position: fixed;
+  top: 2rem;
+  right: 2rem;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: rgba(240, 245, 230, 0.75);
+  backdrop-filter: blur(8px);
+  padding: 0.6rem 1rem 0.6rem 1.2rem;
+  border-radius: 40px;
+  border: 1px solid rgba(100, 120, 70, 0.2);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+}
+
+.meter-bar {
+  width: 80px;
+  height: 8px;
+  background: #d6dfc8;
+  border-radius: 20px;
+  overflow: hidden;
+  position: relative;
+}
+
+.meter-fill {
+  height: 100%;
+  width: 72%;
+  background: linear-gradient(90deg, #f5d76e, #f7b731, #e67e22);
+  border-radius: 20px;
+  transition: width 0.8s ease;
+}
+
+.meter-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #4a5a3a;
+  font-weight: 600;
+  min-width: 3.5rem;
+}
+
+/* ---- layout ---- */
+.wiki-layout {
+  display: flex;
+  min-height: 100vh;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  gap: 2.5rem;
+  position: relative;
+  z-index: 1;
+}
+
+/* ---- sidebar: vine & leaf ---- */
+.wiki-sidebar {
+  width: 240px;
+  flex-shrink: 0;
+  padding: 3rem 0 2rem 0;
+  position: relative;
+}
+
+.sidebar-vine {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: linear-gradient(to bottom, transparent 0%, #7a9a5a 15%, #5a7a3a 50%, #7a9a5a 85%, transparent 100%);
+  border-radius: 2px;
+  opacity: 0.4;
+}
+
+.sidebar-vine::before,
+.sidebar-vine::after {
+  content: '';
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: #7a9a5a;
+  border-radius: 50%;
+  left: -2.5px;
+}
+
+.sidebar-vine::before { top: 20%; }
+.sidebar-vine::after { top: 70%; }
+
+.sidebar-nav {
+  list-style: none;
+  padding-left: 1.8rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.sidebar-nav li {
+  position: relative;
+}
+
+.sidebar-nav a {
+  display: block;
+  padding: 0.5rem 0.8rem 0.5rem 1.2rem;
+  font-family: 'Gloock', serif;
+  font-size: 1.1rem;
+  color: #2d3a25;
+  border-left: 2px solid transparent;
+  transition: all var(--transition-fast);
+  text-decoration: none;
+  position: relative;
+}
+
+.sidebar-nav a::before {
+  content: '🌱';
+  position: absolute;
+  left: -0.2rem;
+  top: 0.5rem;
+  font-size: 0.7rem;
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+}
+
+.sidebar-nav a:hover,
+.sidebar-nav a.active {
+  color: #3d6b2a;
+  border-left-color: #7a9a5a;
+  background: linear-gradient(90deg, rgba(120, 160, 80, 0.08), transparent);
+}
+
+.sidebar-nav a:hover::before,
+.sidebar-nav a.active::before {
+  opacity: 1;
+}
+
+.sidebar-version {
+  display: block;
+  margin-top: 2.5rem;
+  padding-left: 2rem;
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #6a7a5a;
+  opacity: 0.6;
+}
+
+/* ---- main content ---- */
+.wiki-content {
+  flex: 1;
+  padding: 2.5rem 3rem 3rem 2rem;
+  max-width: 960px;
+}
+
+.article-header {
+  margin-bottom: 2rem;
+  border-bottom: 2px solid rgba(90, 120, 60, 0.2);
+  padding-bottom: 1.2rem;
+}
+
+.wiki-title {
+  font-family: 'Gloock', serif;
+  font-size: 3rem;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  color: #1f2e16;
+  line-height: 1.1;
+}
+
+.wiki-subtitle {
+  font-size: 1.1rem;
+  color: #4a5f3a;
+  margin-top: 0.3rem;
+  font-style: italic;
+}
+
+.header-ornament {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.8rem;
+}
+.ornament-dot {
+  width: 6px; height: 6px;
+  background: #7a9a5a;
+  border-radius: 50%;
+  display: inline-block;
+}
+.ornament-line {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, #7a9a5a, transparent);
+}
+
+/* ---- featured article ---- */
+.featured-article {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+  margin: 2.5rem 0 3rem 0;
+  padding: 1.8rem 2rem;
+  background: rgba(210, 220, 180, 0.25);
+  border-radius: 24px;
+  border: 1px solid rgba(120, 160, 80, 0.2);
+  backdrop-filter: blur(4px);
+}
+
+.plant-fiber-card {
+  flex: 1 1 280px;
+  background: rgba(240, 235, 215, 0.5);
+  padding: 1.5rem;
+  border-radius: 16px;
+  border: 1px solid rgba(120, 100, 60, 0.15);
+  box-shadow: 0 4px 16px rgba(60, 80, 30, 0.06);
+}
+
+.card-icon {
+  font-size: 2rem;
+  margin-bottom: 0.3rem;
+}
+
+.card-title {
+  font-family: 'Gloock', serif;
+  font-size: 1.6rem;
+  color: #2a3d1e;
+  margin-bottom: 0.5rem;
+}
+
+.card-stats {
+  list-style: none;
+  margin-top: 1rem;
+}
+.card-stats li {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.3rem 0;
+  border-bottom: 1px dashed rgba(90, 120, 60, 0.2);
+  font-size: 0.9rem;
+}
+.card-stats li span {
+  color: #4a6a3a;
+  font-weight: 500;
+}
+
+.preview-text {
+  flex: 1;
+  min-width: 240px;
+}
+.preview-text p {
+  margin-bottom: 0.8rem;
+  font-size: 1.05rem;
+  color: #1f2e1a;
+}
+.preview-text a {
+  color: #3d6b2a;
+  text-decoration: underline wavy rgba(80, 130, 50, 0.3);
+  text-underline-offset: 3px;
+}
+
+/* ---- article grid ---- */
+.article-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.8rem;
+  margin: 2.5rem 0;
+}
+
+.wiki-card {
+  background: rgba(250, 248, 235, 0.5);
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(140, 170, 100, 0.2);
+  border-radius: 20px;
+  padding: 1.5rem;
+  transition: transform var(--transition-slow), box-shadow var(--transition-slow);
+  position: relative;
+  overflow: hidden;
+}
+
+.wiki-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 30% 20%, rgba(160, 200, 100, 0.06), transparent 70%);
+  pointer-events: none;
+}
+
+.wiki-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(60, 100, 30, 0.08);
+  border-color: rgba(120, 160, 70, 0.3);
+}
+
+.card-vine-decoration {
+  position: absolute;
+  top: 0;
+  right: 1rem;
+  width: 2px;
+  height: 60%;
+  background: linear-gradient(to bottom, transparent, #8aaa6a, transparent);
+  opacity: 0.2;
+}
+
+.card-title {
+  font-size: 1.3rem;
+  margin-bottom: 1rem;
+  color: #1e2f16;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.card-content ul {
+  list-style: none;
+  margin: 0.8rem 0;
+}
+.card-content li {
+  padding: 0.4rem 0 0.4rem 1.2rem;
+  position: relative;
+  border-bottom: 1px solid rgba(100, 130, 70, 0.08);
+}
+.card-content li::before {
+  content: '🌿';
+  position: absolute;
+  left: -0.2rem;
+  top: 0.4rem;
+  font-size: 0.65rem;
+  opacity: 0.6;
+}
+
+.card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1rem;
+  padding-top: 0.8rem;
+  border-top: 1px solid rgba(100, 130, 70, 0.15);
+}
+
+.seed-badge {
+  font-size: 0.8rem;
+  background: rgba(120, 160, 70, 0.12);
+  padding: 0.2rem 0.8rem;
+  border-radius: 40px;
+  color: #3a5a2a;
+}
+
+.card-link {
+  font-family: 'Gloock', serif;
+  font-size: 0.9rem;
+  color: #3d6b2a;
+  transition: gap 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+}
+.card-link:hover {
+  gap: 0.6rem;
+}
+
+/* ---- seed bank ---- */
+.seedbank-section {
+  margin: 3rem 0 2rem;
+  padding: 2rem 0;
+  border-top: 1px solid rgba(100, 130, 70, 0.2);
+}
+
+.section-title {
+  font-size: 1.8rem;
+  color: #1e2f16;
+  margin-bottom: 0.3rem;
+}
+
+.section-desc {
+  color: #4a5f3a;
+  margin-bottom: 1.5rem;
+}
+
+.seed-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 0.8rem;
+}
+
+.seed-item {
+  background: rgba(235, 240, 215, 0.5);
+  border: 1px solid rgba(120, 150, 80, 0.15);
+  border-radius: 40px;
+  padding: 0.6rem 0.8rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: all var(--transition-fast);
+  cursor: default;
+}
+
+.seed-item:hover {
+  background: rgba(200, 220, 170, 0.4);
+  border-color: rgba(100, 140, 60, 0.3);
+  transform: scale(1.02);
+}
+
+.seed-emoji {
+  font-size: 1.1rem;
+}
+
+.seed-name {
+  font-size: 0.85rem;
+  color: #2a3d1e;
+  text-transform: lowercase;
+}
+
+.seed-count {
+  margin-left: auto;
+  font-size: 0.7rem;
+  background: rgba(60, 90, 40, 0.1);
+  padding: 0.1rem 0.5rem;
+  border-radius: 20px;
+  color: #3a5a2a;
+}
+
+/* ---- footer ---- */
+.wiki-footer {
+  margin-top: 3rem;
+  padding: 1.5rem 0;
+  border-top: 1px solid rgba(100, 130, 70, 0.15);
+  font-size: 0.85rem;
+  color: #4a5f3a;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.footer-credits {
+  opacity: 0.6;
+  font-style: italic;
+}
+
+/* ---- responsive ---- */
+@media (max-width: 800px) {
+  .wiki-layout {
+    flex-direction: column;
+    padding: 0 1rem;
+    gap: 0.5rem;
+  }
+  .wiki-sidebar {
+    width: 100%;
+    padding: 1rem 0 0.5rem;
+    border-bottom: 1px solid rgba(100, 130, 70, 0.15);
+  }
+  .sidebar-nav {
+    flex-direction: row;
+    flex-wrap: wrap;
+    padding-left: 0;
+    gap: 0.2rem;
+  }
+  .sidebar-nav a {
+    padding: 0.3rem 0.8rem;
+    border-left: none;
+    border-bottom: 2px solid transparent;
+    font-size: 0.95rem;
+  }
+  .sidebar-nav a:hover,
+  .sidebar-nav a.active {
+    border-left: none;
+    border-bottom-color: #7a9a5a;
+    background: transparent;
+  }
+  .sidebar-version {
+    display: none;
+  }
+  .wiki-content {
+    padding: 1rem 0 2rem;
+  }
+  .featured-article {
+    flex-direction: column;
+    padding: 1.2rem;
+  }
+  .sunlight-meter {
+    top: 1rem;
+    right: 1rem;
+    padding: 0.4rem 0.8rem;
+  }
+  .meter-bar {
+    width: 60px;
+  }
+}
+
+@media (max-width: 480px) {
+  .wiki-title {
+    font-size: 2.2rem;
+  }
+  .article-grid {
+    grid-template-columns: 1fr;
+  }
+  .seed-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}

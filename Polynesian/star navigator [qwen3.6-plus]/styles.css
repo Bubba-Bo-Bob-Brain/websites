@@ -1,0 +1,1003 @@
+/* =========================================
+   POLYNESIAN CELESTIAL WAYFINDING CHART
+   styles.css
+   ========================================= */
+
+/* =========================================
+   1. VARIABLES & RESET
+   ========================================= */
+:root {
+  /* Ocean & Deep Space Palette */
+  --ocean-deep: #020813;
+  --ocean-mid: #0a1931;
+  --ocean-light: #142b50;
+  --ocean-glow: #1a3a6e;
+  
+  /* Star & Bioluminescent Accents */
+  --star-gold: #f4d03f;
+  --star-white: #fffdf0;
+  --star-blue: #89cff0;
+  --bio-teal: #00f5d4;
+  --bio-cyan: #00b4d8;
+  
+  /* Tapa Cloth & Wood Textures */
+  --tapa-light: #d4a574;
+  --tapa-mid: #b8864e;
+  --tapa-dark: #8b5e3c;
+  --wood-dark: #2a1a10;
+  --wood-carved: #4a3020;
+  --wood-highlight: #6b4426;
+  
+  /* Typography */
+  --font-display: 'Cinzel Decorative', serif;
+  --font-body: 'EB Garamond', serif;
+  --font-runic: 'Noto Sans Runic', sans-serif; /* Used for decorative motifs */
+  
+  /* Spacing & Layout */
+  --panel-width: 340px;
+  --border-width: 120px;
+  --tapa-pattern-size: 40px;
+  
+  /* Transitions */
+  --transition-smooth: 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  --transition-fast: 0.3s ease-out;
+  --glow-spread: 0 0 15px rgba(0, 245, 212, 0.5), 0 0 30px rgba(0, 180, 216, 0.3);
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-color: var(--ocean-deep);
+  font-family: var(--font-body);
+  color: #e8e4db;
+  cursor: crosshair;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* =========================================
+   2. CANVASES & BACKGROUND LAYERS
+   ========================================= */
+#starCanvas, #waveCanvas, #trailCanvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+}
+
+#starCanvas { z-index: 0; }
+#waveCanvas { z-index: 1; opacity: 0.7; mix-blend-mode: screen; }
+#trailCanvas { z-index: 100; pointer-events: none; }
+
+/* Background Gradient Mesh */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: 
+    radial-gradient(ellipse at 20% 80%, rgba(10, 25, 49, 0.8) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(26, 58, 110, 0.5) 0%, transparent 50%),
+    radial-gradient(circle at 50% 50%, rgba(0, 180, 216, 0.1) 0%, transparent 60%),
+    linear-gradient(to bottom, #01040a 0%, #050d1a 100%);
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* =========================================
+   3. TAPA CLOTH BORDER & TIKI MOTIFS
+   ========================================= */
+.tapa-border-frame {
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  pointer-events: none;
+  z-index: 50;
+}
+
+.tapa-strip {
+  position: absolute;
+  background-color: rgba(42, 26, 16, 0.85);
+  backdrop-filter: blur(4px);
+  border: 1px solid var(--tapa-mid);
+  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8);
+}
+
+.tapa-top, .tapa-bottom {
+  width: 100%;
+  height: var(--border-width);
+  left: 0;
+}
+
+.tapa-left, .tapa-right {
+  width: var(--border-width);
+  height: 100%;
+  top: 0;
+}
+
+.tapa-top { top: 0; }
+.tapa-bottom { bottom: 0; }
+.tapa-left { left: 0; }
+.tapa-right { right: 0; }
+
+/* Tapa Cloth Geometric Pattern */
+.tapa-strip::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background-image: 
+    repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 10px,
+      var(--tapa-dark) 10px,
+      var(--tapa-dark) 12px
+    ),
+    repeating-linear-gradient(
+      -45deg,
+      transparent,
+      transparent 10px,
+      var(--tapa-dark) 10px,
+      var(--tapa-dark) 12px
+    );
+  opacity: 0.4;
+  background-blend-mode: multiply;
+}
+
+/* Tapa Edge Carving Detail */
+.tapa-strip::after {
+  content: '';
+  position: absolute;
+  background-color: var(--tapa-light);
+  opacity: 0.15;
+}
+
+.tapa-top::after, .tapa-bottom::after {
+  width: 100%;
+  height: 4px;
+  left: 0;
+}
+.tapa-top::after { bottom: 0; box-shadow: 0 -4px 8px rgba(0,0,0,0.5); }
+.tapa-bottom::after { top: 0; box-shadow: 0 4px 8px rgba(0,0,0,0.5); }
+
+.tapa-left::after, .tapa-right::after {
+  height: 100%;
+  width: 4px;
+  top: 0;
+}
+.tapa-left::after { right: 0; box-shadow: 4px 0 8px rgba(0,0,0,0.5); }
+.tapa-right::after { left: 0; box-shadow: -4px 0 8px rgba(0,0,0,0.5); }
+
+/* Corner Tiki Carvings */
+.tiki-corner {
+  position: absolute;
+  width: 140px;
+  height: 140px;
+  z-index: 51;
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.8));
+  transition: transform 0.8s ease;
+}
+
+.tiki-corner:hover {
+  transform: scale(1.05) rotate(2deg);
+}
+
+.tiki-northwest { top: -10px; left: -10px; }
+.tiki-northeast { top: -10px; right: -10px; transform: scaleX(-1); }
+.tiki-southwest { bottom: -10px; left: -10px; transform: scaleY(-1); }
+.tiki-southeast { bottom: -10px; right: -10px; transform: scale(-1, -1); }
+
+.tiki-svg {
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke: var(--tapa-light);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.tiki-line {
+  stroke: var(--tapa-mid);
+  stroke-width: 2.5;
+  fill: var(--wood-dark);
+  opacity: 0.9;
+}
+
+.tiki-eye {
+  fill: var(--star-gold);
+  stroke: var(--tapa-dark);
+  stroke-width: 1;
+  filter: drop-shadow(0 0 4px var(--star-gold));
+  animation: tiki-pulse 4s infinite alternate;
+}
+
+.tiki-mouth {
+  stroke: var(--tapa-dark);
+  stroke-width: 1.5;
+}
+
+.tiki-pattern {
+  stroke: var(--tapa-light);
+  stroke-width: 1;
+  opacity: 0.5;
+}
+
+/* =========================================
+   4. MAIN WAYFINDING CHART
+   ========================================= */
+.wayfinding-chart {
+  position: relative;
+  width: calc(100vw - (var(--border-width) * 2));
+  height: calc(100vh - (var(--border-width) * 2));
+  top: var(--border-width);
+  left: var(--border-width);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  perspective: 1200px;
+}
+
+/* =========================================
+   5. STAR COMPASS
+   ========================================= */
+.star-compass {
+  position: relative;
+  width: 600px;
+  height: 600px;
+  transform-style: preserve-3d;
+  transition: transform 0.1s linear;
+  will-change: transform;
+}
+
+.compass-ring {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: radial-gradient(circle at center, transparent 30%, rgba(10, 25, 49, 0.4) 100%);
+  border: 2px solid rgba(212, 165, 116, 0.3);
+  box-shadow: 0 0 40px rgba(0, 0, 0, 0.6), inset 0 0 30px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(2px);
+}
+
+.compass-svg {
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke: var(--tapa-light);
+  stroke-width: 1.5;
+  opacity: 0.6;
+  transition: opacity var(--transition-fast);
+}
+
+.compass-svg:hover {
+  opacity: 0.9;
+}
+
+.compass-outer-circle { stroke: var(--tapa-mid); stroke-width: 3; stroke-dasharray: 4 4; }
+.compass-middle-circle { stroke: var(--tapa-light); stroke-width: 1; }
+.compass-inner-circle { stroke: var(--star-gold); stroke-width: 2; }
+.compass-core-circle { fill: rgba(139, 94, 60, 0.2); stroke: var(--tapa-dark); }
+
+.compass-line {
+  stroke: rgba(212, 165, 116, 0.4);
+  stroke-width: 1;
+  stroke-dasharray: 2 4;
+}
+
+/* Compass Labels */
+.compass-label {
+  position: absolute;
+  text-align: center;
+  transform-origin: center;
+  transition: all var(--transition-fast);
+  pointer-events: none;
+}
+
+.label-polynesian {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  color: var(--star-gold);
+  text-shadow: 0 0 8px rgba(244, 208, 63, 0.5);
+  letter-spacing: 0.1em;
+  font-weight: 700;
+}
+
+.label-english {
+  display: block;
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  color: var(--bio-teal);
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  margin-top: 2px;
+  opacity: 0.8;
+}
+
+.compass-north { top: -45px; left: 50%; transform: translateX(-50%); }
+.compass-south { bottom: -45px; left: 50%; transform: translateX(-50%); }
+.compass-east { right: -60px; top: 50%; transform: translateY(-50%); }
+.compass-west { left: -60px; top: 50%; transform: translateY(-50%); }
+
+/* =========================================
+   6. CONSTELLATION OVERLAY & SVG
+   ========================================= */
+.constellation-overlay {
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 90%;
+  height: 90%;
+  transform: translate(-50%, -50%);
+  z-index: 20;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 1s ease;
+}
+
+.constellation-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.constellation-lines path {
+  stroke: url(#lineGradient);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-dasharray: 4 4;
+  animation: dash-flow 20s linear infinite;
+  opacity: 0.6;
+  transition: stroke-width 0.3s ease, opacity 0.3s ease;
+}
+
+.constellation-lines path:hover {
+  stroke-width: 3;
+  opacity: 1;
+}
+
+.constellation-nodes circle {
+  fill: var(--star-white);
+  stroke: var(--star-gold);
+  stroke-width: 1;
+  cursor: pointer;
+  transition: r 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), filter 0.3s ease;
+  filter: drop-shadow(0 0 4px var(--star-gold));
+}
+
+.constellation-nodes circle:hover {
+  r: 8;
+  fill: var(--bio-teal);
+  stroke: var(--bio-cyan);
+  filter: drop-shadow(0 0 12px var(--bio-teal));
+}
+
+/* =========================================
+   7. ISLAND CHAINS
+   ========================================= */
+.island-chain {
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  z-index: 15;
+  pointer-events: none;
+}
+
+.island {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  cursor: pointer;
+  pointer-events: auto;
+  transition: all var(--transition-smooth);
+  opacity: 0.8;
+}
+
+.island:hover {
+  transform: translate(-50%, -50%) scale(1.2);
+  opacity: 1;
+}
+
+.island-marker {
+  width: 16px;
+  height: 16px;
+  background: var(--wood-carved);
+  border: 2px solid var(--tapa-light);
+  border-radius: 50%;
+  position: relative;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  transition: all 0.4s ease;
+}
+
+.island-marker::after {
+  content: '';
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 6px; height: 6px;
+  background: var(--star-gold);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 8px var(--star-gold);
+}
+
+.island:hover .island-marker {
+  border-color: var(--bio-teal);
+  box-shadow: 0 0 20px rgba(0, 245, 212, 0.4);
+}
+
+.island:hover .island-marker::after {
+  background: var(--bio-teal);
+  box-shadow: 0 0 12px var(--bio-teal);
+}
+
+.island-label {
+  position: absolute;
+  top: 20px; left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  color: var(--star-white);
+  white-space: nowrap;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+  opacity: 0.9;
+}
+
+.island-zenith {
+  position: absolute;
+  top: 40px; left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-body);
+  font-size: 0.7rem;
+  color: var(--tapa-light);
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.4s ease, top 0.4s ease;
+}
+
+.island:hover .island-zenith {
+  opacity: 1;
+  top: 45px;
+}
+
+/* Island Positions (Approximate for visual balance) */
+.is-hawaii { top: 25%; left: 30%; }
+.is-maui { top: 35%; left: 35%; }
+.is-oahu { top: 40%; left: 25%; }
+.is-kauai { top: 20%; left: 20%; }
+.is-tahiti { top: 65%; left: 55%; }
+.is-marquesas { top: 55%; left: 75%; }
+.is-easter { top: 80%; left: 85%; }
+.is-samoa { top: 70%; left: 30%; }
+
+/* =========================================
+   8. OCEAN CURRENTS & SWELLS
+   ========================================= */
+.ocean-currents {
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  z-index: 5;
+  pointer-events: none;
+  opacity: 0.5;
+  transition: opacity var(--transition-smooth);
+}
+
+.ocean-currents.hidden { opacity: 0; }
+
+.current-indicator {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.current-label {
+  font-family: var(--font-body);
+  font-size: 0.65rem;
+  color: var(--bio-cyan);
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  margin-bottom: 8px;
+  opacity: 0.8;
+}
+
+.current-arrow {
+  width: 60px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--bio-cyan), transparent);
+  position: relative;
+  overflow: hidden;
+}
+
+.current-arrow::before {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%; width: 100%; height: 100%;
+  background: linear-gradient(90deg, transparent, var(--star-white), transparent);
+  animation: current-flow 3s infinite linear;
+}
+
+.current-north-equatorial { top: 20%; left: 15%; transform: rotate(5deg); }
+.current-south-equatorial { top: 75%; left: 20%; transform: rotate(-5deg); }
+.current-equatorial-counter { top: 50%; left: 40%; transform: rotate(10deg); }
+
+/* =========================================
+   9. STAR PATHS
+   ========================================= */
+.star-paths {
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  z-index: 12;
+  pointer-events: none;
+  opacity: 0.7;
+  transition: opacity var(--transition-smooth);
+}
+
+.star-paths.hidden { opacity: 0; }
+
+.star-path {
+  position: absolute;
+  display: flex;
+  align-items: center;
+}
+
+.path-line {
+  width: 120px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--star-gold));
+  position: relative;
+}
+
+.path-line::after {
+  content: '✦';
+  position: absolute;
+  right: -10px; top: -8px;
+  color: var(--star-gold);
+  font-size: 0.8rem;
+  animation: twinkle 3s infinite;
+}
+
+.path-star-marker {
+  display: flex;
+  flex-direction: column;
+  margin-left: 10px;
+}
+
+.star-name {
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  color: var(--star-gold);
+}
+
+.star-western {
+  font-family: var(--font-body);
+  font-size: 0.65rem;
+  color: #888;
+  font-style: italic;
+}
+
+.path-arcturus { top: 15%; right: 10%; transform: rotate(15deg); }
+.path-orion { top: 30%; right: 5%; transform: rotate(45deg); }
+.path-scorpius { bottom: 25%; right: 15%; transform: rotate(-20deg); }
+.path-sirius { bottom: 40%; right: 25%; transform: rotate(-50deg); }
+
+/* =========================================
+   10. NAVIGATION MARKERS
+   ========================================= */
+.navigation-markers {
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  z-index: 30;
+  pointer-events: none;
+  display: none;
+}
+
+.navigation-markers.active {
+  display: block;
+}
+
+.nav-marker {
+  position: absolute;
+  background: rgba(42, 26, 16, 0.9);
+  border: 1px solid var(--tapa-mid);
+  border-radius: 8px;
+  padding: 12px;
+  width: 160px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+  pointer-events: auto;
+  cursor: pointer;
+  transform: translateY(0);
+  transition: all var(--transition-fast);
+}
+
+.nav-marker:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--glow-spread);
+  border-color: var(--bio-teal);
+}
+
+.marker-icon {
+  width: 100%;
+  height: 6px;
+  background: linear-gradient(90deg, var(--tapa-dark), var(--tapa-light));
+  border-radius: 3px;
+  margin-bottom: 8px;
+}
+
+.marker-info h3 {
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  color: var(--star-gold);
+  margin-bottom: 4px;
+}
+
+.marker-declination, .marker-significance {
+  font-family: var(--font-body);
+  font-size: 0.7rem;
+  color: #aaa;
+  line-height: 1.4;
+}
+
+.marker-declination { color: var(--bio-cyan); font-weight: 600; }
+
+.marker-hokulea { top: 20%; left: 10%; }
+.marker-hikianalia { top: 35%; left: 5%; }
+.marker-a-a { bottom: 20%; right: 10%; }
+.marker-nanahoe { top: 10%; right: 15%; }
+
+/* =========================================
+   11. INFO PANEL & LEGEND
+   ========================================= */
+.info-panel {
+  position: fixed;
+  top: var(--border-width);
+  right: var(--border-width);
+  width: var(--panel-width);
+  height: calc(100vh - (var(--border-width) * 2));
+  background: linear-gradient(135deg, rgba(10, 25, 49, 0.95) 0%, rgba(20, 43, 80, 0.9) 100%);
+  border: 1px solid rgba(212, 165, 116, 0.4);
+  border-radius: 4px;
+  padding: 30px;
+  z-index: 40;
+  box-shadow: -5px 0 30px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(10px);
+  overflow-y: auto;
+  transform: translateX(calc(100% + 20px));
+  transition: transform var(--transition-smooth);
+}
+
+.info-panel.open {
+  transform: translateX(0);
+}
+
+.panel-header {
+  text-align: center;
+  margin-bottom: 25px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid rgba(212, 165, 116, 0.3);
+}
+
+.panel-title {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  color: var(--star-gold);
+  letter-spacing: 0.05em;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+  margin-bottom: 8px;
+}
+
+.panel-subtitle {
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  color: var(--bio-teal);
+  font-style: italic;
+  opacity: 0.9;
+}
+
+.panel-section {
+  margin-bottom: 25px;
+}
+
+.section-title {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  color: var(--tapa-light);
+  margin-bottom: 10px;
+  border-left: 3px solid var(--star-gold);
+  padding-left: 10px;
+}
+
+.section-text {
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: #ccc;
+}
+
+.section-text em {
+  color: var(--bio-cyan);
+  font-style: normal;
+}
+
+.panel-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 30px;
+}
+
+.control-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(135deg, var(--wood-dark) 0%, var(--wood-carved) 100%);
+  border: 1px solid var(--tapa-mid);
+  color: var(--tapa-light);
+  padding: 14px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  letter-spacing: 0.05em;
+  transition: all var(--transition-fast);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+}
+
+.control-btn:hover {
+  background: linear-gradient(135deg, var(--wood-carved) 0%, var(--wood-highlight) 100%);
+  border-color: var(--bio-teal);
+  transform: translateX(4px);
+  box-shadow: 0 0 15px rgba(0, 245, 212, 0.2);
+}
+
+.control-btn:active {
+  transform: translateX(2px);
+}
+
+.btn-icon {
+  font-size: 1.2rem;
+  color: var(--star-gold);
+}
+
+/* Star Legend */
+.star-legend {
+  position: fixed;
+  bottom: var(--border-width);
+  left: var(--border-width);
+  background: rgba(10, 25, 49, 0.9);
+  border: 1px solid rgba(212, 165, 116, 0.4);
+  padding: 20px;
+  border-radius: 4px;
+  z-index: 40;
+  box-shadow: 5px 5px 20px rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
+}
+
+.legend-title {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  color: var(--star-gold);
+  margin-bottom: 12px;
+  border-bottom: 1px solid rgba(212, 165, 116, 0.3);
+  padding-bottom: 8px;
+}
+
+.legend-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.legend-star {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  box-shadow: 0 0 6px currentColor;
+}
+
+.star-hokulea { background: #ffcc00; color: #ffcc00; }
+.star-hikianalia { background: #ffffff; color: #ffffff; }
+.star-nanahoe { background: #89cff0; color: #89cff0; }
+.star-makau { background: #ff6b6b; color: #ff6b6b; }
+.star-aaa { background: #a0c4ff; color: #a0c4ff; }
+
+.legend-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.legend-name {
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+  color: var(--tapa-light);
+}
+
+.legend-western {
+  font-family: var(--font-body);
+  font-size: 0.65rem;
+  color: #888;
+  font-style: italic;
+}
+
+/* =========================================
+   12. TOOLTIP
+   ========================================= */
+.tooltip {
+  position: fixed;
+  background: rgba(10, 25, 49, 0.95);
+  border: 1px solid var(--bio-teal);
+  padding: 12px 16px;
+  border-radius: 4px;
+  pointer-events: none;
+  z-index: 200;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  box-shadow: 0 0 20px rgba(0, 245, 212, 0.3);
+  backdrop-filter: blur(6px);
+  max-width: 250px;
+}
+
+.tooltip.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.tooltip-title {
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  color: var(--star-gold);
+  margin-bottom: 4px;
+}
+
+.tooltip-description {
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  color: #ddd;
+  line-height: 1.4;
+}
+
+/* =========================================
+   13. LOADING SCREEN
+   ========================================= */
+.loading-screen {
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: var(--ocean-deep);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  transition: opacity 1s ease, visibility 1s ease;
+}
+
+.loading-screen.fade-out {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.loading-tiki-container {
+  margin-bottom: 30px;
+  width: 100px;
+  height: 120px;
+  animation: tiki-float 3s infinite ease-in-out;
+}
+
+.loading-tiki-svg {
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke: var(--tapa-light);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 15px rgba(212, 165, 116, 0.4));
+}
+
+.tiki-outline {
+  stroke: var(--tapa-mid);
+  stroke-width: 2.5;
+  fill: var(--wood-dark);
+}
+
+.tiki-loading-eye {
+  fill: var(--star-gold);
+  stroke: var(--tapa-dark);
+  stroke-width: 1;
+  animation: tiki-pulse 1.5s infinite alternate;
+}
+
+.tiki-loading-mouth, .tiki-loading-pattern {
+  stroke: var(--tapa-dark);
+  stroke-width: 1.5;
+}
+
+.loading-text {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  color: var(--star-gold);
+  letter-spacing: 0.15em;
+  margin-bottom: 20px;
+  text-shadow: 0 0 8px rgba(244, 208, 63, 0.5);
+}
+
+.loading-progress {
+  width: 200px;
+  height: 4px;
+  background: var(--wood-dark);
+  border-radius: 2px;
+  overflow: hidden;
+  border: 1px solid var(--tapa-dark);
+}
+
+.loading-bar {
+  width: 0%;
+  height: 100%;
+  background: linear-gradient(90deg, var(--bio-teal), var(--star-gold));
+  transition: width 0.3s ease;
+  box-shadow: 0 0 10px var(--bio-teal);
+}
+
+/* =========================================
+   14. ANIMATIONS & KEYFRAMES
+   ========================================= */
+@keyframes tiki-pulse {
+  0% { filter: drop-shadow(0 0 2px var(--star-gold)); }
+  100% { filter: drop-shadow(0 0 10px var(--star-gold)); transform: scale(1.1); }
+}
+
+@keyframes tiki-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes current-flow {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+@keyframes dash-flow {
+  to { stroke-dashoffset: -100; }
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0.6; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.2); }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--wood-dark); }
+::-webkit-scrollbar-thumb { background: var(--tapa-mid); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--tapa-light); }
+
+/* Responsive Adjustments */
+@media (max-width: 1200px) {
+  :root {
+    --border-width: 80px;
+    --panel-width: 280px;
+  }
+  .star-compass { width: 450px; height: 450px; }
+  .island-label { font-size: 0.75rem; }
+}
+
+@media (max-width: 900px) {
+  :root { --border-width: 60px; }
+  .info-panel { width: 90vw; right: 5vw; top: 70px; height: auto; max-height: 70vh; }
+  .star-legend { left: 5vw; bottom: 70px; width: 90vw; }
+  .tiki-corner { width: 100px; height: 100px; }
+}

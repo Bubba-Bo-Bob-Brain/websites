@@ -1,0 +1,901 @@
+/* =========================================
+   BIOSYNC // Medical Telemetry HUD v4.7.2
+   ========================================= */
+
+:root {
+    /* Core Palette - Biopunk Clinical */
+    --bg-dark: #030603;
+    --bg-panel: #080f08;
+    --bg-card: #0c150c;
+    --border-color: #1a2f1a;
+    
+    /* Primary: Toxic Bio-Green */
+    --primary-glow: #00ff66;
+    --primary-dim: #004d1f;
+    --primary-bg: rgba(0, 255, 102, 0.05);
+    
+    /* Warning: Amber/Orange */
+    --warning-color: #ffaa00;
+    --warning-bg: rgba(255, 170, 0, 0.1);
+    --warning-border: #664400;
+    
+    /* Critical: Neon Red/Pink */
+    --critical-color: #ff2244;
+    --critical-bg: rgba(255, 34, 68, 0.15);
+    --critical-border: #660d1b;
+    
+    /* Stable: Cyan */
+    --stable-color: #00ccff;
+    --stable-bg: rgba(0, 204, 255, 0.05);
+    --stable-border: #004d66;
+    
+    /* Unstable: Electric Purple */
+    --unstable-color: #aa00ff;
+    --unstable-bg: rgba(170, 0, 255, 0.05);
+    --unstable-border: #440066;
+    
+    /* System */
+    --scan-color: rgba(0, 255, 102, 0.6);
+    --grid-color: #1a2f1a;
+    --heartbeat-color: #00ff66;
+    
+    /* Typography */
+    --font-display: 'Orbitron', sans-serif;
+    --font-data: 'Share Tech Mono', monospace;
+    --font-notes: 'Special Elite', cursive;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: var(--bg-dark);
+    color: var(--primary-glow);
+    font-family: var(--font-data);
+    overflow: hidden;
+    width: 100vw;
+    height: 100vh;
+    position: relative;
+}
+
+/* =========================================
+   OVERLAYS & EFFECTS
+   ========================================= */
+
+.scanline-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0, 0, 0, 0.15) 2px,
+        rgba(0, 0, 0, 0.15) 4px
+    );
+    pointer-events: none;
+    z-index: 1000;
+    animation: scanlineShift 0.1s linear infinite;
+}
+
+@keyframes scanlineShift {
+    0% { background-position: 0 0; }
+    100% { background-position: 0 4px; }
+}
+
+.vignette-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: radial-gradient(circle at center, transparent 50%, rgba(0, 0, 0, 0.8) 100%);
+    pointer-events: none;
+    z-index: 999;
+}
+
+.organic-grid {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: -1;
+}
+
+/* Heartbeat Baseline */
+.heartbeat-baseline {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 60px;
+    z-index: 10;
+    opacity: 0.6;
+}
+
+#ecg-line {
+    stroke-dasharray: 1920 60;
+    stroke-dashoffset: 1920;
+    animation: ecgPulse 2s linear infinite;
+}
+
+@keyframes ecgPulse {
+    0% { stroke-dashoffset: 1920; }
+    100% { stroke-dashoffset: 0; }
+}
+
+/* =========================================
+   MAIN LAYOUT GRID
+   ========================================= */
+
+.hud-container {
+    display: grid;
+    grid-template-columns: 340px 1fr 340px;
+    grid-template-rows: 60px 1fr 220px;
+    grid-template-areas:
+        "header header header"
+        "organs center telemetry"
+        "footer footer footer";
+    height: 100vh;
+    padding: 10px;
+    gap: 12px;
+    position: relative;
+    z-index: 5;
+}
+
+/* =========================================
+   HEADER
+   ========================================= */
+
+.hud-header {
+    grid-area: header;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--bg-panel);
+    border: 1px solid var(--border-color);
+    padding: 0 20px;
+    font-family: var(--font-display);
+    position: relative;
+    overflow: hidden;
+}
+
+.hud-header::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0;
+    width: 100%; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--primary-glow), transparent);
+    opacity: 0.5;
+}
+
+.header-left, .header-right {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.classification-tag, .session-id {
+    font-size: 10px;
+    color: var(--warning-color);
+    letter-spacing: 1.5px;
+}
+
+.system-id, .timestamp {
+    font-size: 14px;
+    color: var(--primary-glow);
+    text-shadow: 0 0 5px var(--primary-glow);
+}
+
+.header-center {
+    text-align: center;
+}
+
+.hud-title {
+    font-size: 18px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    text-shadow: 0 0 10px var(--primary-glow);
+    margin-bottom: 2px;
+}
+
+.scan-status {
+    font-size: 11px;
+    color: var(--critical-color);
+    animation: blink 1.2s step-end infinite;
+    letter-spacing: 1px;
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+}
+
+/* =========================================
+   PANELS & COMMON STYLES
+   ========================================= */
+
+.hud-panel {
+    background: var(--bg-panel);
+    border: 1px solid var(--border-color);
+    padding: 12px;
+    overflow-y: auto;
+    position: relative;
+    box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+}
+
+.hud-panel::-webkit-scrollbar { width: 4px; }
+.hud-panel::-webkit-scrollbar-track { background: #0a120a; }
+.hud-panel::-webkit-scrollbar-thumb { background: var(--primary-dim); border-radius: 2px; }
+
+.panel-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 6px;
+}
+
+.panel-icon {
+    font-size: 16px;
+    color: var(--warning-color);
+    filter: drop-shadow(0 0 3px var(--warning-color));
+}
+
+.panel-header h2 {
+    font-family: var(--font-display);
+    font-size: 13px;
+    letter-spacing: 2px;
+    flex-grow: 1;
+    color: #ccffdd;
+}
+
+.panel-indicator {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--primary-dim);
+}
+
+.panel-indicator.warning { background: var(--warning-color); box-shadow: 0 0 5px var(--warning-color); }
+.panel-indicator.danger { background: var(--critical-color); box-shadow: 0 0 6px var(--critical-color); animation: pulseDanger 1s infinite; }
+.panel-indicator.active { background: var(--stable-color); box-shadow: 0 0 5px var(--stable-color); }
+
+@keyframes pulseDanger {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+}
+
+/* =========================================
+   ORGAN STATUS PANEL (LEFT)
+   ========================================= */
+
+.organ-status-panel {
+    grid-area: organs;
+}
+
+.organ-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.organ-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    padding: 12px;
+    position: relative;
+    animation: breathe 4s ease-in-out infinite;
+}
+
+.organ-card::after {
+    content: '';
+    position: absolute;
+    top: -1px; left: -1px;
+    width: 12px; height: 12px;
+    border-top: 2px solid var(--primary-glow);
+    border-left: 2px solid var(--primary-glow);
+}
+
+@keyframes breathe {
+    0%, 100% { transform: scale(1); border-color: var(--border-color); }
+    50% { transform: scale(1.005); border-color: var(--primary-dim); }
+}
+
+.organ-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.organ-icon {
+    width: 22px; height: 22px;
+    fill: var(--primary-glow);
+}
+
+.organ-name {
+    font-family: var(--font-display);
+    font-size: 12px;
+    letter-spacing: 1px;
+    flex-grow: 1;
+}
+
+.organ-status {
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 2px;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+}
+
+.organ-status.critical { background: var(--critical-bg); color: var(--critical-color); border: 1px solid var(--critical-border); }
+.organ-status.degraded { background: var(--warning-bg); color: var(--warning-color); border: 1px solid var(--warning-border); }
+.organ-status.stable { background: var(--stable-bg); color: var(--stable-color); border: 1px solid var(--stable-border); }
+.organ-status.unstable { background: var(--unstable-bg); color: var(--unstable-color); border: 1px solid var(--unstable-border); }
+
+.organ-metrics {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.metric {
+    text-align: center;
+    font-size: 11px;
+}
+
+.metric-label {
+    display: block;
+    font-size: 9px;
+    color: #668866;
+    margin-bottom: 3px;
+    letter-spacing: 0.5px;
+}
+
+.metric-value {
+    display: block;
+    font-size: 13px;
+    color: var(--primary-glow);
+    text-shadow: 0 0 4px var(--primary-dim);
+}
+
+.organ-bar {
+    height: 4px;
+    background: #1a2f1a;
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 5px;
+}
+
+.bar-fill {
+    height: 100%;
+    border-radius: 2px;
+    box-shadow: 0 0 5px currentColor;
+}
+
+.bar-fill.critical { background: var(--critical-color); }
+.bar-fill.degraded { background: var(--warning-color); }
+.bar-fill.stable { background: var(--stable-color); }
+.bar-fill.unstable { background: var(--unstable-color); }
+
+.bar-label {
+    font-size: 9px;
+    color: #668866;
+    display: block;
+    text-align: right;
+}
+
+/* =========================================
+   CENTER - BODY WIREFRAME
+   ========================================= */
+
+.hud-center {
+    grid-area: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    border: 1px dashed var(--border-color);
+    background: radial-gradient(circle at center, rgba(0, 255, 102, 0.03) 0%, transparent 60%);
+}
+
+.body-container {
+    position: relative;
+    height: 92%;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.body-wireframe {
+    height: 100%;
+    filter: drop-shadow(0 0 8px var(--primary-glow));
+}
+
+.scan-beam {
+    animation: scanDown 4s linear infinite;
+}
+
+@keyframes scanDown {
+    0% { transform: translateY(50px); opacity: 0; }
+    10% { opacity: 0.8; }
+    90% { opacity: 0.8; }
+    100% { transform: translateY(700px); opacity: 0; }
+}
+
+.hotspot {
+    cursor: pointer;
+    transition: opacity 0.3s;
+}
+
+.hotspot:hover {
+    opacity: 0.9 !important;
+}
+
+.critical-pulse {
+    animation: criticalPulse 1s infinite;
+}
+
+@keyframes criticalPulse {
+    0%, 100% { r: 4; opacity: 1; }
+    50% { r: 7; opacity: 0.5; }
+}
+
+.hotspot-ring {
+    animation: ringPulse 2s infinite;
+    transform-origin: center;
+}
+
+@keyframes ringPulse {
+    0% { r: 8; opacity: 0.5; stroke-width: 1; }
+    100% { r: 20; opacity: 0; stroke-width: 0; }
+}
+
+.data-label {
+    font-size: 10px;
+    font-weight: bold;
+}
+
+/* =========================================
+   TELEMETRY PANEL (RIGHT)
+   ========================================= */
+
+.telemetry-panel {
+    grid-area: telemetry;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.panel-section {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    padding: 12px;
+    position: relative;
+}
+
+.panel-section::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: linear-gradient(135deg, transparent 90%, var(--primary-glow) 100%);
+    opacity: 0.1;
+    pointer-events: none;
+}
+
+.mutation-tracker {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.mutation-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.mutation-label {
+    font-size: 10px;
+    width: 110px;
+    color: #88aa88;
+    letter-spacing: 0.5px;
+}
+
+.mutation-bar {
+    flex-grow: 1;
+    height: 6px;
+    background: #1a2f1a;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.mutation-fill {
+    height: 100%;
+    background: var(--primary-glow);
+    border-radius: 3px;
+    box-shadow: 0 0 4px currentColor;
+}
+
+.mutation-fill.warning { background: var(--warning-color); }
+.mutation-fill.stable { background: var(--stable-color); }
+.mutation-fill.critical { background: var(--critical-color); }
+
+.mutation-value {
+    font-size: 11px;
+    width: 45px;
+    text-align: right;
+    color: var(--primary-glow);
+}
+
+/* Gene Matrix */
+.gene-matrix {
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px dashed var(--border-color);
+}
+
+.subsection-title {
+    font-family: var(--font-display);
+    font-size: 11px;
+    color: var(--warning-color);
+    margin-bottom: 8px;
+    letter-spacing: 1px;
+}
+
+.matrix-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 5px;
+    margin-bottom: 8px;
+}
+
+.matrix-cell {
+    width: 100%;
+    aspect-ratio: 1;
+    border-radius: 2px;
+    opacity: 0.85;
+    box-shadow: 0 0 3px currentColor;
+}
+
+.matrix-cell.compatible { background: var(--stable-color); color: var(--stable-color); }
+.matrix-cell.incompatible { background: var(--critical-color); color: var(--critical-color); }
+.matrix-cell.unstable { background: var(--warning-color); color: var(--warning-color); }
+
+.matrix-legend {
+    display: flex;
+    justify-content: space-around;
+    font-size: 9px;
+    color: #668866;
+}
+
+.legend-dot {
+    display: inline-block;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    margin-right: 4px;
+    vertical-align: middle;
+}
+
+.legend-dot.compatible { background: var(--stable-color); box-shadow: 0 0 3px var(--stable-color); }
+.legend-dot.incompatible { background: var(--critical-color); box-shadow: 0 0 3px var(--critical-color); }
+.legend-dot.unstable { background: var(--warning-color); box-shadow: 0 0 3px var(--warning-color); }
+
+/* Nanomachine Section */
+.swarm-visualizer {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 10px;
+}
+
+.swarm-display {
+    width: 160px;
+    height: 160px;
+    border: 1px solid var(--border-color);
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(0, 255, 102, 0.05) 0%, transparent 70%);
+    position: relative;
+}
+
+.nano {
+    animation: nanoFloat 3s ease-in-out infinite;
+}
+
+.nano:nth-child(odd) { animation-duration: 3.5s; animation-delay: -1s; }
+.nano:nth-child(even) { animation-duration: 4.2s; animation-delay: -0.5s; }
+.nano:nth-child(3n) { animation-duration: 2.8s; animation-delay: -1.5s; }
+
+@keyframes nanoFloat {
+    0%, 100% { transform: translate(0, 0); }
+    25% { transform: translate(2px, -2px); }
+    50% { transform: translate(-1px, -3px); }
+    75% { transform: translate(1px, -1px); }
+}
+
+.swarm-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    font-size: 10px;
+}
+
+.stat-row {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.stat-label { color: #668866; letter-spacing: 0.5px; }
+.stat-value { color: var(--primary-glow); font-weight: bold; }
+
+/* Toxin Section */
+.toxin-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.toxin-item {
+    background: var(--bg-dark);
+    padding: 8px;
+    border-radius: 3px;
+    border-left: 3px solid var(--critical-color);
+}
+
+.toxin-item.warning { border-left-color: var(--warning-color); }
+.toxin-item.elevated { border-left-color: var(--warning-color); }
+.toxin-item.nominal { border-left-color: var(--stable-color); }
+
+.toxin-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    margin-bottom: 5px;
+}
+
+.toxin-name { color: #88aa88; letter-spacing: 0.5px; }
+.toxin-level { font-weight: bold; letter-spacing: 0.5px; }
+
+.toxin-level.lethal { color: var(--critical-color); }
+.toxin-level.elevated { color: var(--warning-color); }
+.toxin-level.nominal { color: var(--stable-color); }
+
+.toxin-bar {
+    height: 4px;
+    background: #1a2f1a;
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.toxin-fill {
+    height: 100%;
+    background: var(--critical-color);
+    box-shadow: 0 0 5px var(--critical-color);
+}
+
+.toxin-fill.warning { background: var(--warning-color); box-shadow: 0 0 5px var(--warning-color); }
+.toxin-fill.elevated { background: var(--warning-color); }
+.toxin-fill.nominal { background: var(--stable-color); box-shadow: 0 0 5px var(--stable-color); }
+
+/* =========================================
+   FOOTER
+   ========================================= */
+
+.hud-footer {
+    grid-area: footer;
+    display: flex;
+    gap: 12px;
+    align-items: stretch;
+}
+
+.neural-link-section, .diagnostics-section, .log-section {
+    background: var(--bg-panel);
+    border: 1px solid var(--border-color);
+    padding: 12px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    box-shadow: inset 0 0 15px rgba(0,0,0,0.4);
+}
+
+.neural-metrics {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-grow: 1;
+}
+
+.neural-ring-container {
+    position: relative;
+    width: 90px;
+    height: 90px;
+}
+
+.neural-ring {
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+}
+
+.ring-progress {
+    transition: stroke-dashoffset 1s ease;
+    filter: drop-shadow(0 0 3px var(--primary-glow));
+}
+
+.ring-value {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: var(--font-display);
+    font-size: 20px;
+    color: var(--primary-glow);
+    text-shadow: 0 0 5px var(--primary-glow);
+}
+
+.neural-details {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex-grow: 1;
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    border-bottom: 1px solid #1a2f1a;
+    padding-bottom: 6px;
+}
+
+.detail-label { color: #668866; letter-spacing: 0.5px; }
+.detail-value { color: var(--primary-glow); font-weight: bold; }
+
+.diag-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    flex-grow: 1;
+}
+
+.diag-item {
+    background: var(--bg-card);
+    padding: 10px;
+    border-radius: 4px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border-color);
+}
+
+.diag-label { font-size: 9px; color: #668866; margin-bottom: 4px; letter-spacing: 1px; }
+.diag-value { font-size: 15px; color: var(--primary-glow); font-weight: bold; text-shadow: 0 0 4px var(--primary-dim); }
+
+/* Log Feed */
+.log-feed {
+    flex-grow: 1;
+    overflow-y: auto;
+    font-family: var(--font-notes);
+    font-size: 11px;
+    line-height: 1.5;
+    padding-right: 8px;
+    color: #88aa88;
+}
+
+.log-feed::-webkit-scrollbar { width: 4px; }
+.log-feed::-webkit-scrollbar-track { background: #0a120a; }
+.log-feed::-webkit-scrollbar-thumb { background: #1a2f1a; border-radius: 2px; }
+
+.log-entry {
+    margin-bottom: 5px;
+    border-bottom: 1px dotted #1a2f1a;
+    padding-bottom: 3px;
+}
+
+.log-time { color: #668866; margin-right: 6px; font-size: 10px; }
+.log-level { margin-right: 6px; font-weight: bold; font-size: 10px; }
+.log-level.critical { color: var(--critical-color); }
+.log-level.warning { color: var(--warning-color); }
+.log-level.info { color: var(--stable-color); }
+
+/* =========================================
+   PATIENT INFO OVERLAY
+   ========================================= */
+
+.patient-info {
+    position: fixed;
+    bottom: 240px;
+    left: 20px;
+    background: rgba(10, 18, 10, 0.95);
+    border: 1px solid var(--border-color);
+    padding: 12px;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    z-index: 20;
+    backdrop-filter: blur(8px);
+    transform: translateX(-120%);
+    transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+}
+
+.patient-info.visible {
+    transform: translateX(0);
+}
+
+.patient-avatar {
+    width: 60px;
+    height: 60px;
+    border: 1px solid var(--primary-glow);
+    border-radius: 50%;
+    padding: 3px;
+    background: #050805;
+}
+
+.patient-details {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.patient-name {
+    font-family: var(--font-display);
+    font-size: 14px;
+    color: var(--primary-glow);
+    letter-spacing: 1px;
+}
+
+.patient-id, .patient-status, .patient-clearance {
+    font-size: 10px;
+    color: #88aa88;
+    letter-spacing: 0.5px;
+}
+
+.status-critical {
+    color: var(--critical-color);
+    font-weight: bold;
+    animation: blink 1s step-end infinite;
+    text-shadow: 0 0 4px var(--critical-color);
+}
+
+/* =========================================
+   RESPONSIVE
+   ========================================= */
+
+@media (max-width: 1200px) {
+    .hud-container {
+        grid-template-columns: 280px 1fr 280px;
+    }
+}
+
+@media (max-width: 900px) {
+    .hud-container {
+        grid-template-columns: 1fr;
+        grid-template-rows: 60px auto auto auto auto;
+        grid-template-areas:
+            "header"
+            "organs"
+            "center"
+            "telemetry"
+            "footer";
+        overflow-y: auto;
+        height: auto;
+        min-height: 100vh;
+    }
+    
+    .hud-center {
+        height: 450px;
+    }
+    
+    .patient-info {
+        bottom: 10px;
+        left: 50%;
+        transform: translate(-50%, 150%);
+    }
+    
+    .patient-info.visible {
+        transform: translate(-50%, 0);
+    }
+}

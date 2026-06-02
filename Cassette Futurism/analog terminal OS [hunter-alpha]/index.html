@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OS/73 PROMETHEUS — Analog Computing System</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=VT323&family=Oxanium:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- CRT Screen Frame -->
+    <div class="crt-frame">
+        <div class="crt-bezel">
+            <div class="bezel-label">PROMETHEUS SYSTEMS — MODEL 7300</div>
+            <div class="bezel-indicators">
+                <div class="indicator-light power-light" id="powerLight">
+                    <span class="light-label">PWR</span>
+                </div>
+                <div class="indicator-light cpu-light" id="cpuLight">
+                    <span class="light-label">CPU</span>
+                </div>
+                <div class="indicator-light tape-light" id="tapeLight">
+                    <span class="light-label">TAPE</span>
+                </div>
+                <div class="indicator-light disc-light" id="discLight">
+                    <span class="light-label">DISC</span>
+                </div>
+            </div>
+        </div>
+        <div class="crt-screen" id="crtScreen">
+            <div class="crt-overlay"></div>
+            <div class="scanlines"></div>
+            <div class="phosphor-bloom"></div>
+            <div class="screen-content">
+                <!-- Top Status Bar -->
+                <header class="status-bar">
+                    <div class="status-left">
+                        <span class="system-name">◈ OS/73 PROMETHEUS v4.2.1</span>
+                        <span class="status-separator">│</span>
+                        <span class="user-label">OPERATOR: GUEST</span>
+                    </div>
+                    <div class="status-center">
+                        <div class="analog-clock" id="analogClock">
+                            <span class="clock-digits" id="clockDigits">00:00:00</span>
+                            <span class="clock-epoch" id="clockEpoch">UTC</span>
+                        </div>
+                    </div>
+                    <div class="status-right">
+                        <span class="mem-display">MEM: <span id="memUsage">02847</span>K</span>
+                        <span class="status-separator">│</span>
+                        <span class="load-display">LOAD: <span id="loadAvg">0.47</span></span>
+                    </div>
+                </header>
+
+                <!-- Main Interface Area -->
+                <main class="main-interface">
+                    <!-- Left Panel: Instrument Cluster -->
+                    <aside class="instrument-panel">
+                        <div class="panel-header">
+                            <span>◈ SYSTEM INSTRUMENTS</span>
+                        </div>
+
+                        <!-- VU Meter -->
+                        <div class="instrument vu-meter">
+                            <div class="instrument-label">CPU ACTIVITY</div>
+                            <div class="vu-display">
+                                <div class="vu-scale">
+                                    <div class="vu-bar" id="vuBar1"></div>
+                                    <div class="vu-bar" id="vuBar2"></div>
+                                    <div class="vu-bar" id="vuBar3"></div>
+                                    <div class="vu-bar" id="vuBar4"></div>
+                                    <div class="vu-bar" id="vuBar5"></div>
+                                    <div class="vu-bar" id="vuBar6"></div>
+                                    <div class="vu-bar" id="vuBar7"></div>
+                                    <div class="vu-bar" id="vuBar8"></div>
+                                </div>
+                                <div class="vu-labels">
+                                    <span>-20</span><span>-10</span><span>-7</span><span>-5</span><span>-3</span><span>0</span><span>+3</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Analog Gauge -->
+                        <div class="instrument analog-gauge">
+                            <div class="instrument-label">DISC I/O RATE</div>
+                            <div class="gauge-body">
+                                <svg viewBox="0 0 120 80" class="gauge-svg">
+                                    <path d="M 10 70 A 50 50 0 0 1 110 70" fill="none" stroke="var(--phosphor-dim)" stroke-width="2" stroke-dasharray="4,3"/>
+                                    <path d="M 10 70 A 50 50 0 0 1 110 70" fill="none" stroke="var(--phosphor-bright)" stroke-width="3" class="gauge-arc" id="gaugeArc"/>
+                                    <line x1="60" y1="70" x2="60" y2="25" stroke="var(--phosphor-bright)" stroke-width="2" class="gauge-needle" id="gaugeNeedle" transform-origin="60 70"/>
+                                    <circle cx="60" cy="70" r="5" fill="var(--phosphor-medium)"/>
+                                </svg>
+                                <div class="gauge-readout">
+                                    <span id="gaugeValue">0</span> KB/s
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Rotary Dial Navigation -->
+                        <div class="instrument rotary-nav">
+                            <div class="instrument-label">DIRECTORY SELECT</div>
+                            <div class="rotary-container">
+                                <div class="rotary-dial" id="rotaryDial">
+                                    <div class="rotary-notch" data-dir="0">/SYS</div>
+                                    <div class="rotary-notch" data-dir="1">/USR</div>
+                                    <div class="rotary-notch" data-dir="2">/DAT</div>
+                                    <div class="rotary-notch" data-dir="3">/BIN</div>
+                                    <div class="rotary-notch" data-dir="4">/LOG</div>
+                                    <div class="rotary-notch" data-dir="5">/TMP</div>
+                                    <div class="rotary-pointer" id="rotaryPointer"></div>
+                                    <div class="rotary-center"></div>
+                                </div>
+                                <div class="rotary-readout" id="rotaryReadout">/SYS</div>
+                            </div>
+                        </div>
+
+                        <!-- Toggle Switches -->
+                        <div class="instrument toggle-cluster">
+                            <div class="instrument-label">SYSTEM CONTROLS</div>
+                            <div class="toggle-row">
+                                <div class="toggle-switch" id="togglePhosphor" data-state="0">
+                                    <div class="toggle-label">PHOSPHOR</div>
+                                    <div class="toggle-body">
+                                        <div class="toggle-lever"></div>
+                                    </div>
+                                    <div class="toggle-states">
+                                        <span>AMB</span><span>GRN</span>
+                                    </div>
+                                </div>
+                                <div class="toggle-switch" id="toggleScanlines" data-state="1">
+                                    <div class="toggle-label">SCANLINE</div>
+                                    <div class="toggle-body">
+                                        <div class="toggle-lever"></div>
+                                    </div>
+                                    <div class="toggle-states">
+                                        <span>OFF</span><span>ON</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="toggle-row">
+                                <div class="toggle-switch" id="toggleBloom" data-state="1">
+                                    <div class="toggle-label">BLOOM</div>
+                                    <div class="toggle-body">
+                                        <div class="toggle-lever"></div>
+                                    </div>
+                                    <div class="toggle-states">
+                                        <span>OFF</span><span>ON</span>
+                                    </div>
+                                </div>
+                                <div class="toggle-switch" id="toggleCurvature" data-state="1">
+                                    <div class="toggle-label">CRT CURVE</div>
+                                    <div class="toggle-body">
+                                        <div class="toggle-lever"></div>
+                                    </div>
+                                    <div class="toggle-states">
+                                        <span>OFF</span><span>ON</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Mechanical Counter -->
+                        <div class="instrument mech-counter">
+                            <div class="instrument-label">FILES ACCESSED</div>
+                            <div class="counter-display" id="fileCounter">
+                                <div class="counter-digit" data-digit="0">0</div>
+                                <div class="counter-digit" data-digit="0">0</div>
+                                <div class="counter-digit" data-digit="0">0</div>
+                                <div class="counter-digit" data-digit="0">0</div>
+                                <div class="counter-digit" data-digit="0">0</div>
+                            </div>
+                        </div>
+                    </aside>
+
+                    <!-- Center: File Manager -->
+                    <section class="file-manager">
+                        <div class="fm-header">
+                            <div class="fm-title">
+                                <span class="fm-icon">◫</span>
+                                ANALOG FILE MANAGER — <span id="currentPath">/SYS</span>
+                            </div>
+                            <div class="fm-controls">
+                                <button class="fm-btn" id="btnParent" title="Parent Directory">▲ UP</button>
+                                <button class="fm-btn" id="btnRefresh" title="Refresh">⟳ REF</button>
+                                <button class="fm-btn" id="btnSort" title="Sort">↕ SORT</button>
+                            </div>
+                        </div>
+
+                        <!-- Tape Reel Visualization -->
+                        <div class="tape-reel-container" id="tapeReelContainer">
+                            <div class="tape-reel left-reel">
+                                <div class="reel-hub"></div>
+                                <div class="reel-tape"></div>
+                                <div class="reel-spokes">
+                                    <div class="spoke"></div>
+                                    <div class="spoke"></div>
+                                    <div class="spoke"></div>
+                                    <div class="spoke"></div>
+                                    <div class="spoke"></div>
+                                    <div class="spoke"></div>
+                                </div>
+                            </div>
+                            <div class="tape-path">
+                                <div class="tape-strip" id="tapeStrip"></div>
+                                <div class="tape-head">
+                                    <div class="head-label">READ/WRITE</div>
+                                </div>
+                            </div>
+                            <div class="tape-reel right-reel">
+                                <div class="reel-hub"></div>
+                                <div class="reel-tape"></div>
+                                <div class="reel-spokes">
+                                    <div class="spoke"></div>
+                                    <div class="spoke"></div>
+                                    <div class="spoke"></div>
+                                    <div class="spoke"></div>
+                                    <div class="spoke"></div>
+                                    <div class="spoke"></div>
+                                </div>
+                            </div>
+                            <div class="tape-status" id="tapeStatus">STANDBY</div>
+                        </div>
+
+                        <!-- File Listing -->
+                        <div class="file-listing" id="fileListing">
+                            <div class="listing-header">
+                                <span class="col-icon">TYPE</span>
+                                <span class="col-name">FILE DESIGNATION</span>
+                                <span class="col-size">SIZE</span>
+                                <span class="col-date">DATE STAMP</span>
+                                <span class="col-perm">ACCESS</span>
+                            </div>
+                            <div class="listing-body" id="listingBody">
+                                <!-- Files populated by JS -->
+                            </div>
+                        </div>
+
+                        <!-- Cassette Seek Bar -->
+                        <div class="cassette-seek">
+                            <div class="seek-label">◄◄ REW</div>
+                            <div class="seek-track">
+                                <div class="seek-progress" id="seekProgress"></div>
+                                <div class="seek-head" id="seekHead"></div>
+                                <div class="seek-markers">
+                                    <span></span><span></span><span></span><span></span><span></span>
+                                    <span></span><span></span><span></span><span></span><span></span>
+                                </div>
+                            </div>
+                            <div class="seek-label">FWD ►►</div>
+                            <div class="seek-counter" id="seekCounter">0000</div>
+                        </div>
+
+                        <!-- Action Bar -->
+                        <div class="action-bar">
+                            <button class="action-btn" id="btnOpen">
+                                <span class="btn-indicator"></span>OPEN
+                            </button>
+                            <button class="action-btn" id="btnCopy">
+                                <span class="btn-indicator"></span>COPY
+                            </button>
+                            <button class="action-btn" id="btnMove">
+                                <span class="btn-indicator"></span>MOVE
+                            </button>
+                            <button class="action-btn" id="btnDelete">
+                                <span class="btn-indicator"></span>DELETE
+                            </button>
+                            <button class="action-btn" id="btnInfo">
+                                <span class="btn-indicator"></span>INFO
+                            </button>
+                        </div>
+                    </section>
+
+                    <!-- Right Panel: Info & Controls -->
+                    <aside class="info-panel">
+                        <div class="panel-header">
+                            <span>◈ SYSTEM STATUS</span>
+                        </div>
+
+                        <!-- Storage Gauge -->
+                        <div class="instrument storage-gauge">
+                            <div class="instrument-label">STORAGE CAPACITY</div>
+                            <div class="storage-visual">
+                                <div class="storage-bar-container">
+                                    <div class="storage-bar" id="storageBar">
+                                        <div class="storage-fill" id="storageFill"></div>
+                                    </div>
+                                    <div class="storage-markers">
+                                        <span>0%</span><span>25%</span><span>50%</span><span>75%</span><span>100%</span>
+                                    </div>
+                                </div>
+                                <div class="storage-readout">
+                                    <div class="storage-used">USED: <span id="storageUsed">47.3</span> MB</div>
+                                    <div class="storage-total">TOTAL: <span id="storageTotal">120.0</span> MB</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Selected File Info -->
+                        <div class="instrument file-info-panel">
+                            <div class="instrument-label">SELECTED FILE DATA</div>
+                            <div class="file-data-display" id="fileDataDisplay">
+                                <div class="data-row">
+                                    <span class="data-key">NAME:</span>
+                                    <span class="data-val" id="infoName">—</span>
+                                </div>
+                                <div class="data-row">
+                                    <span class="data-key">TYPE:</span>
+                                    <span class="data-val" id="infoType">—</span>
+                                </div>
+                                <div class="data-row">
+                                    <span class="data-key">SIZE:</span>
+                                    <span class="data-val" id="infoSize">—</span>
+                                </div>
+                                <div class="data-row">
+                                    <span class="data-key">CREATED:</span>
+                                    <span class="data-val" id="infoCreated">—</span>
+                                </div>
+                                <div class="data-row">
+                                    <span class="data-key">MODIFIED:</span>
+                                    <span class="data-val" id="infoModified">—</span>
+                                </div>
+                                <div class="data-row">
+                                    <span class="data-key">PERMS:</span>
+                                    <span class="data-val" id="infoPerms">—</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Process List -->
+                        <div class="instrument process-list">
+                            <div class="instrument-label">ACTIVE PROCESSES</div>
+                            <div class="process-entries" id="processEntries">
+                                <div class="process-entry">
+                                    <span class="proc-pid">0001</span>
+                                    <span class="proc-name">KERNEL.SYS</span>
+                                    <span class="proc-state running">RUN</span>
+                                </div>
+                                <div class="process-entry">
+                                    <span class="proc-pid">0014</span>
+                                    <span class="proc-name">FILEMGR.EXE</span>
+                                    <span class="proc-state running">RUN</span>
+                                </div>
+                                <div class="process-entry">
+                                    <span class="proc-pid">0023</span>
+                                    <span class="proc-name">TAPECTL.DRV</span>
+                                    <span class="proc-state idle">IDLE</span>
+                                </div>
+                                <div class="process-entry">
+                                    <span class="proc-pid">0031</span>
+                                    <span class="proc-name">CRTDISP.OUT</span>
+                                    <span class="proc-state running">RUN</span>
+                                </div>
+                                <div class="process-entry">
+                                    <span class="proc-pid">0047</span>
+                                    <span class="proc-name">LOGGING.SVC</span>
+                                    <span class="proc-state waiting">WAIT</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Quick Dials -->
+                        <div class="instrument quick-dials">
+                            <div class="instrument-label">QUICK ACTIONS</div>
+                            <div class="dial-buttons">
+                                <button class="dial-btn" id="btnSysInfo">SYS<br>INFO</button>
+                                <button class="dial-btn" id="btnBackup">BACK<br>UP</button>
+                                <button class="dial-btn" id="btnFormat">FOR<br>MAT</button>
+                                <button class="dial-btn" id="btnReboot">RE<br>BOOT</button>
+                            </div>
+                        </div>
+                    </aside>
+                </main>
+
+                <!-- Ticker Tape Console -->
+                <footer class="ticker-console">
+                    <div class="console-header">
+                        <span class="console-icon">▪</span>
+                        <span>SYSTEM LOG — TICKER OUTPUT</span>
+                        <div class="console-controls">
+                            <button class="console-btn" id="btnClearLog">CLR</button>
+                            <button class="console-btn" id="btnPauseLog">⏸</button>
+                        </div>
+                    </div>
+                    <div class="ticker-tape" id="tickerTape">
+                        <div class="ticker-content" id="tickerContent">
+                            <!-- Log entries populated by JS -->
+                        </div>
+                    </div>
+                    <div class="ticker-teeth">
+                        <!-- Sprocket holes -->
+                    </div>
+                </footer>
+            </div>
+        </div>
+        <div class="crt-bottom-bezel">
+            <div class="bezel-branding">PROMETHEUS ANALOG COMPUTING DIVISION — EST. 1971</div>
+            <div class="bezel-knobs">
+                <div class="knob brightness-knob" id="brightnessKnob" title="Brightness">
+                    <div class="knob-indicator"></div>
+                    <span class="knob-label">BRT</span>
+                </div>
+                <div class="knob contrast-knob" id="contrastKnob" title="Contrast">
+                    <div class="knob-indicator"></div>
+                    <span class="knob-label">CON</span>
+                </div>
+                <div class="knob focus-knob" id="focusKnob" title="Focus">
+                    <div class="knob-indicator"></div>
+                    <span class="knob-label">FCS</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Startup Overlay -->
+    <div class="startup-overlay" id="startupOverlay">
+        <div class="startup-screen">
+            <pre class="boot-text" id="bootText"></pre>
+            <div class="boot-progress">
+                <div class="boot-progress-bar" id="bootProgressBar"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Dialog -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal-dialog" id="modalDialog">
+            <div class="modal-header">
+                <span class="modal-title" id="modalTitle">SYSTEM DIALOG</span>
+                <button class="modal-close" id="modalClose">✕</button>
+            </div>
+            <div class="modal-body" id="modalBody">
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn" id="modalConfirm">CONFIRM</button>
+                <button class="modal-btn" id="modalCancel">CANCEL</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="scripts.js"></script>
+</body>
+</html>

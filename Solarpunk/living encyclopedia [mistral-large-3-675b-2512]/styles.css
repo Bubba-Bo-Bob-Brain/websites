@@ -1,0 +1,689 @@
+/* ===== BASE STYLES & VARIABLES ===== */
+:root {
+  /* Dawn Theme (Default) */
+  --color-bg: #f5f3e8;
+  --color-text: #3a3a2c;
+  --color-primary: #6a994e;
+  --color-secondary: #a7c957;
+  --color-accent: #f2e8cf;
+  --color-border: #c9ada7;
+  --color-shadow: rgba(0, 0, 0, 0.1);
+  --font-display: 'Playfair Display', serif;
+  --font-body: 'Epilogue', sans-serif;
+  --font-mono: 'Space Mono', monospace;
+  --sunlight-intensity: 0; /* 0 (dawn) to 100 (dusk) */
+  --loading-progress: 0%;
+  --grain-opacity: 0.05;
+}
+
+/* Midday Theme */
+[data-theme="midday"] {
+  --color-bg: #f0f7e8;
+  --color-text: #2a3a1a;
+  --color-primary: #4f772d;
+  --color-secondary: #90a955;
+  --color-accent: #e9f5db;
+  --color-border: #8a9a5b;
+  --grain-opacity: 0.08;
+}
+
+/* Dusk Theme */
+[data-theme="dusk"] {
+  --color-bg: #1e2a18;
+  --color-text: #e9f5db;
+  --color-primary: #a7c957;
+  --color-secondary: #6a994e;
+  --color-accent: #2a3a1a;
+  --color-border: #5a7c42;
+  --grain-opacity: 0.12;
+}
+
+/* Grain Texture Overlay */
+body::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><filter id="noise"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(%23noise)"/></svg>');
+  opacity: var(--grain-opacity);
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* Typography */
+body {
+  font-family: var(--font-body);
+  color: var(--color-text);
+  line-height: 1.6;
+  margin: 0;
+  padding: 0;
+  background-color: var(--color-bg);
+  transition: background-color 0.5s ease, color 0.5s ease;
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  line-height: 1.2;
+}
+
+h1 { font-size: 2.5rem; }
+h2 { font-size: 2rem; }
+h3 { font-size: 1.5rem; }
+h4 { font-size: 1.25rem; }
+
+code, pre {
+  font-family: var(--font-mono);
+  background-color: rgba(106, 153, 78, 0.1);
+  border-radius: 0.25rem;
+  padding: 0.1rem 0.3rem;
+}
+
+a {
+  color: var(--color-primary);
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+a:hover {
+  color: var(--color-secondary);
+}
+
+/* ===== LAYOUT ===== */
+.app-container {
+  display: grid;
+  grid-template-columns: 250px 1fr;
+  min-height: 100vh;
+}
+
+.sidebar {
+  background-color: rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(10px);
+  border-right: 1px solid var(--color-border);
+  padding: 1.5rem 1rem;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+.main-content {
+  padding: 2rem;
+}
+
+.wiki-content {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+/* ===== SUNLIGHT METER ===== */
+.sunlight-meter {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 50px;
+  background: linear-gradient(to right,
+    #ff9d76 0%,
+    #fec574 25%,
+    #a7c957 50%,
+    #6a994e 75%,
+    #1e2a18 100%
+  );
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  padding: 0 1rem;
+  box-shadow: 0 2px 5px var(--color-shadow);
+}
+
+.sunlight-slider {
+  width: 100%;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 2px;
+  position: relative;
+  cursor: pointer;
+}
+
+.sunlight-track {
+  position: relative;
+  height: 100%;
+}
+
+.sunlight-handle {
+  width: 16px;
+  height: 16px;
+  background: white;
+  border: 2px solid var(--color-primary);
+  border-radius: 50%;
+  position: absolute;
+  top: -6px;
+  left: 0;
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.3);
+  transition: transform 0.3s ease;
+}
+
+.label {
+  position: absolute;
+  top: -25px;
+  font-size: 0.75rem;
+  color: var(--color-text);
+  opacity: 0.7;
+}
+
+.label.dawn { left: 0; }
+.label.midday { left: 50%; transform: translateX(-50%); }
+.label.dusk { right: 0; }
+
+.theme-toggle {
+  background: none;
+  border: none;
+  color: var(--color-text);
+  cursor: pointer;
+  margin-left: 1rem;
+  opacity: 0.7;
+  transition: opacity 0.3s ease;
+}
+
+.theme-toggle:hover {
+  opacity: 1;
+}
+
+/* ===== VINE NAVIGATION ===== */
+.vine-nav {
+  position: relative;
+  padding-left: 1rem;
+}
+
+.vine-stem {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: linear-gradient(to bottom, transparent, var(--color-primary), transparent);
+}
+
+.vine-stem::before {
+  content: "";
+  position: absolute;
+  left: -3px;
+  top: 0;
+  width: 8px;
+  height: 8px;
+  border: 2px solid var(--color-primary);
+  border-radius: 50%;
+  background: var(--color-bg);
+}
+
+.vine-leaf {
+  position: relative;
+  margin-bottom: 1rem;
+  padding-left: 1.5rem;
+}
+
+.vine-leaf::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 15px;
+  height: 2px;
+  background: var(--color-primary);
+  transform: translateY(-50%);
+}
+
+.vine-leaf::after {
+  content: "";
+  position: absolute;
+  left: 13px;
+  top: 50%;
+  width: 0;
+  height: 0;
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+  border-left: 8px solid var(--color-primary);
+  transform: translateY(-50%);
+}
+
+.vine-leaf.active::after {
+  border-left-color: var(--color-secondary);
+}
+
+.vine-leaf a {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+  color: var(--color-text);
+  font-weight: 500;
+}
+
+.vine-leaf.active a {
+  color: var(--color-secondary);
+}
+
+.leaf-icon {
+  font-size: 1.25rem;
+}
+
+/* ===== SEED BANK INDEX ===== */
+.seed-bank-index {
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.index-title {
+  font-family: var(--font-display);
+  margin-bottom: 1rem;
+  color: var(--color-primary);
+}
+
+.index-filters {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.filter-btn {
+  background: none;
+  border: 1px solid var(--color-border);
+  border-radius: 20px;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.filter-btn:hover {
+  background: var(--color-accent);
+}
+
+.filter-btn.active {
+  background: var(--color-primary);
+  color: white;
+  border-color: var(--color-primary);
+}
+
+.index-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.index-item {
+  padding: 0.5rem;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+}
+
+.index-item:hover {
+  background: var(--color-accent);
+}
+
+/* ===== LOADING INDICATOR ===== */
+.loading-indicator {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: 100px;
+  height: 100px;
+  transform: translate(-50%, -50%);
+  z-index: 1000;
+}
+
+.petal {
+  position: absolute;
+  width: 40px;
+  height: 60px;
+  background: var(--color-primary);
+  border-radius: 50% 50% 50% 0;
+  transform-origin: bottom center;
+  animation: bloom 2s infinite ease-in-out;
+}
+
+.petal-1 { transform: rotate(0deg) translateY(-30px); }
+.petal-2 { transform: rotate(72deg) translateY(-30px); animation-delay: 0.2s; }
+.petal-3 { transform: rotate(144deg) translateY(-30px); animation-delay: 0.4s; }
+.petal-4 { transform: rotate(216deg) translateY(-30px); animation-delay: 0.6s; }
+.petal-5 { transform: rotate(288deg) translateY(-30px); animation-delay: 0.8s; }
+
+.center {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  background: #ffc300;
+  border-radius: 50%;
+  top: 40px;
+  left: 40px;
+}
+
+@keyframes bloom {
+  0%, 100% { transform: rotate(0deg) translateY(-30px) scale(1); }
+  50% { transform: rotate(5deg) translateY(-25px) scale(1.1); }
+}
+
+/* ===== WIKI ARTICLES ===== */
+.wiki-title {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  color: var(--color-primary);
+}
+
+.wiki-intro {
+  font-size: 1.1rem;
+  color: var(--color-text);
+  margin-bottom: 2rem;
+  max-width: 600px;
+}
+
+.wiki-article {
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(5px);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 6px var(--color-shadow);
+}
+
+.featured-article {
+  border-left: 4px solid var(--color-secondary);
+}
+
+.article-header {
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.article-meta {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.85rem;
+  color: var(--color-text);
+  opacity: 0.7;
+  margin-top: 0.5rem;
+}
+
+.category-tag {
+  background: var(--color-secondary);
+  color: white;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+}
+
+.wiki-infobox {
+  float: right;
+  width: 250px;
+  margin: 0 0 1rem 1.5rem;
+  padding: 1rem;
+  background: linear-gradient(135deg, #f5f3e8, #e9f5db);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  box-shadow: 0 2px 4px var(--color-shadow);
+  position: relative;
+}
+
+.wiki-infobox.plant-fiber {
+  background: linear-gradient(135deg, #f5f3e8, #e9f5db);
+  border: 1px solid #a7c957;
+}
+
+.wiki-infobox::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image:
+    linear-gradient(45deg, transparent 40%, rgba(167, 201, 87, 0.1) 50%, transparent 60%),
+    linear-gradient(-45deg, transparent 40%, rgba(167, 201, 87, 0.1) 50%, transparent 60%);
+  background-size: 20px 20px;
+  border-radius: 8px;
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.wiki-infobox h3 {
+  margin-top: 0;
+  color: var(--color-primary);
+}
+
+.wiki-infobox img {
+  width: 100%;
+  border-radius: 4px;
+  margin: 0.5rem 0;
+}
+
+.wiki-infobox ul {
+  padding-left: 1rem;
+  margin: 0.5rem 0;
+}
+
+.article-references {
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.article-references h4 {
+  color: var(--color-primary);
+}
+
+.article-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.contribute-btn {
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.contribute-btn:hover {
+  background: var(--color-secondary);
+}
+
+.article-tags {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.tag {
+  background: var(--color-accent);
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+}
+
+/* ===== ECOSYSTEM VISUALIZATION ===== */
+.ecosystem-visualization {
+  background: rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(5px);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin: 2rem 0;
+  text-align: center;
+}
+
+#ecosystemCanvas {
+  width: 100%;
+  height: 300px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  margin: 1rem 0;
+}
+
+/* ===== CONTRIBUTE SECTION ===== */
+.contribute-editor {
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(5px);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 1.5rem;
+}
+
+.editor-tabs {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.tab-btn {
+  background: none;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.tab-btn.active {
+  border-bottom-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.tab-panel {
+  display: none;
+}
+
+.tab-panel.active {
+  display: block;
+}
+
+.markdown-editor {
+  width: 100%;
+  min-height: 200px;
+  padding: 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  font-family: var(--font-mono);
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.editor-help {
+  margin-top: 1rem;
+  font-size: 0.85rem;
+  color: var(--color-text);
+  opacity: 0.7;
+}
+
+.editor-help pre {
+  background: rgba(106, 153, 78, 0.1);
+  padding: 0.5rem;
+  border-radius: 4px;
+  overflow-x: auto;
+}
+
+.markdown-preview {
+  padding: 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background: white;
+}
+
+.submit-btn {
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 0.75rem 1.5rem;
+  margin-top: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.submit-btn:hover {
+  background: var(--color-secondary);
+}
+
+/* ===== FOOTER ===== */
+.wiki-footer {
+  grid-column: 1 / -1;
+  background: var(--color-primary);
+  color: white;
+  padding: 2rem;
+  text-align: center;
+}
+
+.footer-content {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.footer-links {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  margin-top: 1rem;
+}
+
+.footer-links a {
+  color: white;
+  opacity: 0.8;
+}
+
+.footer-links a:hover {
+  opacity: 1;
+}
+
+.footer-moss {
+  margin-top: 2rem;
+  height: 50px;
+  background: repeating-linear-gradient(
+    45deg,
+    rgba(255, 255, 255, 0.1),
+    rgba(255, 255, 255, 0.1) 10px,
+    transparent 10px,
+    transparent 20px
+  );
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+@media (max-width: 768px) {
+  .app-container {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    position: relative;
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .main-content {
+    padding: 1rem;
+  }
+
+  .wiki-content {
+    max-width: 100%;
+  }
+
+  .wiki-infobox {
+    float: none;
+    width: 100%;
+    margin: 0 0 1rem 0;
+  }
+}

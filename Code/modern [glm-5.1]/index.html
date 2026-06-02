@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEXUS — Source Code Command Center</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="scanline-overlay"></div>
+    <div class="grid-overlay"></div>
+
+    <nav class="topbar">
+        <div class="topbar-left">
+            <div class="logo">
+                <span class="logo-bracket">{</span>
+                <span class="logo-text">NEXUS</span>
+                <span class="logo-bracket">}</span>
+            </div>
+            <div class="topbar-search">
+                <svg class="search-icon" viewBox="0 0 16 16" width="16" height="16"><path d="M11.5 7a4.499 4.499 0 11-8.998 0A4.499 4.499 0 0111.5 7zm-.82 4.74a6 6 0 111.06-1.06l3.04 3.04-1.06 1.06-3.04-3.04z" fill="currentColor"/></svg>
+                <input type="text" placeholder="Search repositories, commits, users..." class="search-input" id="globalSearch">
+                <kbd class="search-kbd">/</kbd>
+            </div>
+        </div>
+        <div class="topbar-right">
+            <button class="topbar-icon-btn" id="notifBtn" aria-label="Notifications">
+                <svg viewBox="0 0 16 16" width="18" height="18"><path d="M8 16a2 2 0 002-2H6a2 2 0 002 2zm6-5V7a6 6 0 10-12 0v4H2v1h12v-1h-1zm-1-4v4H3V7a5 5 0 0110 0z" fill="currentColor"/></svg>
+                <span class="notif-dot"></span>
+            </button>
+            <button class="topbar-icon-btn" aria-label="Create new">
+                <svg viewBox="0 0 16 16" width="18" height="18"><path d="M7.75 2a.75.75 0 01.75.75V7h4.25a.75.75 0 010 1.5H8.5v4.25a.75.75 0 01-1.5 0V8.5H2.75a.75.75 0 010-1.5H7V2.75A.75.75 0 017.75 2z" fill="currentColor"/></svg>
+            </button>
+            <div class="avatar-wrapper" id="avatarBtn">
+                <img src="https://picsum.photos/seed/devuser/32/32.jpg" alt="User avatar" class="avatar">
+                <span class="avatar-status"></span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="app-layout">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-section">
+                <h3 class="sidebar-heading">Repository</h3>
+                <div class="repo-selector" id="repoSelector">
+                    <span class="repo-owner">nexus-core</span>
+                    <span class="repo-divider">/</span>
+                    <span class="repo-name">sentinel-engine</span>
+                    <svg class="repo-chevron" viewBox="0 0 16 16" width="14" height="14"><path d="M4.427 7.427l3.396 3.396a.25.25 0 00.354 0l3.396-3.396A.25.25 0 0011.396 7H4.604a.25.25 0 00-.177.427z" fill="currentColor"/></svg>
+                </div>
+                <div class="repo-meta">
+                    <span class="visibility-badge">
+                        <svg viewBox="0 0 16 16" width="12" height="12"><path d="M8 1.5a6.5 6.5 0 100 13 6.5 6.5 0 000-13zM0 8a8 8 0 1116 0A8 8 0 010 8z" fill="currentColor"/><path d="M8 5.5a1.5 1.5 0 100 3 1.5 1.5 0 000-3zM5 7a3 3 0 116 0 3 3 0 01-6 0z" fill="currentColor"/></svg>
+                        Public
+                    </span>
+                    <span class="repo-stat">
+                        <svg viewBox="0 0 16 16" width="12" height="12"><path d="M8 .25a.75.75 0 01.673.418l1.882 3.815 4.21.612a.75.75 0 01.416 1.279l-3.046 2.97.719 4.192a.75.75 0 01-1.088.791L8 12.347l-3.766 1.98a.75.75 0 01-1.088-.79l.72-4.194L.818 6.374a.75.75 0 01.416-1.28l4.21-.611L7.327.668A.75.75 0 018 .25z" fill="currentColor"/></svg>
+                        2.4k
+                    </span>
+                    <span class="repo-stat">
+                        <svg viewBox="0 0 16 16" width="12" height="12"><path d="M5 5.372v.878c0 .414-.336.75-.75.75H3.75a.75.75 0 01-.75-.75v-.878a2.25 2.25 0 011.5-2.122V2.25a.25.25 0 01.25-.25h4.5a.25.25 0 01.25.25v1.122a2.25 2.25 0 011.5 2.122v.878c0 .414-.336.75-.75.75h-.5a.75.75 0 01-.75-.75v-.878a.75.75 0 00-.75-.75h-2.5a.75.75 0 00-.75.75z" fill="currentColor"/></svg>
+                        847
+                    </span>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <h3 class="sidebar-heading">Branch</h3>
+                <div class="branch-selector" id="branchSelector">
+                    <svg viewBox="0 0 16 16" width="14" height="14"><path d="M11.75 2.5a.75.75 0 100 1.5.75.75 0 000-1.5zm-2.25.75a2.25 2.25 0 113 2.122V6A2.5 2.5 0 0110 8.5H6a1 1 0 00-1 1v1.128a2.25 2.25 0 11-1.5 0V5.372a2.25 2.25 0 111.5 0v1.006c.29-.078.546-.227.75-.428A2 2 0 018.5 5h1.5a2.5 2.5 0 012.5 2.5v.878a2.25 2.25 0 11-1.5 0V7.5a1 1 0 00-1-1H9.25a3.5 3.5 0 01-.75-.09v.87a2.25 2.25 0 11-1.5 0V5.372a2.25 2.25 0 01-.75-.428V3.372a2.25 2.25 0 011.5-2.122z" fill="currentColor"/></svg>
+                    <span>main</span>
+                    <svg class="repo-chevron" viewBox="0 0 16 16" width="14" height="14"><path d="M4.427 7.427l3.396 3.396a.25.25 0 00.354 0l3.396-3.396A.25.25 0 0011.396 7H4.604a.25.25 0 00-.177.427z" fill="currentColor"/></svg>
+                </div>
+                <div class="branch-list" id="branchList">
+                    <div class="branch-item active" data-branch="main">
+                        <span class="branch-dot"></span> main
+                        <span class="branch-badge">default</span>
+                    </div>
+                    <div class="branch-item" data-branch="develop">
+                        <span class="branch-dot"></span> develop
+                    </div>
+                    <div class="branch-item" data-branch="feature/auth-v2">
+                        <span class="branch-dot"></span> feature/auth-v2
+                    </div>
+                    <div class="branch-item" data-branch="feature/pipeline-optim">
+                        <span class="branch-dot"></span> feature/pipeline-optim
+                    </div>
+                    <div class="branch-item" data-branch="hotfix/memory-leak">
+                        <span class="branch-dot"></span> hotfix/memory-leak
+                    </div>
+                    <div class="branch-item" data-branch="release/3.2.0">
+                        <span class="branch-dot"></span> release/3.2.0
+                    </div>
+                    <button class="branch-more" id="branchMore">View all 24 branches →</button>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <h3 class="sidebar-heading">File Explorer</h3>
+                <div class="file-tree" id="fileTree">
+                    <div class="tree-item folder open" data-path="src">
+                        <svg class="tree-chevron" viewBox="0 0 16 16" width="12" height="12"><path d="M4.427 7.427l3.396 3.396a.25.25 0 00.354 0l3.396-3.396A.25.25 0 0011.396 7H4.604a.25.25 0 00-.177.427z" fill="currentColor"/></svg>
+                        <svg class="tree-folder" viewBox="0 0 16 16" width="14" height="14"><path d="M1.75 1A1.75 1.75 0 000 2.75v10.5C0 14.216.784 15 1.75 15h12.5A1.75 1.75 0 0016 13.25v-8.5A1.75 1.75 0 0014.25 3H7.5a.25.25 0 01-.2-.1l-.9-1.2C6.07 1.26 5.55 1 5 1H1.75z" fill="currentColor"/></svg>
+                        <span>src</span>
+                    </div>
+                    <div class="tree-children open">
+                        <div class="tree-item folder" data-path="src/core">
+                            <svg class="tree-chevron" viewBox="0 0 16 16" width="12" height="12"><path d="M4.427 7.427l3.396 3.396a.25.25 0 00.354 0l3.396-3.396A.25.25 0 0011.396 7H4.604a.25.25 0 00-.177.427z" fill="currentColor"/></svg>
+                            <svg class="tree-folder" viewBox="0 0 16 16" width="14" height="14"><path d="M1.75 1A1.75 1.75 0 000 2.75v10.5C0 14.216.784 15 1.75 15h12.5A1.75 1.75 0 0016 13.25v-8.5A1.75 1.75 0 0014.25 3H7.5a.25.25 0 01-.2-.1l-.9-1.2C6.07 1.26 5.55 1 5 1H1.75z" fill="currentColor"/></svg>
+                            <span>core</span>
+                        </div>
+                        <div class="tree-item folder" data-path="src/api">
+                            <svg class="tree-chevron" viewBox="0 0 16 16" width="12" height="12"><path d="M4.427 7.427l3.396 3.396a.25.25 0 00.354 0l3.396-3.396A.25.25 0 0011.396 7H4.604a.25.25 0 00-.177.427z" fill="currentColor"/></svg>
+                            <svg class="tree-folder" viewBox="0 0 16 16" width="14" height="14"><path d="M1.75 1A1.75 1.75 0 000 2.75v10.5C0 14.216.784 15 1.75 15h12.5A1.75 1.75 0 0016 13.25v-8.5A1.75 1.75 0 0014.25 3H7.5a.25.25 0 01-.2-.1l-.9-1.2C6.07 1.26 5.55 1 5 1H1.75z" fill="currentColor"/></svg>
+                            <span>api</span>
+                        </div>
+                        <div class="tree-item file" data-path="src/index.ts">
+                            <svg class="tree-file" viewBox="0 0 16 16" width="14" height="14"><path d="M3.75 1.5a.25.25 0 00-.25.25v12.5c0 .138.112.25.25.25h9.5a.25.25 0 00.25-.25V6h-2.75A1.75 1.75 0 019 4.25V1.5H3.75zm6.75.44l2.56 2.56h-2.31a.25.25 0 01-.25-.25V1.94z" fill="currentColor"/></svg>
+                            <span>index.ts</span>
+                        </div>
+                        <div class="tree-item file" data-path="src/sentinel.ts">
+                            <svg class="tree-file" viewBox="0 0 16 16" width="14" height="14"><path d="M3.75 1.5a.25.25 0 00-.25.25v12.5c0 .138.112.25.25.25h9.5a.25.25 0 00.25-.25V6h-2.75A1.75 1.75 0 019 4.25V1.5H3.75zm6.75.44l2.56 2.56h-2.31a.25.25 0 01-.25-.25V1.94z" fill="currentColor"/></svg>
+                            <span>sentinel.ts</span>
+                        </div>
+                    </div>
+                    <div class="tree-item folder" data-path="config">
+                        <svg class="tree-chevron" viewBox="0 0 16 16" width="12" height="12"><path d="M4.427 7.427l3.396 3.396a.25.25 0 00.354 0l3.396-3.396A.25.25 0 0011.396 7H4.604a.25.25 0 00-.177.427z" fill="currentColor"/></svg>
+                        <svg class="tree-folder" viewBox="0 0 16 16" width="14" height="14"><path d="M1.75 1A1.75 1.75 0 000 2.75v10.5C0 14.216.784 15 1.75 15h12.5A1.75 1.75 0 0016 13.25v-8.5A1.75 1.75 0 0014.25 3H7.5a.25.25 0 01-.2-.1l-.9-1.2C6.07 1.26 5.55 1 5 1H1.75z" fill="currentColor"/></svg>
+                        <span>config</span>
+                    </div>
+                    <div class="tree-item folder" data-path="tests">
+                        <svg class="tree-chevron" viewBox="0 0 16 16" width="12" height="12"><path d="M4.427 7.427l3.396 3.396a.25.25 0 00.354 0l3.396-3.396A.25.25 0 0011.396 7H4.604a.25.25 0 00-.177.427z" fill="currentColor"/></svg>
+                        <svg class="tree-folder" viewBox="0 0 16 16" width="14" height="14"><path d="M1.75 1A1.75 1.75 0 000 2.75v10.5C0 14.216.784 15 1.75 15h12.5A1.75 1.75 0 0016 13.25v-8.5A1.75 1.75 0 0014.25 3H7.5a.25.25 0 01-.2-.1l-.9-1.2C6.07 1.26 5.55 1 5 1H1.75z" fill="currentColor"/></svg>
+                        <span>tests</span>
+                    </div>
+                    <div class="tree-item file" data-path=".gitignore">
+                        <svg class="tree-file" viewBox="0 0 16 16" width="14" height="14"><path d="M3.75 1.5a.25.25 0 00-.25.25v12.5c0 .138.112.25.25.25h9.5a.25.25 0 00.25-.25V6h-2.75A1.75 1.75 0 019 4.25V1.5H3.75zm6.75.44l2.56 2.56h-2.31a.25.25 0 01-.25-.25V1.94z" fill="currentColor"/></svg>
+                        <span>.gitignore</span>
+                    </div>
+                    <div class="tree-item file" data-path="package.json">
+                        <svg class="tree-file" viewBox="0 0 16 16" width="14" height="14"><path d="M3.75 1.5a.25.25 0 00-.25.25v12.5c0 .138.112.25.25.25h9.5a.25.25 0 00.25-.25V6h-2.75A1.75 1.75 0 019 4.25V1.5H3.75zm6.75.44l2.56 2.56h-2.31a.25.25 0 01-.25-.25V1.94z" fill="currentColor"/></svg>
+                        <span>package.json</span>
+                    </div>
+                    <div class="tree-item file active" data-path="README.md">
+                        <svg class="tree-file" viewBox="0 0 16 16" width="14" height="14"><path d="M3.75 1.5a.25.25 0 00-.25.25v12.5c0 .138.112.25.25.25h9.5a.25.25 0 00.25-.25V6h-2.75A1.75 1.75 0 019 4.25V1.5H3.75zm6.75.44l2.56 2.56h-2.31a.25.25 0 01-.25-.25V1.94z" fill="currentColor"/></svg>
+                        <span>README.md</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <h3 class="sidebar-heading">Tags</h3>
+                <div class="tag-list">
+                    <span class="tag">v3.1.8 <span class="tag-latest">latest</span></span>
+                    <span class="tag">v3.1.7</span>
+                    <span class="tag">v3.0.0</span>
+                    <span class="tag">v2.9.4</span>
+                </div>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div class="tab-bar" id="tabBar">
+                <button class="tab active" data-tab="code">
+                    <svg viewBox="0 0 16 16" width="14" height="14"><path d="M2 1.75C2 .784 2.784 0 3.75 0h6.586c.464 0 .909.184 1.237.513l2.914 2.914c.329.328.513.773.513 1.237v9.586A1.75 1.75 0 0113.25 16h-9.5A1.75 1.75 0 012 14.25V1.75z" fill="currentColor"/></svg>
+                    Code
+                </button>
+                <button class="tab" data-tab="commits">
+                    <svg viewBox="0 0 16 16" width="14" height="14"><path d="M1.5 3.25a2.25 2.25 0 113 2.122v5.256a2.25 2.25 0 11-1.5 0V5.372a2.25 2.25 0 01-1.5-2.122zm4.5.75a.75.75 0 01.75-.75h6.5a.75.75 0 010 1.5h-6.5a.75.75 0 01-.75-.75zm.75 2.25a.75.75 0 000 1.5h6.5a.75.75 0 000-1.5h-6.5z" fill="currentColor"/></svg>
+                    Commits
+                    <span class="tab-count">128</span>
+                </button>
+                <button class="tab" data-tab="merge-requests">
+                    <svg viewBox="0 0 16 16" width="14" height="14"><path d="M1.5 3.25a2.25 2.25 0 113 2.122v5.256a2.25 2.25 0 11-1.5 0V5.372A2.25 2.25 0 011.5 3.25zm5.677-.177L9.573.677A.25.25 0 0110 .854V2.5h1A2.5 2.5 0 0113.5 5v5.628a2.25 2.25 0 11-1.5 0V5a1 1 0 00-1-1h-1v1.646a.25.25 0 01-.427.177L7.177 3.427a.25.25 0 010-.354z" fill="currentColor"/></svg>
+                    Merge Requests
+                    <span class="tab-count highlight">4</span>
+                </button>
+                <button class="tab" data-tab="activity">
+                    <svg viewBox="0 0 16 16" width="14" height="14"><path d="M1.5 8a6.5 6.5 0 1113 0 6.5 6.5 0 01-13 0zM8 0a8 8 0 100 16A8 8 0 008 0zm.5 4.5a.5.5 0 00-1 0v3.376L5.37 9.46a.5.5 0 10.54.842l2.5-1.625A.5.5 0 008.5 8V4.5z" fill="currentColor"/></svg>
+                    Activity
+                </button>
+            </div>
+
+            <div class="tab-content active" id="tab-code">
+                <section class="code-header">
+                    <div class="code-header-left">
+                        <span class="last-commit">
+                            <img src="https://picsum.photos/seed/committer1/20/20.jpg" alt="" class="avatar-tiny">
+                            <strong>kai-voss</strong> committed 2 hours ago
+                        </span>
+                        <span class="commit-msg">refactor: optimize pipeline memory allocation</span>
+                    </div>
+                    <div class="code-header-right">
+                        <span class="file-count">24 files</span>
+                        <span class="line-count">8,412 lines</span>
+                    </div>
+                </section>
+
+                <section class="readme-section">
+                    <div class="readme-header">
+                        <svg viewBox="0 0 16 16" width="14" height="14"><path d="M3.75 1.5a.25.25 0 00-.25.25v12.5c0 .138.112.25.25.25h9.5a.25.25 0 00.25-.25V6h-2.75A1.75 1.75 0 019 4.25V1.5H3.75zm6.75.44l2.56 2.56h-2.31a.25.25 0 01-.25-.25V1.94z" fill="currentColor"/></svg>
+                        README.md
+                    </div>
+                    <div class="readme-body">
+                        <h1>Sentinel Engine</h1>
+                        <p class="readme-subtitle">High-performance distributed task orchestration framework for real-time data pipelines.</p>
+                        <div class="readme-badges">
+                            <span class="badge build-passing">✔ Build Passing</span>
+                            <span class="badge coverage">◉ 94% Coverage</span>
+                            <span class="badge version">⬡ v3.1.8</span>
+                            <span class="badge license">⚖ MIT License</span>
+                        </div>
+                        <h2>Overview</h2>
+                        <p>Sentinel Engine provides fault-tolerant, horizontally-scalable task scheduling with built-in observability. Designed for microservice architectures processing millions of events per second.</p>
+                        <div class="readme-code-block">
+                            <code>npm install @nexus-core/sentinel-engine</code>
+                        </div>
+                        <h2>Quick Start</h2>
+                        <div class="readme-code-block">
+                            <pre><span class="code-kw">import</span> { Sentinel } <span class="code-kw">from</span> <span class="code-str">'@nexus-core/sentinel-engine'</span>;
+
+<span class="code-kw">const</span> sentinel = <span class="code-kw">new</span> <span class="code-cls">Sentinel</span>({
+  cluster: <span class="code-str">'production-us-east'</span>,
+  workers: <span class="code-num">8</span>,
+  heartbeat: <span class="code-num">5000</span>,
+});
+
+sentinel.<span class="code-fn">on</span>(<span class="code-str">'task:complete'</span>, (result) => {
+  console.<span class="code-fn">log</span>(<span class="code-str">'Pipeline output:'</span>, result);
+});
+
+<span class="code-kw">await</span> sentinel.<span class="code-fn">start</span>();</pre>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <div class="tab-content" id="tab-commits">
+                <section class="commit-graph-section">
+                    <h2 class="section-title">
+                        <svg viewBox="0 0 16 16" width="16" height="16"><path d="M1.5 3.25a2.25 2.25 0 113 2.122v5.256a2.25 2.25 0 11-1.5 0V5.372a2.25 2.25 0 01-1.5-2.122zm4.5.75a.75.75 0 01.75-.75h6.5a.75.75 0 010 1.5h-6.5a.75.75 0 01-.75-.75zm.75 2.25a.75.75 0 000 1.5h6.5a.75.75 0 000-1.5h-6.5z" fill="currentColor"/></svg>
+                        Commit Graph
+                    </h2>
+                    <canvas id="commitGraph" width="800" height="300"></canvas>
+                </section>
+
+                <section class="commit-list-section">
+                    <div class="commit-list-header">
+                        <span>Recent commits on <strong>main</strong></span>
+                        <div class="commit-filter">
+                            <input type="text" placeholder="Filter commits..." class="filter-input" id="commitFilter">
+                        </div>
+                    </div>
+                    <div class="commit-list" id="commitList">
+                        <div class="commit-item" data-hash="a3f8d2e">
+                            <div class="commit-hash">a3f8d2e</div>
+                            <div class="commit-info">
+                                <div class="commit-message">refactor: optimize pipeline memory allocation</div>
+                                <div class="commit-meta">
+                                    <img src="https://picsum.photos/seed/committer1/20/20.jpg" alt="" class="avatar-tiny">
+                                    <span class="commit-author">kai-voss</span>
+                                    <span class="commit-time">2 hours ago</span>
+                                    <span class="commit-stats">
+                                        <span class="stat-add">+48</span>
+                                        <span class="stat-del">-12</span>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="commit-branches">
+                                <span class="branch-tag">main</span>
+                            </div>
+                        </div>
+                        <div class="commit-item" data-hash="b7c1e4f">
+                            <div class="commit-hash">b7c1e4f</div>
+                            <div class="commit-info">
+                                <div class="commit-message">feat: add WebSocket reconnection with exponential backoff</div>
+                                <div class="commit-meta">
+                                    <img src="https://picsum.photos/seed/committer2/20/20.jpg" alt="" class="avatar-tiny">
+                                    <span class="commit-author">sarah-chen</span>
+                                    <span class="commit-time">5 hours ago</span>
+                                    <span class="commit-stats">
+                                        <span class="stat-add">+124</span>
+                                        <span class="stat-del">-3</span>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="commit-branches"></div>
+                        </div>
+                        <div class="commit-item" data-hash="c9d2a5b">
+                            <div class="commit-hash">c9d2a5b</div>
+                            <div class="commit-info">
+                                <div class="commit-message">fix: resolve race condition in task dispatcher</div>
+                                <div class="commit-meta">
+                                    <img src="https://picsum.photos/seed/committer3/20/20.jpg" alt="" class="avatar-tiny">
+                                    <span class="commit-author">marco-ruiz</span>
+                                    <span class="commit-time">1 day ago</span>
+                                    <span class="commit-stats">
+                                        <span class="stat-add">+31</span>
+                                        <span class="stat-del">-18</span>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="commit-branches"></div>
+                        </div>
+                        <div class="commit-item" data-hash="e1f3c6d">
+                            <div class="commit-hash">e1f3c6d</div>
+                            <div class="commit-info">
+                                <div class="commit-message">docs: update API reference for v3.1.x</div>
+                                <div class="commit-meta">
+                                    <img src="https://picsum.photos/seed/committer4/20/20.jpg" alt="" class="avatar-tiny">
+                                    <span class="commit-author">anja-petrov</span>
+                                    <span class="commit-time">2 days ago</span>
+                                    <span class="commit-stats">
+                                        <span class="stat-add">+89</span>
+                                        <span class="stat-del">-22</span>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="commit-branches">
+                                <span class="branch-tag secondary">v3.1.8</span>
+                            </div>
+                        </div>
+                        <div class="commit-item" data-hash="f4a7d8e">
+                            <div class="commit-hash">f4a7d8e</div>
+                            <div class="commit-info">
+                                <div class="commit-message">perf: implement zero-copy serialization for event bus</div>
+                                <div class="commit-meta">
+                                    <img src="https://picsum.photos/seed/committer5/20/20.jpg" alt="" class="avatar-tiny">
+                                    <span class="commit-author">kai-voss</span>
+                                    <span class="commit-time">3 days ago</span>
+                                    <span class="commit-stats">
+                                        <span class="stat-add">+67</span>
+                                        <span class="stat-del">-41</span>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="commit-branches"></div>
+                        </div>
+                        <div class="commit-item" data-hash="g2b9e1c">
+                            <div class="commit-hash">g2b9e1c</div>
+                            <div class="commit-info">
+                                <div class="commit-message">feat: add distributed tracing with OpenTelemetry integration</div>
+                                <div class="commit-meta">
+                                    <img src="https://picsum.photos/seed/committer6/20/20.jpg" alt="" class="avatar-tiny">
+                                    <span class="commit-author">sarah-chen</span>
+                                    <span class="commit-time">4 days ago</span>
+                                    <span class="commit-stats">
+                                        <span class="stat-add">+203</span>
+                                        <span class="stat-del">-7</span>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="commit-branches"></div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <div class="tab-content" id="tab-merge-requests">
+                <section class="mr-section">
+                    <div class="mr-filters">
+                        <button class="mr-filter-btn active" data-filter="open">Open <span class="mr-count">4</span></button>
+                        <button class="mr-filter-btn" data-filter="merged">Merged <span class="mr-count">23</span></button>
+                        <button class="mr-filter-btn" data-filter="closed">Closed <span class="mr-count">7</span></button>
+                        <button class="mr-filter-btn" data-filter="all">All <span class="mr-count">34</span></button>
+                    </div>
+
+                    <div class="mr-list" id="mrList">
+                        <div class="mr-card" data-state="open" data-id="412">
+                            <div class="mr-status-indicator open"></div>
+                            <div class="mr-content">
+                                <div class="mr-title-row">
+                                    <h3 class="mr-title">feat: Implement adaptive load balancing algorithm</h3>
+                                    <span class="mr-number">!412</span>
+                                </div>
+                                <p class="mr-description">Replaces round-robin with weighted least-connections algorithm that adapts to worker capacity in real-time. Benchmarks show 34% throughput improvement under uneven load.</p>
+                                <div class="mr-meta-row">
+                                    <div class="mr-author">
+                                        <img src="https://picsum.photos/seed/mr-author1/20/20.jpg" alt="" class="avatar-tiny">
+                                        <span>sarah-chen</span>
+                                    </div>
+                                    <span class="mr-branch">
+                                        <svg viewBox="0 0 16 16" width="12" height="12"><path d="M11.75 2.5a.75.75 0 100 1.5.75.75 0 000-1.5zm-2.25.75a2.25 2.25 0 113 2.122V6A2.5 2.5 0 0110 8.5H6a1 1 0 00-1 1v1.128a2.25 2.25 0 11-1.5 0V5.372a2.25 2.25 0 111.5 0v1.006c.29-.078.546-.227.75-.428A2 2 0 018.5 5h1.5a2.5 2.5 0 012.5 2.5v.878a2.25 2.25 0 11-1.5 0V7.5a1 1 0 00-1-1H9.25a3.5 3.5 0 01-.75-.09v.87a2.25 2.25 0 11-1.5 0V5.372a2.25 2.25 0 01-.75-.428V3.372a2.25 2.25 0 011.5-2.122z" fill="currentColor"/></svg>
+                                        feature/adaptive-lb → main
+                                    </span>
+                                    <div class="mr-pipeline passing">
+                                        <svg viewBox="0 0 16 16" width="12" height="12"><path d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 010-1.06.75.75 0 011.06 0L6 10.94l6.72-6.72a.75.75 0 011.06 0z" fill="currentColor"/></svg>
+                                        Pipeline passing
+                                    </div>
+                                    <div class="mr-review-status">
+                                        <div class="review-avatars">
+                                            <img src="https://picsum.photos/seed/reviewer1/20/20.jpg" alt="" class="avatar-tiny approved">
+                                            <img src="https://picsum.photos/seed/reviewer2/20/20.jpg" alt="" class="avatar-tiny pending">
+                                        </div>
+                                        <span>1 approved, 1 pending</span>
+                                    </div>
+                                </div>
+                                <div class="mr-changes-stats">
+                                    <span class="changes-stat add">+487</span>
+                                    <span class="changes-stat del">-124</span>
+                                    <span class="changes-files">12 files changed</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mr-card" data-state="open" data-id="411">
+                            <div class="mr-status-indicator open"></div>
+                            <div class="mr-content">
+                                <div class="mr-title-row">
+                                    <h3 class="mr-title">fix: Resolve memory leak in long-running WebSocket connections</h3>
+                                    <span class="mr-number">!411</span>
+                                </div>
+                                <p class="mr-description">Adds proper cleanup for event listeners and intervals when connections close. Fixes the gradual memory growth observed in monitoring after 48+ hours of uptime.</p>
+                                <div class="mr-meta-row">
+                                    <div class="mr-author">
+                                        <img src="https://picsum.photos/seed/mr-author2/20/20.jpg" alt="" class="avatar-tiny">
+                                        <span>marco-ruiz</span>
+                                    </div>
+                                    <span class="mr-branch">
+                                        <svg viewBox="0 0 16 16" width="12" height="12"><path d="M11.75 2.5a.75.75 0 100 1.5.75.75 0 000-1.5zm-2.25.75a2.25 2.25 0 113 2.122V6A2.5 2.5 0 0110 8.5H6a1 1 0 00-1 1v1.128a2.25 2.25 0 11-1.5 0V5.372a2.25 2.25 0 111.5 0v1.006c.29-.078.546-.227.75-.428A2 2 0 018.5 5h1.5a2.5 2.5 0 012.5 2.5v.878a2.25 2.25 0 11-1.5 0V7.5a1 1 0 00-1-1H9.25a3.5 3.5 0 01-.75-.09v.87a2.25 2.25 0 11-1.5 0V5.372a2.25 2.25 0 01-.75-.428V3.372a2.25 2.25 0 011.5-2.122z" fill="currentColor"/></svg>
+                                        hotfix/memory-leak → main
+                                    </span>
+                                    <div class="mr-pipeline running">
+                                        <span class="pipeline-spinner"></span>
+                                        Pipeline running
+                                    </div>
+                                    <div class="mr-review-status">
+                                        <div class="review-avatars">
+                                            <img src="https://picsum.photos/seed/reviewer3/20/20.jpg" alt="" class="avatar-tiny approved">
+                                        </div>
+                                        <span>1 approved</span>
+                                    </div>
+                                </div>
+                                <div class="mr-changes-stats">
+                                    <span class="changes-stat add">+56</span>
+                                    <span class="changes-stat del">-23</span>
+                                    <span class="changes-files">4 files changed</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mr-card" data-state="open" data-id="410">
+                            <div class="mr-status-indicator open has-conflicts"></div>
+                            <div class="mr-content">
+                                <div class="mr-title-row">
+                                    <h3 class="mr-title">feat: Add Redis Sentinel support for HA cluster mode</h3>
+                                    <span class="mr-number">!410</span>
+                                    <span class="conflict-badge">⚠ Conflicts</span>
+                                </div>
+                                <p class="mr-description">Enables automatic Redis failover using Sentinel protocol. Supports multi-primary topology with configurable quorum thresholds.</p>
+                                <div class="mr-meta-row">
+                                    <div class="mr-author">
+                                        <img src="https://picsum.photos/seed/mr-author3/20/20.jpg" alt="" class="avatar-tiny">
+                                        <span>anja-petrov</span>
+                                    </div>
+                                    <span class="mr-branch">
+                                        <svg viewBox="0 0 16 16" width="12" height="12"><path d="M11.75 2.5a.75.75 0 100 1.5.75.75 0 000-1.5zm-2.25.75a2.25 2.25 0 113 2.122V6A2.5 2.5 0 0110 8.5H6a1 1 0 00-1 1v1.128a2.25 2.25 0 11-1.5 0V5.372a2.25 2.25 0 111.5 0v1.006c.29-.078.546-.227.75-.428A2 2 0 018.5 5h1.5a2.5 2.5 0 012.5 2.5v.878a2.25 2.25 0 11-1.5 0V7.5a1 1 0 00-1-1H9.25a3.5 3.5 0 01-.75-.09v.87a2.25 2.25 0 11-1.5 0V5.372a2.25 2.25 0 01-.75-.428V3.372a2.25 2.25 0 011.5-2.122z" fill="currentColor"/></svg>
+                                        feature/redis-sentinel → develop
+                                    </span>
+                                    <div class="mr-pipeline failed">
+                                        <svg viewBox="0 0 16 16" width="12" height="12"><path d="M3.72 3.72a.75.75 0 011.06 0L8 6.94l3.22-3.22a.75.75 0 111.06 1.06L9.06 8l3.22 3.22a.75.75 0 11-1.06 1.06L8 9.06l-3.22 3.22a.75.75 0 01-1.06-1.06L6.94 8 3.72 4.78a.75.75 0 010-1.06z" fill="currentColor"/></svg>
+                                        Pipeline failed
+                                    </div>
+                                    <div class="mr-review-status">
+                                        <div class="review-avatars">
+                                            <img src="https://picsum.photos/seed/reviewer4/20/20.jpg" alt="" class="avatar-tiny changes-requested">
+                                            <img src="https://picsum.photos/seed/reviewer5/20/20.jpg" alt="" class="avatar-tiny pending">
+                                        </div>
+                                        <span>Changes requested</span>
+                                    </div>
+                                </div>
+                                <div class="mr-changes-stats">
+                                    <span class="changes-stat add">+312</span>
+                                    <span class="changes-stat del">-45</span>
+                                    <span class="changes-files">18 files changed</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mr-card" data-state="open" data-id="409">
+                            <div class="mr-status-indicator open"></div>
+                            <div class="mr-content">
+                                <div class="mr-title-row">
+                                    <h3 class="mr-title">feat: Authentication v2 with OAuth 2.1 and PKCE</h3>
+                                    <span class="mr-number">!409</span>
+                                    <span class="draft-badge">Draft</span>
+                                </div>
+                                <p class="mr-description">Implements the new auth flow with PKCE for public clients. Includes token rotation, revocation endpoint, and backward-compatible session migration.</p>
+                                <div class="mr-meta-row">
+                                    <div class="mr-author">
+                                        <img src="https://picsum.photos/seed/mr-author4/20/20.jpg" alt="" class="avatar-tiny">
+                                        <span>kai-voss</span>
+                                    </div>
+                                    <span class="mr-branch">
+                                        <svg viewBox="0 0 16 16" width="12" height="12"><path d="M11.75 2.5a.75.75 0 100 1.5.75.75 0 000-1.5zm-2.25.75a2.25 2.25 0 113 2.122V6A2.5 2.5 0 0110 8.5H6a1 1 0 00-1 1v1.128a2.25 2.25 0 11-1.5 0V5.372a2.25 2.25 0 111.5 0v1.006c.29-.078.546-.227.75-.428A2 2 0 018.5 5h1.5a2.5 2.5 0 012.5 2.5v.878a2.25 2.25 0 11-1.5 0V7.5a1 1 0 00-1-1H9.25a3.5 3.5 0 01-.75-.09v.87a2.25 2.25 0 11-1.5 0V5.372a2.25 2.25 0 01-.75-.428V3.372a2.25 2.25 0 011.5-2.122z" fill="currentColor"/></svg>
+                                        feature/auth-v2 → main
+                                    </span>
+                                    <div class="mr-pipeline pending">
+                                        <svg viewBox="0 0 16 16" width="12" height="12"><path d="M8 9.5a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" fill="currentColor"/></svg>
+                                        Pipeline pending
+                                    </div>
+                                    <div class="mr-review-status">
+                                        <span class="no-reviews">No reviews yet</span>
+                                    </div>
+                                </div>
+                                <div class="mr-changes-stats">
+                                    <span class="changes-stat add">+891</span>
+                                    <span class="changes-stat del">-234</span>
+                                    <span class="changes-files">31 files changed</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <div class="tab-content" id="tab-activity">
+                <section class="heatmap-section">
+                    <h2 class="section-title">
+                        <svg viewBox="0 0 16 16" width="16" height="16"><path d="M1.5 8a6.5 6.5 0 1113 0 6.5 6.5 0 01-13 0zM8 0a8 8 0 100 16A8 8 0 008 0zm.5 4.5a.5.5 0 00-1 0v3.376L5.37 9.46a.5.5 0 10.54.842l2.5-1.625A.5.5 0 008.5 8V4.5z" fill="currentColor"/></svg>
+                        Contribution Activity
+                    </h2>
+                    <div class="heatmap-container" id="heatmapContainer">
+                        <div class="heatmap-months" id="heatmapMonths"></div>
+                        <div class="heatmap-grid" id="heatmapGrid"></div>
+                        <div class="heatmap-legend">
+                            <span>Less</span>
+                            <span class="heatmap-cell level-0"></span>
+                            <span class="heatmap-cell level-1"></span>
+                            <span class="heatmap-cell level-2"></span>
+                            <span class="heatmap-cell level-3"></span>
+                            <span class="heatmap-cell level-4"></span>
+                            <span>More</span>
+                        </div>
+                    </div>
+                    <div class="heatmap-stats" id="heatmapStats">
+                        <div class="heatmap-stat">
+                            <span class="stat-value">847</span>
+                            <span class="stat-label">Contributions in the last year</span>
+                        </div>
+                        <div class="heatmap-stat">
+                            <span class="stat-value">23</span>
+                            <span class="stat-label">Longest streak</span>
+                        </div>
+                        <div class="heatmap-stat">
+                            <span class="stat-value">5</span>
+                            <span class="stat-label">Current streak</span>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="activity-feed-section">
+                    <h2 class="section-title">Recent Activity</h2>
+                    <div class="activity-feed" id="activityFeed">
+                        <div class="activity-item">
+                            <div class="activity-icon push">
+                                <svg viewBox="0 0 16 16" width="14" height="14"><path d="M1.5 3.25a2.25 2.25 0 113 2.122v5.256a2.25 2.25 0 11-1.5 0V5.372a2.25 2.25 0 01-1.5-2.122z" fill="currentColor"/></svg>
+                            </div>
+                            <div class="activity-content">
+                                <span class="activity-text"><strong>kai-voss</strong> pushed to <span class="highlight-text">main</span></span>
+                                <span class="activity-detail">3 commits, 48 additions, 12 deletions</span>
+                                <span class="activity-time">2 hours ago</span>
+                            </div>
+                        </div>
+                        <div class="activity-item">
+                            <div class="activity-icon merge">
+                                <svg viewBox="0 0 16 16" width="14" height="14"><path d="M1.5 3.25a2.25 2.25 0 113 2.122v5.256a2.25 2.25 0 11-1.5 0V5.372A2.25 2.25 0 011.5 3.25zm5.677-.177L9.573.677A.25.25 0 0110 .854V2.5h1A2.5 2.5 0 0113.5 5v5.628a2.25 2.25 0 11-1.5 0V5a1 1 0 00-1-1h-1v1.646a.25.25 0 01-.427.177L7.177 3.427a.25.25 0 010-.354z" fill="currentColor"/></svg>
+                            </div>
+                            <div class="activity-content">
+                                <span class="activity-text"><strong>sarah-chen</strong> created merge request <span class="highlight-text">!412</span></span>
+                                <span class="activity-detail">feat: Implement adaptive load balancing algorithm</span>
+                                <span class="activity-time">6 hours ago</span>
+                            </div>
+                        </div>
+                        <div class="activity-item">
+                            <div class="activity-icon review">
+                                <svg viewBox="0 0 16 16" width="14" height="14"><path d="M1.5 3.25a2.25 2.25 0 113 2.122v5.256a2.25 2.25 0 11-1.5 0V5.372A2.25 2.25 0 011.5 3.25z" fill="currentColor"/></svg>
+                            </div>
+                            <div class="activity-content">
+                                <span class="activity-text"><strong>marco-ruiz</strong> approved <span class="highlight-text">!411</span></span>
+                                <span class="activity-detail">fix: Resolve memory leak in long-running WebSocket connections</span>
+                                <span class="activity-time">8 hours ago</span>
+                            </div>
+                        </div>
+                        <div class="activity-item">
+                            <div class="activity-icon issue">
+                                <svg viewBox="0 0 16 16" width="14" height="14"><path d="M8 9.5a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" fill="currentColor"/></svg>
+                            </div>
+                            <div class="activity-content">
+                                <span class="activity-text"><strong>anja-petrov</strong> opened issue <span class="highlight-text">#187</span></span>
+                                <span class="activity-detail">Worker nodes fail to rejoin cluster after network partition</span>
+                                <span class="activity-time">1 day ago</span>
+                            </div>
+                        </div>
+                        <div class="activity-item">
+                            <div class="activity-icon tag">
+                                <svg viewBox="0 0 16 16" width="14" height="14"><path d="M1 7.775V2.75C1 1.784 1.784 1 2.75 1h5.025c.464 0 .91.184 1.238.513l6.25 6.25a1.75 1.75 0 010 2.474L9.74 13.763a1.75 1.75 0 01-2.474 0l-6.25-6.25A1.75 1.75 0 011 7.775z" fill="currentColor"/></svg>
+                            </div>
+                            <div class="activity-content">
+                                <span class="activity-text"><strong>kai-voss</strong> released <span class="highlight-text">v3.1.8</span></span>
+                                <span class="activity-detail">Hotfix release for task dispatcher race condition</span>
+                                <span class="activity-time">2 days ago</span>
+                            </div>
+                        </div>
+                        <div class="activity-item">
+                            <div class="activity-icon comment">
+                                <svg viewBox="0 0 16 16" width="14" height="14"><path d="M2.75 2.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h2a.75.75 0 01.75.75v2.19l2.72-2.72a.75.75 0 01.53-.22h4.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25H2.75z" fill="currentColor"/></svg>
+                            </div>
+                            <div class="activity-content">
+                                <span class="activity-text"><strong>sarah-chen</strong> commented on <span class="highlight-text">!410</span></span>
+                                <span class="activity-detail">"The Sentinel integration looks solid, but we need to handle the split-brain scenario..."</span>
+                                <span class="activity-time">3 days ago</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <section class="diff-viewer-section" id="diffViewerSection">
+                <div class="diff-viewer-header">
+                    <h2 class="section-title">
+                        <svg viewBox="0 0 16 16" width="16" height="16"><path d="M1.5 3.25a2.25 2.25 0 113 2.122v5.256a2.25 2.25 0 11-1.5 0V5.372a2.25 2.25 0 01-1.5-2.122z" fill="currentColor"/></svg>
+                        Code Diff
+                        <span class="diff-file-name">src/sentinel.ts</span>
+                    </h2>
+                    <div class="diff-viewer-controls">
+                        <button class="diff-toggle active" data-view="split">Split</button>
+                        <button class="diff-toggle" data-view="unified">Unified</button>
+                    </div>
+                </div>
+                <div class="diff-container" id="diffContainer">
+                    <div class="diff-file-header">
+                        <span class="diff-file-badge add">+31</span>
+                        <span class="diff-file-badge del">-18</span>
+                        <span class="diff-file-path">src/sentinel.ts</span>
+                    </div>
+                    <div class="diff-content">
+                        <div class="diff-line unchanged">
+                            <span class="line-num old">42</span>
+                            <span class="line-num new">42</span>
+                            <span class="line-content"><span class="diff-code-kw">export class</span> <span class="diff-code-cls">SentinelEngine</span> {</span>
+                        </div>
+                        <div class="diff-line unchanged">
+                            <span class="line-num old">43</span>
+                            <span class="line-num new">43</span>
+                            <span class="line-content">  <span class="diff-code-kw">private</span> workers: WorkerPool;</span>
+                        </div>
+                        <div class="diff-line removed">
+                            <span class="line-num old">44</span>
+                            <span class="line-num new"></span>
+                            <span class="line-content">  <span class="diff-code-kw">private</span> maxRetries = <span class="diff-code-num">3</span>;</span>
+                        </div>
+                        <div class="diff-line removed">
+                            <span class="line-num old">45</span>
+                            <span class="line-num new"></span>
+                            <span class="line-content">  <span class="diff-code-kw">private</span> retryDelay = <span class="diff-code-num">1000</span>;</span>
+                        </div>
+                        <div class="diff-line added">
+                            <span class="line-num old"></span>
+                            <span class="line-num new">44</span>
+                            <span class="line-content">  <span class="diff-code-kw">private</span> retryConfig: RetryConfig;</span>
+                        </div>
+                        <div class="diff-line added">
+                            <span class="line-num old"></span>
+                            <span class="line-num new">45</span>
+                            <span class="line-content">  <span class="diff-code-kw">private</span> circuitBreaker: CircuitBreaker;</span>
+                        </div>
+                        <div class="diff-line added">
+                            <span class="line-num old"></span>
+                            <span class="line-num new">46</span>
+                            <span class="line-content">  <span class="diff-code-kw">private</span> healthMonitor: HealthMonitor;</span>
+                        </div>
+                        <div class="diff-line unchanged">
+                            <span class="line-num old">46</span>
+                            <span class="line-num new">47</span>
+                            <span class="line-content"></span>
+                        </div>
+                        <div class="diff-line unchanged">
+                            <span class="line-num old">47</span>
+                            <span class="line-num new">48</span>
+                            <span class="line-content">  <span class="diff-code-fn">constructor</span>(config: SentinelConfig) {</span>
+                        </div>
+                        <div class="diff-line unchanged">
+                            <span class="line-num old">48</span>
+                            <span class="line-num new">49</span>
+                            <span class="line-content">    <span class="diff-code-kw">this</span>.workers = <span class="diff-code-kw">new</span> <span class="diff-code-cls">WorkerPool</span>(config.workers);</span>
+                        </div>
+                        <div class="diff-line removed">
+                            <span class="line-num old">49</span>
+                            <span class="line-num new"></span>
+                            <span class="line-content">    <span class="diff-code-kw">this</span>.maxRetries = config.maxRetries ?? <span class="diff-code-num">3</span>;</span>
+                        </div>
+                        <div class="diff-line removed">
+                            <span class="line-num old">50</span>
+                            <span class="line-num new"></span>
+                            <span class="line-content">    <span class="diff-code-kw">this</span>.retryDelay = config.retryDelay ?? <span class="diff-code-num">1000</span>;</span>
+                        </div>
+                        <div class="diff-line added">
+                            <span class="line-num old"></span>
+                            <span class="line-num new">50</span>
+                            <span class="line-content">    <span class="diff-code-kw">this</span>.retryConfig = config.retryConfig ?? <span class="diff-code-cls">DEFAULT_RETRY</span>;</span>
+                        </div>
+                        <div class="diff-line added">
+                            <span class="line-num old"></span>
+                            <span class="line-num new">51</span>
+                            <span class="line-content">    <span class="diff-code-kw">this</span>.circuitBreaker = <span class="diff-code-kw">new</span> <span class="diff-code-cls">CircuitBreaker</span>({</span>
+                        </div>
+                        <div class="diff-line added">
+                            <span class="line-num old"></span>
+                            <span class="line-num new">52</span>
+                            <span class="line-content">      threshold: <span class="diff-code-num">0.5</span>,</span>
+                        </div>
+                        <div class="diff-line added">
+                            <span class="line-num old"></span>
+                            <span class="line-num new">53</span>
+                            <span class="line-content">      resetTimeout: <span class="diff-code-num">30000</span>,</span>
+                        </div>
+                        <div class="diff-line added">
+                            <span class="line-num old"></span>
+                            <span class="line-num new">54</span>
+                            <span class="line-content">    });</span>
+                        </div>
+                        <div class="diff-line added">
+                            <span class="line-num old"></span>
+                            <span class="line-num new">55</span>
+                            <span class="line-content">    <span class="diff-code-kw">this</span>.healthMonitor = <span class="diff-code-kw">new</span> <span class="diff-code-cls">HealthMonitor</span>(<span class="diff-code-kw">this</span>.workers);</span>
+                        </div>
+                        <div class="diff-line unchanged">
+                            <span class="line-num old">51</span>
+                            <span class="line-num new">56</span>
+                            <span class="line-content">  }</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <aside class="right-panel">
+            <section class="panel-section">
+                <h3 class="panel-heading">Pipeline Status</h3>
+                <div class="pipeline-list">
+                    <div class="pipeline-item passing">
+                        <div class="pipeline-icon">
+                            <svg viewBox="0 0 16 16" width="14" height="14"><path d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 010-1.06.75.75 0 011.06 0L6 10.94l6.72-6.72a.75.75 0 011.06 0z" fill="currentColor"/></svg>
+                        </div>
+                        <div class="pipeline-info">
+                            <span class="pipeline-name">#2847 - main</span>
+                            <span class="pipeline-time">2h ago · 4m 32s</span>
+                        </div>
+                    </div>
+                    <div class="pipeline-item running">
+                        <div class="pipeline-icon">
+                            <span class="pipeline-spinner"></span>
+                        </div>
+                        <div class="pipeline-info">
+                            <span class="pipeline-name">#2848 - feature/auth-v2</span>
+                            <span class="pipeline-time">Running · stage 3/5</span>
+                        </div>
+                    </div>
+                    <div class="pipeline-item failed">
+                        <div class="pipeline-icon">
+                            <svg viewBox="0 0 16 16" width="14" height="14"><path d="M3.72 3.72a.75.75 0 011.06 0L8 6.94l3.22-3.22a.75.75 0 111.06 1.06L9.06 8l3.22 3.22a.75.75 0 11-1.06 1.06L8 9.06l-3.22 3.22a.75.75 0 01-1.06-1.06L6.94 8 3.72 4.78a.75.75 0 010-1.06z" fill="currentColor"/></svg>
+                        </div>
+                        <div class="pipeline-info">
+                            <span class="pipeline-name">#2846 - feature/redis-sentinel</span>
+                            <span class="pipeline-time">Failed · test stage</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="panel-section">
+                <h3 class="panel-heading">Top Contributors</h3>
+                <div class="contributor-list">
+                    <div class="contributor-item">
+                        <img src="https://picsum.photos/seed/contrib1/28/28.jpg" alt="" class="avatar-sm">
+                        <div class="contributor-info">
+                            <span class="contributor-name">kai-voss</span>
+                            <span class="contributor-commits">342 commits</span>
+                        </div>
+                        <div class="contributor-bar" style="--bar-width: 100%"></div>
+                    </div>
+                    <div class="contributor-item">
+                        <img src="https://picsum.photos/seed/contrib2/28/28.jpg" alt="" class="avatar-sm">
+                        <div class="contributor-info">
+                            <span class="contributor-name">sarah-chen</span>
+                            <span class="contributor-commits">278 commits</span>
+                        </div>
+                        <div class="contributor-bar" style="--bar-width: 81%"></div>
+                    </div>
+                    <div class="contributor-item">
+                        <img src="https://picsum.photos/seed/contrib3/28/28.jpg" alt="" class="avatar-sm">
+                        <div class="contributor-info">
+                            <span class="contributor-name">marco-ruiz</span>
+                            <span class="contributor-commits">156 commits</span>
+                        </div>
+                        <div class="contributor-bar" style="--bar-width: 46%"></div>
+                    </div>
+                    <div class="contributor-item">
+                        <img src="https://picsum.photos/seed/contrib4/28/28.jpg" alt="" class="avatar-sm">
+                        <div class="contributor-info">
+                            <span class="contributor-name">anja-petrov</span>
+                            <span class="contributor-commits">71 commits</span>
+                        </div>
+                        <div class="contributor-bar" style="--bar-width: 21%"></div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="panel-section">
+                <h3 class="panel-heading">Languages</h3>
+                <div class="lang-bar">
+                    <div class="lang-segment" style="--lang-width: 62%; --lang-color: #3178c6;" data-lang="TypeScript"></div>
+                    <div class="lang-segment" style="--lang-width: 21%; --lang-color: #e34c26;" data-lang="HTML"></div>
+                    <div class="lang-segment" style="--lang-width: 11%; --lang-color: #f1e05a;" data-lang="JavaScript"></div>
+                    <div class="lang-segment" style="--lang-width: 6%; --lang-color: #563d7c;" data-lang="CSS"></div>
+                </div>
+                <div class="lang-legend">
+                    <span class="lang-item"><span class="lang-dot" style="background: #3178c6;"></span>TypeScript 62%</span>
+                    <span class="lang-item"><span class="lang-dot" style="background: #e34c26;"></span>HTML 21%</span>
+                    <span class="lang-item"><span class="lang-dot" style="background: #f1e05a;"></span>JavaScript 11%</span>
+                    <span class="lang-item"><span class="lang-dot" style="background: #563d7c;"></span>CSS 6%</span>
+                </div>
+            </section>
+
+            <section class="panel-section">
+                <h3 class="panel-heading">Release Notes</h3>
+                <div class="release-card">
+                    <div class="release-header">
+                        <span class="release-tag">v3.1.8</span>
+                        <span class="release-latest">Latest</span>
+                    </div>
+                    <p class="release-summary">Hotfix for task dispatcher race condition. Includes memory optimization for WebSocket connections.</p>
+                    <div class="release-meta">
+                        <img src="https://picsum.photos/seed/committer1/16/16.jpg" alt="" class="avatar-tiny">
+                        <span>kai-voss</span>
+                        <span>released 2 days ago</span>
+                    </div>
+                </div>
+            </section>
+        </aside>
+    </div>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="scripts.js"></script>
+</body>
+</html>

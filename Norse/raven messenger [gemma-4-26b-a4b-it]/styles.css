@@ -1,0 +1,397 @@
+:root {
+    /* Color Palette */
+    --color-bg: #0f0d0b;
+    --color-wood-dark: #1a1612;
+    --color-wood-light: #2c241e;
+    --color-iron: #3d3d3d;
+    --color-iron-bright: #5a5a5a;
+    --color-gold: #d4af37;
+    --color-gold-glow: rgba(212, 175, 55, 0.4);
+    --color-bifrost: linear-gradient(45deg, #00f2ff, #7000ff, #ff00c8, #00f2ff);
+    --color-text: #e0d7c6;
+    --color-text-dim: #a09482;
+    --color-accent: #8b0000; /* Blood/Ember accent */
+
+    /* Fonts */
+    --font-display: 'Cinzel Decorative', serif;
+    --font-body: 'Crimson Pro', serif;
+
+    /* Spacing & Effects */
+    --knotwork-border: 4px double var(--color-iron);
+    --shadow-deep: 0 10px 30px rgba(0, 0, 0, 0.8);
+    --shadow-glow: 0 0 15px var(--color-gold-glow);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    font-family: var(--font-body);
+    font-size: 1.1rem;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden; /* Controlled by app container */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* --- Atmospheric Overlays --- */
+
+.grain-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.04;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+}
+
+.embers-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.bifrost-shimmer {
+    position: fixed;
+    top: 0;
+    left: -150%;
+    width: 150%;
+    height: 100%;
+    background: var(--color-bifrost);
+    opacity: 0;
+    z-index: 100;
+    pointer-events: none;
+    mix-blend-mode: color-dodge;
+}
+
+.bifrost-active {
+    animation: bifrost-sweep 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes bifrost-sweep {
+    0% { left: -150%; opacity: 0; }
+    50% { opacity: 0.5; }
+    100% { left: 150%; opacity: 0; }
+}
+
+/* --- App Layout --- */
+
+.app-container {
+    display: flex;
+    width: 95vw;
+    height: 90vh;
+    max-width: 1400px;
+    background: var(--color-wood-dark);
+    border: 8px solid var(--color-iron);
+    box-shadow: var(--shadow-deep);
+    position: relative;
+    z-index: 10;
+    overflow: hidden;
+}
+
+/* --- Yggdrasil Sidebar --- */
+
+.yggdrasil-sidebar {
+    width: 100px;
+    background: linear-gradient(to bottom, #120f0d, #1a1612, #120f0d);
+    border-right: 4px solid var(--color-iron);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 0;
+    position: relative;
+}
+
+.tree-root {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100%;
+    width: 100%;
+}
+
+.root-icon {
+    font-size: 2rem;
+    color: var(--color-gold);
+    margin-bottom: 40px;
+    text-shadow: var(--shadow-glow);
+}
+
+.realm-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 35px;
+    z-index: 2;
+}
+
+.realm-item {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+
+.realm-item:hover {
+    transform: scale(1.1);
+}
+
+.realm-item.active .realm-rune {
+    color: var(--color-gold);
+    text-shadow: 0 0 10px var(--color-gold);
+}
+
+.realm-rune {
+    font-size: 1.8rem;
+    color: var(--color-text-dim);
+    transition: color 0.3s ease;
+}
+
+.realm-name {
+    font-family: var(--font-display);
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 5px;
+    color: var(--color-text-dim);
+}
+
+.realm-glow {
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    background: var(--color-gold-glow);
+    filter: blur(15px);
+    border-radius: 50%;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.realm-item.active .realm-glow {
+    opacity: 1;
+}
+
+/* --- Main Interface --- */
+
+.main-interface {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    background-image: radial-gradient(circle at center, #2c241e 0%, #1a1612 100%);
+}
+
+/* Header */
+.mythic-header {
+    padding: 20px 40px;
+    background: linear-gradient(to bottom, var(--color-iron), transparent);
+    border-bottom: 2px solid var(--color-iron);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    font-family: var(--font-display);
+    font-size: 1.8rem;
+    letter-spacing: 2px;
+    color: var(--color-text);
+}
+
+.logo .accent {
+    color: var(--color-gold);
+}
+
+.subtitle {
+    font-style: italic;
+    font-size: 0.85rem;
+    color: var(--color-text-dim);
+}
+
+.btn-runic {
+    background: var(--color-wood-dark);
+    border: 2px solid var(--color-gold);
+    color: var(--color-gold);
+    padding: 8px 16px;
+    font-family: var(--font-display);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.3s ease;
+    box-shadow: inset 0 0 5px var(--color-gold-glow);
+}
+
+.btn-runic:hover {
+    background: var(--color-gold);
+    color: var(--color-bg);
+}
+
+/* Chat Area */
+.chat-scroll {
+    flex-grow: 1;
+    padding: 40px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-iron) transparent;
+}
+
+.chat-scroll::-webkit-scrollbar {
+    width: 6px;
+}
+
+.chat-scroll::-webkit-scrollbar-thumb {
+    background: var(--color-iron);
+    border-radius: 10px;
+}
+
+/* Message Bubbles */
+.message {
+    max-width: 70%;
+    padding: 15px 25px;
+    position: relative;
+    line-height: 1.5;
+}
+
+.message.system-message {
+    align-self: center;
+    max-width: 90%;
+    text-align: center;
+    font-style: italic;
+    color: var(--color-gold);
+    font-size: 0.9rem;
+    opacity: 0.8;
+}
+
+.message.user-message {
+    align-self: flex-end;
+    background: var(--color-wood-light);
+    border: 2px solid var(--color-iron);
+    border-right: 6px solid var(--color-gold);
+    border-radius: 20px 20px 2px 20px;
+    color: var(--color-text);
+}
+
+.message.god-message {
+    align-self: flex-start;
+    background: rgba(0, 0, 0, 0.4);
+    border: 2px solid var(--color-gold);
+    border-left: 6px solid var(--color-gold);
+    border-radius: 20px 20px 20px 2px;
+    color: var(--color-text);
+}
+
+/* --- Input Area --- */
+
+.input-area {
+    padding: 30px 40px;
+    background: linear-gradient(to top, var(--color-iron), transparent);
+}
+
+.input-container {
+    position: relative;
+    display: flex;
+    gap: 15px;
+    background: var(--color-wood-dark);
+    padding: 10px;
+    border: 3px solid var(--color-iron);
+    border-radius: 4px;
+}
+
+.input-container input {
+    flex-grow: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--color-text);
+    font-family: var(--font-body);
+    font-size: 1.2rem;
+    padding: 10px;
+}
+
+.input-container input::placeholder {
+    color: var(--color-text-dim);
+    font-style: italic;
+}
+
+.send-btn {
+    background: var(--color-iron);
+    border: 2px solid var(--color-gold);
+    color: var(--color-gold);
+    padding: 0 25px;
+    cursor: pointer;
+    font-family: var(--font-display);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.2s ease;
+}
+
+.send-btn:hover {
+    background: var(--color-gold);
+    color: var(--color-bg);
+}
+
+/* --- Raven Messenger Animation --- */
+
+#raven-messenger {
+    position: fixed;
+    top: 50%;
+    left: -100px;
+    width: 80px;
+    height: 80px;
+    z-index: 1000;
+    pointer-events: none;
+    transition: transform 0.1s linear;
+}
+
+.raven-silhouette {
+    width: 100%;
+    height: 100%;
+    background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="black"><path d="M21,16.5C21,16.88 20.79,17.21 20.47,17.38L12.57,21.82C12.41,21.94 12.21,22 12,22C11.79,22 11.59,21.94 11.43,21.82L3.53,17.38C3.21,17.21 3,16.88 3,16.5V7.5C3,7.12 3.21,6.79 3.53,6.62L11.43,2.18C11.59,2.06 11.79,2 12,2C12.21,2 12.41,2.06 12.57,2.18L20.47,6.62C20.79,6.79 21,7.12 21,7.5V16.5Z"/></svg>') no-repeat center;
+    background-size: contain;
+    filter: drop-shadow(0 0 5px rgba(0,0,0,0.5));
+}
+
+.hidden {
+    display: none;
+}
+
+/* --- Runic Mode Utility --- */
+.runic-text {
+    font-family: 'Courier New', monospace; /* Fallback for runes */
+    letter-spacing: 2px;
+    color: var(--color-gold) !important;
+}
+
+/* Animations for Embers */
+@keyframes ember-rise {
+    0% { transform: translateY(0) scale(1); opacity: 0; }
+    50% { opacity: 0.8; }
+    100% { transform: translateY(-100vh) scale(0.5); opacity: 0; }
+}
+
+.ember {
+    position: absolute;
+    background: var(--color-accent);
+    border-radius: 50%;
+    pointer-events: none;
+    filter: blur(2px);
+}

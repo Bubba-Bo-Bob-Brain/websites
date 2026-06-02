@@ -1,0 +1,427 @@
+:root {
+    /* Color Palette - The Sun-Bleached Frontier */
+    --color-wood-dark: #2c1b0e;
+    --color-wood-mid: #5d4037;
+    --color-wood-light: #8d6e63;
+    --color-parchment: #e8d5b5;
+    --color-parchment-dark: #d2b48c;
+    --color-blood: #7a1d1d;
+    --color-ink: #1a1a1a;
+    --color-sepia: rgba(112, 66, 20, 0.4);
+    
+    /* Typography */
+    --font-display: 'Rye', serif;
+    --font-header: 'IM Fell English SC', serif;
+    --font-body: 'Special Elite', cursive;
+
+    /* Spacing & Shadows */
+    --shadow-deep: 0 20px 40px rgba(0, 0, 0, 0.7);
+    --shadow-paper: 2px 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+/* --- Base & Reset --- */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: var(--color-wood-dark);
+    /* Simulating wood grain with a repeating linear gradient */
+    background-image: 
+        repeating-linear-gradient(90deg, transparent, transparent 50px, rgba(0,0,0,0.05) 50px, rgba(0,0,0,0.05) 100px),
+        linear-gradient(to right, var(--color-wood-dark), var(--color-wood-mid), var(--color-wood-dark));
+    color: var(--color-ink);
+    font-family: var(--font-body);
+    height: 100vh;
+    overflow: hidden; /* We control scrolling via the interface */
+    cursor: url('https://cur.cursors-4u.net/games/gam-4/gam373.cur'), auto;
+}
+
+/* --- Environmental Overlays --- */
+.dust-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 100;
+    /* Grainy texture effect */
+    background-image: url("https://www.transparenttextures.com/patterns/stardust.png");
+    opacity: 0.3;
+}
+
+.vignette {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 99;
+    background: radial-gradient(circle, transparent 30%, rgba(0,0,0,0.8) 100%);
+}
+
+#dustCanvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 98;
+    pointer-events: none;
+}
+
+/* --- Layout Structure --- */
+#frontier-stage {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px;
+    z-index: 10;
+}
+
+.board-header {
+    text-align: center;
+    margin-bottom: 40px;
+    z-index: 20;
+}
+
+.title-main {
+    font-family: var(--font-display);
+    font-size: 4rem;
+    color: var(--color-parchment);
+    text-shadow: 3px 3px 0px var(--color-blood), 5px 5px 15px rgba(0,0,0,0.5);
+    letter-spacing: 4px;
+}
+
+.subtitle {
+    font-family: var(--font-header);
+    font-size: 1.2rem;
+    color: var(--color-wood-light);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.header-divider {
+    height: 4px;
+    width: 200px;
+    background: var(--color-blood);
+    margin: 15px auto;
+    border-radius: 2px;
+}
+
+.content-area {
+    display: grid;
+    grid-template-columns: 1fr 350px;
+    gap: 40px;
+    width: 100%;
+    max-width: 1400px;
+    height: 70vh;
+    align-items: start;
+}
+
+/* --- Wanted Posters Grid --- */
+.poster-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 30px;
+    overflow-y: auto;
+    padding-right: 20px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-wood-mid) transparent;
+}
+
+/* Custom Scrollbar for Chrome/Safari */
+.poster-grid::-webkit-scrollbar {
+    width: 8px;
+}
+.poster-grid::-webkit-scrollbar-thumb {
+    background: var(--color-wood-mid);
+    border-radius: 4px;
+}
+
+.wanted-poster {
+    perspective: 1000px;
+    animation: sway 4s ease-in-out infinite alternate;
+}
+
+.wanted-poster:nth-child(even) {
+    animation-delay: 1s;
+}
+
+@keyframes sway {
+    from { transform: rotate(-1deg) translateY(0); }
+    to { transform: rotate(1deg) translateY(-5px); }
+}
+
+.poster-paper {
+    position: relative;
+    background: var(--color-parchment);
+    background-image: 
+        linear-gradient(rgba(0,0,0,0.05) 1px, transparent 1px),
+        radial-gradient(circle at 50% 50%, transparent, rgba(0,0,0,0.1));
+    padding: 25px;
+    box-shadow: var(--shadow-paper);
+    border: 1px solid rgba(0,0,0,0.1);
+    min-height: 400px;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.3s ease;
+}
+
+.wanted-poster:hover .poster-paper {
+    transform: scale(1.05) rotate(0deg) !important;
+    z-index: 50;
+}
+
+/* Curled Edges Effect */
+.poster-edge-curl {
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, rgba(255,255,255,0.3) 0%, transparent 50%, rgba(0,0,0,0.2) 100%);
+    pointer-events: none;
+}
+.top-left { top: 0; left: 0; border-radius: 0 0 100% 0; }
+.top-right { top: 0; right: 0; border-radius: 0 0 0 100%; }
+.bottom-left { bottom: 0; left: 0; border-radius: 0 100% 0 0; }
+.bottom-right { bottom: 0; right: 0; border-radius: 100% 0 0 0; }
+
+.poster-content {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    border: 2px solid var(--color-ink);
+    padding: 15px;
+    position: relative;
+}
+
+.reward-amount {
+    font-family: var(--font-display);
+    font-size: 1.8rem;
+    color: var(--color-blood);
+    margin-bottom: 10px;
+}
+
+.outlaw-portrait {
+    width: 100%;
+    height: 200px;
+    background-size: cover;
+    background-position: center;
+    filter: sepia(0.8) contrast(1.2) brightness(0.9);
+    border: 3px solid var(--color-ink);
+    margin-bottom: 15px;
+}
+
+.outlaw-name {
+    font-family: var(--font-header);
+    font-size: 1.5rem;
+    text-transform: uppercase;
+    margin-bottom: 5px;
+}
+
+.crime-type {
+    font-style: italic;
+    font-size: 0.9rem;
+    margin-bottom: 15px;
+}
+
+.wanted-stamp {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    color: var(--color-blood);
+    border: 4px double var(--color-blood);
+    padding: 2px 10px;
+    transform: rotate(-15deg);
+    opacity: 0.7;
+    user-select: none;
+}
+
+/* --- Dispatch Log --- */
+.dispatch-log {
+    background: #d2b48c;
+    background-image: repeating-linear-gradient(transparent, transparent 31px, #c4a484 31px, #c4a484 32px);
+    border: 10px solid var(--color-wood-mid);
+    box-shadow: var(--shadow-deep);
+    padding: 20px;
+    height: 100%;
+    border-radius: 2px;
+}
+
+.log-title {
+    font-family: var(--font-header);
+    text-align: center;
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+    border-bottom: 2px solid var(--color-ink);
+    padding-bottom: 10px;
+}
+
+.log-container {
+    height: calc(100% - 60px);
+    overflow-y: auto;
+}
+
+.log-entries {
+    list-style: none;
+}
+
+.log-item {
+    margin-bottom: 25px;
+    line-height: 1.4;
+}
+
+.log-date {
+    font-weight: bold;
+    font-size: 0.8rem;
+    color: var(--color-blood);
+    display: block;
+}
+
+.log-text {
+    font-size: 1rem;
+    color: var(--color-ink);
+}
+
+/* --- Revolver Navigation --- */
+.revolver-nav {
+    position: fixed;
+    bottom: 40px;
+    right: 40px;
+    z-index: 1000;
+}
+
+.revolver-cylinder {
+    width: 120px;
+    height: 120px;
+    background: #333;
+    border-radius: 50%;
+    border: 8px solid #111;
+    position: relative;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.8), inset 0 0 20px rgba(255,255,255,0.1);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.chamber {
+    position: absolute;
+    width: 35px;
+    height: 35px;
+    background: #222;
+    border-radius: 50%;
+    border: 2px solid #444;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: all 0.3s ease;
+}
+
+.chamber-label {
+    font-size: 0.5rem;
+    color: #888;
+    text-align: center;
+    pointer-events: none;
+}
+
+.chamber.active {
+    background: var(--color-blood);
+    box-shadow: 0 0 15px var(--color-blood);
+}
+
+.chamber:hover {
+    background: #444;
+    transform: scale(1.2);
+}
+
+/* Positioning chambers in a circle */
+.chamber:nth-child(1) { transform: rotate(0deg) translateY(-45px); }
+.chamber:nth-child(2) { transform: rotate(90deg) translateY(-45px); }
+.chamber:nth-child(3) { transform: rotate(180deg) translateY(-45px); }
+.chamber:nth-child(4) { transform: rotate(270deg) translateY(-45px); }
+
+/* --- Modal --- */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.9);
+    z-index: 2000;
+    display: none; /* Toggled via JS */
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background: var(--color-parchment);
+    width: 80%;
+    max-width: 800px;
+    padding: 40px;
+    position: relative;
+    border: 15px solid var(--color-wood-mid);
+    box-shadow: var(--shadow-deep);
+}
+
+.close-modal {
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    font-size: 3rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--color-blood);
+}
+
+.modal-body {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+}
+
+.modal-portrait {
+    width: 100%;
+    height: 350px;
+    background-size: cover;
+    background-position: center;
+    filter: sepia(0.8) contrast(1.2);
+    border: 5px solid var(--color-ink);
+}
+
+.modal-info h2 {
+    font-family: var(--font-display);
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+}
+
+.modal-info h4 {
+    font-family: var(--font-header);
+    font-size: 1.2rem;
+    color: var(--color-blood);
+    margin-bottom: 20px;
+}
+
+.modal-info hr {
+    border: 0;
+    border-top: 1px solid rgba(0,0,0,0.2);
+    margin: 20px 0;
+}
+
+.modal-reward {
+    font-family: var(--font-display);
+    font-size: 2rem;
+    color: var(--color-blood);
+    margin-top: 20px;
+}

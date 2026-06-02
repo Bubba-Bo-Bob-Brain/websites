@@ -1,0 +1,1589 @@
+/* ============================================
+   BIOSCAN // CYBERNETIC PATIENT INTERFACE
+   AESTHETIC: CLINICAL GROTESQUE / BIOPUNK
+   ============================================ */
+
+/* ===== CSS VARIABLES ===== */
+:root {
+  /* Core palette - sickly bioluminescence */
+  --accent-primary: #2dff8a;
+  --accent-primary-dim: #1a7a4d;
+  --accent-primary-glow: rgba(45, 255, 138, 0.3);
+  --accent-secondary: #00e5ff;
+  --accent-secondary-dim: #006b7a;
+  --accent-secondary-glow: rgba(0, 229, 255, 0.25);
+  
+  /* Warning states */
+  --accent-warning: #ffaa00;
+  --accent-warning-dim: #7a5200;
+  --accent-warning-glow: rgba(255, 170, 0, 0.3);
+  
+  --accent-critical: #ff2a2a;
+  --accent-critical-dim: #7a1414;
+  --accent-critical-glow: rgba(255, 42, 42, 0.35);
+  
+  --accent-neural: #b967ff;
+  --accent-neural-dim: #5a2a8a;
+  --accent-neural-glow: rgba(185, 103, 255, 0.3);
+  
+  --accent-unknown: #6a7bff;
+  --accent-unknown-glow: rgba(106, 123, 255, 0.3);
+  
+  /* Background tones */
+  --bg-deep: #020a08;
+  --bg-main: #050f0c;
+  --bg-surface: #0a1612;
+  --bg-elevated: #0f1e18;
+  --bg-dim: #07120e;
+  --bg-grid: rgba(45, 255, 138, 0.03);
+  
+  /* Text */
+  --text-primary: #c8ffe8;
+  --text-secondary: #7aa894;
+  --text-dim: #4a6b5a;
+  --text-bright: #ffffff;
+  
+  /* Typography */
+  --font-display: 'Teko', sans-serif;
+  --font-mono: 'Share Tech Mono', monospace;
+  --font-accent: 'Russo One', sans-serif;
+  
+  /* Spacing */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+  --space-xxl: 3rem;
+  
+  /* Borders */
+  --border-thin: 1px solid var(--accent-primary-dim);
+  --border-medium: 2px solid var(--accent-primary-dim);
+  --border-glow: 1px solid var(--accent-primary-glow);
+  
+  /* Animations */
+  --heartbeat-duration: 0.833s; /* 72 BPM */
+  --scan-speed: 8s;
+  --breathe-duration: 4s;
+  
+  /* Transitions */
+  --transition-fast: 0.15s ease;
+  --transition-med: 0.3s ease;
+  --transition-slow: 0.6s ease;
+}
+
+/* ===== RESET & BASE ===== */
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg-deep);
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.4;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ===== BACKGROUND LAYERS ===== */
+.bg-grid {
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(var(--bg-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--bg-grid) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.bg-scanlines {
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.15) 2px,
+    rgba(0, 0, 0, 0.15) 4px
+  );
+  pointer-events: none;
+  z-index: 999;
+  mix-blend-mode: multiply;
+}
+
+.bg-noise {
+  position: fixed;
+  inset: 0;
+  opacity: 0.04;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  background-size: 256px 256px;
+  pointer-events: none;
+  z-index: 998;
+  mix-blend-mode: overlay;
+}
+
+.bg-vignette {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(ellipse at center, transparent 50%, rgba(2, 10, 8, 0.8) 100%);
+  pointer-events: none;
+  z-index: 997;
+}
+
+.bg-pulse-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--accent-primary);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 996;
+  animation: pulseOverlay var(--heartbeat-duration) infinite ease-out;
+}
+
+@keyframes pulseOverlay {
+  0% { opacity: 0.02; }
+  10% { opacity: 0.04; }
+  20% { opacity: 0; }
+  100% { opacity: 0; }
+}
+
+/* ===== CORNER DECORATIONS ===== */
+.corner-decor {
+  position: fixed;
+  width: 40px;
+  height: 40px;
+  z-index: 1000;
+  pointer-events: none;
+}
+
+.corner-tl { top: 8px; left: 8px; }
+.corner-tr { top: 8px; right: 8px; transform: scaleX(-1); }
+.corner-bl { bottom: 8px; left: 8px; transform: scaleY(-1); }
+.corner-br { bottom: 8px; right: 8px; transform: scale(-1, -1); }
+
+.corner-svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* ===== TOP HUD BAR ===== */
+.top-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 56px;
+  background: linear-gradient(180deg, var(--bg-surface) 0%, transparent 100%);
+  border-bottom: var(--border-thin);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--space-lg);
+  z-index: 100;
+}
+
+.top-bar__left,
+.top-bar__right {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.top-bar__center {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xl);
+}
+
+.top-bar__logo {
+  width: 28px;
+  height: 28px;
+  position: relative;
+}
+
+.logo-icon {
+  width: 100%;
+  height: 100%;
+  animation: logoSpin 20s linear infinite;
+}
+
+@keyframes logoSpin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.logo-ring, .logo-ring-inner {
+  animation: logoPulse 2s ease-in-out infinite;
+}
+
+@keyframes logoPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+.top-bar__system-id {
+  display: flex;
+  flex-direction: column;
+  line-height: 1;
+}
+
+.system-label {
+  font-family: var(--font-accent);
+  font-size: 14px;
+  color: var(--accent-primary);
+  letter-spacing: 2px;
+}
+
+.system-version {
+  font-size: 10px;
+  color: var(--text-dim);
+  letter-spacing: 1px;
+}
+
+.scan-phase {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.scan-phase__label {
+  font-size: 9px;
+  color: var(--text-dim);
+  letter-spacing: 3px;
+  text-transform: uppercase;
+}
+
+.scan-phase__value {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--accent-secondary);
+  letter-spacing: 4px;
+  text-shadow: 0 0 10px var(--accent-secondary-glow);
+}
+
+.heartbeat-indicator {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.heartbeat-svg {
+  width: 120px;
+  height: 24px;
+}
+
+#topHeartbeat {
+  animation: heartbeatDraw var(--heartbeat-duration) infinite linear;
+}
+
+@keyframes heartbeatDraw {
+  0% { stroke-dashoffset: 200; }
+  100% { stroke-dashoffset: 0; }
+}
+
+.bpm-value {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--accent-primary);
+  letter-spacing: 1px;
+}
+
+.timestamp-value,
+.session-value,
+.clearance-value {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-primary);
+}
+
+.timestamp-label,
+.session-label,
+.clearance-label {
+  font-size: 9px;
+  color: var(--text-dim);
+  letter-spacing: 2px;
+  display: block;
+  text-align: right;
+}
+
+.clearance-level-4 {
+  color: var(--accent-warning);
+  font-weight: bold;
+  text-shadow: 0 0 8px var(--accent-warning-glow);
+}
+
+.top-bar__right > div {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+/* ===== PATIENT IDENTITY STRIP ===== */
+.patient-strip {
+  position: fixed;
+  top: 56px;
+  left: 0;
+  right: 0;
+  height: 40px;
+  background: var(--bg-surface);
+  border-bottom: var(--border-thin);
+  display: flex;
+  align-items: center;
+  padding: 0 var(--space-lg);
+  gap: var(--space-lg);
+  z-index: 99;
+}
+
+.patient-strip__avatar {
+  width: 32px;
+  height: 32px;
+  border: var(--border-thin);
+  padding: 2px;
+}
+
+.patient-avatar-svg {
+  width: 100%;
+  height: 100%;
+}
+
+.patient-strip__info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.patient-name {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-bright);
+  letter-spacing: 2px;
+}
+
+.patient-meta {
+  font-size: 10px;
+  color: var(--text-dim);
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.highlight {
+  color: var(--accent-primary);
+  font-weight: bold;
+}
+
+.meta-divider {
+  color: var(--accent-primary-dim);
+  margin: 0 4px;
+}
+
+.status-indicator {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: 4px 12px;
+  border: 1px solid;
+}
+
+.status-critical {
+  border-color: var(--accent-critical-dim);
+  background: rgba(255, 42, 42, 0.05);
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent-critical);
+  box-shadow: 0 0 8px var(--accent-critical);
+  animation: statusBlink 1s infinite;
+}
+
+@keyframes statusBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+.status-text {
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--accent-critical);
+  letter-spacing: 2px;
+}
+
+/* ===== MAIN CONTENT AREA ===== */
+.main-content {
+  position: fixed;
+  top: 96px;
+  left: 0;
+  right: 0;
+  bottom: 180px;
+  display: grid;
+  grid-template-columns: 380px 1fr 320px;
+  gap: 12px;
+  padding: 12px;
+  z-index: 50;
+}
+
+/* ===== PANEL BASE ===== */
+.panel {
+  background: var(--bg-surface);
+  border: var(--border-thin);
+  border-radius: 4px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.panel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 4px;
+  padding: 1px;
+  background: linear-gradient(180deg, var(--accent-primary-dim) 0%, transparent 50%);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+.panel-header {
+  padding: var(--space-sm) var(--space-md);
+  border-bottom: var(--border-thin);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(90deg, rgba(45, 255, 138, 0.05) 0%, transparent 100%);
+}
+
+.panel-title {
+  font-family: var(--font-accent);
+  font-size: 14px;
+  color: var(--accent-primary);
+  letter-spacing: 3px;
+  text-transform: uppercase;
+}
+
+.panel-header__deco {
+  width: 60px;
+  height: 2px;
+  background: linear-gradient(90deg, var(--accent-primary-dim), transparent);
+}
+
+/* ===== LEFT PANEL: ORGAN STATUS ===== */
+.panel--organs {
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent-primary-dim) var(--bg-deep);
+}
+
+.panel--organs::-webkit-scrollbar {
+  width: 4px;
+}
+
+.panel--organs::-webkit-scrollbar-track {
+  background: var(--bg-deep);
+}
+
+.panel--organs::-webkit-scrollbar-thumb {
+  background: var(--accent-primary-dim);
+  border-radius: 2px;
+}
+
+.organ-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  padding: 8px;
+}
+
+/* Organ Card */
+.organ-card {
+  position: relative;
+  background: var(--bg-dim);
+  border: 1px solid var(--bg-elevated);
+  border-radius: 4px;
+  padding: 10px;
+  transition: var(--transition-med);
+  animation: organBreathe var(--breathe-duration) infinite ease-in-out;
+}
+
+@keyframes organBreathe {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.01); }
+}
+
+.organ-card:hover {
+  border-color: var(--accent-primary-dim);
+  box-shadow: 0 0 15px rgba(45, 255, 138, 0.1);
+}
+
+.organ-card__glow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--accent-primary);
+  opacity: 0.5;
+  border-radius: 4px 4px 0 0;
+  animation: glowPulse 2s infinite;
+}
+
+@keyframes glowPulse {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.8; }
+}
+
+.organ-card--heart .organ-card__glow { background: var(--accent-primary); }
+.organ-card--lungs .organ-card__glow { background: var(--accent-secondary); }
+.organ-card--liver .organ-card__glow { background: var(--accent-warning); }
+.organ-card--kidneys .organ-card__glow { background: var(--accent-secondary); }
+.organ-card--brain .organ-card__glow { background: var(--accent-neural); }
+.organ-card--spine .organ-card__glow { background: var(--accent-primary); }
+
+.organ-card__header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.organ-card__icon {
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent-primary);
+}
+
+.organ-card--lungs .organ-card__icon { color: var(--accent-secondary); }
+.organ-card--liver .organ-card__icon { color: var(--accent-warning); }
+.organ-card--brain .organ-card__icon { color: var(--accent-neural); }
+
+.organ-icon {
+  width: 100%;
+  height: 100%;
+}
+
+.organ-card__name {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text-bright);
+  letter-spacing: 2px;
+  flex: 1;
+}
+
+.organ-card__status {
+  font-size: 8px;
+  font-weight: bold;
+  letter-spacing: 1px;
+  padding: 2px 6px;
+  border-radius: 2px;
+}
+
+.organ-status--stable {
+  background: rgba(45, 255, 138, 0.15);
+  color: var(--accent-primary);
+  border: 1px solid var(--accent-primary-dim);
+}
+
+.organ-status--warning {
+  background: rgba(255, 170, 0, 0.15);
+  color: var(--accent-warning);
+  border: 1px solid var(--accent-warning-dim);
+  animation: warningFlash 2s infinite;
+}
+
+@keyframes warningFlash {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+.organ-status--critical {
+  background: rgba(255, 42, 42, 0.15);
+  color: var(--accent-critical);
+  border: 1px solid var(--accent-critical-dim);
+  animation: criticalFlash 1s infinite;
+}
+
+@keyframes criticalFlash {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.organ-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 6px;
+}
+
+.organ-readout {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.readout-label {
+  font-size: 9px;
+  color: var(--text-dim);
+  letter-spacing: 1px;
+}
+
+.readout-value {
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.readout-value small {
+  font-size: 10px;
+  color: var(--text-dim);
+  margin-left: 2px;
+}
+
+.organ-bar {
+  margin-top: 4px;
+}
+
+.organ-bar__track {
+  width: 100%;
+  height: 3px;
+  background: var(--bg-elevated);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 2px;
+}
+
+.organ-bar__fill {
+  height: 100%;
+  width: var(--fill);
+  background: var(--accent-primary);
+  border-radius: 2px;
+  transition: width 1s ease;
+  box-shadow: 0 0 6px var(--accent-primary-glow);
+}
+
+.organ-bar__fill--warning {
+  background: var(--accent-warning);
+  box-shadow: 0 0 6px var(--accent-warning-glow);
+}
+
+.organ-bar__fill--critical {
+  background: var(--accent-critical);
+  box-shadow: 0 0 6px var(--accent-critical-glow);
+}
+
+.organ-bar__fill--neural {
+  background: var(--accent-neural);
+  box-shadow: 0 0 6px var(--accent-neural-glow);
+}
+
+.organ-bar__label {
+  font-size: 8px;
+  color: var(--text-dim);
+  letter-spacing: 1px;
+}
+
+.organ-card__ecg {
+  height: 30px;
+  border-top: 1px solid var(--bg-elevated);
+  overflow: hidden;
+}
+
+.ecg-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* ===== CENTER PANEL: BODY SCAN ===== */
+.panel--bodyscan {
+  position: relative;
+}
+
+.bodyscan-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 8px;
+}
+
+.bodyscan__frame {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px dashed var(--accent-primary-dim);
+  border-radius: 4px;
+  background: radial-gradient(ellipse at center, rgba(45, 255, 138, 0.02) 0%, transparent 70%);
+  overflow: hidden;
+}
+
+.body-wireframe {
+  width: 70%;
+  max-height: 90%;
+  position: relative;
+  z-index: 2;
+}
+
+/* Wireframe elements */
+.wire-stroke {
+  fill: none;
+  stroke: var(--accent-primary-dim);
+  stroke-width: 1.5;
+  opacity: 0.6;
+}
+
+.wire-fill {
+  fill: var(--accent-primary-dim);
+  opacity: 0.4;
+}
+
+.wire-heart {
+  stroke: var(--accent-primary);
+  stroke-width: 2;
+  animation: heartPulse var(--heartbeat-duration) infinite ease-out;
+}
+
+@keyframes heartPulse {
+  0%, 100% { transform: scale(1); opacity: 0.8; }
+  15% { transform: scale(1.15); opacity: 1; }
+  30% { transform: scale(1); opacity: 0.8; }
+}
+
+.wire-lung--left,
+.wire-lung--right {
+  stroke: var(--accent-secondary);
+  animation: lungBreathe var(--breathe-duration) infinite ease-in-out;
+}
+
+@keyframes lungBreathe {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+.wire-liver {
+  stroke: var(--accent-warning);
+}
+
+.wire-implant,
+.wire-cyber-arm,
+.wire-cyber-leg {
+  stroke: var(--accent-secondary);
+  stroke-dasharray: 4 2;
+  animation: implantDash 3s linear infinite;
+}
+
+@keyframes implantDash {
+  to { stroke-dashoffset: -12; }
+}
+
+.wire-nano-node {
+  fill: var(--accent-primary);
+  animation: nanoNodePulse 2s infinite ease-in-out;
+}
+
+@keyframes nanoNodePulse {
+  0%, 100% { r: 2; opacity: 0.6; }
+  50% { r: 4; opacity: 1; }
+}
+
+/* Scan Beam */
+.scan-beam {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent-primary), transparent);
+  box-shadow: 0 0 20px var(--accent-primary-glow), 0 0 40px rgba(45, 255, 138, 0.2);
+  z-index: 10;
+  animation: scanBeam var(--scan-speed) linear infinite;
+  pointer-events: none;
+}
+
+@keyframes scanBeam {
+  0% { top: 5%; }
+  50% { top: 85%; }
+  100% { top: 5%; }
+}
+
+/* Reticles */
+.reticle {
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--accent-primary);
+  opacity: 0;
+  animation: reticlePulse 3s infinite;
+  pointer-events: none;
+  z-index: 15;
+}
+
+.reticle::before,
+.reticle::after {
+  content: '';
+  position: absolute;
+  background: var(--accent-primary);
+}
+
+.reticle::before {
+  width: 1px;
+  height: 10px;
+  top: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.reticle::after {
+  width: 10px;
+  height: 1px;
+  left: -6px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.reticle--heart { top: 28%; left: 44%; animation-delay: 0s; }
+.reticle--brain { top: 8%; left: 48%; animation-delay: 1s; }
+.reticle--liver { top: 38%; left: 40%; animation-delay: 2s; }
+
+@keyframes reticlePulse {
+  0%, 100% { opacity: 0; transform: scale(0.8); }
+  20% { opacity: 0.8; transform: scale(1); }
+  40% { opacity: 0.3; transform: scale(1.1); }
+  60% { opacity: 0; transform: scale(0.9); }
+}
+
+/* ECG Bar */
+.ecg-bar {
+  height: 80px;
+  margin-top: 8px;
+  border-top: var(--border-thin);
+  position: relative;
+  background: var(--bg-dim);
+  overflow: hidden;
+}
+
+#ecgMain {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.ecg-bar__label {
+  position: absolute;
+  top: 4px;
+  right: 8px;
+  font-size: 9px;
+  color: var(--text-dim);
+  letter-spacing: 2px;
+}
+
+/* ===== RIGHT PANEL: DIAGNOSTICS ===== */
+.panel--diagnostics {
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent-primary-dim) var(--bg-deep);
+}
+
+.panel--diagnostics::-webkit-scrollbar {
+  width: 4px;
+}
+
+.panel--diagnostics::-webkit-scrollbar-track {
+  background: var(--bg-deep);
+}
+
+.panel--diagnostics::-webkit-scrollbar-thumb {
+  background: var(--accent-primary-dim);
+  border-radius: 2px;
+}
+
+.diag-section {
+  padding: 10px;
+  border-bottom: 1px solid var(--bg-elevated);
+}
+
+.diag-section__title {
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--accent-secondary);
+  letter-spacing: 2px;
+  margin-bottom: 10px;
+}
+
+/* Neural Gauge */
+.neural-gauge {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+.neural-gauge__svg {
+  width: 140px;
+  height: 140px;
+}
+
+.neural-gauge__arc,
+.neural-gauge__arc-inner {
+  transition: stroke-dashoffset 1s ease;
+}
+
+.neural-gauge__value {
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 600;
+  fill: var(--text-bright);
+}
+
+.neural-gauge__label {
+  font-size: 9px;
+  fill: var(--text-dim);
+  letter-spacing: 2px;
+}
+
+.neural-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.neural-stat {
+  display: flex;
+  flex-direction: column;
+  padding: 6px;
+  background: var(--bg-dim);
+  border-radius: 3px;
+  border: 1px solid var(--bg-elevated);
+}
+
+.neural-stat__label {
+  font-size: 8px;
+  color: var(--text-dim);
+  letter-spacing: 1px;
+  margin-bottom: 2px;
+}
+
+.neural-stat__value {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.neural-stat__value--good { color: var(--accent-primary); }
+.neural-stat__value--warning { color: var(--accent-warning); }
+.neural-stat__value--critical { color: var(--accent-critical); }
+
+.neural-waveform {
+  height: 50px;
+  border-top: 1px solid var(--bg-elevated);
+}
+
+#neuralWaveform {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Mutation Section */
+.mutation-helix {
+  height: 120px;
+  margin-bottom: 10px;
+  border: 1px solid var(--bg-elevated);
+  border-radius: 3px;
+  overflow: hidden;
+  background: var(--bg-dim);
+}
+
+#mutationHelix {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.mutation-strands {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.mutation-strand {
+  display: grid;
+  grid-template-columns: 100px 1fr 40px;
+  align-items: center;
+  gap: 8px;
+}
+
+.strand-label {
+  font-size: 9px;
+  color: var(--text-dim);
+  letter-spacing: 1px;
+}
+
+.strand-bar {
+  height: 4px;
+  background: var(--bg-elevated);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.strand-fill {
+  height: 100%;
+  width: var(--fill);
+  background: var(--accent-primary);
+  border-radius: 2px;
+  transition: width 1s ease;
+}
+
+.strand-fill--warning {
+  background: var(--accent-warning);
+}
+
+.strand-fill--critical {
+  background: var(--accent-critical);
+  animation: criticalBar 1.5s infinite;
+}
+
+@keyframes criticalBar {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.strand-fill--unknown {
+  background: var(--accent-unknown);
+}
+
+.strand-value {
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  text-align: right;
+}
+
+.mutation-warning {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  background: rgba(255, 42, 42, 0.08);
+  border: 1px solid var(--accent-critical-dim);
+  border-radius: 3px;
+}
+
+.warning-icon {
+  font-size: 14px;
+  color: var(--accent-critical);
+}
+
+.warning-text {
+  font-size: 9px;
+  color: var(--accent-critical);
+  letter-spacing: 1px;
+  font-weight: bold;
+}
+
+/* Toxin Section */
+.toxin-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.toxin-item {
+  display: grid;
+  grid-template-columns: 80px 1fr 40px;
+  align-items: center;
+  gap: 8px;
+}
+
+.toxin-name {
+  font-size: 9px;
+  color: var(--text-dim);
+  letter-spacing: 1px;
+}
+
+.toxin-bar {
+  height: 6px;
+  background: var(--bg-elevated);
+  border-radius: 3px;
+  overflow: hidden;
+  position: relative;
+}
+
+.toxin-fill {
+  height: 100%;
+  width: var(--fill);
+  background: var(--accent-warning);
+  border-radius: 3px;
+  transition: width 1s ease;
+}
+
+.toxin-fill--critical {
+  background: var(--accent-critical);
+  animation: criticalBar 1s infinite;
+}
+
+.toxin-fill--warning {
+  background: var(--accent-warning);
+}
+
+.toxin-value {
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 600;
+  text-align: right;
+}
+
+.toxin-value--low { color: var(--accent-primary); }
+.toxin-value--moderate { color: var(--accent-secondary); }
+.toxin-value--high { color: var(--accent-warning); }
+.toxin-value--critical { color: var(--accent-critical); }
+
+.toxin-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px;
+  background: var(--bg-dim);
+  border: 1px solid var(--accent-warning-dim);
+  border-radius: 3px;
+}
+
+.summary-label {
+  font-size: 9px;
+  color: var(--text-dim);
+  letter-spacing: 2px;
+}
+
+.summary-value {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--accent-warning);
+  text-shadow: 0 0 10px var(--accent-warning-glow);
+}
+
+/* ===== BOTTOM BAR ===== */
+.bottom-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 180px;
+  background: var(--bg-surface);
+  border-top: var(--border-thin);
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0;
+  z-index: 100;
+}
+
+.bottom-section {
+  padding: 8px 12px;
+  border-right: 1px solid var(--bg-elevated);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.bottom-section:last-child {
+  border-right: none;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--bg-elevated);
+}
+
+.section-title {
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--accent-primary);
+  letter-spacing: 2px;
+}
+
+.section-status {
+  font-size: 8px;
+  font-weight: bold;
+  letter-spacing: 1px;
+  padding: 2px 8px;
+  border-radius: 2px;
+}
+
+.status-active {
+  background: rgba(45, 255, 138, 0.15);
+  color: var(--accent-primary);
+  border: 1px solid var(--accent-primary-dim);
+}
+
+.status-warning {
+  background: rgba(255, 170, 0, 0.15);
+  color: var(--accent-warning);
+  border: 1px solid var(--accent-warning-dim);
+  animation: warningFlash 2s infinite;
+}
+
+/* Nano Swarm */
+.nano-visualizer {
+  flex: 1;
+  border: 1px solid var(--bg-elevated);
+  border-radius: 3px;
+  overflow: hidden;
+  background: var(--bg-dim);
+  margin-bottom: 8px;
+}
+
+#nanoSwarm {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.nano-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+
+.nano-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 4px;
+  background: var(--bg-dim);
+  border-radius: 3px;
+  border: 1px solid var(--bg-elevated);
+}
+
+.nano-stat__label {
+  font-size: 8px;
+  color: var(--text-dim);
+  letter-spacing: 1px;
+}
+
+.nano-stat__value {
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--accent-primary);
+}
+
+.nano-stat__value--warning {
+  color: var(--accent-warning);
+}
+
+/* Gene Matrix */
+.gene-matrix {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  grid-template-rows: repeat(6, 1fr);
+  gap: 3px;
+  margin-bottom: 8px;
+}
+
+.gene-cell {
+  border-radius: 2px;
+  transition: var(--transition-fast);
+  position: relative;
+}
+
+.gene-cell::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 2px;
+  opacity: 0;
+  background: currentColor;
+  transition: opacity var(--transition-fast);
+}
+
+.gene-cell:hover::after {
+  opacity: 0.2;
+}
+
+.gene-cell--compatible { background: var(--accent-primary); }
+.gene-cell--partial { background: var(--accent-warning); }
+.gene-cell--rejected { background: var(--accent-critical); }
+.gene-cell--unknown { background: var(--accent-unknown); }
+
+.gene-legend {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 8px;
+  color: var(--text-dim);
+  letter-spacing: 1px;
+}
+
+.legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+}
+
+.legend-dot--compatible { background: var(--accent-primary); }
+.legend-dot--partial { background: var(--accent-warning); }
+.legend-dot--rejected { background: var(--accent-critical); }
+.legend-dot--unknown { background: var(--accent-unknown); }
+
+/* System Log */
+.log-container {
+  flex: 1;
+  overflow-y: auto;
+  font-size: 10px;
+  line-height: 1.5;
+  scrollbar-width: none;
+}
+
+.log-container::-webkit-scrollbar {
+  display: none;
+}
+
+.log-entry {
+  padding: 3px 0;
+  border-bottom: 1px solid var(--bg-elevated);
+  display: flex;
+  gap: 8px;
+  animation: logFadeIn 0.3s ease;
+}
+
+@keyframes logFadeIn {
+  from { opacity: 0; transform: translateX(-10px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.log-time {
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+  min-width: 60px;
+}
+
+.log-type {
+  font-weight: bold;
+  min-width: 50px;
+}
+
+.log-type--info { color: var(--accent-secondary); }
+.log-type--warn { color: var(--accent-warning); }
+.log-type--crit { color: var(--accent-critical); }
+.log-type--nano { color: var(--accent-neural); }
+
+.log-message {
+  color: var(--text-secondary);
+  flex: 1;
+}
+
+/* ===== WARNING OVERLAY ===== */
+.warning-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  pointer-events: none;
+  display: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.warning-overlay.active {
+  display: block;
+  opacity: 1;
+}
+
+.warning-flash {
+  position: absolute;
+  inset: 0;
+  background: var(--accent-critical);
+  opacity: 0;
+  animation: warningFlashOverlay 2s infinite;
+}
+
+@keyframes warningFlashOverlay {
+  0%, 100% { opacity: 0; }
+  10% { opacity: 0.1; }
+  20% { opacity: 0; }
+}
+
+.warning-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(10, 22, 18, 0.9);
+  padding: 16px 32px;
+  border: 2px solid var(--accent-critical);
+  border-radius: 4px;
+  box-shadow: 0 0 30px var(--accent-critical-glow);
+}
+
+.warning-text__icon {
+  font-size: 24px;
+  color: var(--accent-critical);
+  animation: warningIconPulse 1s infinite;
+}
+
+@keyframes warningIconPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+}
+
+.warning-text__message {
+  font-family: var(--font-accent);
+  font-size: 18px;
+  color: var(--accent-critical);
+  letter-spacing: 3px;
+}
+
+/* ===== SCAN COMPLETE OVERLAY ===== */
+.scan-complete {
+  position: fixed;
+  inset: 0;
+  z-index: 1999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+.scan-complete.active {
+  opacity: 1;
+}
+
+.scan-complete__ring {
+  position: absolute;
+  width: 200px;
+  height: 200px;
+  border: 3px solid var(--accent-primary);
+  border-radius: 50%;
+  animation: scanRingExpand 2s ease-out forwards;
+  box-shadow: 0 0 30px var(--accent-primary-glow);
+}
+
+@keyframes scanRingExpand {
+  0% { transform: scale(0); opacity: 1; }
+  100% { transform: scale(3); opacity: 0; }
+}
+
+.scan-complete__text {
+  text-align: center;
+  z-index: 1;
+}
+
+.scan-complete__label {
+  display: block;
+  font-size: 10px;
+  color: var(--text-dim);
+  letter-spacing: 3px;
+  margin-bottom: 4px;
+}
+
+.scan-complete__phase {
+  font-family: var(--font-accent);
+  font-size: 24px;
+  color: var(--accent-primary);
+  letter-spacing: 4px;
+  text-shadow: 0 0 15px var(--accent-primary-glow);
+}
+
+/* ===== UTILITY CLASSES ===== */
+.hidden {
+  display: none !important;
+}
+
+.text-glow-primary {
+  text-shadow: 0 0 10px var(--accent-primary-glow);
+}
+
+.text-glow-secondary {
+  text-shadow: 0 0 10px var(--accent-secondary-glow);
+}
+
+/* ===== RESPONSIVE ADJUSTMENTS ===== */
+@media (max-width: 1400px) {
+  .main-content {
+    grid-template-columns: 320px 1fr 280px;
+  }
+  
+  .organ-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 1100px) {
+  .main-content {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr auto;
+  }
+  
+  .panel--left,
+  .panel--right {
+    max-height: 300px;
+  }
+}
+
+/* ===== SELECTION STYLING ===== */
+::selection {
+  background: var(--accent-primary-dim);
+  color: var(--text-bright);
+}
+
+/* ===== FOCUS STYLES ===== */
+*:focus-visible {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 2px;
+}
+
+/* ===== LOADING ANIMATION ===== */
+.loading-skeleton {
+  background: linear-gradient(90deg, var(--bg-dim) 25%, var(--bg-elevated) 50%, var(--bg-dim) 75%);
+  background-size: 200% 100%;
+  animation: loadingShimmer 1.5s infinite;
+}
+
+@keyframes loadingShimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}

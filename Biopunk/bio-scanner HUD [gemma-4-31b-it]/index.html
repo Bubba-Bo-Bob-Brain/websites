@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CHIMERA-OS // Bio-Medical HUD</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- Importing specialized fonts for the biopunk aesthetic -->
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;500;800&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Ambient Atmospheric Layers -->
+    <div class="crt-overlay"></div>
+    <div class="grain-texture"></div>
+    <div class="vignette"></div>
+
+    <main class="hud-container">
+        <!-- Header Section: Patient Identity & System Status -->
+        <header class="hud-header">
+            <div class="patient-id">
+                <span class="label">SUBJECT:</span>
+                <span class="value">XP-882 "THE HYBRID"</span>
+                <span class="status-tag blinking">UNSTABLE</span>
+            </div>
+            <div class="system-clock">
+                <div id="current-time">00:00:00</div>
+                <div class="label">SYNCED TO NEURAL-CORE</div>
+            </div>
+            <div class="session-meta">
+                <span class="label">SPLICER ID:</span> <span class="value">DR_VANE_09</span>
+                <span class="label">PROCEDURE:</span> <span class="value">GENE-SUTURE V.4</span>
+            </div>
+        </header>
+
+        <!-- Left Column: Organ Status & Mutation Progression -->
+        <section class="side-panel left">
+            <div class="module organ-module">
+                <h2 class="module-title">ORGAN VITALITY</h2>
+                <div class="organ-grid">
+                    <div class="organ-item" data-organ="heart">
+                        <span class="organ-name">CARDIAC CORE</span>
+                        <div class="bar-container"><div class="bar fill-green" style="width: 82%;"></div></div>
+                        <span class="organ-value">82% <small>STABLE</small></span>
+                    </div>
+                    <div class="organ-item" data-organ="lungs">
+                        <span class="organ-name">RESPIRATORY FILTERS</span>
+                        <div class="bar-container"><div class="bar fill-yellow" style="width: 45%;"></div></div>
+                        <span class="organ-value">45% <small>CONGESTED</small></span>
+                    </div>
+                    <div class="organ-item" data-organ="liver">
+                        <span class="organ-name">TOXIC-LIVER ARRAY</span>
+                        <div class="bar-container"><div class="bar fill-red" style="width: 21%;"></div></div>
+                        <span class="organ-value">21% <small>CRITICAL</small></span>
+                    </div>
+                    <div class="organ-item" data-organ="brain">
+                        <span class="organ-name">NEURAL CORTEX</span>
+                        <div class="bar-container"><div class="bar fill-green" style="width: 94%;"></div></div>
+                        <span class="organ-value">94% <small>OPTIMAL</small></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="module mutation-module">
+                <h2 class="module-title">MUTATION PROGRESSION</h2>
+                <div class="mutation-matrix">
+                    <!-- Gene-splice cells -->
+                    <div class="gene-cell active"><span>S-1</span></div>
+                    <div class="gene-cell active"><span>S-2</span></div>
+                    <div class="gene-cell warning"><span>S-3</span></div>
+                    <div class="gene-cell"><span>S-4</span></div>
+                    <div class="gene-cell active"><span>S-5</span></div>
+                    <div class="gene-cell active"><span>S-6</span></div>
+                    <div class="gene-cell critical"><span>S-7</span></div>
+                    <div class="gene-cell"><span>S-8</span></div>
+                    <div class="gene-cell active"><span>S-9</span></div>
+                </div>
+                <div class="matrix-info">
+                    <span class="label">COMPATIBILITY:</span>
+                    <span class="value" id="compatibility-val">67.4%</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Center Column: Anatomical Overlay & Real-time Feed -->
+        <section class="center-display">
+            <div class="body-wireframe-container">
+                <!-- SVG anatomical representation -->
+                <svg id="body-svg" viewBox="0 0 400 800" preserveAspectRatio="xMidYMid meet">
+                    <defs>
+                        <filter id="glow">
+                            <feGaussianBlur stdDeviation="2.5" result="coloredBlur"/>
+                            <feMerge>
+                                <feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/>
+                            </feMerge>
+                        </filter>
+                    </defs>
+                    <!-- Simplified body silhouette -->
+                    <path class="body-outline" d="M200,50 C160,50 140,80 140,120 C140,160 160,180 200,180 C240,180 260,160 260,120 C260,80 240,50 200,50 Z M140,180 L110,300 L130,500 L150,750 L250,750 L270,500 L290,300 L260,180 Z" />
+                    
+                    <!-- Organ Hotspots -->
+                    <circle class="hotspot heart-node" cx="200" cy="240" r="8" />
+                    <circle class="hotspot lung-node-l" cx="170" cy="230" r="6" />
+                    <circle class="hotspot lung-node-r" cx="230" cy="230" r="6" />
+                    <circle class="hotspot liver-node" cx="210" cy="280" r="7" />
+                    <circle class="hotspot brain-node" cx="200" cy="110" r="10" />
+
+                    <!-- Neural Connection Lines (Generated by JS) -->
+                    <g id="neural-links"></g>
+                </svg>
+                <div class="scan-line"></div>
+            </div>
+            
+            <div class="heartbeat-monitor">
+                <svg viewBox="0 0 1000 100" preserveAspectRatio="none">
+                    <path id="ekg-path" d="M0,50 L100,50 L110,20 L120,80 L130,50 L200,50" stroke="#00ffaa" stroke-width="2" fill="none" />
+                </svg>
+                <span class="bpm-label">BPM: <span id="bpm-value">72</span></span>
+            </div>
+        </section>
+
+        <!-- Right Column: Nano-Deployment & Neural Link -->
+        <section class="side-panel right">
+            <div class="module nano-module">
+                <h2 class="module-title">NANOMACHINE SWARM</h2>
+                <div class="nano-visualizer">
+                    <canvas id="nano-canvas"></canvas>
+                    <div class="nano-stats">
+                        <div class="stat-row"><span>DEPLOYMENT:</span> <span class="val">ACTIVE</span></div>
+                        <div class="stat-row"><span>DENSITY:</span> <span class="val" id="nano-density">1.2M/ml</span></div>
+                        <div class="stat-row"><span>TARGET:</span> <span class="val">CORTEX-LOBE</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="module toxin-module">
+                <h2 class="module-title">TOXIN LEVELS</h2>
+                <div class="gauge-container">
+                    <div class="circular-gauge" id="toxin-gauge">
+                        <svg viewBox="0 0 100 100">
+                            <circle class="gauge-bg" cx="50" cy="50" r="45" />
+                            <circle class="gauge-fill" cx="50" cy="50" r="45" />
+                        </svg>
+                        <div class="gauge-value">42%</div>
+                    </div>
+                    <div class="toxin-details">
+                        <div class="detail-item"><span>SULFURIC:</span> <span class="high">HIGH</span></div>
+                        <div class="detail-item"><span>CYTOTOXIC:</span> <span class="med">MED</span></div>
+                        <div class="detail-item"><span>NEURO-TOX:</span> <span class="low">LOW</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="module neural-module">
+                <h2 class="module-title">NEURAL LINK INTEGRITY</h2>
+                <div class="link-status">
+                    <div class="link-bar"><div class="link-fill"></div></div>
+                    <div class="link-metrics">
+                        <span>LATENCY: 4ms</span>
+                        <span>STABILITY: 98.2%</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="hud-footer">
+        <div class="alert-ticker">
+            <span class="ticker-label">SYSTEM ALERT:</span>
+            <marquee behavior="scroll" direction="left">
+                CRITICAL FAILURE IN LIVER-ARRAY FILTER // WARNING: MUTATION S-7 IS EXHIBITING AGGRESSIVE GROWTH // NANOMACHINES REDIRECTING TO CORTEX...
+            </marquee>
+        </div>
+    </footer>
+
+    <script src="scripts.js"></script>
+</body>
+</html>

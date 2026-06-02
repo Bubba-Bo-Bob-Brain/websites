@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chronicles of the Ur‑Epoch — Interactive Atlas</title>
+  <link rel="stylesheet" href="styles.css">
+  <!-- decorative ancient‐style fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=IM+Fell+English:ital@0;1&family=MedievalSharp&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- ===== MAIN WRAPPER (papyrus texture via CSS) ===== -->
+  <div id="atlas" class="atlas-container">
+
+    <!-- ===== LEFT PANEL : MAP & TIMELINE ===== -->
+    <div class="map-panel">
+
+      <!-- timeline slider – shifts borders / era display -->
+      <div class="timeline-bar">
+        <div class="timeline-label">
+          <span class="era-marker" data-era="0">🌅 Dawn</span>
+          <span class="era-marker" data-era="1">⚔️ Empire</span>
+          <span class="era-marker" data-era="2">🌊 Exodus</span>
+        </div>
+        <input type="range" id="eraSlider" min="0" max="2" value="1" step="1" class="era-slider">
+        <div class="timeline-ticks">
+          <span>c. 3400 U.E.</span>
+          <span>c. 2700 U.E.</span>
+          <span>c. 1900 U.E.</span>
+        </div>
+      </div>
+
+      <!-- the map itself: SVG with clickable regions + decorative elements -->
+      <div class="map-frame">
+        <svg viewBox="0 0 800 550" class="ancient-map" id="ancientMap">
+          <defs>
+            <!-- worn parchment filter -->
+            <filter id="parchment">
+              <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="4" result="noise" />
+              <feColorMatrix type="saturate" values="0" in="noise" result="grayNoise" />
+              <feBlend in="SourceGraphic" in2="grayNoise" mode="multiply" />
+            </filter>
+            <!-- glow for trade routes -->
+            <filter id="routeGlow">
+              <feGaussianBlur stdDeviation="1.5" result="blur" />
+              <feMerge>
+                <feMergeNode in="blur" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+            <!-- region drop shadow -->
+            <filter id="regionShadow">
+              <feDropShadow dx="1" dy="1" stdDeviation="1.5" flood-color="#2a1e0e" flood-opacity="0.5" />
+            </filter>
+          </defs>
+
+          <!-- background – ocean / empty lands -->
+          <rect width="800" height="550" fill="#cfbc9b" filter="url(#parchment)" />
+
+          <!-- decorative compass rose -->
+          <g transform="translate(680,80)" class="compass-rose">
+            <circle cx="0" cy="0" r="22" fill="none" stroke="#4d3b23" stroke-width="1.2" opacity="0.7"/>
+            <circle cx="0" cy="0" r="16" fill="none" stroke="#4d3b23" stroke-width="0.8" opacity="0.5"/>
+            <polygon points="0,-24 4,-8 0,-10 -4,-8" fill="#6b4f2e" />
+            <polygon points="0,24 4,8 0,10 -4,8" fill="#6b4f2e" />
+            <polygon points="-24,0 -8,4 -10,0 -8,-4" fill="#6b4f2e" />
+            <polygon points="24,0 8,4 10,0 8,-4" fill="#6b4f2e" />
+          </g>
+
+          <!-- ===== REGIONS (clickable) ===== -->
+          <!-- Zephyria (coastal) -->
+          <path class="region" data-region="zephyria" d="M60,180 Q90,140 140,150 Q180,160 200,190 Q210,230 180,260 Q140,280 100,260 Q70,240 60,210 Z" fill="#b89b6e" stroke="#4d3b23" stroke-width="1.5" filter="url(#regionShadow)"/>
+          <!-- Numinor (central) -->
+          <path class="region" data-region="numinor" d="M200,180 Q240,140 300,130 Q350,125 380,160 Q400,200 380,240 Q340,280 290,280 Q240,280 210,250 Q190,220 200,180 Z" fill="#bca470" stroke="#4d3b23" stroke-width="1.5" filter="url(#regionShadow)"/>
+          <!-- Kemet (desert south) -->
+          <path class="region" data-region="kemet" d="M280,300 Q320,270 380,280 Q430,290 460,330 Q470,380 430,410 Q370,430 320,410 Q280,380 270,340 Z" fill="#c5a86a" stroke="#4d3b23" stroke-width="1.5" filter="url(#regionShadow)"/>
+          <!-- Thule (northern isles) -->
+          <path class="region" data-region="thule" d="M500,80 Q530,60 570,70 Q600,90 590,120 Q570,150 540,150 Q510,140 500,110 Z" fill="#9f8b65" stroke="#4d3b23" stroke-width="1.5" filter="url(#regionShadow)"/>
+          <!-- Yin‑Shan (eastern mountains) -->
+          <path class="region" data-region="yinshan" d="M580,200 Q620,160 670,170 Q720,180 740,220 Q750,270 720,300 Q670,320 620,300 Q580,280 570,240 Z" fill="#b59d6e" stroke="#4d3b23" stroke-width="1.5" filter="url(#regionShadow)"/>
+          <!-- Aztlan (jungle west) -->
+          <path class="region" data-region="aztlan" d="M60,320 Q100,290 150,300 Q190,320 180,370 Q160,410 120,420 Q70,410 50,370 Z" fill="#b3975c" stroke="#4d3b23" stroke-width="1.5" filter="url(#regionShadow)"/>
+
+          <!-- ===== TRADE ROUTES (animated via CSS) ===== -->
+          <g class="trade-routes" filter="url(#routeGlow)">
+            <path class="route" data-route="silk" d="M160,220 Q280,190 380,210" fill="none" stroke="#7a5c3a" stroke-width="2" stroke-dasharray="8 6" />
+            <path class="route" data-route="incense" d="M380,280 Q420,340 340,380" fill="none" stroke="#7a5c3a" stroke-width="2" stroke-dasharray="8 6" />
+            <path class="route" data-route="amber" d="M560,120 Q580,180 640,220" fill="none" stroke="#7a5c3a" stroke-width="2" stroke-dasharray="8 6" />
+            <path class="route" data-route="spice" d="M120,350 Q220,380 300,340" fill="none" stroke="#7a5c3a" stroke-width="2" stroke-dasharray="8 6" />
+          </g>
+
+          <!-- ===== MYTHOLOGICAL ANNOTATIONS (icons) ===== -->
+          <g class="myth-annotations">
+            <circle cx="230" cy="160" r="8" fill="#6b4f2e" stroke="#cfbc9b" stroke-width="1.5" class="myth-icon" data-myth="griffin"/>
+            <text x="225" y="148" font-size="11" fill="#2a1e0e" class="myth-label" font-family="'MedievalSharp', serif">🦅</text>
+            <circle cx="440" cy="250" r="8" fill="#6b4f2e" stroke="#cfbc9b" stroke-width="1.5" class="myth-icon" data-myth="sphinx"/>
+            <text x="435" y="238" font-size="11" fill="#2a1e0e" class="myth-label" font-family="'MedievalSharp', serif">🐉</text>
+            <circle cx="640" cy="260" r="8" fill="#6b4f2e" stroke="#cfbc9b" stroke-width="1.5" class="myth-icon" data-myth="dragon"/>
+            <text x="635" y="248" font-size="11" fill="#2a1e0e" class="myth-label" font-family="'MedievalSharp', serif">🐉</text>
+            <circle cx="100" cy="140" r="8" fill="#6b4f2e" stroke="#cfbc9b" stroke-width="1.5" class="myth-icon" data-myth="leviathan"/>
+            <text x="95" y="128" font-size="11" fill="#2a1e0e" class="myth-label" font-family="'MedievalSharp', serif">🐍</text>
+          </g>
+
+          <!-- decorative cuneiform / hieroglyphic elements -->
+          <g class="cuneiform-decor" opacity="0.3">
+            <text x="120" y="400" font-size="14" fill="#3a2a14" font-family="'Cinzel Decorative', serif">𒀭𒋰𒀭</text>
+            <text x="620" y="380" font-size="14" fill="#3a2a14" font-family="'Cinzel Decorative', serif">𓂀𓃭𓆣</text>
+            <text x="460" y="120" font-size="14" fill="#3a2a14" font-family="'Cinzel Decorative', serif">𒀯𒀭𒈾</text>
+          </g>
+
+        </svg>
+
+        <!-- map overlay tooltip (dynamic) -->
+        <div id="mapTooltip" class="map-tooltip"></div>
+      </div>
+    </div>
+
+    <!-- ===== RIGHT PANEL : LORE / INFO ===== -->
+    <div class="lore-panel" id="lorePanel">
+      <div class="lore-header">
+        <h1 class="atlas-title">Chronicles of the Ur‑Epoch</h1>
+        <p class="subtitle">An interactive atlas of myth &amp; empire</p>
+      </div>
+
+      <!-- region info card (updated on click) -->
+      <div class="lore-card" id="loreCard">
+        <div class="card-ornament top-ornament">𓃥 𓃥 𓃥</div>
+        <h2 id="regionName" class="region-name">Zephyria</h2>
+        <p id="regionEra" class="region-era">⚔️ Age of Empires</p>
+        <div id="regionDescription" class="region-description">
+          <p>The coastal cradle of the Zephyrian League. Renowned for its purple‑dye trade and the oracles of the Cliff Temple.</p>
+          <p class="myth-note">⚡ Myth: The Griffin of Zephyria guards a crystal that controls the tides.</p>
+        </div>
+        <div id="tradeInfo" class="trade-info">
+          <span class="trade-badge">🛳️ Silk Route</span>
+          <span class="trade-badge">🌿 Spice Route</span>
+        </div>
+        <div class="card-ornament bottom-ornament">𓃥 𓃥 𓃥</div>
+      </div>
+
+      <!-- legend panel styled as stone inscription -->
+      <div class="legend-inscription">
+        <h3>⌨️ Legend</h3>
+        <ul>
+          <li><span class="legend-symbol">⬟</span> Clickable region</li>
+          <li><span class="legend-symbol">━</span> Trade route</li>
+          <li><span class="legend-symbol">⍟</span> Mythological site</li>
+          <li><span class="legend-symbol">⬡</span> Era‑shifting border</li>
+        </ul>
+        <div class="inscription-footer">— inscribed on clay —</div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="scripts.js"></script>
+</body>
+</html>

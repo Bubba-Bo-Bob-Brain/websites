@@ -1,0 +1,734 @@
+/* =========================================
+   1. CSS VARIABLES & THEME CONFIGURATION
+   ========================================= */
+:root {
+    /* Base Palette: Earthy & Organic */
+    --color-moss-dark: #1a2f1a;
+    --color-moss-light: #2d4a2d;
+    --color-clay: #8d6e63;
+    --color-sand: #f4f1ea;
+    --color-stone: #e0e0e0;
+    
+    /* Solarpunk Accents */
+    --color-chlorophyll: #4caf50;
+    --color-sun-gold: #ffb300;
+    --color-solar-blue: #4fc3f7;
+    --color-biolum: #a5d6a7;
+    
+    /* Dynamic Sunlight Intensity (Controlled by JS) */
+    --sun-intensity: 0.6; /* 0.0 to 1.0 */
+    
+    /* Derived Colors based on Sunlight */
+    --bg-body: rgba(244, 241, 234, calc(0.8 + (var(--sun-intensity) * 0.2)));
+    --bg-sidebar: rgba(26, 47, 26, calc(0.9 + (var(--sun-intensity) * 0.1)));
+    --text-main: rgba(26, 47, 26, calc(0.8 + (var(--sun-intensity) * 0.2)));
+    --text-muted: rgba(26, 47, 26, calc(0.5 + (var(--sun-intensity) * 0.3)));
+    --shadow-soft: 0 10px 30px rgba(0,0,0, calc(0.1 + (var(--sun-intensity) * 0.1)));
+    --shadow-hard: 0 5px 15px rgba(0,0,0, calc(0.2 + (var(--sun-intensity) * 0.1)));
+    
+    /* Typography */
+    --font-display: 'Space Grotesk', sans-serif;
+    --font-body: 'Lora', serif;
+    
+    /* Spacing & Layout */
+    --sidebar-width: 280px;
+    --header-height: 80px;
+    --radius-sm: 4px;
+    --radius-md: 12px;
+    --radius-lg: 24px;
+    
+    /* Transitions */
+    --ease-organic: cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+/* =========================================
+   2. GLOBAL RESET & BASE STYLES
+   ========================================= */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: var(--font-body);
+    background-color: var(--bg-body);
+    color: var(--text-main);
+    line-height: 1.6;
+    overflow-x: hidden;
+    transition: background-color 1s var(--ease-organic), color 1s var(--ease-organic);
+    position: relative;
+}
+
+/* Subtle Noise Texture for "Organic" feel */
+body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 9999;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.3s ease;
+}
+
+ul {
+    list-style: none;
+}
+
+/* =========================================
+   3. THE PHOTOSYNTHESIS LOADER
+   ========================================= */
+.loader-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--color-moss-dark);
+    z-index: 10000;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    transition: opacity 0.8s ease, visibility 0.8s ease;
+}
+
+.loader-container.loaded {
+    opacity: 0;
+    visibility: hidden;
+}
+
+.chloroplast-core {
+    width: 80px;
+    height: 80px;
+    background: radial-gradient(circle, var(--color-chlorophyll) 0%, transparent 70%);
+    border-radius: 50%;
+    position: relative;
+    animation: pulse-core 2s infinite ease-in-out;
+}
+
+.leaf-organism {
+    position: absolute;
+    width: 120px;
+    height: 120px;
+    border: 2px solid var(--color-sun-gold);
+    border-radius: 50% 50% 0 50%;
+    transform: rotate(45deg);
+    animation: grow-leaf 3s infinite var(--ease-organic);
+    opacity: 0.8;
+}
+
+.leaf-organism::after {
+    content: '';
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    width: 100px;
+    height: 100px;
+    border: 1px solid var(--color-sun-gold);
+    border-radius: 50% 50% 0 50%;
+    transform: rotate(-45deg);
+    opacity: 0.5;
+}
+
+.loading-text {
+    margin-top: 40px;
+    font-family: var(--font-display);
+    color: var(--color-sun-gold);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    animation: fade-text 2s infinite;
+}
+
+.energy-bar {
+    width: 200px;
+    height: 4px;
+    background: rgba(255,255,255,0.2);
+    margin-top: 20px;
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.energy-fill {
+    width: 0%;
+    height: 100%;
+    background: var(--color-sun-gold);
+    animation: fill-energy 3s infinite var(--ease-organic);
+}
+
+@keyframes pulse-core {
+    0%, 100% { transform: scale(1); box-shadow: 0 0 20px var(--color-chlorophyll); }
+    50% { transform: scale(1.1); box-shadow: 0 0 40px var(--color-chlorophyll); }
+}
+
+@keyframes grow-leaf {
+    0% { transform: rotate(45deg) scale(0); opacity: 0; }
+    50% { transform: rotate(45deg) scale(1); opacity: 0.8; }
+    100% { transform: rotate(45deg) scale(1); opacity: 0; }
+}
+
+@keyframes fill-energy {
+    0% { width: 0%; }
+    100% { width: 100%; }
+}
+
+@keyframes fade-text {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 1; }
+}
+
+/* =========================================
+   4. LAYOUT & SIDEBAR
+   ========================================= */
+.app-wrapper {
+    display: flex;
+    min-height: 100vh;
+    position: relative;
+}
+
+/* Sidebar Styling */
+.sidebar {
+    width: var(--sidebar-width);
+    background: var(--bg-sidebar);
+    color: var(--color-sand);
+    padding: 2rem;
+    position: fixed;
+    height: 100vh;
+    overflow-y: auto;
+    z-index: 100;
+    transition: transform 0.4s var(--ease-organic), background-color 1s;
+    border-right: 1px solid rgba(255,255,255,0.1);
+}
+
+.sidebar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.logo {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-sun-gold);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.close-sidebar {
+    display: none;
+    background: none;
+    border: none;
+    color: var(--color-sand);
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+
+.search-container {
+    position: relative;
+    margin-bottom: 2rem;
+}
+
+.search-container i {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--color-sand);
+    opacity: 0.7;
+}
+
+.search-container input {
+    width: 100%;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    padding: 10px 10px 10px 35px;
+    border-radius: var(--radius-sm);
+    color: var(--color-sand);
+    font-family: var(--font-body);
+    outline: none;
+    transition: background 0.3s;
+}
+
+.search-container input:focus {
+    background: rgba(255,255,255,0.15);
+    border-color: var(--color-sun-gold);
+}
+
+.nav-links li {
+    margin-bottom: 0.5rem;
+}
+
+.nav-links a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 15px;
+    border-radius: var(--radius-sm);
+    color: var(--color-sand);
+    opacity: 0.8;
+    position: relative;
+    overflow: hidden;
+}
+
+.nav-links a:hover, .nav-links a.active {
+    opacity: 1;
+    background: rgba(255, 179, 0, 0.1);
+    color: var(--color-sun-gold);
+}
+
+.nav-links a.active::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 4px;
+    background: var(--color-sun-gold);
+}
+
+/* Seed Bank Widget */
+.seed-bank-widget {
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 1px solid rgba(255,255,255,0.1);
+}
+
+.seed-bank-widget h4 {
+    font-family: var(--font-display);
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+    color: var(--color-sun-gold);
+}
+
+.seed-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.seed-tag {
+    width: 32px;
+    height: 32px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: transform 0.2s, background 0.2s;
+}
+
+.seed-tag:hover {
+    transform: scale(1.1);
+    background: var(--color-sun-gold);
+    color: var(--color-moss-dark);
+}
+
+/* =========================================
+   5. MAIN CONTENT AREA
+   ========================================= */
+.main-content {
+    flex: 1;
+    margin-left: var(--sidebar-width);
+    padding: 3rem 4rem;
+    position: relative;
+    transition: margin-left 0.4s var(--ease-organic);
+}
+
+.mobile-toggle {
+    display: none;
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 200;
+    background: var(--color-sun-gold);
+    color: var(--color-moss-dark);
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+/* Breadcrumbs */
+.breadcrumbs {
+    font-family: var(--font-display);
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-bottom: 2rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.breadcrumbs .current {
+    color: var(--color-chlorophyll);
+    font-weight: bold;
+}
+
+/* Article Header */
+.article-header {
+    margin-bottom: 3rem;
+    border-bottom: 1px solid rgba(0,0,0,0.1);
+    padding-bottom: 2rem;
+}
+
+.category-tag {
+    display: inline-block;
+    background: rgba(76, 175, 80, 0.1);
+    color: var(--color-moss-dark);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+    font-family: var(--font-display);
+}
+
+.article-header h1 {
+    font-family: var(--font-display);
+    font-size: 3.5rem;
+    line-height: 1.1;
+    margin-bottom: 1rem;
+    color: var(--text-main);
+}
+
+.meta-data {
+    display: flex;
+    gap: 2rem;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+.meta-data em {
+    color: var(--color-chlorophyll);
+    font-style: normal;
+    font-weight: bold;
+}
+
+/* Article Body */
+.article-body {
+    font-size: 1.1rem;
+    max-width: 800px;
+}
+
+.lead {
+    font-size: 1.3rem;
+    line-height: 1.8;
+    margin-bottom: 2rem;
+    color: var(--text-main);
+    border-left: 4px solid var(--color-sun-gold);
+    padding-left: 1.5rem;
+}
+
+h2 {
+    font-family: var(--font-display);
+    font-size: 2rem;
+    margin: 3rem 0 1.5rem;
+    color: var(--text-main);
+    position: relative;
+}
+
+h2::before {
+    content: '';
+    position: absolute;
+    left: -20px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 10px;
+    height: 10px;
+    background: var(--color-chlorophyll);
+    border-radius: 50%;
+}
+
+h3 {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    margin: 2rem 0 1rem;
+    color: var(--text-main);
+}
+
+p {
+    margin-bottom: 1.5rem;
+    color: var(--text-main);
+}
+
+/* Plant Fiber Infobox */
+.infobox {
+    background: #fdfbf7;
+    border: 1px solid #e0d8c8;
+    border-radius: var(--radius-md);
+    padding: 2rem;
+    margin: 2rem 0;
+    position: relative;
+    box-shadow: var(--shadow-soft);
+    /* Plant Fiber Texture Effect */
+    background-image: 
+        linear-gradient(90deg, rgba(0,0,0,0.02) 1px, transparent 1px),
+        linear-gradient(rgba(0,0,0,0.02) 1px, transparent 1px);
+    background-size: 20px 20px;
+}
+
+.infobox::before {
+    content: '';
+    position: absolute;
+    top: -2px; left: -2px; right: -2px; bottom: -2px;
+    border-radius: var(--radius-md);
+    border: 2px dashed rgba(141, 110, 99, 0.3);
+    pointer-events: none;
+}
+
+.infobox-header {
+    font-family: var(--font-display);
+    font-weight: bold;
+    color: var(--color-moss-dark);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.infobox table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1.5rem;
+}
+
+.infobox th {
+    text-align: left;
+    color: var(--color-clay);
+    font-family: var(--font-display);
+    font-weight: 600;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(0,0,0,0.1);
+}
+
+.infobox td {
+    padding: 8px 0;
+    color: var(--text-main);
+}
+
+.infobox-footer {
+    text-align: right;
+}
+
+.btn-primary {
+    background: var(--color-moss-dark);
+    color: var(--color-sand);
+    border: none;
+    padding: 10px 20px;
+    border-radius: var(--radius-sm);
+    font-family: var(--font-display);
+    cursor: pointer;
+    transition: background 0.3s, transform 0.2s;
+}
+
+.btn-primary:hover {
+    background: var(--color-chlorophyll);
+    transform: translateY(-2px);
+}
+
+/* Media Gallery */
+.media-gallery {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin: 2rem 0;
+}
+
+.media-item {
+    position: relative;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    box-shadow: var(--shadow-hard);
+}
+
+.media-item img {
+    width: 100%;
+    height: 250px;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.media-item:hover img {
+    transform: scale(1.05);
+}
+
+.media-item .caption {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: rgba(0,0,0,0.7);
+    color: white;
+    padding: 8px 12px;
+    font-size: 0.8rem;
+    font-family: var(--font-display);
+}
+
+/* Tech List */
+.tech-list li {
+    position: relative;
+    padding-left: 2rem;
+    margin-bottom: 0.8rem;
+    color: var(--text-main);
+}
+
+.tech-list li i {
+    position: absolute;
+    left: 0;
+    top: 4px;
+    color: var(--color-chlorophyll);
+}
+
+/* Footer */
+.article-footer {
+    margin-top: 4rem;
+    padding-top: 2rem;
+    border-top: 1px solid rgba(0,0,0,0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.tags {
+    display: flex;
+    gap: 10px;
+}
+
+.tag {
+    background: rgba(0,0,0,0.05);
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.navigation-links {
+    display: flex;
+    gap: 2rem;
+}
+
+.navigation-links a {
+    font-family: var(--font-display);
+    font-size: 0.9rem;
+    font-weight: bold;
+    color: var(--color-moss-dark);
+}
+
+.navigation-links a:hover {
+    color: var(--color-chlorophyll);
+}
+
+/* =========================================
+   6. SUNLIGHT WIDGET
+   ========================================= */
+.sunlight-widget {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
+    padding: 15px 20px;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-soft);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    border: 1px solid rgba(255,255,255,0.5);
+    transition: background 0.5s;
+}
+
+.sun-icon {
+    font-size: 1.5rem;
+    color: var(--color-sun-gold);
+    animation: spin-slow 20s linear infinite;
+}
+
+@keyframes spin-slow {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.slider-container input[type=range] {
+    -webkit-appearance: none;
+    width: 100px;
+    height: 6px;
+    background: #ddd;
+    border-radius: 3px;
+    outline: none;
+}
+
+.slider-container input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--color-sun-gold);
+    cursor: pointer;
+    box-shadow: 0 0 10px var(--color-sun-gold);
+}
+
+.time-display {
+    font-family: var(--font-display);
+    font-weight: bold;
+    color: var(--text-main);
+    font-size: 0.9rem;
+}
+
+/* =========================================
+   7. RESPONSIVE DESIGN
+   ========================================= */
+@media (max-width: 900px) {
+    .sidebar {
+        transform: translateX(-100%);
+    }
+    
+    .sidebar.active {
+        transform: translateX(0);
+    }
+    
+    .main-content {
+        margin-left: 0;
+        padding: 2rem;
+    }
+    
+    .mobile-toggle {
+        display: block;
+    }
+    
+    .close-sidebar {
+        display: block;
+    }
+    
+    .article-header h1 {
+        font-size: 2.5rem;
+    }
+    
+    .media-gallery {
+        grid-template-columns: 1fr;
+    }
+    
+    .article-footer {
+        flex-direction: column;
+        gap: 2rem;
+        align-items: flex-start;
+    }
+}

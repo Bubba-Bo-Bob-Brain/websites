@@ -1,0 +1,527 @@
+/* =========================================
+   1. VARIABLES & FOUNDATION
+   ========================================= */
+:root {
+    /* Colors */
+    --void-black: #050507;
+    --deep-dark: #0a0a0f;
+    --dark-stone: #12121a;
+    --blood-crimson: #8a0303;
+    --blood-dark: #4a0000;
+    --bone-white: #e8dcc8;
+    --bone-dim: #a89b8a;
+    --corrupted-gold: #b8860b;
+    --gold-dim: #7a5a0a;
+    --miasma-green: #3a5a2a;
+    --miasma-glow: #5a8a3a;
+    --soul-violet: #6a2a7a;
+    --ash-grey: #2a2a35;
+
+    /* Typography */
+    --font-display: 'Cinzel', serif;
+    --font-body: 'Cormorant Garamond', serif;
+    --font-rune: 'MedievalSharp', cursive;
+
+    /* Spacing */
+    --section-padding: 6rem 2rem;
+    --container-width: 1200px;
+    --gutter: 1.5rem;
+
+    /* Effects */
+    --glow-blood: 0 0 20px rgba(138, 3, 3, 0.6), 0 0 40px rgba(138, 3, 3, 0.3);
+    --glow-miasma: 0 0 15px rgba(90, 138, 58, 0.5), 0 0 30px rgba(90, 138, 58, 0.2);
+    --glow-gold: 0 0 15px rgba(184, 134, 11, 0.5);
+    --shadow-heavy: 0 10px 30px rgba(0, 0, 0, 0.8);
+    --shadow-inset: inset 0 0 50px rgba(0, 0, 0, 0.9);
+    --transition-smooth: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+
+    /* Borders */
+    --border-rune: 1px solid var(--gold-dim);
+    --border-blood: 1px solid var(--blood-dark);
+}
+
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    scroll-behavior: smooth;
+    background-color: var(--void-black);
+    color: var(--bone-white);
+    font-family: var(--font-body);
+    line-height: 1.6;
+    overflow-x: hidden;
+    cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%23b8860b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg>') 12 12, auto;
+}
+
+body {
+    background-color: var(--void-black);
+    min-height: 100vh;
+}
+
+/* =========================================
+   2. OVERLAYS & ATMOSPHERE
+   ========================================= */
+.grain-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 9998;
+    opacity: 0.05;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    animation: grainShift 0.5s steps(10) infinite;
+}
+
+@keyframes grainShift {
+    0%, 100% { transform: translate(0, 0); }
+    10% { transform: translate(-5%, -5%); }
+    20% { transform: translate(-10%, 5%); }
+    30% { transform: translate(5%, -10%); }
+    40% { transform: translate(-5%, 15%); }
+    50% { transform: translate(-10%, 5%); }
+    60% { transform: translate(15%, 0); }
+    70% { transform: translate(0, 10%); }
+    80% { transform: translate(-15%, 0); }
+    90% { transform: translate(10%, 5%); }
+}
+
+.vignette-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 9997;
+    background: radial-gradient(circle, transparent 50%, rgba(0, 0, 0, 0.8) 100%);
+}
+
+.fog-layer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 40vh;
+    pointer-events: none;
+    z-index: 9996;
+    background: linear-gradient(to top, rgba(10, 10, 15, 0.9), transparent);
+    animation: fogDrift 20s ease-in-out infinite alternate;
+}
+
+@keyframes fogDrift {
+    0% { opacity: 0.6; transform: translateY(10px); }
+    100% { opacity: 0.9; transform: translateY(-10px); }
+}
+
+.blood-drips {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 9999;
+}
+
+.drip {
+    position: absolute;
+    top: -10px;
+    width: 4px;
+    height: 30px;
+    background: linear-gradient(to bottom, var(--blood-crimson), transparent);
+    border-radius: 50% 50% 20% 20%;
+    opacity: 0.8;
+    animation: dripFall 8s ease-in infinite;
+}
+
+.drip::after {
+    content: '';
+    position: absolute;
+    bottom: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 6px;
+    height: 6px;
+    background: var(--blood-crimson);
+    border-radius: 50%;
+}
+
+@keyframes dripFall {
+    0% { top: -10px; opacity: 0; }
+    10% { opacity: 0.8; }
+    80% { top: 100vh; opacity: 0.6; }
+    90% { opacity: 0; }
+    100% { top: 110vh; opacity: 0; }
+}
+
+/* =========================================
+   3. TYPOGRAPHY & UTILITIES
+   ========================================= */
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    color: var(--bone-white);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+p, li, span {
+    color: var(--bone-dim);
+}
+
+.section-container {
+    max-width: var(--container-width);
+    margin: 0 auto;
+    width: 100%;
+}
+
+.section-header {
+    text-align: center;
+    margin-bottom: 4rem;
+    position: relative;
+}
+
+.section-rune {
+    font-family: var(--font-rune);
+    font-size: 3rem;
+    color: var(--corrupted-gold);
+    display: block;
+    margin-bottom: 0.5rem;
+    text-shadow: var(--glow-gold);
+    animation: runePulse 4s ease-in-out infinite;
+}
+
+@keyframes runePulse {
+    0%, 100% { opacity: 0.7; text-shadow: 0 0 10px var(--corrupted-gold); }
+    50% { opacity: 1; text-shadow: 0 0 25px var(--corrupted-gold), 0 0 40px var(--blood-crimson); }
+}
+
+.section-title {
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    margin-bottom: 1rem;
+    background: linear-gradient(to bottom, var(--bone-white), var(--bone-dim));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    position: relative;
+    display: inline-block;
+}
+
+.section-title::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 2px;
+    background: var(--blood-crimson);
+    box-shadow: var(--glow-blood);
+}
+
+.section-subtitle {
+    font-size: 1.2rem;
+    color: var(--miasma-glow);
+    font-style: italic;
+    margin-bottom: 1.5rem;
+}
+
+.section-divider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 2rem;
+}
+
+.divider-ornament {
+    font-family: var(--font-rune);
+    color: var(--corrupted-gold);
+    font-size: 1.5rem;
+    position: relative;
+}
+
+.divider-ornament::before,
+.divider-ornament::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 100px;
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--gold-dim), transparent);
+}
+
+.divider-ornament::before {
+    right: 100%;
+    margin-right: 1rem;
+}
+
+.divider-ornament::after {
+    left: 100%;
+    margin-left: 1rem;
+}
+
+/* =========================================
+   4. NAVIGATION
+   ========================================= */
+.main-nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(5, 5, 7, 0.85);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(184, 134, 11, 0.2);
+    transition: var(--transition-smooth);
+}
+
+.nav-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.nav-rune {
+    font-family: var(--font-rune);
+    font-size: 1.8rem;
+    color: var(--blood-crimson);
+    text-shadow: var(--glow-blood);
+    animation: runeSpin 10s linear infinite;
+}
+
+@keyframes runeSpin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.nav-title {
+    font-family: var(--font-display);
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--bone-white);
+    letter-spacing: 0.1em;
+}
+
+.nav-links {
+    display: flex;
+    gap: 2rem;
+    list-style: none;
+}
+
+.nav-link {
+    font-family: var(--font-display);
+    font-size: 0.9rem;
+    color: var(--bone-dim);
+    text-decoration: none;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    position: relative;
+    padding-bottom: 5px;
+    transition: color 0.3s;
+}
+
+.nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 1px;
+    background: var(--blood-crimson);
+    box-shadow: 0 0 8px var(--blood-crimson);
+    transition: width 0.3s ease;
+}
+
+.nav-link:hover {
+    color: var(--bone-white);
+    text-shadow: 0 0 10px var(--blood-crimson);
+}
+
+.nav-link:hover::after {
+    width: 100%;
+}
+
+.nav-toggle {
+    display: none;
+    background: none;
+    border: none;
+    cursor: pointer;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.toggle-line {
+    width: 24px;
+    height: 2px;
+    background: var(--bone-white);
+    transition: transform 0.3s, opacity 0.3s;
+}
+
+@media (max-width: 768px) {
+    .nav-links {
+        position: fixed;
+        top: 0;
+        right: -100%;
+        width: 80%;
+        height: 100vh;
+        background: var(--deep-dark);
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        padding: 2rem;
+        transition: right 0.4s ease;
+        border-left: 1px solid var(--gold-dim);
+    }
+    
+    .nav-links.active {
+        right: 0;
+    }
+    
+    .nav-toggle {
+        display: flex;
+    }
+}
+
+/* =========================================
+   5. HERO SECTION
+   ========================================= */
+.hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    padding: 6rem 2rem 2rem;
+    text-align: center;
+    background: radial-gradient(circle at center, var(--dark-stone) 0%, var(--void-black) 70%);
+    overflow: hidden;
+}
+
+.hero-runes {
+    display: flex;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.hero-runes span {
+    font-family: var(--font-rune);
+    font-size: 1.5rem;
+    color: var(--gold-dim);
+    opacity: 0.6;
+    animation: runeFloat 3s ease-in-out infinite;
+}
+
+.hero-runes span:nth-child(even) {
+    animation-delay: 0.5s;
+}
+
+.hero-runes span:nth-child(3n) {
+    animation-delay: 1s;
+}
+
+@keyframes runeFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+}
+
+.hero-title {
+    font-size: clamp(3rem, 8vw, 6rem);
+    line-height: 1;
+    margin-bottom: 1.5rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.title-line {
+    display: block;
+}
+
+.title-flicker {
+    color: var(--bone-white);
+    animation: textFlicker 4s infinite;
+}
+
+.title-corrupted {
+    color: var(--blood-crimson);
+    text-shadow: var(--glow-blood);
+    position: relative;
+}
+
+.title-corrupted::before {
+    content: 'Realms';
+    position: absolute;
+    top: 0;
+    left: 0;
+    color: var(--miasma-green);
+    opacity: 0;
+    filter: blur(2px);
+    animation: glitchText 8s infinite;
+}
+
+@keyframes textFlicker {
+    0%, 100% { opacity: 1; }
+    92% { opacity: 1; }
+    93% { opacity: 0.3; }
+    94% { opacity: 1; }
+    96% { opacity: 0.5; }
+    97% { opacity: 1; }
+}
+
+@keyframes glitchText {
+    0%, 100% { opacity: 0; transform: translate(0); }
+    20% { opacity: 0; transform: translate(0); }
+    21% { opacity: 0.8; transform: translate(-3px, 2px); }
+    22% { opacity: 0; transform: translate(0); }
+    60% { opacity: 0; transform: translate(0); }
+    61% { opacity: 0.6; transform: translate(3px, -1px); }
+    62% { opacity: 0; transform: translate(0); }
+}
+
+.hero-subtitle {
+    font-size: clamp(1rem, 2vw, 1.5rem);
+    font-style: italic;
+    color: var(--bone-dim);
+    margin-bottom: 3rem;
+    letter-spacing: 0.2em;
+}
+
+/* Suffering Index */
+.suffering-index {
+    width: min(100%, 500px);
+    margin: 0 auto 3rem;
+    padding: 1.5rem;
+    background: rgba(18, 18, 26, 0.8);
+    border: 1px solid var(--gold-dim);
+    border-radius: 4px;
+    position: relative;
+}
+
+.index-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+    font-family: var(--font-display);
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.1em;
+}
+
+.index-label {
+    color: var(--bone-dim);
+}
+
+.index-value {
+    color: var(--blood-crimson);
+    font-weight: 700;
+    font-size: 1.2rem;
+    text-shadow

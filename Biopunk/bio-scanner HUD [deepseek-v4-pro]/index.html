@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>CHIMERA SCAN // BIOPUNK HUD</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Syne+Mono&family=EB+Garamond:ital,wght@0,400;0,700;1,400&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="scan-overlay">
+    <div class="scan-line"></div>
+    <div class="scan-grain"></div>
+    <div class="chromatic-aberration"></div>
+  </div>
+
+  <main class="hud-container">
+    <header class="top-bar">
+      <div class="patient-id">
+        <span class="label-stamp">SUBJECT</span>
+        <span class="data-mono">CHIMERA-7X // OMEGA STRAIN</span>
+      </div>
+      <div class="clock-pulse">
+        <span class="label-stamp">CYCLE</span>
+        <span class="data-mono" id="real-time-clock">00:00:00.000</span>
+      </div>
+      <div class="neural-link-status">
+        <span class="label-stamp">NEURAL LINK</span>
+        <div class="link-indicator" id="neural-indicator">
+          <span class="pulse-dot active"></span>
+          <span class="data-mono">SYNC 98.3%</span>
+        </div>
+      </div>
+    </header>
+
+    <div class="central-anatomy">
+      <div class="wireframe-body">
+        <svg viewBox="0 0 200 400" class="anatomy-svg" preserveAspectRatio="xMidYMid meet">
+          <g class="skeleton-group">
+            <path class="bone skull" d="M85,20 L115,20 L115,45 L85,45 Z" />
+            <path class="bone spine" d="M100,45 L100,160" />
+            <path class="bone ribcage" d="M70,60 Q100,80 130,60 L130,100 Q100,120 70,100 Z" />
+            <path class="bone left-arm" d="M70,65 L40,120 L30,160" />
+            <path class="bone right-arm" d="M130,65 L160,120 L170,160" />
+            <path class="bone pelvis" d="M75,160 L125,160 L115,200 L85,200 Z" />
+            <path class="bone left-leg" d="M85,200 L70,280 L65,340" />
+            <path class="bone right-leg" d="M115,200 L130,280 L135,340" />
+          </g>
+          <g class="organs-group">
+            <ellipse class="organ heart" cx="100" cy="70" rx="12" ry="10" id="organ-heart" />
+            <path class="organ lungs" d="M70,75 Q60,90 70,105 L85,105 L85,75 Z M130,75 Q140,90 130,105 L115,105 L115,75 Z" id="organ-lungs" />
+            <ellipse class="organ liver" cx="100" cy="130" rx="18" ry="12" id="organ-liver" />
+            <ellipse class="organ stomach" cx="100" cy="105" rx="10" ry="8" id="organ-stomach" />
+            <ellipse class="organ kidney-left" cx="80" cy="140" rx="6" ry="8" id="organ-kidney-left" />
+            <ellipse class="organ kidney-right" cx="120" cy="140" rx="6" ry="8" id="organ-kidney-right" />
+          </g>
+          <g class="mutation-nodes">
+            <circle class="mutation-node" cx="110" cy="50" r="3" />
+            <circle class="mutation-node" cx="140" cy="80" r="2.5" />
+            <circle class="mutation-node" cx="90" cy="120" r="4" />
+            <circle class="mutation-node" cx="70" cy="190" r="2" />
+            <circle class="mutation-node" cx="130" cy="220" r="3.5" />
+          </g>
+        </svg>
+      </div>
+
+      <div class="vital-signs-overlay">
+        <div class="heartbeat-baseline" id="heartbeat-baseline">
+          <canvas id="ecg-canvas" width="300" height="100"></canvas>
+          <span class="bpm-label">BPM <span id="bpm-value">82</span></span>
+        </div>
+        <div class="breathing-lung" id="breathing-lung">
+          <span class="label-stamp">RESP</span>
+          <span class="data-mono" id="resp-value">16</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="panels-grid">
+      <div class="panel organ-status-panel" id="organ-panel">
+        <h2 class="panel-title"><span class="bio-hazard-icon">☣</span> ORGAN INTEGRITY</h2>
+        <div class="organ-list">
+          <div class="organ-item" data-organ="heart">
+            <span class="organ-name">CARDIAC</span>
+            <div class="status-bar"><div class="fill" style="width: 72%"></div></div>
+            <span class="value">72%</span>
+          </div>
+          <div class="organ-item" data-organ="lungs">
+            <span class="organ-name">PULMONARY</span>
+            <div class="status-bar"><div class="fill critical" style="width: 45%"></div></div>
+            <span class="value critical-text">45%</span>
+          </div>
+          <div class="organ-item" data-organ="liver">
+            <span class="organ-name">HEPATIC</span>
+            <div class="status-bar"><div class="fill" style="width: 88%"></div></div>
+            <span class="value">88%</span>
+          </div>
+          <div class="organ-item" data-organ="kidneys">
+            <span class="organ-name">RENAL</span>
+            <div class="status-bar"><div class="fill warning" style="width: 61%"></div></div>
+            <span class="value warning-text">61%</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel mutation-panel" id="mutation-panel">
+        <h2 class="panel-title"><span class="bio-hazard-icon">🧬</span> MUTATION PROGRESSION</h2>
+        <div class="mutation-scroll">
+          <div class="mutation-entry">
+            <span class="strain">STRAIN ALPHA-9</span>
+            <div class="progress-track"><div class="progress-fill" style="width: 34%"></div></div>
+            <span class="phase">PHASE 2</span>
+          </div>
+          <div class="mutation-entry">
+            <span class="strain">OMEGA SPLICE</span>
+            <div class="progress-track"><div class="progress-fill danger" style="width: 78%"></div></div>
+            <span class="phase">PHASE 4</span>
+          </div>
+          <div class="mutation-entry">
+            <span class="strain">NECROTIC DRIFT</span>
+            <div class="progress-track"><div class="progress-fill" style="width: 12%"></div></div>
+            <span class="phase">PHASE 1</span>
+          </div>
+        </div>
+        <div class="gene-matrix">
+          <span class="label-stamp">GENE-SPLICE COMPAT</span>
+          <div class="matrix-grid">
+            <div class="matrix-cell compat">A1</div>
+            <div class="matrix-cell">B2</div>
+            <div class="matrix-cell compat">C3</div>
+            <div class="matrix-cell">D4</div>
+            <div class="matrix-cell">E5</div>
+            <div class="matrix-cell compat">F6</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel nanite-panel" id="nanite-panel">
+        <h2 class="panel-title"><span class="bio-hazard-icon">⚙</span> NANOMACHINE DEPLOY</h2>
+        <div class="swarm-visualizer" id="swarm-container">
+          <canvas id="swarm-canvas" width="200" height="200"></canvas>
+          <div class="swarm-stats">
+            <span>ACTIVE: <span id="nanite-count">12,450</span></span>
+            <span>EFFICIENCY: <span id="nanite-eff">94%</span></span>
+          </div>
+        </div>
+        <div class="deploy-controls">
+          <button class="med-btn" id="deploy-nanites">DEPLOY SWARM</button>
+          <button class="med-btn" id="recall-nanites">RECALL</button>
+        </div>
+      </div>
+
+      <div class="panel toxin-panel" id="toxin-panel">
+        <h2 class="panel-title"><span class="bio-hazard-icon">☠</span> TOXIN LEVELS</h2>
+        <div class="toxin-chart">
+          <div class="toxin-bar">
+            <span>CYTOKINE</span>
+            <div class="toxin-track"><div class="toxin-fill" style="width: 65%"></div></div>
+            <span>65%</span>
+          </div>
+          <div class="toxin-bar">
+            <span>NECROTOXIN</span>
+            <div class="toxin-track"><div class="toxin-fill critical-fill" style="width: 91%"></div></div>
+            <span>91%</span>
+          </div>
+          <div class="toxin-bar">
+            <span>HEMOLYTIC</span>
+            <div class="toxin-track"><div class="toxin-fill" style="width: 42%"></div></div>
+            <span>42%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer class="bottom-bar">
+      <div class="system-log">
+        <span class="label-stamp">SYS LOG</span>
+        <span class="data-mono" id="log-message">CHIMERA-7X VITALS STABLE // MUTATION DRIFT DETECTED</span>
+      </div>
+      <div class="security-badge">
+        <span class="data-mono">BIOCON CLEARANCE: OMEGA</span>
+      </div>
+    </footer>
+  </main>
+
+  <div class="alert-flash" id="alert-flash"></div>
+  <script src="scripts.js"></script>
+</body>
+</html>

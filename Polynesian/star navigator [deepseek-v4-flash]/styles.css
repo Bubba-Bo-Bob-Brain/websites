@@ -1,0 +1,545 @@
+/* ===== CSS Variables & Theme ===== */
+:root {
+  --ocean-deep: #0a1628;
+  --ocean-mid: #0f2847;
+  --ocean-surface: #1a4a6e;
+  --wave-foam: #e8f4f8;
+  --star-glow: #ffe8b0;
+  --star-dim: #8ab4f8;
+  --tiki-wood: #5c3a1e;
+  --tiki-dark: #3a2210;
+  --tiki-light: #7a5230;
+  --sand-beach: #d4b896;
+  --coral-accent: #e8734a;
+  --leaf-green: #2d5a3d;
+  --glyph-gold: #c9a84c;
+  --text-primary: #e8f0f8;
+  --text-secondary: #8ab4d4;
+  --tapa-cloth: #1a1a2e;
+  --transition-smooth: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* ===== Reset & Base ===== */
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'DM Serif Display', 'Times New Roman', serif;
+  background: var(--ocean-deep);
+  color: var(--text-primary);
+  overflow-x: hidden;
+  min-height: 100vh;
+  position: relative;
+}
+
+/* ===== Star Field Canvas ===== */
+#starCanvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* ===== Tapa Cloth Background Texture ===== */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(255, 255, 255, 0.015) 2px,
+      rgba(255, 255, 255, 0.015) 4px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 3px,
+      rgba(255, 255, 255, 0.008) 3px,
+      rgba(255, 255, 255, 0.008) 6px
+    );
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* ===== Main Chart Container ===== */
+.chart-header {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem 1rem 0;
+}
+
+/* ===== Header with Tiki Carving ===== */
+.chart-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  padding: 1.5rem 1rem 0.5rem;
+  position: relative;
+  z-index: 10;
+}
+
+.header-tiki {
+  width: 48px;
+  height: 72px;
+  background: linear-gradient(135deg, var(--tiki-wood), var(--tiki-dark));
+  border-radius: 4px 4px 8px 8px;
+  position: relative;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1);
+}
+
+.header-tiki::before {
+  content: '';
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--tiki-light), var(--tiki-dark));
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+}
+
+.header-tiki::after {
+  content: '';
+  position: absolute;
+  top: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 8px;
+  height: 12px;
+  border-radius: 0 0 4px 4px;
+  background: var(--tiki-dark);
+  box-shadow: inset 0 2px 2px rgba(0,0,0,0.3);
+}
+
+.header-tiki.left-tiki { transform: rotate(-5deg); }
+.header-tiki.right-tiki { transform: rotate(5deg); }
+
+h1 {
+  font-size: 2.2rem;
+  font-weight: 400;
+  text-align: center;
+  letter-spacing: 0.15em;
+  color: var(--text-primary);
+  text-shadow: 0 2px 12px rgba(0,0,0,0.6), 0 0 40px rgba(255, 215, 150, 0.15);
+  line-height: 1.1;
+}
+
+.subtitle {
+  display: block;
+  font-size: 0.75rem;
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  margin-top: 0.3rem;
+  font-weight: 300;
+}
+
+/* ===== Navigation Toolbar ===== */
+.nav-bar {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  position: relative;
+  z-index: 10;
+  flex-wrap: wrap;
+}
+
+.nav-btn {
+  font-family: inherit;
+  font-size: 0.8rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.5rem 1.2rem;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 2px;
+  background: rgba(15, 30, 50, 0.6);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: var(--transition-smooth);
+  backdrop-filter: blur(4px);
+  position: relative;
+  overflow: hidden;
+}
+
+.nav-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, transparent 60%, rgba(255, 200, 100, 0.05));
+  transition: opacity 0.4s;
+  opacity: 0;
+}
+
+.nav-btn:hover {
+  border-color: rgba(255, 200, 150, 0.3);
+  color: var(--wave-foam);
+  background: rgba(255, 255, 255, 0.05);
+  transform: translateY(-1px);
+}
+
+.nav-btn:hover::before { opacity: 1; }
+
+.nav-btn.active {
+  border-color: var(--glyph-gold);
+  color: var(--glyph-gold);
+  background: rgba(255, 200, 100, 0.08);
+  box-shadow: 0 0 20px rgba(255, 200, 100, 0.1), inset 0 0 20px rgba(255, 200, 100, 0.05);
+}
+
+/* ===== Main Chart Area ===== */
+.chart-area {
+  position: relative;
+  width: 90%;
+  max-width: 800px;
+  margin: 1rem auto;
+  aspect-ratio: 1 / 1;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 50%, #0a1a30, #040c18);
+  box-shadow:
+    0 0 60px rgba(0, 50, 100, 0.3),
+    inset 0 0 80px rgba(0, 20, 50, 0.5),
+    0 0 120px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+  z-index: 5;
+}
+
+/* ===== SVG Star Dome ===== */
+.star-dome {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.dome-base {
+  fill: rgba(5, 15, 40, 0.6);
+}
+
+/* ===== Stars ===== */
+.star-point {
+  fill: #ffe8c0;
+  transition: r 0.3s ease, opacity 0.3s ease;
+}
+
+.star-point:hover {
+  fill: #fffbe0;
+  r: 5;
+  filter: drop-shadow(0 0 6px rgba(255, 232, 192, 0.8));
+}
+
+/* ===== Constellation Lines ===== */
+.constellation-line {
+  stroke: rgba(255, 232, 192, 0.15);
+  stroke-width: 0.5;
+  stroke-dasharray: 2 4;
+  transition: stroke-opacity 0.5s ease;
+}
+
+.constellation-line:hover {
+  stroke: rgba(255, 232, 192, 0.4);
+  stroke-width: 1;
+}
+
+/* ===== Wayfinding Lines ===== */
+.wayfinding-line {
+  stroke: rgba(200, 160, 100, 0.25);
+  stroke-width: 1.5;
+  stroke-dasharray: 4 8;
+  animation: wayfindingPulse 4s ease-in-out infinite;
+}
+
+@keyframes wayfindingPulse {
+  0%, 100% { stroke-opacity: 0.2; }
+  50% { stroke-opacity: 0.6; }
+}
+
+/* ===== Island Markers ===== */
+.island-marker {
+  fill: var(--sand-beach);
+  stroke: rgba(255, 255, 255, 0.2);
+  stroke-width: 1;
+  filter: drop-shadow(0 0 8px rgba(200, 180, 100, 0.3));
+  transition: all 0.4s ease;
+  cursor: pointer;
+}
+
+.island-marker:hover {
+  fill: #f0d8a0;
+  stroke: rgba(255, 255, 255, 0.5);
+  filter: drop-shadow(0 0 16px rgba(255, 220, 150, 0.6));
+  transform: scale(1.2);
+}
+
+.island-label {
+  font-family: 'Georgia', serif;
+  font-size: 8px;
+  fill: rgba(255, 255, 255, 0.6);
+  letter-spacing: 0.15em;
+  pointer-events: none;
+}
+
+/* ===== Ocean Currents ===== */
+.current-path {
+  fill: none;
+  stroke: rgba(100, 180, 255, 0.2);
+  stroke-width: 2;
+  stroke-dasharray: 6 12;
+  animation: currentFlow 6s linear infinite;
+}
+
+@keyframes currentFlow {
+  to { stroke-dashoffset: -36; }
+}
+
+.current-path:hover {
+  stroke: rgba(100, 180, 255, 0.5);
+  stroke-width: 3;
+}
+
+/* ===== Wave Swells ===== */
+.wave-swell {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.08);
+  stroke-width: 1;
+  animation: swellMotion 8s ease-in-out infinite;
+}
+
+@keyframes swellMotion {
+  0%, 100% { stroke-opacity: 0.05; transform: scale(1); }
+  50% { stroke-opacity: 0.15; transform: scale(1.02); }
+}
+
+/* ===== Navigation Markers (Tiki Poles) ===== */
+.nav-marker-pole {
+  stroke: var(--tiki-wood);
+  stroke-width: 2;
+  stroke-linecap: round;
+  filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.5));
+}
+
+.nav-marker-head {
+  fill: var(--tiki-dark);
+  stroke: var(--tiki-light);
+  stroke-width: 1;
+}
+
+/* ===== Legend Panel ===== */
+.legend-panel {
+  position: absolute;
+  bottom: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(5, 10, 30, 0.85);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 0.75rem 1.5rem;
+  z-index: 20;
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.7rem;
+  letter-spacing: 0.05em;
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.legend-item:hover {
+  color: var(--text-primary);
+}
+
+.legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  transition: transform 0.3s ease;
+}
+
+.legend-item:hover .legend-dot {
+  transform: scale(1.5);
+}
+
+.legend-dot.stars { background: var(--star-glow); box-shadow: 0 0 6px var(--star-glow); }
+.legend-dot.currents { background: #4a8fbf; }
+.legend-dot.waves { background: rgba(255,255,255,0.3); }
+.legend-dot.islands { background: var(--sand-beach); }
+
+/* ===== Footer ===== */
+.chart-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 1.5rem;
+  position: relative;
+  z-index: 10;
+}
+
+.footer-carving {
+  width: 40px;
+  height: 60px;
+  background: linear-gradient(180deg, var(--tiki-wood), var(--tiki-dark));
+  border-radius: 2px 2px 8px 8px;
+  position: relative;
+  opacity: 0.7;
+}
+
+.footer-carving::before {
+  content: '';
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--tiki-light);
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.footer-carving::after {
+  content: '';
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 6px;
+  height: 16px;
+  background: var(--tiki-dark);
+  border-radius: 2px;
+}
+
+.footer-text {
+  font-size: 0.8rem;
+  letter-spacing: 0.2em;
+  color: var(--text-secondary);
+  text-align: center;
+  font-weight: 300;
+}
+
+/* ===== Bioluminescent Wake Canvas ===== */
+#wakeCanvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 6;
+  border-radius: 50%;
+}
+
+/* ===== Navigation Buttons ===== */
+.nav-bar {
+  display: flex;
+  justify-content: center;
+  gap: 0.3rem;
+  padding: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.nav-btn {
+  font-family: 'Georgia', serif;
+  font-size: 0.75rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  padding: 0.5rem 1.2rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 2px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.4);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.nav-btn:hover {
+  color: var(--wave-foam);
+  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.nav-btn.active {
+  color: var(--glyph-gold);
+  border-color: var(--glyph-gold);
+  background: rgba(255, 200, 100, 0.08);
+  box-shadow: 0 0 20px rgba(255, 200, 100, 0.1);
+}
+
+/* ===== Animations ===== */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-4px); }
+}
+
+.nav-marker-group { animation: float 6s ease-in-out infinite; }
+
+/* ===== Responsive ===== */
+@media (max-width: 600px) {
+  h1 { font-size: 1.5rem; }
+  .chart-area { width: 95%; }
+  .nav-btn { font-size: 0.65rem; padding: 0.4rem 0.8rem; }
+  .footer-text { font-size: 0.65rem; }
+}
+
+/* ===== Tapa Cloth Texture Overlay ===== */
+.chart-area::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background:
+    repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 4px,
+      rgba(255, 255, 255, 0.01) 4px,
+      rgba(255, 255, 255, 0.01) 8px
+    );
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ===== Compass Rose ===== */
+.compass-rose {
+  position: absolute;
+  top: 10%;
+  right: 5%;
+  width: 60px;
+  height: 60px;
+  opacity: 0.15;
+  z-index: 15;
+  animation: compassSpin 30s linear infinite;
+}
+
+@keyframes compassSpin {
+  to { transform: rotate(360deg); }
+}

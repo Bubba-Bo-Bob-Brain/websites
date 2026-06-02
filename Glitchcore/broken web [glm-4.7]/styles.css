@@ -1,0 +1,517 @@
+/* --- VARIABLES & RESET --- */
+:root {
+    --bg-color: #050505;
+    --term-green: #0aff0a;
+    --term-dim: #003b00;
+    --error-red: #ff0000;
+    --warning-yellow: #f0f000;
+    --bsod-blue: #0000aa;
+    --white: #e0e0e0;
+    --font-mono: 'Courier New', Courier, monospace;
+    --font-sans: 'Verdana', sans-serif;
+    --font-serif: 'Times New Roman', serif;
+    --border-width: 2px;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    cursor: crosshair; /* System feel */
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--term-green);
+    font-family: var(--font-mono);
+    overflow-x: hidden;
+    font-size: 16px;
+    line-height: 1.5;
+}
+
+a {
+    color: var(--term-green);
+    text-decoration: none;
+    position: relative;
+}
+
+a:hover {
+    background-color: var(--term-green);
+    color: var(--bg-color);
+    box-shadow: 4px 4px 0 var(--error-red);
+}
+
+/* --- UTILITIES --- */
+.hidden {
+    display: none !important;
+}
+
+.critical {
+    color: var(--error-red);
+    animation: blink 1s infinite;
+}
+
+.corrupted {
+    text-shadow: 2px 0 var(--error-red), -2px 0 var(--warning-yellow);
+    letter-spacing: -2px;
+}
+
+.blink-text {
+    animation: blink 1s step-end infinite;
+}
+
+/* --- OVERLAYS --- */
+.scanlines {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: linear-gradient(
+        to bottom,
+        rgba(255,255,255,0),
+        rgba(255,255,255,0) 50%,
+        rgba(0,0,0,0.2) 50%,
+        rgba(0,0,0,0.2)
+    );
+    background-size: 100% 4px;
+    z-index: 999;
+    pointer-events: none;
+    animation: scrollLines 10s linear infinite;
+}
+
+.vignette {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: radial-gradient(circle, rgba(0,0,0,0) 60%, rgba(0,0,0,0.8) 100%);
+    z-index: 998;
+    pointer-events: none;
+}
+
+/* --- SYSTEM LAYER (BIOS/BSOD) --- */
+#system-layer {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#bios-screen {
+    background: #000;
+    color: #fff;
+    padding: 2rem;
+    border: 1px solid #333;
+    text-align: left;
+    width: 80%;
+    max-width: 800px;
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+}
+
+#bsod-screen {
+    background: var(--bsod-blue);
+    color: #fff;
+    padding: 4rem 2rem;
+    width: 100%;
+    height: 100%;
+    text-align: left;
+    font-family: var(--font-sans);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    padding-left: 15%;
+}
+
+.bsod-title {
+    background: #fff;
+    color: var(--bsod-blue);
+    display: inline-block;
+    padding: 0.2rem 1rem;
+    font-size: 2rem;
+    margin-bottom: 2rem;
+}
+
+/* --- MAIN LABYRINTH --- */
+#labyrinth {
+    padding: 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+    opacity: 0;
+    animation: fadeIn 2s forwards;
+}
+
+/* Header */
+.glitch-header {
+    border-bottom: 4px double var(--term-green);
+    padding-bottom: 2rem;
+    margin-bottom: 4rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    flex-wrap: wrap;
+}
+
+.logo-container h1 {
+    font-size: 4rem;
+    text-transform: uppercase;
+    position: relative;
+}
+
+.melting-text {
+    display: inline-block;
+    animation: melt 3s infinite alternate;
+}
+
+.status-badge {
+    font-size: 0.8rem;
+    border: 1px solid var(--error-red);
+    padding: 0.5rem;
+    color: var(--error-red);
+}
+
+.broken-nav ul {
+    list-style: none;
+    display: flex;
+    gap: 2rem;
+}
+
+.dead-link {
+    color: #555;
+    text-decoration: line-through;
+}
+
+.dead-link:hover {
+    color: var(--error-red);
+    background: none;
+    text-decoration: underline wavy var(--error-red);
+    box-shadow: none;
+}
+
+.restricted {
+    color: var(--warning-yellow);
+    font-size: 0.7rem;
+}
+
+/* Terminal Section */
+.terminal-block {
+    border: 2px solid var(--term-green);
+    margin-bottom: 4rem;
+    box-shadow: 10px 10px 0 #000;
+}
+
+.terminal-header {
+    background: #333;
+    padding: 0.5rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #fff;
+    font-family: var(--font-sans);
+    font-size: 0.8rem;
+}
+
+.dot { width: 10px; height: 10px; border-radius: 50%; }
+.red { background: var(--error-red); }
+.yellow { background: var(--warning-yellow); }
+.green { background: var(--term-green); }
+
+.terminal-body {
+    background: #000;
+    padding: 1.5rem;
+    min-height: 200px;
+    color: var(--term-green);
+}
+
+.error-text {
+    color: var(--error-red);
+    font-weight: bold;
+}
+
+/* Grid / Graveyard */
+.graveyard {
+    margin-bottom: 6rem;
+}
+
+.section-title {
+    font-size: 2rem;
+    margin-bottom: 2rem;
+    border-left: 10px solid var(--warning-yellow);
+    padding-left: 1rem;
+}
+
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 2rem;
+}
+
+.fragment-card {
+    border: 1px dashed var(--term-dim);
+    padding: 1rem;
+    transition: all 0.2s;
+    background: rgba(10, 255, 10, 0.05);
+}
+
+.fragment-card:hover {
+    border-style: solid;
+    border-color: var(--term-green);
+    transform: translate(-5px, -5px);
+    box-shadow: 5px 5px 0 var(--term-green);
+}
+
+.img-placeholder {
+    width: 100%;
+    height: 150px;
+    background: repeating-linear-gradient(
+        45deg,
+        #000,
+        #000 10px,
+        #111 10px,
+        #111 20px
+    );
+    margin-bottom: 1rem;
+    border: 1px solid #333;
+    overflow: hidden;
+    position: relative;
+}
+
+.img-placeholder::after {
+    content: "ERROR LOADING IMAGE";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 0.7rem;
+    color: var(--error-red);
+}
+
+.btn-glitch {
+    width: 100%;
+    background: transparent;
+    border: 1px solid var(--term-green);
+    color: var(--term-green);
+    padding: 0.5rem;
+    margin-top: 1rem;
+    font-family: var(--font-mono);
+    cursor: pointer;
+}
+
+.btn-glitch:hover {
+    background: var(--term-green);
+    color: #000;
+}
+
+.hidden-glitch {
+    opacity: 0.5;
+    filter: blur(2px);
+}
+
+/* Database Leak */
+.database-leak {
+    margin-bottom: 6rem;
+    position: relative;
+}
+
+.marquee-container {
+    background: var(--error-red);
+    color: #000;
+    font-weight: bold;
+    overflow: hidden;
+    white-space: nowrap;
+    padding: 0.5rem 0;
+    margin-bottom: 1rem;
+    border: 2px solid #fff;
+}
+
+.marquee-content {
+    display: inline-block;
+    animation: marquee 15s linear infinite;
+}
+
+.corrupt-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.corrupt-table th, .corrupt-table td {
+    border: 1px solid var(--term-dim);
+    padding: 0.5rem;
+    text-align: left;
+}
+
+.corrupt-table th {
+    background: var(--term-dim);
+    color: var(--term-green);
+}
+
+.corrupt-table tr:nth-child(even) {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.corrupt-table tr:hover {
+    background: var(--error-red);
+    color: #000;
+}
+
+/* Void Area */
+.void-area {
+    min-height: 400px;
+    border: 1px solid #333;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    margin-bottom: 4rem;
+}
+
+.void-text {
+    z-index: 2;
+    text-align: center;
+    background: rgba(0,0,0,0.8);
+    padding: 2rem;
+    border: 1px solid #555;
+}
+
+.hint {
+    font-size: 0.8rem;
+    color: #666;
+    margin-top: 1rem;
+}
+
+.float-item {
+    position: absolute;
+    color: #333;
+    font-size: 1.5rem;
+    user-select: none;
+    animation: float 6s ease-in-out infinite;
+}
+
+.secret-trigger {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 10px;
+    height: 10px;
+    background: transparent;
+    cursor: default;
+}
+
+/* Footer */
+footer {
+    text-align: center;
+    font-size: 0.8rem;
+    color: #444;
+    margin-top: 4rem;
+    padding-top: 2rem;
+    border-top: 1px solid #111;
+}
+
+.footer-hash {
+    font-family: monospace;
+    margin-top: 0.5rem;
+    letter-spacing: 2px;
+}
+
+/* --- SANCTUARY (Web 1.0) --- */
+#sanctuary {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #ffffff;
+    color: #000000;
+    z-index: 2000;
+    overflow-y: auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.sanctuary-content {
+    font-family: var(--font-serif);
+    text-align: center;
+    max-width: 600px;
+    padding: 2rem;
+}
+
+.sanctuary-content h1 {
+    font-family: var(--font-serif);
+    color: #000;
+    margin-bottom: 1rem;
+}
+
+.sanctuary-content hr {
+    border: 0;
+    border-top: 1px solid #000;
+    margin: 1rem auto;
+}
+
+.sanctuary-content a {
+    color: #0000ff;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.sanctuary-content a:hover {
+    background: #0000ff;
+    color: #fff;
+    box-shadow: none;
+}
+
+.small-text {
+    font-size: 0.7rem;
+}
+
+/* --- ANIMATIONS --- */
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+}
+
+@keyframes scrollLines {
+    0% { background-position: 0 0; }
+    100% { background-position: 0 100%; }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes melt {
+    0% { transform: skewX(0deg); filter: blur(0px); }
+    25% { transform: skewX(10deg) scaleY(1.1); text-shadow: 2px 2px red; }
+    50% { transform: skewX(-5deg); filter: blur(1px); }
+    75% { transform: skewX(5deg) scaleY(0.9); }
+    100% { transform: skewX(0deg); }
+}
+
+@keyframes marquee {
+    0% { transform: translateX(100%); }
+    100% { transform: translateX(-100%); }
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-20px) rotate(5deg); }
+}
+
+/* --- RESPONSIVE --- */
+@media (max-width: 768px) {
+    .glitch-header { flex-direction: column; align-items: flex-start; gap: 1rem; }
+    .broken-nav ul { flex-direction: column; gap: 0.5rem; }
+    .logo-container h1 { font-size: 2.5rem; }
+    #bsod-screen { padding-left: 1rem; align-items: center; }
+}

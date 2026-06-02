@@ -1,0 +1,1559 @@
+/* ============================================
+   BIOCORE BIOPUNK MEDICAL HUD - STYLES
+   ============================================ */
+
+/* === CSS VARIABLES === */
+:root {
+    /* Core palette */
+    --bg-void: #030806;
+    --bg-panel: rgba(5, 15, 12, 0.92);
+    --bg-card: rgba(8, 22, 18, 0.85);
+    --bg-card-hover: rgba(12, 32, 26, 0.9);
+    
+    /* Bioluminescent colors */
+    --bio-green: #00ffaa;
+    --bio-cyan: #00e5ff;
+    --bio-teal: #00d4aa;
+    --bio-mint: #88ffdd;
+    
+    /* Warning/Critical colors */
+    --warn-amber: #ffcc00;
+    --warn-orange: #ff8800;
+    --critical-red: #ff2244;
+    --critical-pulse: #ff0033;
+    
+    /* Neural colors */
+    --neural-blue: #00aaff;
+    --neural-purple: #8855ff;
+    
+    /* Text colors */
+    --text-primary: #c0ffe8;
+    --text-secondary: #6aa890;
+    --text-dim: #3d6b5a;
+    --text-bright: #ffffff;
+    
+    /* Structural */
+    --border-color: rgba(0, 255, 170, 0.2);
+    --border-bright: rgba(0, 255, 170, 0.5);
+    --glow-green: 0 0 20px rgba(0, 255, 170, 0.5);
+    --glow-red: 0 0 20px rgba(255, 34, 68, 0.5);
+    --glow-amber: 0 0 20px rgba(255, 204, 0, 0.5);
+    
+    /* Heartbeat timing (72 BPM = 833ms per beat) */
+    --heartbeat-duration: 833ms;
+    
+    /* Fonts */
+    --font-mono: 'Share Tech Mono', monospace;
+    --font-display: 'Orbitron', sans-serif;
+}
+
+/* === RESET & BASE === */
+*, *::before, *::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    height: 100%;
+    overflow: hidden;
+    background: var(--bg-void);
+    color: var(--text-primary);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    line-height: 1.4;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* === GLOBAL OVERLAYS === */
+.scanline-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 9999;
+    background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0, 0, 0, 0.15) 2px,
+        rgba(0, 0, 0, 0.15) 4px
+    );
+}
+
+.vignette-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 9998;
+    background: radial-gradient(
+        ellipse at center,
+        transparent 40%,
+        rgba(0, 0, 0, 0.6) 100%
+    );
+}
+
+.noise-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 9997;
+    opacity: 0.03;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    animation: noiseShift 0.5s steps(10) infinite;
+}
+
+.chromatic-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 9996;
+    background: linear-gradient(
+        90deg,
+        rgba(255, 0, 0, 0.01) 0%,
+        transparent 10%,
+        transparent 90%,
+        rgba(0, 255, 255, 0.01) 100%
+    );
+}
+
+.pulse-sync {
+    position: fixed;
+    top: -100px;
+    left: -100px;
+    width: 1px;
+    height: 1px;
+    animation: heartbeatPulse var(--heartbeat-duration) ease-in-out infinite;
+}
+
+@keyframes noiseShift {
+    0%, 100% { transform: translate(0, 0); }
+    10% { transform: translate(-1%, -1%); }
+    20% { transform: translate(1%, 1%); }
+    30% { transform: translate(-1%, 1%); }
+    40% { transform: translate(1%, -1%); }
+    50% { transform: translate(-1%, 0); }
+    60% { transform: translate(1%, 0); }
+    70% { transform: translate(0, -1%); }
+    80% { transform: translate(0, 1%); }
+    90% { transform: translate(-1%, -1%); }
+}
+
+@keyframes heartbeatPulse {
+    0%, 100% { opacity: 0; transform: scale(1); }
+    15% { opacity: 1; transform: scale(1.1); }
+    30% { opacity: 0.5; transform: scale(1); }
+    45% { opacity: 0.8; transform: scale(1.05); }
+    60% { opacity: 0; transform: scale(1); }
+}
+
+/* === TOP BAR === */
+.top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: stretch;
+    height: 60px;
+    padding: 0 20px;
+    background: linear-gradient(180deg, rgba(0, 40, 30, 0.4) 0%, transparent 100%);
+    border-bottom: 1px solid var(--border-color);
+    position: relative;
+}
+
+.top-bar::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--bio-green), transparent);
+    opacity: 0.5;
+    animation: scanLine 4s linear infinite;
+}
+
+@keyframes scanLine {
+    0% { opacity: 0.3; }
+    50% { opacity: 0.8; }
+    100% { opacity: 0.3; }
+}
+
+.top-bar__left, .top-bar__center, .top-bar__right {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 2px;
+}
+
+.top-bar__left { flex: 1; }
+.top-bar__center { align-items: center; flex: 1; }
+.top-bar__right { align-items: flex-end; flex: 1; }
+
+.logo-mark {
+    font-family: var(--font-display);
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 4px;
+}
+
+.logo-bracket {
+    color: var(--bio-green);
+    text-shadow: var(--glow-green);
+}
+
+.logo-text {
+    color: var(--text-bright);
+    text-shadow: 0 0 10px rgba(0, 255, 170, 0.8);
+}
+
+.system-label {
+    font-size: 9px;
+    color: var(--text-secondary);
+    letter-spacing: 2px;
+}
+
+.version-tag {
+    font-size: 8px;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+}
+
+.patient-id {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.patient-id .label {
+    font-size: 9px;
+    color: var(--text-dim);
+    letter-spacing: 2px;
+}
+
+.patient-id .value {
+    font-family: var(--font-display);
+    font-size: 13px;
+    color: var(--bio-cyan);
+    letter-spacing: 3px;
+    text-shadow: 0 0 10px rgba(0, 229, 255, 0.5);
+}
+
+.scan-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 9px;
+    color: var(--bio-green);
+    letter-spacing: 2px;
+}
+
+.scan-dot {
+    width: 6px;
+    height: 6px;
+    background: var(--bio-green);
+    border-radius: 50%;
+    animation: blink 1s ease-in-out infinite;
+    box-shadow: var(--glow-green);
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+}
+
+.datetime {
+    display: flex;
+    gap: 10px;
+    font-family: var(--font-display);
+}
+
+.datetime .date {
+    color: var(--text-secondary);
+    font-size: 10px;
+}
+
+.datetime .time {
+    color: var(--bio-green);
+    font-size: 11px;
+    letter-spacing: 1px;
+}
+
+.threat-level {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.threat-level .label {
+    font-size: 8px;
+    color: var(--text-dim);
+    letter-spacing: 2px;
+}
+
+.threat-bar {
+    width: 80px;
+    height: 6px;
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid var(--border-color);
+    overflow: hidden;
+}
+
+.threat-fill {
+    width: 67.3%;
+    height: 100%;
+    background: linear-gradient(90deg, var(--bio-green), var(--warn-amber), var(--critical-red));
+    animation: threatPulse 2s ease-in-out infinite;
+}
+
+@keyframes threatPulse {
+    0%, 100% { opacity: 0.8; }
+    50% { opacity: 1; }
+}
+
+.threat-value {
+    font-family: var(--font-display);
+    font-size: 10px;
+    color: var(--warn-amber);
+}
+
+/* === MAIN HUD LAYOUT === */
+.hud-main {
+    display: grid;
+    grid-template-columns: 320px 1fr 320px;
+    gap: 0;
+    height: calc(100vh - 60px - 80px);
+    padding: 10px;
+}
+
+/* === PANELS === */
+.panel {
+    background: var(--bg-panel);
+    border: 1px solid var(--border-color);
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: thin;
+    scrollbar-color: var(--bio-green) transparent;
+}
+
+.panel::-webkit-scrollbar {
+    width: 4px;
+}
+
+.panel::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.panel::-webkit-scrollbar-thumb {
+    background: var(--bio-green);
+    border-radius: 2px;
+}
+
+.panel--left {
+    border-right: none;
+    background: linear-gradient(90deg, var(--bg-panel) 0%, rgba(5, 15, 12, 0.7) 100%);
+}
+
+.panel--center {
+    background: transparent;
+    border-left: 1px solid var(--border-color);
+    border-right: 1px solid var(--border-color);
+    overflow: hidden;
+}
+
+.panel--right {
+    border-left: none;
+    background: linear-gradient(270deg, var(--bg-panel) 0%, rgba(5, 15, 12, 0.7) 100%);
+}
+
+.panel-header {
+    padding: 15px;
+    border-bottom: 1px solid var(--border-color);
+    position: sticky;
+    top: 0;
+    background: var(--bg-panel);
+    z-index: 10;
+}
+
+.panel-header__title {
+    font-family: var(--font-display);
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--bio-green);
+    letter-spacing: 3px;
+    text-shadow: var(--glow-green);
+}
+
+.panel-header__line {
+    height: 1px;
+    background: linear-gradient(90deg, var(--bio-green), transparent);
+    margin: 8px 0;
+}
+
+.panel-header__sub {
+    font-size: 8px;
+    color: var(--text-dim);
+    letter-spacing: 2px;
+}
+
+.section-label {
+    font-size: 9px;
+    color: var(--bio-green);
+    letter-spacing: 2px;
+    padding: 12px 15px 8px;
+    border-top: 1px solid var(--border-color);
+    text-shadow: 0 0 5px rgba(0, 255, 170, 0.3);
+}
+
+/* === ORGAN CARDS === */
+.organ-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    padding: 10px;
+}
+
+.organ-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    padding: 10px;
+    position: relative;
+    transition: all 0.3s ease;
+    animation: organBreath var(--heartbeat-duration) ease-in-out infinite;
+}
+
+.organ-card:hover {
+    background: var(--bg-card-hover);
+    border-color: var(--border-bright);
+    box-shadow: var(--glow-green), inset 0 0 30px rgba(0, 255, 170, 0.05);
+}
+
+.organ-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--bio-green), transparent);
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.organ-card:hover::before {
+    opacity: 1;
+}
+
+@keyframes organBreath {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.005); }
+}
+
+.organ-card[data-organ="heart"] {
+    animation: heartBreath var(--heartbeat-duration) ease-in-out infinite;
+}
+
+@keyframes heartBreath {
+    0%, 100% { transform: scale(1); box-shadow: none; }
+    15% { transform: scale(1.02); box-shadow: 0 0 15px rgba(255, 100, 100, 0.3); }
+    30% { transform: scale(1); }
+    45% { transform: scale(1.01); box-shadow: 0 0 10px rgba(255, 100, 100, 0.2); }
+}
+
+.organ-card__header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.organ-icon {
+    font-family: var(--font-display);
+    font-size: 10px;
+    font-weight: 700;
+    padding: 3px 5px;
+    background: rgba(0, 255, 170, 0.1);
+    border: 1px solid var(--border-color);
+    color: var(--bio-green);
+}
+
+.organ-icon--heart { color: #ff6688; border-color: rgba(255, 102, 136, 0.3); }
+.organ-icon--lungs { color: var(--bio-cyan); }
+.organ-icon--liver { color: var(--warn-amber); border-color: rgba(255, 204, 0, 0.3); }
+.organ-icon--kidney { color: var(--critical-red); border-color: rgba(255, 34, 68, 0.3); }
+.organ-icon--brain { color: var(--neural-purple); border-color: rgba(136, 85, 255, 0.3); }
+.organ-icon--spleen { color: var(--bio-mint); }
+
+.organ-name {
+    font-size: 9px;
+    color: var(--text-primary);
+    letter-spacing: 1px;
+    flex: 1;
+}
+
+.organ-status {
+    font-size: 7px;
+    padding: 2px 6px;
+    letter-spacing: 1px;
+    font-weight: 700;
+}
+
+.organ-status--stable {
+    color: var(--bio-green);
+    background: rgba(0, 255, 170, 0.1);
+    border: 1px solid rgba(0, 255, 170, 0.3);
+}
+
+.organ-status--warning {
+    color: var(--warn-amber);
+    background: rgba(255, 204, 0, 0.1);
+    border: 1px solid rgba(255, 204, 0, 0.3);
+    animation: warningPulse 1.5s ease-in-out infinite;
+}
+
+.organ-status--critical {
+    color: var(--critical-red);
+    background: rgba(255, 34, 68, 0.1);
+    border: 1px solid rgba(255, 34, 68, 0.3);
+    animation: criticalPulse 0.8s ease-in-out infinite;
+}
+
+@keyframes warningPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+}
+
+@keyframes criticalPulse {
+    0%, 100% { opacity: 1; background: rgba(255, 34, 68, 0.1); }
+    50% { opacity: 0.7; background: rgba(255, 34, 68, 0.2); }
+}
+
+.organ-vitals {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 10px;
+}
+
+.vital-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.vital-label {
+    font-size: 8px;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+}
+
+.vital-value {
+    font-size: 10px;
+    color: var(--text-bright);
+    font-family: var(--font-display);
+}
+
+.organ-health-bar {
+    height: 4px;
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid var(--border-color);
+    margin-bottom: 8px;
+    position: relative;
+    overflow: hidden;
+}
+
+.health-fill {
+    height: 100%;
+    width: var(--health);
+    background: linear-gradient(90deg, var(--bio-green), var(--bio-cyan));
+    transition: width 0.5s ease;
+    position: relative;
+}
+
+.health-fill--critical {
+    background: linear-gradient(90deg, var(--critical-red), var(--warn-orange));
+    animation: healthCritical 1s ease-in-out infinite;
+}
+
+@keyframes healthCritical {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+}
+
+.organ-mutation {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.mutation-label {
+    font-size: 7px;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+}
+
+.mutation-indicators {
+    display: flex;
+    gap: 3px;
+}
+
+.mut-dot {
+    width: 6px;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--border-color);
+}
+
+.mut-dot.active {
+    background: var(--warn-amber);
+    border-color: var(--warn-amber);
+    box-shadow: 0 0 5px rgba(255, 204, 0, 0.5);
+}
+
+/* === TOXIN SECTION === */
+.toxin-section {
+    padding-bottom: 15px;
+}
+
+.toxin-grid {
+    padding: 0 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.toxin-item {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    padding: 8px 10px;
+}
+
+.toxin-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 6px;
+}
+
+.toxin-name {
+    font-size: 8px;
+    color: var(--text-secondary);
+    letter-spacing: 1px;
+}
+
+.toxin-value {
+    font-size: 9px;
+    color: var(--text-bright);
+    font-family: var(--font-display);
+}
+
+.toxin-bar {
+    height: 4px;
+    background: rgba(0, 0, 0, 0.5);
+    margin-bottom: 4px;
+    position: relative;
+}
+
+.toxin-fill {
+    height: 100%;
+    width: var(--fill);
+    background: linear-gradient(90deg, var(--bio-green), var(--warn-amber), var(--critical-red));
+    transition: width 0.5s ease;
+}
+
+.toxin-status {
+    font-size: 7px;
+    letter-spacing: 1px;
+    color: var(--text-dim);
+}
+
+.toxin-item:nth-child(1) .toxin-status { color: var(--warn-amber); }
+.toxin-item:nth-child(2) .toxin-status { color: var(--bio-green); }
+.toxin-item:nth-child(3) .toxin-status { color: var(--critical-red); }
+.toxin-item:nth-child(4) .toxin-status { color: var(--bio-green); }
+
+/* === CENTER BODY SCANNER === */
+.body-scanner {
+    position: relative;
+    height: 60%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(ellipse at center, rgba(0, 40, 30, 0.3) 0%, transparent 70%);
+    overflow: hidden;
+}
+
+.corner {
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    border-color: var(--bio-green);
+    border-style: solid;
+    opacity: 0.6;
+}
+
+.corner--tl { top: 10px; left: 10px; border-width: 2px 0 0 2px; }
+.corner--tr { top: 10px; right: 10px; border-width: 2px 2px 0 0; }
+.corner--bl { bottom: 10px; left: 10px; border-width: 0 0 2px 2px; }
+.corner--br { bottom: 10px; right: 10px; border-width: 0 2px 2px 0; }
+
+.scanner-sweep {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, var(--bio-green), transparent);
+    opacity: 0.6;
+    animation: scanSweep 3s linear infinite;
+    box-shadow: 0 0 20px var(--bio-green);
+}
+
+@keyframes scanSweep {
+    0% { top: 0; opacity: 0; }
+    10% { opacity: 0.6; }
+    90% { opacity: 0.6; }
+    100% { top: 100%; opacity: 0; }
+}
+
+.body-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+/* === BODY WIREFRAME === */
+.body-wireframe {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 280px;
+    height: 500px;
+}
+
+.body-silhouette {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 200px;
+    height: 100%;
+}
+
+.body-head {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 50px;
+    height: 60px;
+    border: 1px solid var(--bio-green);
+    border-radius: 50% 50% 45% 45%;
+    opacity: 0.4;
+    box-shadow: 0 0 10px rgba(0, 255, 170, 0.2), inset 0 0 20px rgba(0, 255, 170, 0.1);
+}
+
+.body-neck {
+    position: absolute;
+    top: 78px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 20px;
+    height: 25px;
+    border-left: 1px solid var(--bio-green);
+    border-right: 1px solid var(--bio-green);
+    opacity: 0.4;
+}
+
+.body-torso {
+    position: absolute;
+    top: 100px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90px;
+    height: 150px;
+    border: 1px solid var(--bio-green);
+    border-radius: 5px;
+    opacity: 0.4;
+    box-shadow: 0 0 10px rgba(0, 255, 170, 0.2), inset 0 0 30px rgba(0, 255, 170, 0.05);
+}
+
+.body-arm {
+    position: absolute;
+    top: 105px;
+    width: 15px;
+    height: 180px;
+    border: 1px solid var(--bio-green);
+    opacity: 0.3;
+    border-radius: 5px;
+}
+
+.body-arm--left {
+    left: 10px;
+    transform: rotate(5deg);
+}
+
+.body-arm--right {
+    right: 10px;
+    transform: rotate(-5deg);
+}
+
+.body-leg {
+    position: absolute;
+    top: 248px;
+    width: 22px;
+    height: 200px;
+    border: 1px solid var(--bio-green);
+    opacity: 0.3;
+    border-radius: 5px;
+}
+
+.body-leg--left {
+    left: 45px;
+}
+
+.body-leg--right {
+    right: 45px;
+}
+
+.body-spine {
+    position: absolute;
+    top: 85px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 4px;
+    height: 160px;
+    background: linear-gradient(180deg, var(--bio-green), var(--neural-blue));
+    opacity: 0.3;
+    border-radius: 2px;
+}
+
+/* === ORGAN MARKERS === */
+.organ-marker {
+    position: absolute;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.organ-marker:hover {
+    transform: scale(1.2);
+}
+
+.pulse-ring {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 30px;
+    height: 30px;
+    border: 1px solid var(--bio-green);
+    border-radius: 50%;
+    animation: pulseRing var(--heartbeat-duration) ease-out infinite;
+}
+
+.pulse-ring--heart {
+    border-color: #ff6688;
+    animation: pulseRingHeart var(--heartbeat-duration) ease-out infinite;
+}
+
+.pulse-ring--lungs {
+    border-color: var(--bio-cyan);
+    animation: pulseRingLungs 2s ease-out infinite;
+}
+
+.pulse-ring--critical {
+    border-color: var(--critical-red);
+    animation: pulseRingCritical 0.5s ease-out infinite;
+}
+
+.core {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 10px;
+    height: 10px;
+    background: var(--bio-green);
+    border-radius: 50%;
+    box-shadow: var(--glow-green);
+}
+
+.core--heart {
+    background: #ff6688;
+    box-shadow: 0 0 15px rgba(255, 102, 136, 0.6);
+}
+
+.core--critical {
+    background: var(--critical-red);
+    box-shadow: var(--glow-red);
+    animation: criticalPulse 0.8s ease-in-out infinite;
+}
+
+@keyframes pulseRing {
+    0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; }
+    100% { transform: translate(-50%, -50%) scale(2); opacity: 0; }
+}
+
+@keyframes pulseRingHeart {
+    0%, 100% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+    15% { transform: translate(-50%, -50%) scale(1.5); opacity: 1; }
+    30% { transform: translate(-50%, -50%) scale(1); opacity: 0.5; }
+    45% { transform: translate(-50%, -50%) scale(1.3); opacity: 0.8; }
+    60% { transform: translate(-50%, -50%) scale(2); opacity: 0; }
+}
+
+@keyframes pulseRingLungs {
+    0%, 100% { transform: translate(-50%, -50%) scale(0.8); opacity: 0.3; }
+    50% { transform: translate(-50%, -50%) scale(1.5); opacity: 0.8; }
+}
+
+@keyframes pulseRingCritical {
+    0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; }
+    100% { transform: translate(-50%, -50%) scale(2.5); opacity: 0; }
+}
+
+/* Organ marker positions */
+.marker--brain { top: 30px; left: 50%; transform: translateX(-50%); }
+.marker--heart { top: 130px; left: 40%; }
+.marker--lungs { top: 135px; left: 60%; }
+.marker--liver { top: 180px; left: 58%; }
+.marker--kidneys { top: 200px; left: 50%; transform: translateX(-50%); }
+.marker--spleen { top: 185px; left: 35%; }
+
+/* === IMPLANTS === */
+.implant {
+    position: absolute;
+    background: rgba(0, 170, 255, 0.2);
+    border: 1px solid var(--neural-blue);
+}
+
+.implant--spine {
+    top: 90px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 8px;
+    height: 100px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.implant--spine span {
+    writing-mode: vertical-rl;
+    font-size: 7px;
+    color: var(--neural-blue);
+    letter-spacing: 2px;
+    text-shadow: 0 0 5px var(--neural-blue);
+}
+
+.implant--arm-l, .implant--arm-r {
+    top: 160px;
+    width: 6px;
+    height: 30px;
+    border-radius: 3px;
+}
+
+.implant--arm-l { left: 18px; }
+.implant--arm-r { right: 18px; }
+
+/* === CONNECTORS === */
+.connector {
+    position: absolute;
+    display: flex;
+    align-items: center;
+}
+
+.connector::before {
+    content: '';
+    width: 40px;
+    height: 1px;
+    background: linear-gradient(90deg, var(--bio-green), transparent);
+}
+
+.connector--brain { top: 35px; left: 65%; }
+.connector--heart { top: 135px; left: 20%; flex-direction: row-reverse; }
+.connector--heart::before { background: linear-gradient(270deg, #ff6688, transparent); }
+.connector--lungs { top: 140px; right: 20%; flex-direction: row-reverse; }
+.connector--lungs::before { background: linear-gradient(270deg, var(--bio-cyan), transparent); }
+.connector--liver { top: 185px; right: 22%; flex-direction: row-reverse; }
+.connector--liver::before { background: linear-gradient(270deg, var(--warn-amber), transparent); }
+.connector--kidneys { top: 205px; left: 22%; flex-direction: row-reverse; }
+.connector--kidneys::before { background: linear-gradient(270deg, var(--critical-red), transparent); }
+.connector--spleen { top: 190px; left: 15%; }
+.connector--spleen::before { background: linear-gradient(90deg, var(--bio-mint), transparent); }
+
+.connector .label {
+    font-size: 8px;
+    color: var(--text-secondary);
+    letter-spacing: 1px;
+    white-space: nowrap;
+    padding: 0 5px;
+}
+
+.connector.critical .label {
+    color: var(--critical-red);
+    animation: criticalPulse 0.8s ease-in-out infinite;
+}
+
+/* === SCAN INFO === */
+.scan-info {
+    position: absolute;
+    left: 15px;
+    right: 15px;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    font-size: 8px;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+}
+
+.scan-info--top { top: 15px; }
+.scan-info--bottom { bottom: 15px; }
+
+.sep { opacity: 0.3; }
+
+/* === NANOMACHINE CANVAS === */
+.nano-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+/* === MUTATION TRACKER === */
+.mutation-tracker {
+    height: 40%;
+    background: var(--bg-panel);
+    border-top: 1px solid var(--border-color);
+    overflow: hidden;
+}
+
+.mutation-display {
+    display: flex;
+    gap: 20px;
+    padding: 15px;
+}
+
+.mutation-gauge {
+    position: relative;
+    width: 150px;
+    height: 100px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.gauge-arc {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 80px;
+    background: conic-gradient(
+        from 180deg,
+        var(--bio-green) 0deg,
+        var(--warn-amber) 120deg,
+        var(--critical-red) 180deg,
+        transparent 180deg
+    );
+    border-radius: 100px 100px 0 0;
+    opacity: 0.3;
+    mask: radial-gradient(transparent 55%, black 56%);
+    -webkit-mask: radial-gradient(transparent 55%, black 56%);
+}
+
+.gauge-ticks {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    padding: 0 10px;
+}
+
+.tick {
+    width: 2px;
+    height: 8px;
+    background: var(--text-dim);
+}
+
+.gauge-value {
+    font-family: var(--font-display);
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--warn-amber);
+    text-shadow: var(--glow-amber);
+    position: relative;
+    z-index: 1;
+}
+
+.gauge-label-text {
+    font-size: 8px;
+    color: var(--text-dim);
+    letter-spacing: 2px;
+    margin-top: 5px;
+}
+
+.mutation-details {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    justify-content: center;
+}
+
+.mut-detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 0;
+    border-bottom: 1px solid rgba(0, 255, 170, 0.1);
+}
+
+.mut-detail-label {
+    font-size: 8px;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+}
+
+.mut-detail-value {
+    font-size: 10px;
+    color: var(--text-primary);
+    font-family: var(--font-display);
+}
+
+.mut-detail-value--warning {
+    color: var(--critical-red);
+    animation: warningPulse 1.5s ease-in-out infinite;
+}
+
+/* === NEURAL SECTION === */
+.neural-section {
+    padding-bottom: 15px;
+}
+
+.neural-display {
+    padding: 10px 15px;
+    display: flex;
+    gap: 15px;
+}
+
+.neural-rings {
+    position: relative;
+    width: 120px;
+    height: 120px;
+}
+
+.neural-ring {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border: 1px solid var(--neural-blue);
+    border-radius: 50%;
+    opacity: 0.5;
+}
+
+.ring--outer { width: 110px; height: 110px; animation: neuralSpin 20s linear infinite; }
+.ring--mid { width: 85px; height: 85px; animation: neuralSpin 15s linear infinite reverse; }
+.ring--inner { width: 60px; height: 60px; animation: neuralSpin 10s linear infinite; }
+.ring--core { width: 35px; height: 35px; border-color: var(--bio-green); opacity: 0.8; }
+
+@keyframes neuralSpin {
+    from { transform: translate(-50%, -50%) rotate(0deg); }
+    to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+.neural-node {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    background: var(--neural-blue);
+    border-radius: 50%;
+    box-shadow: 0 0 10px var(--neural-blue);
+}
+
+.node--n { top: 0; left: 50%; transform: translateX(-50%); }
+.node--e { top: 50%; right: 0; transform: translateY(-50%); }
+.node--s { bottom: 0; left: 50%; transform: translateX(-50%); }
+.node--w { top: 50%; left: 0; transform: translateY(-50%); }
+
+.neural-center-value {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: var(--font-display);
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--neural-blue);
+    text-shadow: 0 0 15px var(--neural-blue);
+    z-index: 1;
+}
+
+.neural-metrics {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    justify-content: center;
+}
+
+.neural-metric {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 0;
+    border-bottom: 1px solid rgba(0, 170, 255, 0.1);
+}
+
+.nm-label {
+    font-size: 8px;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+}
+
+.nm-value {
+    font-size: 11px;
+    color: var(--neural-blue);
+    font-family: var(--font-display);
+}
+
+.nm-value--warn {
+    color: var(--warn-amber);
+}
+
+.neural-wave-container {
+    height: 60px;
+    margin: 0 15px;
+    border: 1px solid var(--border-color);
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.neural-wave-canvas {
+    width: 100%;
+    height: 100%;
+}
+
+/* === NANO SECTION === */
+.nano-section {
+    padding-bottom: 15px;
+}
+
+.nano-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    padding: 10px 15px;
+}
+
+.nano-stat {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    padding: 8px;
+    text-align: center;
+}
+
+.nano-stat__value {
+    font-family: var(--font-display);
+    font-size: 14px;
+    color: var(--bio-cyan);
+    text-shadow: 0 0 10px rgba(0, 229, 255, 0.5);
+}
+
+.nano-stat__value--warn {
+    color: var(--warn-amber);
+    text-shadow: var(--glow-amber);
+}
+
+.nano-stat__label {
+    font-size: 7px;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+    margin-top: 4px;
+}
+
+.nano-zones {
+    padding: 0 15px;
+}
+
+.zone-header {
+    font-size: 8px;
+    color: var(--text-dim);
+    letter-spacing: 2px;
+    margin-bottom: 8px;
+}
+
+.zone-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 4px 0;
+}
+
+.zone-name {
+    width: 60px;
+    font-size: 8px;
+    color: var(--text-secondary);
+    letter-spacing: 1px;
+}
+
+.zone-bar {
+    flex: 1;
+    height: 4px;
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid var(--border-color);
+}
+
+.zone-fill {
+    height: 100%;
+    width: var(--zfill);
+    background: linear-gradient(90deg, var(--neural-blue), var(--bio-cyan));
+    transition: width 0.5s ease;
+}
+
+.zone-pct {
+    width: 30px;
+    text-align: right;
+    font-size: 9px;
+    color: var(--bio-cyan);
+    font-family: var(--font-display);
+}
+
+/* === GENE MATRIX === */
+.gene-section {
+    padding-bottom: 15px;
+}
+
+.gene-matrix {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 3px;
+    padding: 10px 15px;
+}
+
+.gene-cell {
+    aspect-ratio: 1;
+    border: 1px solid var(--border-color);
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.gene-cell:hover {
+    transform: scale(1.2);
+    z-index: 1;
+}
+
+.gene-cell--high { background: rgba(0, 255, 170, 0.4); }
+.gene-cell--mid { background: rgba(255, 204, 0, 0.4); }
+.gene-cell--low { background: rgba(255, 34, 68, 0.4); }
+
+.gene-legend {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    padding: 10px 15px 0;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 7px;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+}
+
+.legend-dot {
+    width: 8px;
+    height: 8px;
+    border: 1px solid var(--border-color);
+}
+
+.legend-dot--high { background: rgba(0, 255, 170, 0.6); }
+.legend-dot--mid { background: rgba(255, 204, 0, 0.6); }
+.legend-dot--low { background: rgba(255, 34, 68, 0.6); }
+
+/* === ALERTS SECTION === */
+.alerts-section {
+    padding-bottom: 15px;
+}
+
+.alert-list {
+    padding: 0 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.alert-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    background: var(--bg-card);
+    border-left: 2px solid var(--border-color);
+}
+
+.alert-item--critical {
+    border-left-color: var(--critical-red);
+    background: rgba(255, 34, 68, 0.1);
+    animation: alertFlash 1s ease-in-out infinite;
+}
+
+.alert-item--warning {
+    border-left-color: var(--warn-amber);
+    background: rgba(255, 204, 0, 0.05);
+}
+
+.alert-item--info {
+    border-left-color: var(--neural-blue);
+}
+
+@keyframes alertFlash {
+    0%, 100% { background: rgba(255, 34, 68, 0.1); }
+    50% { background: rgba(255, 34, 68, 0.2); }
+}
+
+.alert-icon {
+    font-size: 12px;
+    width: 16px;
+    text-align: center;
+}
+
+.alert-item--critical .alert-icon { color: var(--critical-red); }
+.alert-item--warning .alert-icon { color: var(--warn-amber); }
+.alert-item--info .alert-icon { color: var(--neural-blue); }
+
+.alert-text {
+    flex: 1;
+    font-size: 8px;
+    color: var(--text-primary);
+    letter-spacing: 1px;
+}
+
+.alert-time {
+    font-size: 7px;
+    color: var(--text-dim);
+}
+
+/* === BOTTOM BAR === */
+.bottom-bar {
+    height: 80px;
+    display: flex;
+    background: var(--bg-panel);
+    border-top: 1px solid var(--border-color);
+}
+
+.ecg-container {
+    width: 300px;
+    padding: 8px 15px;
+    border-right: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+}
+
+.ecg-label {
+    font-size: 8px;
+    color: var(--text-dim);
+    letter-spacing: 2px;
+    margin-bottom: 5px;
+}
+
+.ecg-canvas {
+    flex: 1;
+    width: 100%;
+}
+
+.ecg-readout {
+    display: flex;
+    align-items: baseline;
+    gap: 5px;
+}
+
+.ecg-value {
+    font-family: var(--font-display);
+    font-size: 20px;
+    color: var(--bio-green);
+    text-shadow: var(--glow-green);
+}
+
+.ecg-unit {
+    font-size: 10px;
+    color: var(--text-dim);
+}
+
+.data-strip {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+}
+
+.data-strip__inner {
+    display: flex;
+    gap: 30px;
+    padding: 0 20px;
+    animation: dataScroll 30s linear infinite;
+    white-space: nowrap;
+}
+
+.data-strip__inner span {
+    font-size: 10px;
+    color: var(--text-secondary);
+    letter-spacing: 1px;
+}
+
+@keyframes dataScroll {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+}
+
+/* === ANIMATIONS FOR DATA FLICKER === */
+@keyframes dataFlicker {
+    0%, 100% { opacity: 1; }
+    92% { opacity: 1; }
+    93% { opacity: 0.8; }
+    94% { opacity: 1; }
+    95% { opacity: 0.6; }
+    96% { opacity: 1; }
+}
+
+.vital-value, .toxin-value, .nm-value {
+    animation: dataFlicker 5s linear infinite;
+}
+
+/* === RESPONSIVE ADJUSTMENTS === */
+@media (max-width: 1200px) {
+    .hud-main {
+        grid-template-columns: 280px 1fr 280px;
+    }
+}
+
+@media (max-width: 900px) {
+    .hud-main {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto 1fr auto;
+    }
+    
+    .panel--left, .panel--right {
+        max-height: 200px;
+    }
+    
+    .body-scanner {
+        min-height: 400px;
+    }
+}

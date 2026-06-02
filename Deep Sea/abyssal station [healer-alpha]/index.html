@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ABYSSAL STATION - Deep-Sea Research Platform</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&amp;family=Rajdhani:wght@300;400;500;600;700&amp;family=Share+Tech+Mono&amp;display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="ocean-depth-overlay"></div>
+    <div id="bioluminescent-field"></div>
+    <div id="particle-container"></div>
+    <div id="scanlines"></div>
+    <div id="crt-flicker"></div>
+    <div id="viewport-vignette"></div>
+    <div id="water-caustics"></div>
+
+    <div id="klaxon-bar" class="klaxon-warning hidden">
+        <div class="klaxon-inner">
+            <span class="klaxon-icon">!</span>
+            <span class="klaxon-text">PRESSURE WARNING - EXTERNAL PSI EXCEEDING NOMINAL</span>
+            <span class="klaxon-icon">!</span>
+        </div>
+        <div class="klaxon-progress"></div>
+    </div>
+
+    <div id="dashboard">
+        <header id="top-bar">
+            <div class="top-bar-left">
+                <div class="station-logo">
+                    <div class="logo-ring"></div>
+                    <span class="logo-text">AS</span>
+                </div>
+                <div class="station-identifier">
+                    <h1>ABYSSAL STATION</h1>
+                    <span class="station-subtitle">DEEP-SEA RESEARCH PLATFORM - CLASSIFIED</span>
+                </div>
+            </div>
+            <div class="top-bar-center">
+                <div class="mission-clock">
+                    <span class="clock-label">MISSION ELAPSED</span>
+                    <span id="mission-time" class="clock-value">000:00:00:00</span>
+                </div>
+                <div class="system-status">
+                    <span class="status-dot active"></span>
+                    <span class="status-text">ALL SYSTEMS NOMINAL</span>
+                </div>
+            </div>
+            <div class="top-bar-right">
+                <div class="comms-indicator">
+                    <span class="comms-label">COMMS LINK</span>
+                    <div class="comms-bars">
+                        <span class="bar active"></span>
+                        <span class="bar active"></span>
+                        <span class="bar active"></span>
+                        <span class="bar active"></span>
+                        <span class="bar"></span>
+                    </div>
+                </div>
+                <div class="crew-count">
+                    <span class="crew-label">CREW ABOARD</span>
+                    <span class="crew-value">07 / 12</span>
+                </div>
+            </div>
+        </header>
+
+        <div id="main-grid">
+            <div class="left-column">
+                <div class="panel depth-panel" data-panel="depth">
+                    <div class="panel-header">
+                        <div class="panel-indicator"></div>
+                        <h2>DEPTH AND PRESSURE</h2>
+                        <div class="panel-status">LIVE</div>
+                    </div>
+                    <div class="panel-body">
+                        <div class="gauge-container">
+                            <div class="gauge depth-gauge">
+                                <canvas id="depth-gauge-canvas" width="200" height="200"></canvas>
+                                <div class="gauge-center-readout">
+                                    <span id="depth-value" class="gauge-value">4,721</span>
+                                    <span class="gauge-unit">METERS</span>
+                                </div>
+                                <div class="gauge-label">DEPTH</div>
+                            </div>
+                        </div>
+                        <div class="readout-section">
+                            <div class="readout-row">
+                                <span class="readout-label">EXTERNAL PRESSURE</span>
+                                <div class="lcd-display">
+                                    <span id="pressure-value" class="lcd-value">472.8</span>
+                                    <span class="lcd-unit">ATM</span>
+                                </div>
+                            </div>
+                            <div class="pressure-bar-container">
+                                <div class="pressure-bar-track">
+                                    <div id="pressure-bar" class="pressure-bar-fill"></div>
+                                    <div class="pressure-bar-threshold"></div>
+                                </div>
+                                <div class="pressure-bar-labels">
+                                    <span>0</span>
+                                    <span>NOMINAL</span>
+                                    <span>CRITICAL</span>
+                                </div>
+                            </div>
+                            <div class="readout-row">
+                                <span class="readout-label">HULL STRESS INDEX</span>
+                                <div class="lcd-display warning">
+                                    <span id="hull-stress" class="lcd-value">0.73</span>
+                                    <span class="lcd-unit">HSI</span>
+                                </div>
+                            </div>
+                            <div class="readout-row">
+                                <span class="readout-label">RATE OF DESCENT</span>
+                                <div class="lcd-display">
+                                    <span id="descent-rate" class="lcd-value">-0.3</span>
+                                    <span class="lcd-unit">M/S</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel hull-panel" data-panel="hull">
+                    <div class="panel-header">
+                        <div class="panel-indicator green"></div>
+                        <h2>HULL INTEGRITY</h2>
+                        <div class="panel-status">NOMINAL</div>
+                    </div>
+                    <div class="panel-body">
+                        <div class="hull-schematic">
+                            <canvas id="hull-canvas" width="280" height="140"></canvas>
+                        </div>
+                        <div class="hull-stats">
+                            <div class="hull-stat">
+                                <span class="stat-label">OVERALL</span>
+                                <span class="stat-value good">97.2%</span>
+                            </div>
+                            <div class="hull-stat">
+                                <span class="stat-label">SEAL INT.</span>
+                                <span class="stat-value good">99.8%</span>
+                            </div>
+                            <div class="hull-stat">
+                                <span class="stat-label">MICRO-FRACTURES</span>
+                                <span class="stat-value warn">3 DETECTED</span>
+                            </div>
+                            <div class="hull-stat">
+                                <span class="stat-label">LAST INSPECTION</span>
+                                <span class="stat-value">2d 14h AGO</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel enviro-panel" data-panel="enviro">
+                    <div class="panel-header">
+                        <div class="panel-indicator"></div>
+                        <h2>ENVIRONMENTAL</h2>
+                        <div class="panel-status">LIVE</div>
+                    </div>
+                    <div class="panel-body">
+                        <div class="enviro-grid">
+                            <div class="enviro-item">
+                                <div class="enviro-icon">T</div>
+                                <div class="enviro-data">
+                                    <span class="enviro-label">WATER TEMP</span>
+                                    <span id="water-temp" class="enviro-value">2.4C</span>
+                                </div>
+                            </div>
+                            <div class="enviro-item">
+                                <div class="enviro-icon">S</div>
+                                <div class="enviro-data">
+                                    <span class="enviro-label">SALINITY</span>
+                                    <span id="salinity" class="enviro-value">34.8 ppt</span>
+                                </div>
+                            </div>
+                            <div class="enviro-item">
+                                <div class="enviro-icon">O2</div>
+                                <div class="enviro-data">
+                                    <span class="enviro-label">O2 DISSOLVED</span>
+                                    <span id="o2-level" class="enviro-value">6.1 mg/L</span>
+                                </div>
+                            </div>
+                            <div class="enviro-item">
+                                <div class="enviro-icon">CV</div>
+                                <div class="enviro-data">
+                                    <span class="enviro-label">CURRENT VEL.</span>
+                                    <span id="current-vel" class="enviro-value">0.12 m/s</span>
+                                </div>
+                            </div>
+                            <div class="enviro-item">
+                                <div class="enviro-icon">CD</div>
+                                <div class="enviro-data">
+                                    <span class="enviro-label">CURRENT DIR.</span>
+                                    <span id="current-dir" class="enviro-value">NNW 342</span>
+                                </div>
+                            </div>
+                            <div class="enviro-item">
+                                <div class="enviro-icon">V</div>
+                                <div class="enviro-data">
+                                    <span class="enviro-label">VISIBILITY</span>
+                                    <span id="visibility" class="enviro-value">12.4 m</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="current-flow-mini">
+                            <canvas id="current-flow-canvas" width="280" height="50"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="center-column">
+                <div class="panel sonar-panel" data-panel="sonar">
+                    <div class="panel-header">
+                        <div class="panel-indicator"></div>
+                        <h2>ACTIVE SONAR - SECTOR SCAN</h2>
+                        <div class="panel-status ping-status">PINGING</div>
+                    </div>
+                    <div class="panel-body sonar-body">
+                        <div class="sonar-container">
+                            <canvas id="sonar-canvas" width="500" height="500"></canvas>
+                            <div class="sonar-overlay">
+                                <div class="sonar-range-labels">
+                                    <span class="range-label r250">250m</span>
+                                    <span class="range-label r500">500m</span>
+                                    <span class="range-label r750">750m</span>
+                                </div>
+                                <div class="sonar-compass">
+                                    <span class="compass-n">N</span>
+                                    <span class="compass-e">E</span>
+                                    <span class="compass-s">S</span>
+                                    <span class="compass-w">W</span>
+                                </div>
+                            </div>
+                            <div id="sonar-ping-ripple" class="sonar-ping-ripple"></div>
+                        </div>
+                        <div class="sonar-info-bar">
+                            <div class="sonar-stat">
+                                <span class="sonar-stat-label">LAST PING</span>
+                                <span id="last-ping" class="sonar-stat-value">2.4s AGO</span>
+                            </div>
+                            <div class="sonar-stat">
+                                <span class="sonar-stat-label">CONTACTS</span>
+                                <span id="contact-count" class="sonar-stat-value">4 TRACKING</span>
+                            </div>
+                            <div class="sonar-stat">
+                                <span class="sonar-stat-label">RANGE</span>
+                                <span class="sonar-stat-value">1000m</span>
+                            </div>
+                            <div class="sonar-stat">
+                                <span class="sonar-stat-label">MODE</span>
+                                <span class="sonar-stat-value">ACTIVE</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bottom-strip">
+                    <div class="panel status-ticker-panel" data-panel="status">
+                        <div class="panel-header compact">
+                            <div class="panel-indicator"></div>
+                            <h2>SYSTEM LOG</h2>
+                        </div>
+                        <div class="status-ticker" id="status-ticker">
+                            <div class="ticker-content">
+                                <div class="ticker-item">[08:42:11] Sonar array calibrated - sector 7 clear</div>
+                                <div class="ticker-item">[08:38:55] Bioluminescent cluster detected at bearing 042</div>
+                                <div class="ticker-item">[08:35:22] Hull pressure within tolerance - all seals green</div>
+                                <div class="ticker-item">[08:31:07] Environmental sampling cycle complete</div>
+                                <div class="ticker-item">[08:28:44] Current velocity shifted - now tracking NNW flow</div>
+                                <div class="ticker-item">[08:24:19] Communication relay handshake successful</div>
+                                <div class="ticker-item">[08:20:03] Depth hold engaged - stationkeeping at 4721m</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel alert-panel" data-panel="alerts">
+                        <div class="panel-header compact">
+                            <div class="panel-indicator amber"></div>
+                            <h2>ACTIVE ALERTS</h2>
+                        </div>
+                        <div class="alert-list" id="alert-list">
+                            <div class="alert-item warning">
+                                <span class="alert-icon">!</span>
+                                <span class="alert-text">Section C micro-fracture monitoring - 3 points</span>
+                                <span class="alert-time">22m AGO</span>
+                            </div>
+                            <div class="alert-item info">
+                                <span class="alert-icon">i</span>
+                                <span class="alert-text">Bioluminescent fauna proximity - 12m range</span>
+                                <span class="alert-time">1m AGO</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="right-column">
+                <div class="panel bio-panel" data-panel="bio">
+                    <div class="panel-header">
+                        <div class="panel-indicator purple"></div>
+                        <h2>FAUNA TRACKING</h2>
+                        <div class="panel-status">ACTIVE</div>
+                    </div>
+                    <div class="panel-body">
+                        <div class="bio-scan-area">
+                            <canvas id="bio-canvas" width="280" height="160"></canvas>
+                            <div class="bio-scan-overlay">
+                                <div class="bio-crosshair"></div>
+                            </div>
+                        </div>
+                        <div class="bio-tracker-list" id="bio-tracker-list">
+                            <div class="bio-tracker-item" data-color="cyan">
+                                <div class="bio-dot cyan"></div>
+                                <div class="bio-info">
+                                    <span class="bio-name">UNKNOWN-B7</span>
+                                    <span class="bio-detail">12m - Bearing 042 - Tracking</span>
+                                </div>
+                                <span class="bio-confidence">94%</span>
+                            </div>
+                            <div class="bio-tracker-item" data-color="green">
+                                <div class="bio-dot green"></div>
+                                <div class="bio-info">
+                                    <span class="bio-name">Ctenophora Sp.</span>
+                                    <span class="bio-detail">28m - Bearing 187 - Drifting</span>
+                                </div>
+                                <span class="bio-confidence">87%</span>
+                            </div>
+                            <div class="bio-tracker-item" data-color="purple">
+                                <div class="bio-dot purple"></div>
+                                <div class="bio-info">
+                                    <span class="bio-name">Anomalocaris V2</span>
+                                    <span class="bio-detail">45m - Bearing 301 - Active</span>
+                                </div>
+                                <span class="bio-confidence">72%</span>
+                            </div>
+                            <div class="bio-tracker-item" data-color="yellow">
+                                <div class="bio-dot yellow"></div>
+                                <div class="bio-info">
+                                    <span class="bio-name">Vampyroteuthis</span>
+                                    <span class="bio-detail">67m - Bearing 224 - Hovering</span>
+                                </div>
+                                <span class="bio-confidence">91%</span>
+                            </div>
+                        </div>
+                        <div class="bio-stats-row">
+                            <div class="bio-stat">
+                                <span class="bio-stat-value" id="bio-count">17</span>
+                                <span class="bio-stat-label">DETECTED</span>
+                            </div>
+                            <div class="bio-stat">
+                                <span class="bio-stat-value" id="bio-species">8</span>
+                                <span class="bio-stat-label">SPECIES</span>
+                            </div>
+                            <div class="bio-stat">
+                                <span class="bio-stat-value" id="bio-lumens">847</span>
+                                <span class="bio-stat-label">LUMENS</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel comms-panel" data-panel="comms">
+                    <div class="panel-header">
+                        <div class="panel-indicator"></div>
+                        <h2>COMMS FEED</h2>
+                        <div class="panel-status">LINKED</div>
+                    </div>
+                    <div class="panel-body">
+                        <div class="comms-signal-strength">
+                            <div class="signal-bars">
+                                <div class="signal-bar" style="height: 20%"></div>
+                                <div class="signal-bar" style="height: 40%"></div>
+                                <div class="signal-bar" style="height: 60%"></div>
+                                <div class="signal-bar" style="height: 75%"></div>
+                                <div class="signal-bar" style="height: 50%"></div>
+                            </div>
+                            <div class="signal-info">
+                                <span class="signal-label">SIGNAL STRENGTH</span>
+                                <span id="signal-strength" class="signal-value">-67 dBm</span>
+                                <span class="signal-label">LATENCY</span>
+                                <span id="signal-latency" class="signal-value">2,847 ms</span>
+                            </div>
+                        </div>
+                        <div class="comms-messages" id="comms-messages">
+                            <div class="comms-msg incoming">
+                                <span class="msg-time">08:41</span>
+                                <span class="msg-from">SURFACE</span>
+                                <span class="msg-text">Weather window closing. Recommend depth hold.</span>
+                            </div>
+                            <div class="comms-msg outgoing">
+                                <span class="msg-time">08:42</span>
+                                <span class="msg-from">STATION</span>
+                                <span class="msg-text">Acknowledged. Depth hold engaged. Continuing ops.</span>
+                            </div>
+                            <div class="comms-msg incoming">
+                                <span class="msg-time">08:44</span>
+                                <span class="msg-from">SURFACE</span>
+                                <span class="msg-text">Copy. Sonar contacts of interest at bearing 042.</span>
+                            </div>
+                        </div>
+                        <div class="comms-input-area">
+                            <input type="text" class="comms-input" placeholder="TYPE MESSAGE..." disabled>
+                            <button class="comms-send-btn" disabled>SEND</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel power-panel" data-panel="power">
+                    <div class="panel-header">
+                        <div class="panel-indicator green"></div>
+                        <h2>POWER AND LIFE SUPPORT</h2>
+                        <div class="panel-status">STABLE</div>
+                    </div>
+                    <div class="panel-body">
+                        <div class="power-bars">
+                            <div class="power-item">
+                                <div class="power-bar-wrapper">
+                                    <div class="power-bar-bg">
+                                        <div id="power-reactor" class="power-bar-fill reactor"></div>
+                                    </div>
+                                    <span class="power-percent">87%</span>
+                                </div>
+                                <span class="power-label">REACTOR OUTPUT</span>
+                            </div>
+                            <div class="power-item">
+                                <div class="power-bar-wrapper">
+                                    <div class="power-bar-bg">
+                                        <div id="power-battery" class="power-bar-fill battery"></div>
+                                    </div>
+                                    <span class="power-percent">94%</span>
+                                </div>
+                                <span class="power-label">AUX BATTERY</span>
+                            </div>
+                            <div class="power-item">
+                                <div class="power-bar-wrapper">
+                                    <div class="power-bar-bg">
+                                        <div id="power-o2" class="power-bar-fill o2"></div>
+                                    </div>
+                                    <span class="power-percent">91%</span>
+                                </div>
+                                <span class="power-label">O2 GENERATION</span>
+                            </div>
+                            <div class="power-item">
+                                <div class="power-bar-wrapper">
+                                    <div class="power-bar-bg">
+                                        <div id="power-co2" class="power-bar-fill co2"></div>
+                                    </div>
+                                    <span class="power-percent">12%</span>
+                                </div>
+                                <span class="power-label">CO2 SCRUBBER</span>
+                            </div>
+                            <div class="power-item">
+                                <div class="power-bar-wrapper">
+                                    <div class="power-bar-bg">
+                                        <div id="power-water" class="power-bar-fill water"></div>
+                                    </div>
+                                    <span class="power-percent">78%</span>
+                                </div>
+                                <span class="power-label">WATER RECYCLING</span>
+                            </div>
+                        </div>
+                        <div class="power-consumption">
+                            <span class="consumption-label">TOTAL DRAW</span>
+                            <span id="power-draw" class="consumption-value">247.3 kW</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer id="bottom-bar">
+            <div class="bottom-left">
+                <span class="coord-label">POSITION</span>
+                <span id="coord-lat" class="coord-value">36-12-44N</span>
+                <span class="coord-sep">|</span>
+                <span id="coord-lon" class="coord-value">142-35-18E</span>
+            </div>
+            <div class="bottom-center">
+                <span class="footer-warning">! EXTERNAL ENVIRONMENT HOSTILE - REMAIN INSIDE STATION</span>
+            </div>
+            <div class="bottom-right">
+                <span class="sys-label">SYS.UPTIME</span>
+                <span id="sys-uptime" class="sys-value">147d 08h 42m</span>
+                <span class="sys-sep">|</span>
+                <span class="sys-label">BUILD</span>
+                <span class="sys-value">v4.7.2-RC3</span>
+            </div>
+        </footer>
+    </div>
+
+    <div id="porthole-frame">
+        <div class="porthole-rivet" style="top: 2%; left: 2%"></div>
+        <div class="porthole-rivet" style="top: 2%; right: 2%"></div>
+        <div class="porthole-rivet" style="bottom: 2%; left: 2%"></div>
+        <div class="porthole-rivet" style="bottom: 2%; right: 2%"></div>
+        <div class="porthole-rivet" style="top: 2%; left: 50%"></div>
+        <div class="porthole-rivet" style="bottom: 2%; left: 50%"></div>
+        <div class="porthole-rivet" style="top: 50%; left: 2%"></div>
+        <div class="porthole-rivet" style="top: 50%; right: 2%"></div>
+    </div>
+
+    <script src="scripts.js"></script>
+</body>
+</html>

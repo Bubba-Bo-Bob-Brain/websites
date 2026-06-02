@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BRIDGE CONSOLE — USS SYNTHWAVE NCC-8080</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="bridge-viewport">
+    <canvas id="starfield-canvas"></canvas>
+    <div class="chrome-grid-floor"></div>
+    <div class="viewport-haze"></div>
+  </div>
+
+  <div class="bridge-container">
+    <!-- TOP BAR -->
+    <header class="top-bar">
+      <div class="ship-name">USS SYNTHWAVE</div>
+      <div class="ship-registry">NCC-8080</div>
+      <div class="stardate" id="stardate">STARDATE 3847.21</div>
+      <div class="alert-status" id="alert-status">CONDITION GREEN</div>
+    </header>
+
+    <!-- MAIN CONSOLE GRID -->
+    <main class="console-grid">
+      <!-- LEFT COLUMN -->
+      <section class="panel-group left-column">
+        <!-- Navigation Panel -->
+        <div class="holo-panel nav-panel">
+          <div class="panel-header">
+            <span class="panel-label">◆ NAVIGATION</span>
+            <span class="panel-status green">ONLINE</span>
+          </div>
+          <div class="panel-body">
+            <div class="star-map">
+              <canvas id="nav-canvas" width="360" height="200"></canvas>
+              <div class="nav-coords">
+                <span class="coord-row">
+                  <span>SECTOR</span>
+                  <span id="sector">7G — KEPLER</span>
+                </span>
+                <span class="coord-row">
+                  <span>HEADING</span>
+                  <span id="heading">247.3° / 012</span>
+                </span>
+                <span class="coord-row">
+                  <span>VELOCITY</span>
+                  <span id="velocity">WARP 6.2</span>
+                </span>
+              </div>
+            </div>
+            <div class="warp-indicator">
+              <div class="warp-bar">
+                <div class="warp-fill" id="warp-fill"></div>
+                <div class="warp-markers">
+                  <span class="marker" style="left:20%">1</span>
+                  <span class="marker" style="left:40%">2</span>
+                  <span class="marker" style="left:60%">3</span>
+                  <span class="marker" style="left:80%">4</span>
+                  <span class="marker" style="left:100%">5</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Shields Panel -->
+        <div class="holo-panel shields-panel">
+          <div class="panel-header">
+            <span class="panel-label">◆ SHIELDS</span>
+            <span class="panel-status green" id="shield-status">NOMINAL</span>
+          </div>
+          <div class="panel-body">
+            <div class="shield-diagram">
+              <svg viewBox="0 0 200 200" id="shield-svg">
+                <defs>
+                  <linearGradient id="shieldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" style="stop-color:#00f0ff;stop-opacity:0.8" />
+                    <stop offset="100%" style="stop-color:#ff00ff;stop-opacity:0.8" />
+                  </linearGradient>
+                  <filter id="shieldGlow">
+                    <feGaussianBlur stdDeviation="3" result="blur" />
+                    <feMerge>
+                      <feMergeNode in="blur" />
+                      <feMergeNode in="SourceGraphic" />
+                    </feMerge>
+                  </filter>
+                </defs>
+                <!-- Ship silhouette -->
+                <polygon points="100,40 120,80 130,100 120,120 110,140 100,145 90,140 80,120 70,100 80,80" fill="#1a1a2e" stroke="#00f0ff" stroke-width="1" opacity="0.6"/>
+                <!-- Shield layers -->
+                <ellipse cx="100" cy="95" rx="80" ry="60" fill="none" stroke="url(#shieldGrad)" stroke-width="2" opacity="0.4" class="shield-ring" id="shield-outer"/>
+                <ellipse cx="100" cy="95" rx="65" ry="48" fill="none" stroke="url(#shieldGrad)" stroke-width="1.5" opacity="0.5" class="shield-ring" id="shield-mid"/>
+                <ellipse cx="100" cy="95" rx="50" ry="37" fill="none" stroke="url(#shieldGrad)" stroke-width="1" opacity="0.6" class="shield-ring" id="shield-inner"/>
+                <!-- Shield segments -->
+                <path d="M 20,95 A 80,60 0 0,1 100,35" fill="none" stroke="#00f0ff" stroke-width="0.5" opacity="0.3"/>
+                <path d="M 100,35 A 80,60 0 0,1 180,95" fill="none" stroke="#00f0ff" stroke-width="0.5" opacity="0.3"/>
+                <path d="M 180,95 A 80,60 0 0,1 100,155" fill="none" stroke="#00f0ff" stroke-width="0.5" opacity="0.3"/>
+                <path d="M 100,155 A 80,60 0 0,1 20,95" fill="none" stroke="#00f0ff" stroke-width="0.5" opacity="0.3"/>
+              </svg>
+            </div>
+            <div class="shield-bars">
+              <div class="shield-segment">
+                <span class="seg-label">FWD</span>
+                <div class="seg-bar"><div class="seg-fill" id="shield-fwd"></div></div>
+              </div>
+              <div class="shield-segment">
+                <span class="seg-label">PORT</span>
+                <div class="seg-bar"><div class="seg-fill" id="shield-port"></div></div>
+              </div>
+              <div class="shield-segment">
+                <span class="seg-label">STBD</span>
+                <div class="seg-bar"><div class="seg-fill" id="shield-stbd"></div></div>
+              </div>
+              <div class="shield-segment">
+                <span class="seg-label">AFT</span>
+                <div class="seg-bar"><div class="seg-fill" id="shield-aft"></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Power Distribution -->
+        <div class="holo-panel power-panel">
+          <div class="panel-header">
+            <span class="panel-label">◆ POWER</span>
+            <span class="panel-status yellow">DISTRIBUTE</span>
+          </div>
+          <div class="panel-body">
+            <div class="power-sliders">
+              <div class="power-item">
+                <span class="power-label">ENGINES</span>
+                <input type="range" min="0" max="100" value="72" class="power-slider" data-power="engines">
+                <span class="power-val" id="power-engines">72%</span>
+              </div>
+              <div class="power-item">
+                <span class="power-label">WEAPONS</span>
+                <input type="range" min="0" max="100" value="45" class="power-slider" data-power="weapons">
+                <span class="power-val" id="power-weapons">45%</span>
+              </div>
+              <div class="power-item">
+                <span class="power-label">SHIELDS</span>
+                <input type="range" min="0" max="100" value="88" class="power-slider" data-power="shields">
+                <span class="power-val" id="power-shields">88%</span>
+              </div>
+              <div class="power-item">
+                <span class="power-label">SENSORS</span>
+                <input type="range" min="0" max="100" value="60" class="power-slider" data-power="sensors">
+                <span class="power-val" id="power-sensors">60%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- CENTER COLUMN -->
+      <section class="panel-group center-column">
+        <!-- Main Viewport -->
+        <div class="main-viewport">
+          <div class="viewport-frame">
+            <div class="viewport-inner">
+              <div class="scan-lines"></div>
+              <div class="radar-sweep" id="radar-sweep"></div>
+              <div class="reticle" id="target-reticle">
+                <div class="reticle-ring"></div>
+                <div class="reticle-cross"></div>
+                <div class="reticle-dot"></div>
+              </div>
+              <div class="viewport-info">
+                <span class="vinfo">LONG RANGE SCANNER</span>
+                <span class="vinfo">SECTOR 7G — ACTIVE</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tactical Readout -->
+        <div class="holo-panel tactical-panel">
+          <div class="panel-header">
+            <span class="panel-label">◆ TACTICAL</span>
+            <span class="panel-status green">READY</span>
+          </div>
+          <div class="panel-body">
+            <div class="targeting-system">
+              <div class="target-info">
+                <div class="target-name" id="target-name">NO TARGET LOCKED</div>
+                <div class="target-distance" id="target-distance">—</div>
+              </div>
+              <div class="torpedo-status">
+                <span class="torp-label">TORPEDO BAY</span>
+                <div class="torp-count">
+                  <span class="torp-count-val" id="torp-count">24</span>
+                  <span class="torp-count-max">/ 48</span>
+                </div>
+                <div class="torp-indicators">
+                  <span class="torp-dot" id="torp-1"></span>
+                  <span class="torp-dot" id="torp-2"></span>
+                  <span class="torp-dot" id="torp-3"></span>
+                  <span class="torp-dot" id="torp-4"></span>
+                  <span class="torp-dot" id="torp-5"></span>
+                  <span class="torp-dot" id="torp-6"></span>
+                </div>
+              </div>
+              <div class="beam-status">
+                <span class="beam-label">BEAM ARRAY</span>
+                <div class="beam-bars">
+                  <div class="beam-bar"><div class="beam-fill" id="beam-1"></div></div>
+                  <div class="beam-bar"><div class="beam-fill" id="beam-2"></div></div>
+                  <div class="beam-bar"><div class="beam-fill" id="beam-3"></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Communications Panel -->
+        <div class="holo-panel comm-panel">
+          <div class="panel-header">
+            <span class="panel-label">◆ COMMUNICATIONS</span>
+            <span class="panel-status green" id="comm-status">LINKED</span>
+          </div>
+          <div class="panel-body">
+            <div class="comm-frequency">
+              <div class="freq-display">
+                <span class="freq-label">SUBSPACE BAND</span>
+                <span class="freq-value" id="freq-value">47.830 MHz</span>
+                <span class="freq-tuning" id="freq-tuning">CH-7</span>
+              </div>
+              <div class="freq-visualizer" id="freq-visualizer">
+                <canvas id="freq-canvas" width="320" height="60"></canvas>
+              </div>
+              <div class="comm-controls">
+                <button class="comm-btn" id="comm-send" title="Open Channel">📡 OPEN</button>
+                <button class="comm-btn" id="comm-hail" title="Hail Frequency">⚡ HAIL</button>
+                <button class="comm-btn" id="comm-record" title="Record Log">🔴 REC</button>
+              </div>
+            </div>
+            <div class="comm-log" id="comm-log">
+              <div class="log-entry"><span class="log-time">03:41</span> <span class="log-from">STARBASE 12:</span> All ships, avoid sector 7G rim.</div>
+              <div class="log-entry"><span class="log-time">03:42</span> <span class="log-from">USS PROMETHEUS:</span> Copy. Encountering anomalous readings.</div>
+              <div class="log-entry"><span class="log-time">03:44</span> <span class="log-from">COMMAND:</span> Investigate and report. Synthwave, you are lead.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- RIGHT COLUMN -->
+      <section class="panel-group right-column">
+        <!-- Engineering Panel -->
+        <div class="holo-panel eng-panel">
+          <div class="panel-header">
+            <span class="panel-label">◆ ENGINEERING</span>
+            <span class="panel-status green">NOMINAL</span>
+          </div>
+          <div class="panel-body">
+            <div class="reactor-visualization">
+              <canvas id="reactor-canvas" width="280" height="120"></canvas>
+            </div>
+            <div class="engine-stats">
+              <div class="stat-row">
+                <span class="stat-label">CORE TEMP</span>
+                <span class="stat-val" id="core-temp">2,847 K</span>
+              </div>
+              <div class="stat-row">
+                <span class="stat-label">PLASMA FLOW</span>
+                <span class="stat-val" id="plasma-flow">94.2%</span>
+              </div>
+              <div class="stat-row">
+                <span class="stat-label">DILITHIUM</span>
+                <span class="stat-val" id="dilithium">87.6%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Crew Status -->
+        <div class="holo-panel crew-panel">
+          <div class="panel-header">
+            <span class="panel-label">◆ CREW</span>
+            <span class="panel-status green">247 ABOARD</span>
+          </div>
+          <div class="panel-body">
+            <div class="crew-list">
+              <div class="crew-entry">
+                <span class="crew-role">CAPTAIN</span>
+                <span class="crew-name">ECHO DRAKE</span>
+                <span class="crew-status active"></span>
+              </div>
+              <div class="crew-entry">
+                <span class="crew-role">Helm</span>
+                <span class="crew-name">Lt. VOSS</span>
+                <span class="crew-status active"></span>
+              </div>
+              <div class="crew-entry">
+                <span class="crew-role">Tactical</span>
+                <span class="crew-name">Lt. KIRA</span>
+                <span class="crew-status active"></span>
+              </div>
+              <div class="crew-entry">
+                <span class="crew-role">Science</span>
+                <span class="crew-name">Dr. YEN</span>
+                <span class="crew-status active"></span>
+              </div>
+              <div class="crew-entry">
+                <span class="crew-role">Engineer</span>
+                <span class="crew-name">Cdr. OMEGA</span>
+                <span class="crew-status active"></span>
+              </div>
+              <div class="crew-entry">
+                <span class="crew-role">Comms</span>
+                <span class="crew-name">Ens. RAVE</span>
+                <span class="crew-status warning"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Alert Panel -->
+        <div class="holo-panel alert-panel">
+          <div class="panel-header">
+            <span class="panel-label">◆ ALERTS</span>
+          </div>
+          <div class="panel-body">
+            <div class="alert-controls">
+              <button class="alert-btn green" id="alert-green">CONDITION GREEN</button>
+              <button class="alert-btn yellow" id="alert-yellow">YELLOW</button>
+              <button class="alert-btn red" id="alert-red">RED ALERT</button>
+            </div>
+            <div class="alert-log" id="alert-log">
+              <div class="alert-entry yellow">⚠ Subspace interference detected — Band 47.8</div>
+              <div class="alert-entry blue">ℹ Anomalous readings in sector 7G</div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- BOTTOM BAR -->
+    <footer class="bottom-bar">
+      <div class="systems-check">
+        <span class="sys-item" id="sys-helm">● HELM</span>
+        <span class="sys-item" id="sys-wpn">● WEAPONS</span>
+        <span class="sys-item" id="sys-shld">● SHIELDS</span>
+        <span class="sys-item" id="sys-sens">● SENSORS</span>
+        <span class="sys-item" id="sys-comm">● COMMS</span>
+        <span class="sys-item" id="sys-eng">● ENGINEERING</span>
+        <span class="sys-item" id="sys-lc">● LIFE SUPPORT</span>
+      </div>
+      <div class="time-display" id="time-display">03:44:17</div>
+    </footer>
+  </div>
+
+  <script src="scripts.js"></script>
+</body>
+</html>

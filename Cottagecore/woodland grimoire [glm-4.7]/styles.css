@@ -1,0 +1,695 @@
+/* --- Variables & Theme Setup --- */
+:root {
+    /* Typography */
+    --font-display: 'MedievalSharp', cursive;
+    --font-hand: 'Homemade Apple', cursive;
+    --font-body: 'EB Garamond', serif;
+
+    /* Light Mode (Day/Parchment) Colors */
+    --bg-paper: #fdfbf7;
+    --bg-paper-alt: #f4f1ea;
+    --text-ink: #2c241b;
+    --text-muted: #5a5045;
+    --accent-sage: #5c6b54;
+    --accent-rose: #c17c74;
+    --accent-gold: #d4a017;
+    --shadow-soft: 0 4px 20px rgba(44, 36, 27, 0.08);
+    --border-worn: #dcd6ce;
+    
+    /* Texture & Effects */
+    --grain-opacity: 0.4;
+    --paper-shadow: inset 0 0 80px rgba(139, 119, 101, 0.15);
+}
+
+/* Dark Mode (Night/Cottage) */
+[data-theme="dark"] {
+    --bg-paper: #1a1c29; /* Midnight Blue/Grey */
+    --bg-paper-alt: #232636;
+    --text-ink: #e0e6ed;
+    --text-muted: #a0aab5;
+    --accent-sage: #8fa391;
+    --accent-rose: #d68d8d;
+    --accent-gold: #f2c94c;
+    --shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.4);
+    --border-worn: #3a3f52;
+    --paper-shadow: inset 0 0 80px rgba(0, 0, 0, 0.6);
+}
+
+/* --- Global Reset & Base Styles --- */
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: var(--font-body);
+    background-color: var(--bg-paper);
+    color: var(--text-ink);
+    line-height: 1.8;
+    overflow-x: hidden;
+    transition: background-color 0.6s ease, color 0.6s ease;
+    position: relative;
+}
+
+/* Paper Texture Overlay */
+body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 9999;
+    opacity: var(--grain-opacity);
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+}
+
+h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    font-weight: normal;
+    margin-bottom: 1rem;
+}
+
+p {
+    margin-bottom: 1.5rem;
+    font-size: 1.1rem;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+    transition: color 0.3s ease;
+}
+
+ul {
+    list-style: none;
+}
+
+/* --- Loading Screen: Cauldron --- */
+#cauldron-loader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    background-color: var(--bg-paper);
+    z-index: 10000;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    transition: opacity 0.8s ease, visibility 0.8s;
+}
+
+.cauldron-container {
+    position: relative;
+    width: 200px;
+    height: 200px;
+}
+
+.cauldron-svg {
+    width: 100%;
+    height: 100%;
+    filter: drop-shadow(0 10px 10px rgba(0,0,0,0.2));
+}
+
+.pot-body { fill: #3e3e3e; }
+.pot-rim { fill: #555; }
+.pot-leg { stroke: #3e3e3e; stroke-width: 4; stroke-linecap: round; }
+
+.bubble {
+    fill: rgba(255, 255, 255, 0.7);
+    animation: bubbleRise 2s infinite ease-in;
+}
+
+.bubble.b1 { animation-delay: 0s; }
+.bubble.b2 { animation-delay: 0.5s; }
+.bubble.b3 { animation-delay: 1.2s; }
+.bubble.b4 { animation-delay: 0.2s; }
+.bubble.b5 { animation-delay: 0.8s; }
+
+@keyframes bubbleRise {
+    0% { transform: translateY(0) scale(1); opacity: 0; }
+    20% { opacity: 1; }
+    100% { transform: translateY(-40px) scale(1.5); opacity: 0; }
+}
+
+.loading-text {
+    margin-top: 1rem;
+    font-family: var(--font-hand);
+    color: var(--text-ink);
+    font-size: 1.2rem;
+    animation: pulse 2s infinite;
+}
+
+/* --- Decorative Border --- */
+.page-border {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 50;
+    border: 20px solid transparent; /* Space for content */
+    /* Creating a watercolor effect in corners using radial gradients */
+    background: 
+        radial-gradient(circle at 0% 0%, var(--accent-sage) 0%, transparent 20%),
+        radial-gradient(circle at 100% 0%, var(--accent-rose) 0%, transparent 20%),
+        radial-gradient(circle at 0% 100%, var(--accent-gold) 0%, transparent 20%),
+        radial-gradient(circle at 100% 100%, var(--accent-sage) 0%, transparent 20%);
+    background-size: 50% 50%;
+    background-repeat: no-repeat;
+    opacity: 0.3;
+    mask-image: linear-gradient(to bottom, black 40%, transparent 40%, transparent 60%, black 60%); /* Mask center */
+    -webkit-mask-image: linear-gradient(to bottom, black 40%, transparent 40%, transparent 60%, black 60%);
+}
+
+/* --- Theme Toggle --- */
+#theme-toggle {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+    cursor: pointer;
+}
+
+.toggle-track {
+    width: 70px;
+    height: 36px;
+    background: rgba(0,0,0,0.1);
+    border-radius: 30px;
+    position: relative;
+    border: 2px solid var(--text-ink);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 8px;
+    transition: background 0.4s;
+}
+
+[data-theme="dark"] .toggle-track {
+    background: rgba(255,255,255,0.1);
+}
+
+.toggle-track svg {
+    width: 16px;
+    height: 16px;
+    fill: var(--text-ink);
+    z-index: 1;
+}
+
+.toggle-knob {
+    position: absolute;
+    left: 2px;
+    top: 2px;
+    width: 28px;
+    height: 28px;
+    background: var(--accent-gold);
+    border-radius: 50%;
+    transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+[data-theme="dark"] .toggle-knob {
+    transform: translateX(34px);
+    background: #6b5b95; /* Moth color */
+}
+
+/* --- Header --- */
+header {
+    padding: 4rem 2rem 2rem;
+    text-align: center;
+    position: relative;
+    z-index: 10;
+}
+
+.site-title {
+    font-size: 3.5rem;
+    color: var(--text-ink);
+    text-shadow: 2px 2px 0px rgba(0,0,0,0.1);
+    margin-bottom: 0.5rem;
+}
+
+.highlight {
+    color: var(--accent-rose);
+    font-style: italic;
+}
+
+.nav-links {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin-top: 1.5rem;
+    font-family: var(--font-display);
+    font-size: 1.2rem;
+}
+
+.nav-links a {
+    position: relative;
+    padding-bottom: 5px;
+}
+
+.nav-links a::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    bottom: 0;
+    left: 50%;
+    background-color: var(--accent-sage);
+    transition: all 0.3s ease;
+    transform: translateX(-50%);
+}
+
+.nav-links a:hover::after {
+    width: 100%;
+}
+
+/* --- Main Layout --- */
+main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+    position: relative;
+    z-index: 5;
+}
+
+/* --- Hero Section --- */
+#hero {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    margin-bottom: 6rem;
+    min-height: 60vh;
+    justify-content: center;
+}
+
+.hero-text h2 {
+    font-size: 2.5rem;
+    color: var(--accent-sage);
+    margin-bottom: 1rem;
+}
+
+.signature {
+    font-family: var(--font-hand);
+    font-size: 1.4rem;
+    color: var(--accent-rose);
+    margin-top: 2rem;
+}
+
+.hero-visual {
+    position: relative;
+    width: 100%;
+    height: 200px;
+    margin-top: 2rem;
+}
+
+.ingredient {
+    position: absolute;
+    font-size: 3rem;
+    animation: float 6s ease-in-out infinite;
+    filter: drop-shadow(0 5px 5px rgba(0,0,0,0.1));
+}
+
+.ingredient.leaf { top: 10%; left: 20%; animation-delay: 0s; }
+.ingredient.berry { top: 40%; left: 70%; animation-delay: 2s; }
+.ingredient.mushroom { top: 60%; left: 30%; animation-delay: 1s; }
+.ingredient.drop { top: 20%; left: 80%; animation-delay: 3s; font-size: 2rem;}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-20px) rotate(10deg); }
+}
+
+/* --- Potions Section --- */
+.section-title {
+    text-align: center;
+    font-size: 2.5rem;
+    margin-bottom: 3rem;
+    position: relative;
+    display: inline-block;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.section-title::before, .section-title::after {
+    content: "❧";
+    color: var(--accent-gold);
+    font-size: 1.5rem;
+    vertical-align: middle;
+    margin: 0 1rem;
+}
+
+.potions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 3rem;
+    margin-bottom: 6rem;
+}
+
+.potion-card {
+    background: var(--bg-paper-alt);
+    border: 1px solid var(--border-worn);
+    padding: 2rem;
+    border-radius: 8px 20px 8px 20px; /* Quirky shape */
+    text-align: center;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    position: relative;
+    box-shadow: var(--shadow-soft);
+}
+
+.potion-card:hover {
+    transform: translateY(-5px) rotate(1deg);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+}
+
+.bottle-visual {
+    width: 80px;
+    height: 120px;
+    margin: 0 auto 1.5rem;
+    position: relative;
+    border: 2px solid var(--text-ink);
+    border-radius: 50% 50% 10px 10px;
+    overflow: hidden;
+    background: rgba(255,255,255,0.2);
+}
+
+.cork {
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 20px;
+    height: 15px;
+    background: #8b5a2b;
+    border-radius: 2px;
+    z-index: 2;
+}
+
+.liquid {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 80%;
+    border-radius: 0 0 8px 8px;
+    transition: height 1s ease;
+}
+
+/* Liquid Colors */
+.liquid-1 { background: linear-gradient(to top, #6a1b9a, #ab47bc); } /* Moonlit */
+.liquid-2 { background: linear-gradient(to top, #e65100, #ff9800); } /* Vigor */
+.liquid-3 { background: linear-gradient(to top, #3e2723, #d84315); } /* Autumn */
+
+.potion-card:hover .liquid {
+    height: 90%; /* Bubbling effect */
+}
+
+.handwritten-note {
+    font-family: var(--font-hand);
+    color: var(--accent-rose);
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+    transform: rotate(-2deg);
+    display: block;
+}
+
+.recipe-list {
+    text-align: left;
+    margin: 1.5rem 0;
+    padding-left: 1rem;
+    border-left: 2px solid var(--accent-sage);
+}
+
+.recipe-list li {
+    margin-bottom: 0.5rem;
+    font-size: 1rem;
+}
+
+.brew-btn {
+    background: transparent;
+    border: 2px solid var(--text-ink);
+    padding: 0.5rem 1.5rem;
+    font-family: var(--font-display);
+    cursor: pointer;
+    transition: all 0.3s;
+    font-size: 1rem;
+}
+
+.brew-btn:hover {
+    background: var(--text-ink);
+    color: var(--bg-paper);
+}
+
+/* --- Seasonal Wheel --- */
+.wheel-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 6rem;
+}
+
+.wheel-inner {
+    width: 300px;
+    height: 300px;
+    border-radius: 50%;
+    border: 4px double var(--text-ink);
+    position: relative;
+    background: conic-gradient(
+        var(--accent-gold) 0deg 90deg, 
+        var(--accent-sage) 90deg 180deg, 
+        var(--accent-rose) 180deg 270deg, 
+        #5d4037 270deg 360deg
+    );
+    box-shadow: var(--shadow-soft);
+    transition: transform 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    cursor: grab;
+}
+
+.wheel-inner:active {
+    cursor: grabbing;
+}
+
+.season {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 50px;
+    height: 50px;
+    margin-top: -25px;
+    margin-left: -25px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+    pointer-events: none; /* Let clicks pass to wheel */
+}
+
+.season h4 { margin: 0; font-size: 0.9rem; }
+.season p { margin: 0; font-size: 0.7rem; opacity: 0.9; }
+
+/* Positioning seasons on the wheel */
+.season[data-season="spring"] { transform: rotate(45deg) translate(90px) rotate(-45deg); }
+.season[data-season="summer"] { transform: rotate(135deg) translate(90px) rotate(-135deg); }
+.season[data-season="autumn"] { transform: rotate(225deg) translate(90px) rotate(-225deg); }
+.season[data-season="winter"] { transform: rotate(315deg) translate(90px) rotate(-315deg); }
+
+.wheel-center {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80px;
+    height: 80px;
+    background: var(--bg-paper);
+    border-radius: 50%;
+    border: 2px solid var(--text-ink);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
+}
+
+.wheel-icon { font-size: 2rem; }
+
+.wheel-info {
+    margin-top: 2rem;
+    font-family: var(--font-hand);
+    font-size: 1.2rem;
+    min-height: 1.5em;
+}
+
+/* --- Herbarium --- */
+.gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 2rem;
+    margin-bottom: 6rem;
+}
+
+.specimen {
+    position: relative;
+    background: var(--bg-paper-alt);
+    padding: 1rem;
+    border: 1px solid var(--border-worn);
+    box-shadow: var(--shadow-soft);
+    transition: transform 0.3s;
+}
+
+.specimen:hover {
+    transform: scale(1.02) rotate(1deg);
+    z-index: 10;
+}
+
+.specimen-img {
+    width: 100%;
+    height: 180px;
+    /* Using generic colors as placeholders for images */
+    border-radius: 4px;
+    box-shadow: inset 0 0 20px rgba(0,0,0,0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Stylized "Veins" in leaves using CSS gradients */
+.specimen-img::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 60%;
+    height: 2px;
+    background: rgba(255,255,255,0.3);
+    transform: translate(-50%, -50%) rotate(-15deg);
+}
+
+figcaption {
+    margin-top: 1rem;
+    text-align: center;
+}
+
+.specimen-name {
+    display: block;
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    color: var(--text-ink);
+}
+
+.specimen-latin {
+    display: block;
+    font-style: italic;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+/* --- Journal --- */
+.journal-entry {
+    background: #fff;
+    max-width: 700px;
+    margin: 0 auto 6rem;
+    padding: 3rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    position: relative;
+    transform: rotate(-1deg);
+    /* Lined paper effect */
+    background-image: repeating-linear-gradient(transparent, transparent 31px, #dcd6ce 31px, #dcd6ce 32px);
+    background-size: 100% 32px;
+    line-height: 32px;
+}
+
+[data-theme="dark"] .journal-entry {
+    background: #2d323e;
+    background-image: repeating-linear-gradient(transparent, transparent 31px, #3e4555 31px, #3e4555 32px);
+}
+
+.tape {
+    position: absolute;
+    top: -15px;
+    left: 50%;
+    transform: translateX(-50%) rotate(2deg);
+    width: 120px;
+    height: 30px;
+    background-color: rgba(255, 255, 255, 0.4);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    backdrop-filter: blur(2px);
+    border-left: 2px dashed rgba(255,255,255,0.3);
+    border-right: 2px dashed rgba(255,255,255,0.3);
+}
+
+.journal-entry h3 {
+    font-family: var(--font-display);
+    font-size: 2rem;
+    margin-top: 0;
+    line-height: 1.2;
+    color: var(--accent-rose);
+}
+
+.journal-date {
+    font-family: var(--font-hand);
+    color: var(--text-muted);
+    margin-left: 1rem;
+}
+
+.journal-body p {
+    font-size: 1.1rem;
+    margin-bottom: 32px; /* Match line height */
+}
+
+.handwritten-p {
+    font-family: var(--font-hand);
+    color: var(--accent-sage);
+    font-size: 1.2rem;
+    margin-left: 20%;
+}
+
+.ink-stain {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(44, 36, 27, 0.2) 0%, transparent 70%);
+    transform: scale(1.5);
+}
+
+/* --- Footer --- */
+footer {
+    text-align: center;
+    padding: 3rem;
+    font-family: var(--font-hand);
+    color: var(--text-muted);
+    border-top: 1px solid var(--border-worn);
+    margin-top: 4rem;
+}
+
+/* --- Animations --- */
+@keyframes pulse {
+    0% { opacity: 0.6; }
+    50% { opacity: 1; }
+    100% { opacity: 0.6; }
+}
+
+/* --- Responsive --- */
+@media (max-width: 768px) {
+    .site-title { font-size: 2.5rem; }
+    .nav-links { flex-direction: column; gap: 1rem; }
+    .hero-text h2 { font-size: 2rem; }
+    .wheel-inner { width: 250px; height: 250px; }
+    .season[data-season="spring"] { transform: rotate(45deg) translate(70px) rotate(-45deg); }
+    .season[data-season="summer"] { transform: rotate(135deg) translate(70px) rotate(-135deg); }
+    .season[data-season="autumn"] { transform: rotate(225deg) translate(70px) rotate(-225deg); }
+    .season[data-season="winter"] { transform: rotate(315deg) translate(70px) rotate(-315deg); }
+}

@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>█ METEOROLOGICAL DATA TERMINAL v3.1 █</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Source+Code+Pro:wght@400;600;700;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="scanlines"></div>
+  <div class="noise-overlay"></div>
+
+  <!-- ALERT BANNER -->
+  <div class="alert-banner" id="alertBanner">
+    <span class="alert-icon">⚠</span>
+    <marquee class="alert-text" scrollamount="6">
+      SEVERE WEATHER ADVISORY IN EFFECT — HIGH WIND WARNING UNTIL 2300 HRS — GUSTS UP TO 67 MPH EXPECTED — EXPOSED STRUCTURES AT RISK — POWER OUTAGES POSSIBLE — AVOID NON-ESSENTIAL TRAVEL — SEVERE WEATHER ADVISORY IN EFFECT
+    </marquee>
+    <span class="alert-icon">⚠</span>
+  </div>
+
+  <!-- HEADER -->
+  <header class="terminal-header">
+    <div class="header-left">
+      <span class="system-id">SYS://METEOROLOGICAL-DATA/FEED</span>
+      <span class="system-status">[ LIVE ]</span>
+    </div>
+    <div class="header-center">
+      <h1 class="site-title">ATMOSPHERIC MONITORING INTERFACE</h1>
+    </div>
+    <div class="header-right">
+      <span class="timestamp" id="liveTimestamp">--:--:-- UTC</span>
+      <span class="lat-lon">LAT 40.7128°N / LON 74.0060°W</span>
+    </div>
+  </header>
+
+  <!-- DATA SOURCE STRIP -->
+  <div class="data-source-strip">
+    <span>DATA: NOAA-NWS</span>
+    <span class="divider">│</span>
+    <span>STATION: KNYS</span>
+    <span class="divider">│</span>
+    <span>ELEVATION: 57M</span>
+    <span class="divider">│</span>
+    <span>UPDATE: 6MIN CYCLE</span>
+    <span class="divider">│</span>
+    <span>ACCURACY: ±0.3°C</span>
+    <span class="divider">│</span>
+    <span>RAW MODE: ON</span>
+  </div>
+
+  <!-- MAIN GRID -->
+  <main class="main-grid">
+
+    <!-- PRIMARY TEMPERATURE BLOCK -->
+    <section class="temp-block" id="tempBlock">
+      <div class="temp-label">CURRENT TEMPERATURE</div>
+      <div class="temp-value" id="tempValue">--.-</div>
+      <div class="temp-unit">°C</div>
+      <div class="temp-fahrenheit" id="tempF">--.-°F</div>
+      <div class="temp-feels" id="tempFeels">FEELS LIKE: --.-°C</div>
+      <div class="temp-range">
+        <span>MIN: <span id="tempMin">--.-</span>°</span>
+        <span class="divider-v">│</span>
+        <span>MAX: <span id="tempMax">--.-</span>°</span>
+      </div>
+    </section>
+
+    <!-- WEATHER CONDITION -->
+    <section class="condition-block">
+      <div class="condition-icon" id="conditionIcon">☁</div>
+      <div class="condition-text" id="conditionText">OVERCAST</div>
+      <div class="condition-code">CODE: OVC012</div>
+      <div class="visibility-block">
+        <span class="vis-label">VISIBILITY</span>
+        <span class="vis-value" id="visibility">12.4 KM</span>
+      </div>
+      <div class="uv-block">
+        <span class="uv-label">UV INDEX</span>
+        <span class="uv-value" id="uvIndex">3 MODERATE</span>
+        <div class="uv-bar">
+          <div class="uv-fill" id="uvFill"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- RAW DATA PANEL -->
+    <section class="raw-data-panel">
+      <div class="panel-header">
+        <span class="panel-title">■ ATMOSPHERIC PARAMETERS</span>
+        <span class="panel-id">[SEC-01]</span>
+      </div>
+      <div class="raw-table">
+        <div class="raw-row">
+          <span class="raw-key">BAROMETRIC PRESSURE</span>
+          <span class="raw-value" id="pressure">1013.2 hPa</span>
+          <span class="raw-trend" id="pressureTrend">▲</span>
+        </div>
+        <div class="raw-row">
+          <span class="raw-key">RELATIVE HUMIDITY</span>
+          <span class="raw-value" id="humidity">72%</span>
+          <span class="raw-trend">—</span>
+        </div>
+        <div class="raw-row">
+          <span class="raw-key">DEW POINT</span>
+          <span class="raw-value" id="dewPoint">8.4°C</span>
+          <span class="raw-trend">▼</span>
+        </div>
+        <div class="raw-row">
+          <span class="raw-key">CLOUD BASE</span>
+          <span class="raw-value" id="cloudBase">1,200 M</span>
+          <span class="raw-trend">—</span>
+        </div>
+        <div class="raw-row">
+          <span class="raw-key">PRECIPITATION RATE</span>
+          <span class="raw-value" id="precipRate">0.0 MM/HR</span>
+          <span class="raw-trend">—</span>
+        </div>
+        <div class="raw-row">
+          <span class="raw-key">PRECIPITATION (1HR)</span>
+          <span class="raw-value" id="precip1hr">0.2 MM</span>
+          <span class="raw-trend">—</span>
+        </div>
+        <div class="raw-row">
+          <span class="raw-key">PRECIPITATION (24HR)</span>
+          <span class="raw-value" id="precip24hr">4.7 MM</span>
+          <span class="raw-trend">—</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- WIND PANEL -->
+    <section class="wind-panel">
+      <div class="panel-header">
+        <span class="panel-title">■ WIND VECTOR ANALYSIS</span>
+        <span class="panel-id">[SEC-02]</span>
+      </div>
+      <div class="wind-display">
+        <div class="compass" id="compass">
+          <div class="compass-ring">
+            <span class="cardinal n">N</span>
+            <span class="cardinal e">E</span>
+            <span class="cardinal s">S</span>
+            <span class="cardinal w">W</span>
+          </div>
+          <div class="wind-arrow" id="windArrow">
+            <div class="arrow-head"></div>
+            <div class="arrow-shaft"></div>
+            <div class="arrow-tail"></div>
+          </div>
+          <div class="wind-speed-center" id="windSpeed">--</div>
+          <div class="wind-unit-label">KPH</div>
+        </div>
+        <div class="wind-details">
+          <div class="wind-detail-row">
+            <span class="wd-label">DIRECTION</span>
+            <span class="wd-value" id="windDir">245° WSW</span>
+          </div>
+          <div class="wind-detail-row">
+            <span class="wd-label">SUSTAINED</span>
+            <span class="wd-value" id="windSustained">34 KPH</span>
+          </div>
+          <div class="wind-detail-row">
+            <span class="wd-label">GUST</span>
+            <span class="wd-value" id="windGust">52 KPH</span>
+          </div>
+          <div class="wind-detail-row">
+            <span class="wd-label">BEAUFORT SCALE</span>
+            <span class="wd-value" id="beaufort">6 - STRONG BREEZE</span>
+          </div>
+          <div class="wind-detail-row">
+            <span class="wd-label">WIND CHILL</span>
+            <span class="wd-value" id="windChill">9.2°C</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- HOURLY FORECAST TABLE -->
+    <section class="hourly-section">
+      <div class="panel-header">
+        <span class="panel-title">■ HOURLY PROJECTION TABLE</span>
+        <span class="panel-id">[SEC-03]</span>
+      </div>
+      <div class="table-wrapper">
+        <table class="hourly-table" id="hourlyTable">
+          <thead>
+            <tr>
+              <th>HOUR</th>
+              <th>TEMP °C</th>
+              <th>FEELS °C</th>
+              <th>WIND KPH</th>
+              <th>GUST</th>
+              <th>DIR</th>
+              <th>HUM %</th>
+              <th>PRECIP %</th>
+              <th>AMOUNT MM</th>
+              <th>CLOUD %</th>
+              <th>VIS KM</th>
+              <th>UV</th>
+              <th>CONDITION</th>
+            </tr>
+          </thead>
+          <tbody id="hourlyBody">
+            <!-- Populated by JavaScript -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- EXTENDED FORECAST -->
+    <section class="extended-section">
+      <div class="panel-header">
+        <span class="panel-title">■ 7-DAY EXTENDED OUTLOOK</span>
+        <span class="panel-id">[SEC-04]</span>
+      </div>
+      <div class="extended-grid" id="extendedGrid">
+        <!-- Populated by JavaScript -->
+      </div>
+    </section>
+
+    <!-- SUN / MOON -->
+    <section class="astro-panel">
+      <div class="panel-header">
+        <span class="panel-title">■ SOLAR / LUNAR DATA</span>
+        <span class="panel-id">[SEC-05]</span>
+      </div>
+      <div class="astro-grid">
+        <div class="astro-item sun">
+          <span class="astro-icon">☀</span>
+          <div class="astro-details">
+            <div class="astro-row">
+              <span class="astro-label">SUNRISE</span>
+              <span class="astro-value" id="sunrise">06:42</span>
+            </div>
+            <div class="astro-row">
+              <span class="astro-label">SUNSET</span>
+              <span class="astro-value" id="sunset">18:17</span>
+            </div>
+            <div class="astro-row">
+              <span class="astro-label">DAY LENGTH</span>
+              <span class="astro-value" id="dayLength">11H 35M</span>
+            </div>
+          </div>
+        </div>
+        <div class="astro-item moon">
+          <span class="astro-icon" id="moonIcon">🌒</span>
+          <div class="astro-details">
+            <div class="astro-row">
+              <span class="astro-label">PHASE</span>
+              <span class="astro-value" id="moonPhase">WAXING CRESCENT</span>
+            </div>
+            <div class="astro-row">
+              <span class="astro-label">ILLUMINATION</span>
+              <span class="astro-value" id="moonIllum">23%</span>
+            </div>
+            <div class="astro-row">
+              <span class="astro-label">MOONRISE</span>
+              <span class="astro-value" id="moonrise">09:14</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PRESSURE TREND -->
+    <section class="pressure-trend-panel">
+      <div class="panel-header">
+        <span class="panel-title">■ PRESSURE TREND (24HR)</span>
+        <span class="panel-id">[SEC-06]</span>
+      </div>
+      <div class="pressure-chart" id="pressureChart">
+        <canvas id="pressureCanvas"></canvas>
+      </div>
+      <div class="pressure-readout">
+        <span class="pr-label">TREND:</span>
+        <span class="pr-value" id="pressureTrendText">FALLING SLOWLY — APPROACHING LOW</span>
+      </div>
+    </section>
+
+    <!-- AIR QUALITY -->
+    <section class="aqi-panel">
+      <div class="panel-header">
+        <span class="panel-title">■ AIR QUALITY INDEX</span>
+        <span class="panel-id">[SEC-07]</span>
+      </div>
+      <div class="aqi-display">
+        <div class="aqi-value" id="aqiValue">42</div>
+        <div class="aqi-status" id="aqiStatus">MODERATE</div>
+        <div class="aqi-bar">
+          <div class="aqi-segment good"></div>
+          <div class="aqi-segment moderate"></div>
+          <div class="aqi-segment unhealthy-sensitive"></div>
+          <div class="aqi-segment unhealthy"></div>
+          <div class="aqi-segment very-unhealthy"></div>
+          <div class="aqi-segment hazardous"></div>
+          <div class="aqi-marker" id="aqiMarker"></div>
+        </div>
+        <div class="aqi-pollutants">
+          <div class="pollutant-row">
+            <span class="poll-name">PM2.5</span>
+            <span class="poll-val">12.4 µg/m³</span>
+          </div>
+          <div class="pollutant-row">
+            <span class="poll-name">PM10</span>
+            <span class="poll-val">24.1 µg/m³</span>
+          </div>
+          <div class="pollutant-row">
+            <span class="poll-name">O₃</span>
+            <span class="poll-val">38 ppb</span>
+          </div>
+          <div class="pollutant-row">
+            <span class="poll-name">NO₂</span>
+            <span class="poll-val">18 ppb</span>
+          </div>
+          <div class="pollutant-row">
+            <span class="poll-name">SO₂</span>
+            <span class="poll-val">3 ppb</span>
+          </div>
+          <div class="pollutant-row">
+            <span class="poll-name">CO</span>
+            <span class="poll-val">0.4 ppm</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="terminal-footer">
+      <div class="footer-grid">
+        <div class="footer-block">
+          <span class="footer-label">DATA LICENSE</span>
+          <span class="footer-value">CC-BY 4.0 — NOAA/NWS</span>
+        </div>
+        <div class="footer-block">
+          <span class="footer-label">LAST PARSE</span>
+          <span class="footer-value" id="lastParse">--:--:--</span>
+        </div>
+        <div class="footer-block">
+          <span class="footer-label">PACKETS RX</span>
+          <span class="footer-value" id="packetsRx">0</span>
+        </div>
+        <div class="footer-block">
+          <span class="footer-label">SYSTEM LOAD</span>
+          <span class="footer-value">0.12 0.08 0.04</span>
+        </div>
+        <div class="footer-block">
+          <span class="footer-label">TERMINAL v3.1.7</span>
+          <span class="footer-value">BRUTALIST BUILD</span>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>NO WARRANTY — DATA PROVIDED AS-IS — VERIFY WITH OFFICIAL SOURCES</span>
+      </div>
+    </footer>
+
+  </main>
+
+  <script src="scripts.js"></script>
+</body>
+</html>

@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Polynesian Celestial Wayfinding Chart | Te Afualo</title>
+    <meta name="description" content="An interactive Polynesian celestial navigation chart displaying star paths, ocean currents, and island chains used by ancient navigators to cross the Pacific.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Courier+Prime&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Star Field Background Layer -->
+    <div class="star-field" id="starField">
+        <canvas id="starCanvas"></canvas>
+    </div>
+
+    <!-- Bioluminescent Ocean Layer -->
+    <div class="ocean-layer" id="oceanLayer">
+        <canvas id="oceanCanvas"></canvas>
+        <div class="ocean-gradient"></div>
+    </div>
+
+    <!-- Wave Pattern Overlay -->
+    <div class="wave-pattern" id="wavePattern">
+        <svg class="wave-svg" viewBox="0 0 1440 320" preserveAspectRatio="none">
+            <path class="wave wave-1" d="M0,192L48,197.3C96,203,192,213,288,229.3C384,245,480,267,576,250.7C672,235,768,181,864,181.3C960,181,1056,235,1152,234.7C1248,235,1344,181,1392,154.7L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
+            <path class="wave wave-2" d="M0,256L48,240C96,224,192,192,288,197.3C384,203,480,245,576,261.3C672,277,768,267,864,234.7C960,203,1056,149,1152,138.7C1248,128,1344,160,1392,176L1440,192L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
+            <path class="wave wave-3" d="M0,64L48,96C96,128,192,192,288,213.3C384,235,480,213,576,176C672,139,768,85,864,85.3C960,85,1056,139,1152,154.7C1248,171,1344,149,1392,138.7L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
+        </svg>
+    </div>
+
+    <!-- Main Navigation Chart Container -->
+    <div class="chart-container" id="chartContainer">
+        
+        <!-- Header Section -->
+        <header class="chart-header">
+            <div class="tapa-frame header-frame">
+                <div class="tapa-corner tapa-corner-tl"></div>
+                <div class="tapa-corner tapa-corner-tr"></div>
+                <div class="tapa-corner tapa-corner-bl"></div>
+                <div class="tapa-corner tapa-corner-br"></div>
+                
+                <div class="header-content">
+                    <div class="tiki-marker tiki-left">
+                        <svg viewBox="0 0 60 80" class="tiki-svg">
+                            <defs>
+                                <linearGradient id="woodGrain" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#8B4513"/>
+                                    <stop offset="50%" style="stop-color:#A0522D"/>
+                                    <stop offset="100%" style="stop-color:#6B3410"/>
+                                </linearGradient>
+                            </defs>
+                            <path fill="url(#woodGrain)" d="M30,0 L35,10 L40,8 L38,20 L45,18 L42,35 L50,40 L45,50 L50,60 L40,55 L35,70 L30,60 L25,70 L20,55 L10,60 L15,50 L10,40 L18,35 L15,18 L22,20 L20,8 L25,10 Z"/>
+                            <circle cx="25" cy="25" r="4" fill="#2C1810"/>
+                            <circle cx="35" cy="25" r="4" fill="#2C1810"/>
+                            <path fill="#2C1810" d="M22,38 Q30,45 38,38 Q30,42 22,38"/>
+                        </svg>
+                    </div>
+                    
+                    <h1 class="chart-title">
+                        <span class="title-line">Te Afualo</span>
+                        <span class="title-subtitle">The Star Compass</span>
+                    </h1>
+                    
+                    <div class="tiki-marker tiki-right">
+                        <svg viewBox="0 0 60 80" class="tiki-svg">
+                            <path fill="url(#woodGrain)" d="M30,0 L35,10 L40,8 L38,20 L45,18 L42,35 L50,40 L45,50 L50,60 L40,55 L35,70 L30,60 L25,70 L20,55 L10,60 L15,50 L10,40 L18,35 L15,18 L22,20 L20,8 L25,10 Z"/>
+                            <circle cx="25" cy="25" r="4" fill="#2C1810"/>
+                            <circle cx="35" cy="25" r="4" fill="#2C1810"/>
+                            <path fill="#2C1810" d="M22,38 Q30,45 38,38 Q30,42 22,38"/>
+                        </svg>
+                    </div>
+                </div>
+                
+                <div class="tapa-pattern-border"></div>
+            </div>
+        </header>
+
+        <!-- Main Navigation Compass Rose -->
+        <section class="compass-section">
+            <div class="compass-wrapper" id="compassWrapper">
+                <div class="compass-outer-ring">
+                    <svg class="compass-svg" viewBox="0 0 500 500">
+                        <!-- Outer decorative ring -->
+                        <defs>
+                            <pattern id="tapaPattern" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
+                                <rect width="20" height="20" fill="#1a3a4a"/>
+                                <circle cx="10" cy="10" r="2" fill="#0d2530"/>
+                                <path d="M0,10 L5,10 M15,10 L20,10 M10,0 L10,5 M10,15 L10,20" stroke="#0d2530" stroke-width="1"/>
+                            </pattern>
+                            <linearGradient id="compassGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#2d5a6b"/>
+                                <stop offset="50%" style="stop-color:#1a3a4a"/>
+                                <stop offset="100%" style="stop-color:#0f2530"/>
+                            </linearGradient>
+                            <filter id="glow">
+                                <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                                <feMerge>
+                                    <feMergeNode in="coloredBlur"/>
+                                    <feMergeNode in="SourceGraphic"/>
+                                </feMerge>
+                            </filter>
+                            <filter id="carveEffect">
+                                <feOffset dx="2" dy="2" in="SourceAlpha" result="offsetblur"/>
+                                <feFlood flood-color="#0a1520" result="color"/>
+                                <feComposite in2="offsetblur" operator="in" result="shadow"/>
+                                <feMerge>
+                                    <feMergeNode in="shadow"/>
+                                    <feMergeNode in="SourceGraphic"/>
+                                </feMerge>
+                            </filter>
+                        </defs>
+                        
+                        <!-- Base compass circle -->
+                        <circle cx="250" cy="250" r="240" fill="url(#compassGradient)" stroke="#4a8a9a" stroke-width="3"/>
+                        <circle cx="250" cy="250" r="230" fill="url(#tapaPattern)" stroke="#3a6a7a" stroke-width="2"/>
+                        <circle cx="250" cy="250" r="220" fill="none" stroke="#5a9aaa" stroke-width="1" stroke-dasharray="5,5"/>
+                        
+                        <!-- Degree markers -->
+                        <g class="degree-markers" id="degreeMarkers">
+                            <!-- Cardinal directions (0°, 90°, 180°, 270°) -->
+                            <g class="cardinal-marker" data-degree="0">
+                                <line x1="250" y1="25" x2="250" y2="50" stroke="#7ab8c9" stroke-width="4"/>
+                                <text x="250" y="75" text-anchor="middle" class="direction-text" fill="#7ab8c9">N</text>
+                            </g>
+                            <g class="cardinal-marker" data-degree="90">
+                                <line x1="475" y1="250" x2="450" y2="250" stroke="#7ab8c9" stroke-width="4"/>
+                                <text x="430" y="255" text-anchor="middle" class="direction-text" fill="#7ab8c9">E</text>
+                            </g>
+                            <g class="cardinal-marker" data-degree="180">
+                                <line x1="250" y1="475" x2="250" y2="450" stroke="#7ab8c9" stroke-width="4"/>
+                                <text x="250" y="440" text-anchor="middle" class="direction-text" fill="#7ab8c9">S</text>
+                            </g>
+                            <g class="cardinal-marker" data-degree="270">
+                                <line x1="25" y1="250" x2="50" y2="250" stroke="#7ab8c9" stroke-width="4"/>
+                                <text x="70" y="255" text-anchor="middle" class="direction-text" fill="#7ab8c9">W</text>
+                            </g>
+                            
+                            <!-- Intercardinal directions -->
+                            <g class="intercardinal-marker" data-degree="45">
+                                <line x1="409" y1="91" x2="392" y2="108" stroke="#5a9aaa" stroke-width="2"/>
+                            </g>
+                            <g class="intercardinal-marker" data-degree="135">
+                                <line x1="409" y1="409" x2="392" y2="392" stroke="#5a9aaa" stroke-width="2"/>
+                            </g>
+                            <g class="intercardinal-marker" data-degree="225">
+                                <line x1="91" y1="409" x2="108" y2="392" stroke="#5a9aaa" stroke-width="2"/>
+                            </g>
+                            <g class="intercardinal-marker" data-degree="315">
+                                <line x1="91" y1="91" x2="108" y2="108" stroke="#5a9aaa" stroke-width="2"/>
+                            </g>
+                        </g>
+                        
+                        <!-- Star houses (Polynesian celestial houses) -->
+                        <g class="star-houses" id="starHouses">
+                            <!-- Hoku (Star of the East) - Used for navigation -->
+                            <g class="star-house" data-house="hoku" data-direction="east">
+                                <circle cx="400" cy="250" r="8" class="star-dot" fill="#fff8dc" filter="url(#glow)"/>
+                                <text x="420" y="245" class="star-label" fill="#b8d4e3">Hoku</text>
+                                <text x="420" y="258" class="star-sublabel" fill="#7a9aaa">Morning Star</text>
+                            </g>
+                            
+                            <!-- Southern Cross markers -->
+                            <g class="star-house" data-house="southern-cross">
+                                <circle cx="250" cy="400" r="6" class="star-dot" fill="#e6f0ff" filter="url(#glow)"/>
+                                <text x="250" y="425" text-anchor="middle" class="star-label" fill="#b8d4e3">Hanui</text>
+                            </g>
+                            
+                            <!-- Orion's Belt markers -->
+                            <g class="star-house" data-house="orion">
+                                <circle cx="120" cy="150" r="5" class="star-dot" fill="#fffaf0" filter="url(#glow)"/>
+                                <text x="95" y="145" text-anchor="end" class="star-label" fill="#b8d4e3">Puanga</text>
+                                <text x="95" y="158" text-anchor="end" class="star-sublabel" fill="#7a9aaa">Rigel</text>
+                            </g>
+                            
+                            <!-- Pleiades -->
+                            <g class="star-house" data-house="pleiades">
+                                <circle cx="380" cy="120" r="5" class="star-dot" fill="#f0f8ff" filter="url(#glow)"/>
+                                <text x="405" y="115" class="star-label" fill="#b8d4e3">Matariki</text>
+                                <text x="405" y="128" class="star-sublabel" fill="#7a9aaa">Pleiades</text>
+                            </g>
+                            
+                            <!-- North Star -->
+                            <g class="star-house" data-house="north-star">
+                                <circle cx="250" cy="80" r="7" class="star-dot" fill="#ffffff" filter="url(#glow)"/>
+                                <text x="250" y="60" text-anchor="middle" class="star-label" fill="#b8d4e3">Ka Mao</text>
+                                <text x="250" y="45" text-anchor="middle" class="star-sublabel" fill="#7a9aaa">North Star</text>
+                            </g>
+                        </g>
+                        
+                        <!-- Navigation paths (star lines) -->
+                        <g class="star-paths" id="starPaths">
+                            <path class="star-path path-1" d="M250,80 Q300,150 400,250" fill="none" stroke="#4a8a9a" stroke-width="2" stroke-dasharray="8,4"/>
+                            <path class="star-path path-2" d="M120,150 Q180,200 250,250" fill="none" stroke="#5a9aaa" stroke-width="2" stroke-dasharray="8,4"/>
+                            <path class="star-path path-3" d="M250,250 L250,400" fill="none" stroke="#4a8a9a" stroke-width="2" stroke-dasharray="8,4"/>
+                            <path class="star-path path-4" d="M380,120 Q350,180 300,220" fill="none" stroke="#5a9aaa" stroke-width="2" stroke-dasharray="8,4"/>
+                        </g>
+                        
+                        <!-- Center canoe marker -->
+                        <g class="canoe-marker" id="canoeMarker">
+                            <ellipse cx="250" cy="250" rx="30" ry="15" fill="#3a5a6a" stroke="#5a8a9a" stroke-width="2"/>
+                            <path d="M250,235 L250,265" stroke="#8b5a2b" stroke-width="3"/>
+                            <polygon points="250,235 255,245 245,245" fill="#c9a86c"/>
+                            <text x="250" y="280" text-anchor="middle" class="canoe-label" fill="#7ab8c9">Va'a</text>
+                        </g>
+                    </svg>
+                </div>
+                
+                <!-- Rotating star dome indicator -->
+                <div class="star-dome-indicator" id="starDomeIndicator">
+                    <div class="dome-ring dome-ring-1"></div>
+                    <div class="dome-ring dome-ring-2"></div>
+                    <div class="dome-ring dome-ring-3"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Ocean Currents Panel -->
+        <section class="currents-panel">
+            <div class="tapa-frame currents-frame">
+                <div class="tapa-corner tapa-corner-tl"></div>
+                <div class="tapa-corner tapa-corner-tr"></div>
+                <div class="tapa-corner tapa-corner-bl"></div>
+                <div class="tapa-corner tapa-corner-br"></div>
+                
+                <h2 class="panel-title">
+                    <svg class="title-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M2 12c2-2 4-4 6-2s4 4 6 2 4-6 8-4"/>
+                        <path d="M2 18c2-2 4-4 6-2s4 4 6 2 4-6 8-4"/>
+                    </svg>
+                    Ocean Currents
+                </h2>
+                
+                <div class="currents-container" id="currentsContainer">
+                    <svg class="currents-svg" viewBox="0 0 400 200">
+                        <defs>
+                            <linearGradient id="currentGradient1" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" style="stop-color:#1a5a7a;stop-opacity:0.3"/>
+                                <stop offset="50%" style="stop-color:#2a8aaa;stop-opacity:0.6"/>
+                                <stop offset="100%" style="stop-color:#1a5a7a;stop-opacity:0.3"/>
+                            </linearGradient>
+                            <linearGradient id="currentGradient2" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" style="stop-color:#2a7a5a;stop-opacity:0.3"/>
+                                <stop offset="50%" style="stop-color:#3aa87a;stop-opacity:0.6"/>
+                                <stop offset="100%" style="stop-color:#2a7a5a;stop-opacity:0.3"/>
+                            </linearGradient>
+                        </defs>
+                        
+                        <!-- North Pacific Current -->
+                        <g class="current-flow" data-current="north-pacific">
+                            <path class="current-path" d="M0,40 Q100,30 200,50 Q300,70 400,40" fill="none" stroke="url(#currentGradient1)" stroke-width="20" stroke-linecap="round"/>
+                            <circle class="current-particle" cx="50" cy="38" r="4" fill="#4ac0d0"/>
+                            <circle class="current-particle" cx="150" cy="45" r="3" fill="#4ac0d0"/>
+                            <circle class="current-particle" cx="250" cy="55" r="4" fill="#4ac0d0"/>
+                            <circle class="current-particle" cx="350" cy="45" r="3" fill="#4ac0d0"/>
+                            <text x="200" y="25" text-anchor="middle" class="current-label">North Pacific Current</text>
+                            <text x="200" y="90" text-anchor="middle" class="current-description">Ka Moana Akau</text>
+                        </g>
+                        
+                        <!-- South Equatorial Current -->
+                        <g class="current-flow" data-current="south-equatorial">
+                            <path class="current-path" d="M0,120 Q100,140 200,120 Q300,100 400,120" fill="none" stroke="url(#currentGradient2)" stroke-width="18" stroke-linecap="round"/>
+                            <circle class="current-particle" cx="75" cy="118" r="3" fill="#4ad0a0"/>
+                            <circle class="current-particle" cx="175" cy="128" r="4" fill="#4ad0a0"/>
+                            <circle class="current-particle" cx="275" cy="112" r="3" fill="#4ad0a0"/>
+                            <circle class="current-particle" cx="375" cy="122" r="4" fill="#4ad0a0"/>
+                            <text x="200" y="105" text-anchor="middle" class="current-label">South Equatorial Current</text>
+                            <text x="200" y="160" text-anchor="middle" class="current-description">Ka Moana Hema</text>
+                        </g>
+                        
+                        <!-- California Current -->
+                        <g class="current-flow" data-current="california">
+                            <path class="current-path" d="M0,180 Q50,160 100,170 Q150,180 200,165 Q250,150 300,160 Q350,170 400,155" fill="none" stroke="url(#currentGradient1)" stroke-width="12" stroke-linecap="round" stroke-dasharray="5,10"/>
+                            <text x="200" y="185" text-anchor="middle" class="current-label-small">California Current</text>
+                        </g>
+                    </svg>
+                </div>
+            </div>
+        </section>
+
+        <!-- Island Chain Navigation -->
+        <section class="islands-panel">
+            <div class="tapa-frame islands-frame">
+                <div class="tapa-corner tapa-corner-tl"></div>
+                <div class="tapa-corner tapa-corner-tr"></div>
+                <div class="tapa-corner tapa-corner-bl"></div>
+                <div class="tapa-corner tapa-corner-br"></div>
+                
+                <h2 class="panel-title">
+                    <svg class="title-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                        <path d="M2 17l10 5 10-5"/>
+                        <path d="M2 12l10 5 10-5"/>
+                    </svg>
+                    Island Waypoints
+                </h2>
+                
+                <div class="islands-track" id="islandsTrack">
+                    <svg class="islands-svg" viewBox="0 0 800 120" preserveAspectRatio="xMidYMid meet">
+                        <defs>
+                            <linearGradient id="islandGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" style="stop-color:#3a6a4a"/>
+                                <stop offset="100%" style="stop-color:#1a3a2a"/>
+                            </linearGradient>
+                            <filter id="islandGlow">
+                                <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                                <feMerge>
+                                    <feMergeNode in="coloredBlur"/>
+                                    <feMergeNode in="SourceGraphic"/>
+                                </feMerge>
+                            </filter>
+                        </defs>
+                        
+                        <!-- Navigation route line -->
+                        <path class="navigation-route" d="M30,60 Q100,40 170,60 Q240,80 310,60 Q380,40 450,60 Q520,80 590,60 Q660,40 730,60 Q770,70 780,60" fill="none" stroke="#5a8a7a" stroke-width="3" stroke-dasharray="10,5"/>
+                        
+                        <!-- Island markers -->
+                        <g class="island-marker" data-island="hawaii" data-position="0">
+                            <ellipse cx="30" cy="65" rx="15" ry="8" fill="url(#islandGradient)" filter="url(#islandGlow)"/>
+                            <circle cx="30" cy="60" r="4" fill="#5a9a6a" class="island-peak"/>
+                            <line x1="30" y1="60" x2="30" y2="75" stroke="#3a5a4a" stroke-width="1"/>
+                            <text x="30" y="90" text-anchor="middle" class="island-name">Hawai'i</text>
+                            <text x="30" y="102" text-anchor="middle" class="island-nickname">The Starting Point</text>
+                        </g>
+                        
+                        <g class="island-marker" data-island="marquesas" data-position="1">
+                            <ellipse cx="140" cy="55" rx="12" ry="6" fill="url(#islandGradient)" filter="url(#islandGlow)"/>
+                            <circle cx="140" cy="50" r="3" fill="#5a9a6a" class="island-peak"/>
+                            <text x="140" y="80" text-anchor="middle" class="island-name">Marquesas</text>
+                            <text x="140" y="92" text-anchor="middle" class="island-nickname">Te Fenua Enata</text>
+                        </g>
+                        
+                        <g class="island-marker" data-island="tuamotu" data-position="2">
+                            <ellipse cx="230" cy="70" rx="20" ry="5" fill="url(#islandGradient)" filter="url(#islandGlow)" opacity="0.7"/>
+                            <circle cx="220" cy="68" r="2" fill="#5a9a6a" class="island-peak"/>
+                            <circle cx="240" cy="70" r="2" fill="#5a9a6a" class="island-peak"/>
+                            <text x="230" y="90" text-anchor="middle" class="island-name">Tuamotu</text>
+                            <text x="230" y="102" text-anchor="middle" class="island-nickname">The Atolls</text>
+                        </g>
+                        
+                        <g class="island-marker" data-island="society" data-position="3">
+                            <ellipse cx="330" cy="55" rx="18" ry="7" fill="url(#islandGradient)" filter="url(#islandGlow)"/>
+                            <circle cx="320" cy="48" r="4" fill="#5a9a6a" class="island-peak"/>
+                            <circle cx="340" cy="52" r="3" fill="#5a9a6a" class="island-peak"/>
+                            <text x="330" y="80" text-anchor="middle" class="island-name">Society Islands</text>
+                            <text x="330" y="92" text-anchor="middle" class="island-nickname">Moana Tahiti</text>
+                        </g>
+                        
+                        <g class="island-marker" data-island="cook" data-position="4">
+                            <ellipse cx="430" cy="65" rx="14" ry="6" fill="url(#islandGradient)" filter="url(#islandGlow)"/>
+                            <circle cx="430" cy="58" r="4" fill="#5a9a6a" class="island-peak"/>
+                            <text x="430" y="85" text-anchor="middle" class="island-name">Cook Islands</text>
+                            <text x="430" y="97" text-anchor="middle" class="island-nickname">Māori Kuki Airani</text>
+                        </g>
+                        
+                        <g class="island-marker" data-island="samoa" data-position="5">
+                            <ellipse cx="530" cy="50" rx="16" ry="7" fill="url(#islandGradient)" filter="url(#islandGlow)"/>
+                            <circle cx="520" cy="42" r="4" fill="#5a9a6a" class="island-peak"/>
+                            <circle cx="540" cy="46" r="3" fill="#5a9a6a" class="island-peak"/>
+                            <text x="530" y="75" text-anchor="middle" class="island-name">Samoa</text>
+                            <text x="530" y="87" text-anchor="middle" class="island-nickname">Mālō Samoa</text>
+                        </g>
+                        
+                        <g class="island-marker" data-island="tonga" data-position="6">
+                            <ellipse cx="630" cy="60" rx="13" ry="5" fill="url(#islandGradient)" filter="url(#islandGlow)"/>
+                            <circle cx="630" cy="54" r="3" fill="#5a9a6a" class="island-peak"/>
+                            <text x="630" y="82" text-anchor="middle" class="island-name">Tonga</text>
+                            <text x="630" y="94" text-anchor="middle" class="island-nickname">Friendly Islands</text>
+                        </g>
+                        
+                        <g class="island-marker" data-island="aotearoa" data-position="7">
+                            <ellipse cx="730" cy="58" rx="22" ry="10" fill="url(#islandGradient)" filter="url(#islandGlow)"/>
+                            <circle cx="715" cy="48" r="5" fill="#5a9a6a" class="island-peak"/>
+                            <circle cx="735" cy="52" r="4" fill="#5a9a6a" class="island-peak"/>
+                            <circle cx="750" cy="56" r="3" fill="#5a9a6a" class="island-peak"/>
+                            <text x="730" y="82" text-anchor="middle" class="island-name">Aotearoa</text>
+                            <text x="730" y="94" text-anchor="middle" class="island-nickname">Land of Long White Cloud</text>
+                        </g>
+                        
+                        <!-- Current position indicator -->
+                        <g class="current-position" id="currentPosition">
+                            <circle cx="330" cy="45" r="8" fill="none" stroke="#7ad0c0" stroke-width="2" class="position-ring"/>
+                            <circle cx="330" cy="45" r="3" fill="#7ad0c0"/>
+                            <text x="330" y="25" text-anchor="middle" class="position-label">You Are Here</text>
+                        </g>
+                    </svg>
+                </div>
+            </div>
+        </section>
+
+        <!-- Constellation Connections Panel -->
+        <section class="constellations-panel">
+            <div class="tapa-frame constellations-frame">
+                <div class="tapa-corner tapa-corner-tl"></div>
+                <div class="tapa-corner tapa-corner-tr"></div>
+                <div class="tapa-corner tapa-corner-bl"></div>
+                <div class="tapa-corner tapa-corner-br"></div>
+                
+                <h2 class="panel-title">
+                    <svg class="title-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                    </svg>
+                    Star Lines & Constellations
+                </h2>
+                
+                <div class="constellation-map" id="constellationMap">
+                    <svg class="constellation-svg" viewBox="0 0 500 300">
+                        <defs>
+                            <radialGradient id="starGlow" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" style="stop-color:#ffffff;stop-opacity:1"/>
+                                <stop offset="100%" style="stop-color:#7ab8c9;stop-opacity:0"/>
+                            </radialGradient>
+                            <filter id="starFilter">
+                                <feGaussianBlur stdDeviation="2" result="blur"/>
+                                <feMerge>
+                                    <feMergeNode in="blur"/>
+                                    <feMergeNode in="SourceGraphic"/>
+                                </feMerge>
+                            </filter>
+                        </defs>
+                        
+                        <!-- Background star field -->
+                        <g class="bg-stars">
+                            <circle cx="50" cy="30" r="1" fill="#fff" opacity="0.5"/>
+                            <circle cx="120" cy="60" r="1" fill="#fff" opacity="0.4"/>
+                            <circle cx="200" cy="25" r="1" fill="#fff" opacity="0.6"/>
+                            <circle cx="280" cy="45" r="1" fill="#fff" opacity="0.3"/>
+                            <circle cx="350" cy="20" r="1" fill="#fff" opacity="0.5"/>
+                            <circle cx="420" cy="55" r="1" fill="#fff" opacity="0.4"/>
+                            <circle cx="470" cy="35" r="1" fill="#fff" opacity="0.6"/>
+                            <circle cx="80" cy="90" r="1" fill="#fff" opacity="0.3"/>
+                            <circle cx="180" cy="110" r="1" fill="#fff" opacity="0.5"/>
+                            <circle cx="320" cy="85" r="1" fill="#fff" opacity="0.4"/>
+                            <circle cx="450" cy="100" r="1" fill="#fff" opacity="0.5"/>
+                        </g>
+                        
+                        <!-- Orion constellation (Puanga) -->
+                        <g class="constellation orion-constellation" data-constellation="orion">
+                            <line class="constellation-line" x1="80" y1="100" x2="120" y2="120" stroke="#5a9aaa" stroke-width="1" stroke-dasharray="3,3"/>
+                            <line class="constellation-line" x1="120" y1="120" x2="160" y2="100" stroke="#5a9aaa" stroke-width="1" stroke-dasharray="3,3"/>
+                            <line class="constellation-line" x1="120" y1="120" x2="120" y2="160" stroke="#5a9aaa" stroke-width="1" stroke-dasharray="3,3"/>
+                            <line class="constellation-line" x1="120" y1="160" x2="120" y2="200" stroke="#5a9aaa" stroke-width="1" stroke-dasharray="3,3"/>
+                            <line class="constellation-line" x1="120" y1="200" x2="100" y2="220" stroke="#5a9aaa" stroke-width="1" stroke-dasharray="3,3"/>
+                            <line class="constellation-line" x1="120" y1="200" x2="140" y2="220" stroke="#5a9aaa" stroke-width="1" stroke-dasharray="3,3"/>
+                            
+                            <circle class="constellation-star" cx="80" cy="100" r="4" fill="url(#starGlow)" filter="url(#starFilter)"/>
+                            <circle class="constellation-star" cx="120" cy="120" r="6" fill="url(#starGlow)" filter="url(#starFilter)"/>
+                            <circle class="constellation-star" cx="160" cy="100" r="4" fill="url(#starGlow)" filter="url(#starFilter)"/>
+                            <circle class="constellation-star" cx="100" cy="220" r="3" fill="url(#starGlow)" filter="url(#starFilter)"/>
+                            <circle class="constellation-star" cx="140" cy="220" r="3" fill="url(#starGlow)" filter="url(#starFilter)"/>
+                            
+                            <text x="120" y="250" text-anchor="middle" class="constellation-name">Puanga</text>
+                            <text x="120" y="265" text-anchor="middle" class="constellation-eng">Orion's Belt</text>
+                        </g>
+                        
+                        <!-- Southern Cross -->
+                        <g class="constellation southern-cross-constellation" data-constellation="southern-cross">
+                            <line class="constellation-line" x1="320" y1="80" x2="350" y2="130" stroke="#5a9aaa" stroke-width="1" stroke-dasharray="3,3"/>
+                            <line class="constellation-line" x1="350" y1="130" x2="320" y2="180" stroke="#5a9aaa" stroke-width="1" stroke-dasharray="3,3"/>
+                            <line class="constellation-line" x1="320" y1="180" x2="290" y2="130" stroke="#5a9aaa" stroke-width="1" stroke-dasharray="3,3"/>
+                            <line class="constellation-line" x1="290" y1="130" x2="320" y2="80" stroke="#5a9aaa" stroke-width="1" stroke-dasharray="3,3"/>
+                            <line class="constellation-line" x1="350" y1="130" x2="380" y2="130" stroke="#5a9aaa" stroke-width="1" stroke-dasharray="3,3"/>
+                            
+                            <circle class="constellation-star" cx="320" cy="80" r="4" fill="url(#starGlow)" filter="url(#starFilter)"/>
+                            <circle class="constellation-star" cx="350" cy="130" r="5" fill="url(#starGlow)" filter="url(#starFilter)"/>
+                            <circle class="constellation-star" cx="320" cy="180" r="4" fill="url(#starGlow)" filter="url(#starFilter)"/>
+                            <circle class="constellation-star" cx="290" cy="130" r="4" fill="url(#starGlow)" filter="url(#starFilter)"/>
+                            <circle class="constellation-star" cx="380" cy="130" r="3" fill="url(#starGlow)" filter="url(#starFilter)"/>
+                            
+                            <text x="320" cy="210" text-anchor="middle" class="constellation-name">Hanui</text>
+                            <text x="320" y="225" text-anchor="middle" class="constellation-eng">Southern Cross</text>
+                        </g>
+                        
+                        <!-- Matariki (Pleiades) -->
+                        <g class="constellation pleiades-constellation" data-constellation="pleiades">
+                            <circle class="constellation-star" cx="450" cy="60" r="5" fill="url(#starGlow)" filter="url(#starFilter)"/>
+                            <circle class="constellation-star" cx="460" cy="70" r="3" fill="url(#starGlow)" filter="url(#starFilter)"/>
+                            <circle class="constellation-star" cx="470" cy="65" r="4" fill="url(#starGlow)" filter="url(#starFilter)"/>
+                            <circle class="constellation-star" cx="455" cy="80" r="3" fill="url(#starGlow)" filter="url(#starFilter)"/>
+                            <circle class="constellation-star" cx="465" cy="85" r="2" fill="url(#starGlow)" filter="url(#starFilter)"/>
+                            <circle class="constellation-star" cx="475" cy="78" r="2" fill="url(#starGlow)" filter="url(#starFilter)"/>
+                            <circle class="constellation-star" cx="480" cy="68" r="2" fill="url(#starGlow)" filter="url(#starFilter)"/>
+                            
+                            <text x="465" y="110" text-anchor="middle" class="constellation-name">Matariki</text>
+                            <text x="465" y="125" text-anchor="middle" class="constellation-eng">Seven Sisters</text>
+                        </g>
+                        
+                        <!-- Navigation guide lines -->
+                        <g class="nav-guides" id="navGuides">
+                            <line class="guide-line" x1="120" y1="120" x2="320" y2="130" stroke="#7ab8c9" stroke-width="1" stroke-dasharray="5,10" opacity="0.5"/>
+                            <line class="guide-line" x1="320" y1="130" x2="465" y2="70" stroke="#7ab8c9" stroke-width="1" stroke-dasharray="5,10" opacity="0.5"/>
+                        </g>
+                    </svg>
+                    
+                    <div class="constellation-instructions">
+                        <p>Click on constellations to reveal their navigation secrets</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Navigation Markers / Tiki Controls -->
+        <section class="navigation-markers">
+            <div class="marker-tiki marker-north" data-direction="north" title="Navigate North">
+                <svg viewBox="0 0 40 50" class="marker-svg">
+                    <path fill="#6b4423" d="M20,0 L25,8 L30,5 L28,15 L35,12 L32,25 L20,20 L8,25 L5,12 L12,15 L10,5 L15,8 Z"/>
+                    <circle cx="15" cy="18" r="2" fill="#2a1810"/>
+                    <circle cx="25" cy="18" r="2" fill="#2a1810"/>
+                </svg>
+            </div>
+            <div class="marker-tiki marker-east" data-direction="east" title="Navigate East">
+                <svg viewBox="0 0 40 50" class="marker-svg">
+                    <path fill="#6b4423" d="M20,0 L25,8 L30,5 L28,15 L35,12 L32,25 L20,20 L8,25 L5,12 L12,15 L10,5 L15,8 Z"/>
+                    <circle cx="15" cy="18" r="2" fill="#2a1810"/>
+                    <circle cx="25" cy="18" r="2" fill="#2a1810"/>
+                </svg>
+            </div>
+            <div class="marker-tiki marker-south" data-direction="south" title="Navigate South">
+                <svg viewBox="0 0 40 50" class="marker-svg">
+                    <path fill="#6b4423" d="M20,0 L25,8 L30,5 L28,15 L35,12 L32,25 L20,20 L8,25 L5,12 L12,15 L10,5 L15,8 Z"/>
+                    <circle cx="15" cy="18" r="2" fill="#2a1810"/>
+                    <circle cx="25" cy="18" r="2" fill="#2a1810"/>
+                </svg>
+            </div>
+            <div class="marker-tiki marker-west" data-direction="west" title="Navigate West">
+                <svg viewBox="0 0 40 50" class="marker-svg">
+                    <path fill="#6b4423" d="M20,0 L25,8 L30,5 L28,15 L35,12 L32,25 L20,20 L8,25 L5,12 L12,15 L10,5 L15,8 Z"/>
+                    <circle cx="15" cy="18" r="2" fill="#2a1810"/>
+                    <circle cx="25" cy="18" r="2" fill="#2a1810"/>
+                </svg>
+            </div>
+        </section>
+
+        <!-- Info Panel (slides in) -->
+        <div class="info-panel" id="infoPanel">
+            <button class="info-close" id="infoClose">&times;</button>
+            <div class="info-content" id="infoContent">
+                <!-- Dynamic content inserted here -->
+            </div>
+        </div>
+
+        <!-- Wake Trail Effect Container -->
+        <div class="wake-container" id="wakeContainer"></div>
+
+        <!-- Tooltip -->
+        <div class="tooltip" id="tooltip">
+            <div class="tooltip-content"></div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="chart-footer">
+            <div class="tapa-frame footer-frame">
+                <div class="tapa-corner tapa-corner-tl"></div>
+                <div class="tapa-corner tapa-corner-tr"></div>
+                <div class="tapa-corner tapa-corner-bl"></div>
+                <div class="tapa-corner tapa-corner-br"></div>
+                
+                <div class="footer-content">
+                    <p class="footer-quote">"We are the children of the stars, guided by their eternal light across the boundless ocean."</p>
+                    <p class="footer-attribution">— Ancient Polynesian Navigator</p>
+                    
+                    <div class="footer-navigation">
+                        <button class="nav-btn" id="prevIsland">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="15 18 9 12 15 6"/>
+                            </svg>
+                            Previous
+                        </button>
+                        <span class="nav-indicator" id="navIndicator">Step 4 of 8</span>
+                        <button class="nav-btn" id="nextIsland">
+                            Next
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="9 18 15 12 9 6"/>
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    <div class="footer-credits">
+                        <span>Te Afualo — The Star Compass</span>
+                        <span class="separator">|</span>
+                        <span>Polynesian Celestial Navigation</span>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Audio indicator (visual only) -->
+    <div class="audio-indicator" id="audioIndicator" title="Toggle ambient ocean sounds">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M11 5L6 9H2v6h4l5 4V5z"/>
+            <path class="sound-waves" d="M15.54 8.46a5 5 0 0 1 0 7.07M19.07 4.93a10 10 0 0 1 0 14.14"/>
+        </svg>
+    </div>
+
+    <script src="scripts.js"></script>
+</body>
+</html>

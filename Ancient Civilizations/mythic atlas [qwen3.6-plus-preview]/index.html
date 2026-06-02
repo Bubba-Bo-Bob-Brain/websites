@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aethoria — Atlas of the Ancient World</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400;1,500&family=MedievalSharp&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Ambient star field background -->
+    <div class="star-field" id="starField"></div>
+    
+    <!-- Decorative border frame -->
+    <div class="atlas-frame">
+        <!-- Corner ornaments -->
+        <div class="corner-ornament top-left"></div>
+        <div class="corner-ornament top-right"></div>
+        <div class="corner-ornament bottom-left"></div>
+        <div class="corner-ornament bottom-right"></div>
+        
+        <!-- Header -->
+        <header class="atlas-header">
+            <div class="header-border-top"></div>
+            <h1 class="atlas-title">
+                <span class="title-decorative">⛧</span>
+                <span class="title-text">Aethoria</span>
+                <span class="title-decorative">⛧</span>
+            </h1>
+            <p class="atlas-subtitle">Atlas of the Ancient World</p>
+            <div class="header-border-bottom"></div>
+        </header>
+
+        <!-- Era Indicator -->
+        <div class="era-display" id="eraDisplay">
+            <span class="era-label">Current Age:</span>
+            <span class="era-name" id="eraName">The Dawn of Empires</span>
+            <span class="era-year" id="eraYear">~ 1,200 AE</span>
+        </div>
+
+        <!-- Main Map Container -->
+        <main class="map-container">
+            <!-- Compass Rose -->
+            <div class="compass-rose" id="compassRose">
+                <svg viewBox="0 0 200 200" class="compass-svg">
+                    <defs>
+                        <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#e8c84a;stop-opacity:1" />
+                            <stop offset="50%" style="stop-color:#c9a84c;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#8b6914;stop-opacity:1" />
+                        </linearGradient>
+                        <linearGradient id="darkGoldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#8b6914;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#5a4510;stop-opacity:1" />
+                        </linearGradient>
+                    </defs>
+                    <!-- Outer ring -->
+                    <circle cx="100" cy="100" r="90" fill="none" stroke="url(#goldGrad)" stroke-width="2"/>
+                    <circle cx="100" cy="100" r="82" fill="none" stroke="url(#goldGrad)" stroke-width="1"/>
+                    <!-- Cardinal directions -->
+                    <polygon points="100,15 106,85 100,70 94,85" fill="url(#goldGrad)"/>
+                    <polygon points="100,185 106,115 100,130 94,115" fill="url(#darkGoldGrad)"/>
+                    <polygon points="15,100 85,94 70,100 85,106" fill="url(#darkGoldGrad)"/>
+                    <polygon points="185,100 115,94 130,100 115,106" fill="url(#darkGoldGrad)"/>
+                    <!-- Intercardinal directions -->
+                    <polygon points="40,40 78,78 70,80 72,72" fill="url(#goldGrad)" opacity="0.7"/>
+                    <polygon points="160,40 122,78 130,80 128,72" fill="url(#goldGrad)" opacity="0.7"/>
+                    <polygon points="40,160 78,122 70,120 72,128" fill="url(#goldGrad)" opacity="0.7"/>
+                    <polygon points="160,160 122,122 130,120 128,128" fill="url(#goldGrad)" opacity="0.7"/>
+                    <!-- Center ornament -->
+                    <circle cx="100" cy="100" r="12" fill="#1a1410" stroke="url(#goldGrad)" stroke-width="2"/>
+                    <circle cx="100" cy="100" r="5" fill="url(#goldGrad)"/>
+                    <!-- Direction labels -->
+                    <text x="100" y="10" text-anchor="middle" fill="#c9a84c" font-family="Cinzel Decorative" font-size="12">N</text>
+                    <text x="100" y="200" text-anchor="middle" fill="#c9a84c" font-family="Cinzel Decorative" font-size="12">S</text>
+                    <text x="5" y="104" text-anchor="middle" fill="#c9a84c" font-family="Cinzel Decorative" font-size="12">W</text>
+                    <text x="195" y="104" text-anchor="middle" fill="#c9a84c" font-family="Cinzel Decorative" font-size="12">E</text>
+                </svg>
+            </div>
+
+            <!-- World Map SVG -->
+            <svg class="world-map" id="worldMap" viewBox="0 0 1000 700" preserveAspectRatio="xMidYMid meet">
+                <defs>
+                    <!-- Map texture filter -->
+                    <filter id="parchmentTexture">
+                        <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="4" result="noise"/>
+                        <feColorMatrix type="saturate" values="0" in="noise" result="grayNoise"/>
+                        <feBlend in="SourceGraphic" in2="grayNoise" mode="multiply"/>
+                    </filter>
+                    
+                    <!-- Glow filter for selected regions -->
+                    <filter id="glow">
+                        <feGaussianBlur stdDeviation="4" result="blur"/>
+                        <feMerge>
+                            <feMergeNode in="blur"/>
+                            <feMergeNode in="SourceGraphic"/>
+                        </feMerge>
+                    </filter>
+                    
+                    <!-- Shadow filter -->
+                    <filter id="dropShadow">
+                        <feDropShadow dx="2" dy="3" stdDeviation="3" flood-color="#000" flood-opacity="0.5"/>
+                    </filter>
+                    
+                    <!-- Region gradients -->
+                    <linearGradient id="khemetaraGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#c4956a;stop-opacity:0.85" />
+                        <stop offset="100%" style="stop-color:#a67a4a;stop-opacity:0.9" />
+                    </linearGradient>
+                    <linearGradient id="valdrheimGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#5a7a8a;stop-opacity:0.85" />
+                        <stop offset="100%" style="stop-color:#3a5a6a;stop-opacity:0.9" />
+                    </linearGradient>
+                    <linearGradient id="sundaravaGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#4a8a6a;stop-opacity:0.85" />
+                        <stop offset="100%" style="stop-color:#2a6a4a;stop-opacity:0.9" />
+                    </linearGradient>
+                    <linearGradient id="oakhavenGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#5a8a4a;stop-opacity:0.85" />
+                        <stop offset="100%" style="stop-color:#3a6a2a;stop-opacity:0.9" />
+                    </linearGradient>
+                    <linearGradient id="zhongaraGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#8a6a4a;stop-opacity:0.85" />
+                        <stop offset="100%" style="stop-color:#6a4a2a;stop-opacity:0.9" />
+                    </linearGradient>
+                    <linearGradient id="shatteredIslesGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#7a4a3a;stop-opacity:0.85" />
+                        <stop offset="100%" style="stop-color:#5a2a1a;stop-opacity:0.9" />
+                    </linearGradient>
+                    <linearGradient id="whisperingWastesGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#6a6a6a;stop-opacity:0.7" />
+                        <stop offset="100%" style="stop-color:#4a4a4a;stop-opacity:0.8" />
+                    </linearGradient>
+                    
+                    <!-- Sea pattern -->
+                    <pattern id="seaPattern" patternUnits="userSpaceOnUse" width="40" height="40">
+                        <rect width="40" height="40" fill="#1a2a3a"/>
+                        <path d="M0 20 Q10 15 20 20 Q30 25 40 20" fill="none" stroke="#2a3a4a" stroke-width="0.5" opacity="0.5"/>
+                    </pattern>
+                </defs>
+                
+                <!-- Sea background -->
+                <rect x="0" y="0" width="1000" height="700" fill="url(#seaPattern)"/>
+                
+                <!-- Decorative sea monsters -->
+                <g class="sea-monsters" opacity="0.4">
+                    <!-- Kraken in the western sea -->
+                    <path d="M120 280 Q140 260 160 270 Q180 280 170 300 Q160 320 140 310 Q120 300 120 280Z" fill="#1a3a4a" opacity="0.6"/>
+                    <circle cx="145" cy="285" r="3" fill="#e8c84a"/>
+                    <path d="M160 270 Q175 250 170 235" fill="none" stroke="#2a4a5a" stroke-width="2"/>
+                    <path d="M170 300 Q185 315 190 305" fill="none" stroke="#2a4a5a" stroke-width="2"/>
+                    
+                    <!-- Leviathan in the eastern sea -->
+                    <path d="M850 420 Q870 400 890 410 Q910 420 900 440 Q890 460 870 450 Q850 440 850 420Z" fill="#1a3a4a" opacity="0.6"/>
+                    <circle cx="875" cy="425" r="3" fill="#e8c84a"/>
+                    <path d="M890 410 Q910 390 905 375" fill="none" stroke="#2a4a5a" stroke-width="2"/>
+                </g>
+                
+                <!-- Continents and Regions -->
+                <g class="regions" id="regionsGroup">
+                    <!-- Valdrheim - Northern Mountain Kingdom -->
+                    <path class="region" id="region-valdrheim" 
+                          data-region="valdrheim"
+                          d="M 280 80 
+                             L 380 60 
+                             L 480 70 
+                             L 520 100 
+                             L 500 160 
+                             L 460 190 
+                             L 400 200 
+                             L 340 190 
+                             L 300 170 
+                             L 260 140 
+                             L 250 110 
+                             Z" 
+                          fill="url(#valdrheimGrad)" 
+                          stroke="#c9a84c" 
+                          stroke-width="2"
+                          filter="url(#dropShadow)"/>
+                    <text class="region-label" x="390" y="135" text-anchor="middle" fill="#e8d8b8" font-family="Cinzel Decorative" font-size="14" letter-spacing="2">VALDRHEIM</text>
+                    
+                    <!-- Khemetara - Desert Empire -->
+                    <path class="region" id="region-khemetara" 
+                          data-region="khemetara"
+                          d="M 200 250 
+                             L 320 220 
+                             L 420 240 
+                             L 460 300 
+                             L 440 380 
+                             L 400 420 
+                             L 340 440 
+                             L 260 430 
+                             L 200 400 
+                             L 170 340 
+                             L 160 290 
+                             Z" 
+                          fill="url(#khemetaraGrad)" 
+                          stroke="#c9a84c" 
+                          stroke-width="2"
+                          filter="url(#dropShadow)"/>
+                    <text class="region-label" x="310" y="340" text-anchor="middle" fill="#2a1a0a" font-family="Cinzel Decorative" font-size="16" letter-spacing="2">KHEMETARA</text>
+                    
+                    <!-- Oakhaven - Western Forests -->
+                    <path class="region" id="region-oakhaven" 
+                          data-region="oakhaven"
+                          d="M 80 280 
+                             L 160 250 
+                             L 200 280 
+                             L 200 360 
+                             L 180 420 
+                             L 140 460 
+                             L 80 450 
+                             L 50 400 
+                             L 40 340 
+                             Z" 
+                          fill="url(#oakhavenGrad)" 
+                          stroke="#c9a84c" 
+                          stroke-width="2"
+                          filter="url(#dropShadow)"/>
+                    <text class="region-label" x="120" y="360" text-anchor="middle" fill="#e8d8b8" font-family="Cinzel Decorative" font-size="13" letter-spacing="2">OAKHAVEN</text>
+                    
+                    <!-- Zhongara - Central Plains Empire -->
+                    <path class="region" id="region-zhongara" 
+                          data-region="zhongara"
+                          d="M 480 180 
+                             L 600 160 
+                             L 700 180 
+                             L 740 240 
+                             L 720 320 
+                             L 660 360 
+                             L 580 370 
+                             L 500 350 
+                             L 460 300 
+                             L 450 240 
+                             Z" 
+                          fill="url(#zhongaraGrad)" 
+                          stroke="#c9a84c" 
+                          stroke-width="2"
+                          filter="url(#dropShadow)"/>
+                    <text class="region-label" x="600" y="275" text-anchor="middle" fill="#e8d8b8" font-family="Cinzel Decorative" font-size="15" letter-spacing="2">ZHONGARA</text>
+                    
+                    <!-- Sundarava - Eastern Archipelago -->
+                    <path class="region" id="region-sundarava" 
+                          data-region="sundarava"
+                          d="M 780 200 
+                             L 860 180 
+                             L 920 200 
+                             L 940 260 
+                             L 920 320 
+                             L 880 360 
+                             L 820 370 
+                             L 760 340 
+                             L 740 280 
+                             L 750 230 
+                             Z" 
+                          fill="url(#sundaravaGrad)" 
+                          stroke="#c9a84c" 
+                          stroke-width="2"
+                          filter="url(#dropShadow)"/>
+                    <text class="region-label" x="840" y="285" text-anchor="middle" fill="#e8d8b8" font-family="Cinzel Decorative" font-size="13" letter-spacing="2">SUNDARAVA</text>
+                    
+                    <!-- Shattered Isles - Volcanic South -->
+                    <path class="region" id="region-shattered-isles" 
+                          data-region="shattered-isles"
+                          d="M 380 520 
+                             L 440 500 
+                             L 500 510 
+                             L 560 530 
+                             L 580 580 
+                             L 560 620 
+                             L 500 640 
+                             L 440 630 
+                             L 380 600 
+                             L 360 560 
+                             Z" 
+                          fill="url(#shatteredIslesGrad)" 
+                          stroke="#c9a84c" 
+                          stroke-width="2"
+                          filter="url(#dropShadow)"/>
+                    <text class="region-label" x="470" y="575" text-anchor="middle" fill="#e8d8b8" font-family="Cinzel Decorative" font-size="12" letter-spacing="2">SHATTERED ISLES</text>
+                    
+                    <!-- Whispering Wastes - The Cursed Land -->
+                    <path class="region" id="region-whispering-wastes" 
+                          data-region="whispering-wastes"
+                          d="M 620 420 
+                             L 720 400 
+                             L 800 420 
+                             L 840 480 
+                             L 820 540 
+                             L 760 560 
+                             L 680 550 
+                             L 620 520 
+                             L 600 470 
+                             Z" 
+                          fill="url(#whisperingWastesGrad)" 
+                          stroke="#888" 
+                          stroke-width="1.5"
+                          stroke-dasharray="4,4"
+                          filter="url(#dropShadow)"/>
+                    <text class="region-label" x="720" y="485" text-anchor="middle" fill="#aaa" font-family="MedievalSharp" font-size="12" letter-spacing="1" font-style="italic">Whispering Wastes</text>
+                </g>
+                
+                <!-- Trade Routes -->
+                <g class="trade-routes" id="tradeRoutes">
+                    <!-- Route: Khemetara to Zhongara (Silk & Spice Road) -->
+                    <path class="trade-route" data-route="silk-spice" 
+                          d="M 420 340 
+                             C 460 320, 500 300, 540 290 
+                             C 580 280, 600 270, 620 260" 
+                          fill="none" 
+                          stroke="#c9a84c" 
+                          stroke-width="2" 
+                          stroke-dasharray="6,4"
+                          opacity="0.7"/>
+                    
+                    <!-- Route: Zhongara to Sundarava (Jade Sea Route) -->
+                    <path class="trade-route" data-route="jade-sea" 
+                          d="M 720 300 
+                             C 750 290, 780 280, 800 270" 
+                          fill="none" 
+                          stroke="#4a9a8a" 
+                          stroke-width="2" 
+                          stroke-dasharray="6,4"
+                          opacity="0.7"/>
+                    
+                    <!-- Route: Oakhaven to Khemetara (Amber Road) -->
+                    <path class="trade-route" data-route="amber" 
+                          d="M 180 360 
+                             C 200 380, 220 390, 240 380 
+                             C 260 370, 280 360, 300 350" 
+                          fill="none" 
+                          stroke="#b87333" 
+                          stroke-width="2" 
+                          stroke-dasharray="6,4"
+                          opacity="0.7"/>
+                    
+                    <!-- Route: Valdrheim to Zhongara (Iron Road) -->
+                    <path class="trade-route" data-route="iron" 
+                          d="M 460 190 
+                             C 480 200, 500 210, 520 220 
+                             C 540 230, 560 240, 580 240" 
+                          fill="none" 
+                          stroke="#8a8a8a" 
+                          stroke-width="2" 
+                          stroke-dasharray="6,4"
+                          opacity="0.7"/>
+                    
+                    <!-- Route: Shattered Isles to Khemetara (Obsidian Route) -->
+                    <path class="trade-route" data-route="obsidian" 
+                          d="M 440 520 
+                             C 420 480, 400 440, 380 400" 
+                          fill="none" 
+                          stroke="#7a4a3a" 
+                          stroke-width="2" 
+                          stroke-dasharray="6,4"
+                          opacity="0.7"/>
+                    
+                    <!-- Animated caravan dots will be added via JS -->
+                </g>
+                
+                <!-- Mythological Annotations -->
+                <g class="myth-markers" id="mythMarkers">
+                    <!-- Dragon of Valdrheim -->
+                    <g class="myth-marker" data-myth="dragon-valdrheim" transform="translate(420, 100)">
+                        <circle r="12" fill="#8b2500" opacity="0.8" class="myth-pulse"/>
+                        <text x="0" y="4" text-anchor="middle" fill="#e8d8b8" font-size="14">🐉</text>
+                        <text x="20" y="4" fill="#c9a84c" font-family="MedievalSharp" font-size="10" class="myth-label">Draugrheim Peak</text>
+                    </g>
+                    
+                    <!-- Sphinx of Khemetara -->
+                    <g class="myth-marker" data-myth="sphinx-khemetara" transform="translate(280, 300)">
+                        <circle r="12" fill="#c9a84c" opacity="0.8" class="myth-pulse"/>
+                        <text x="0" y="4" text-anchor="middle" fill="#2a1a0a" font-size="14">🦁</text>
+                        <text x="20" y="4" fill="#c9a84c" font-family="MedievalSharp" font-size="10" class="myth-label">The Eternal Sphinx</text>
+                    </g>
+                    
+                    <!-- Leviathan of the Eastern Sea -->
+                    <g class="myth-marker" data-myth="leviathan-east" transform="translate(870, 420)">
+                        <circle r="12" fill="#2a4a6b" opacity="0.8" class="myth-pulse"/>
+                        <text x="0" y="4" text-anchor="middle" fill="#e8d8b8" font-size="14">🐋</text>
+                        <text x="20" y="4" fill="#4a8aaa" font-family="MedievalSharp" font-size="10" class="myth-label">Leviathan's Maw</text>
+                    </g>
+                    
+                    <!-- World Tree in Oakhaven -->
+                    <g class="myth-marker" data-myth="world-tree" transform="translate(100, 310)">
+                        <circle r="12" fill="#3a6b4a" opacity="0.8" class="myth-pulse"/>
+                        <text x="0" y="4" text-anchor="middle" fill="#e8d8b8" font-size="14">🌳</text>
+                        <text x="20" y="4" fill="#5a9a6a" font-family="MedievalSharp" font-size="10" class="myth-label">Yggdra's Root</text>
+                    </g>
+                    
+                    <!-- Phoenix of the Shattered Isles -->
+                    <g class="myth-marker" data-myth="phoenix-isles" transform="translate(500, 560)">
+                        <circle r="12" fill="#b87333" opacity="0.8" class="myth-pulse"/>
+                        <text x="0" y="4" text-anchor="middle" fill="#e8d8b8" font-size="14">🔥</text>
+                        <text x="20" y="4" fill="#d4944a" font-family="MedievalSharp" font-size="10" class="myth-label">Phoenix Caldera</text>
+                    </g>
+                    
+                    <!-- The Whispering Void -->
+                    <g class="myth-marker" data-myth="whispering-void" transform="translate(720, 490)">
+                        <circle r="12" fill="#4a4a4a" opacity="0.8" class="myth-pulse"/>
+                        <text x="0" y="4" text-anchor="middle" fill="#aaa" font-size="14">👁</text>
+                        <text x="20" y="4" fill="#888" font-family="MedievalSharp" font-size="10" class="myth-label">The Whispering Void</text>
+                    </g>
+                </g>
+                
+                <!-- Map decorative elements -->
+                <g class="map-decorations">
+                    <!-- Rhumb lines (decorative navigation lines) -->
+                    <g opacity="0.15" stroke="#c9a84c" stroke-width="0.5">
+                        <line x1="500" y1="350" x2="0" y2="0"/>
+                        <line x1="500" y1="350" x2="200" y2="0"/>
+                        <line x1="500" y1="350" x2="500" y2="0"/>
+                        <line x1="500" y1="350" x2="800" y2="0"/>
+                        <line x1="500" y1="350" x2="1000" y2="0"/>
+                        <line x1="500" y1="350" x2="0" y2="350"/>
+                        <line x1="500" y1="350" x2="1000" y2="350"/>
+                        <line x1="500" y1="350" x2="0" y2="700"/>
+                        <line x1="500" y1="350" x2="200" y2="700"/>
+                        <line x1="500" y1="350" x2="500" y2="700"/>
+                        <line x1="500" y1="350" x2="800" y2="700"/>
+                        <line x1="500" y1="350" x2="1000" y2="700"/>
+                    </g>
+                    
+                    <!-- Map scale bar -->
+                    <g transform="translate(50, 660)">
+                        <line x1="0" y1="0" x2="150" y2="0" stroke="#c9a84c" stroke-width="1"/>
+                        <line x1="0" y1="-5" x2="0" y2="5" stroke="#c9a84c" stroke-width="1"/>
+                        <line x1="50" y1="-5" x2="50" y2="5" stroke="#c9a84c" stroke-width="1"/>
+                        <line x1="100" y1="-5" x2="100" y2="5" stroke="#c9a84c" stroke-width="1"/>
+                        <line x1="150" y1="-5" x2="150" y2="5" stroke="#c9a84c" stroke-width="1"/>
+                        <text x="75" y="20" text-anchor="middle" fill="#c9a84c" font-family="Cinzel Decorative" font-size="9">100 leagues</text>
+                    </g>
+                    
+                    <!-- Map title cartouche -->
+                    <g transform="translate(750, 620)">
+                        <rect x="0" y="0" width="200" height="60" fill="#1a1410" stroke="#c9a84c" stroke-width="1" rx="5"/>
+                        <text x="100" y="25" text-anchor="middle" fill="#c9a84c" font-family="Cinzel Decorative" font-size="11">Cartographer's Note</text>
+                        <text x="100" y="45" text-anchor="middle" fill="#8a7a5a" font-family="Cormorant Garamond" font-size="10" font-style="italic">"Here be dragons"</text>
+                    </g>
+                </g>
+            </svg>
+        </main>
+
+        <!-- Lore Panel (Side Panel) -->
+        <aside class="lore-panel" id="lorePanel">
+            <div class="lore-panel-border"></div>
+            <button class="lore-close" id="loreClose" aria-label="Close lore panel">✕</button>
+            
+            <div class="lore-content" id="loreContent">
+                <!-- Content injected via JavaScript -->
+                <div class="lore-placeholder">
+                    <div class="lore-placeholder-icon">📜</div>
+                    <p class="lore-placeholder-text">Select a region on the map to reveal its ancient lore</p>
+                </div>
+            </div>
+            
+            <div class="lore-scroll-indicator">
+                <span>Scroll for more</span>
+                <div class="scroll-arrow">▼</div>
+            </div>
+        </aside>
+
+        <!-- Myth Detail Panel -->
+        <aside class="myth-panel" id="mythPanel">
+            <div class="myth-panel-border"></div>
+            <button class="myth-close" id="mythClose" aria-label="Close myth panel">✕</button>
+            
+            <div class="myth-content" id="mythContent">
+                <!-- Content injected via JavaScript -->
+            </div>
+        </aside>
+
+        <!-- Timeline / Era Slider -->
+        <div class="timeline-container" id="timelineContainer">
+            <div class="timeline-label">The Ages of Aethoria</div>
+            <div class="timeline-track">
+                <div class="timeline-progress" id="timelineProgress"></div>
+                <input type="range" class="timeline-slider" id="timelineSlider" min="0" max="3" step="1" value="0">
+                
+                <!-- Era markers -->
+                <div class="era-markers">
+                    <div class="era-marker active" data-era="0">
+                        <div class="era-marker-dot"></div>
+                        <span class="era-marker-label">Dawn of Empires</span>
+                    </div>
+                    <div class="era-marker" data-era="1">
+                        <div class="era-marker-dot"></div>
+                        <span class="era-marker-label">Age of Strife</span>
+                    </div>
+                    <div class="era-marker" data-era="2">
+                        <div class="era-marker-dot"></div>
+                        <span class="era-marker-label">The Sundering</span>
+                    </div>
+                    <div class="era-marker" data-era="3">
+                        <div class="era-marker-dot"></div>
+                        <span class="era-marker-label">Rebirth</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Legend Panel (Stone Tablet) -->
+        <div class="legend-panel" id="legendPanel">
+            <div class="legend-stone-frame">
+                <div class="legend-header">
+                    <h3 class="legend-title">Legend of Realms</h3>
+                    <div class="legend-cuneiform">⌇⌇⌇</div>
+                </div>
+                <div class="legend-body">
+                    <div class="legend-item" data-legend="valdrheim">
+                        <span class="legend-color" style="background: linear-gradient(135deg, #5a7a8a, #3a5a6a);"></span>
+                        <span class="legend-name">Valdrheim</span>
+                        <span class="legend-desc">Mountain Kingdom</span>
+                    </div>
+                    <div class="legend-item" data-legend="khemetara">
+                        <span class="legend-color" style="background: linear-gradient(135deg, #c4956a, #a67a4a);"></span>
+                        <span class="legend-name">Khemetara</span>
+                        <span class="legend-desc">Desert Empire</span>
+                    </div>
+                    <div class="legend-item" data-legend="oakhaven">
+                        <span class="legend-color" style="background: linear-gradient(135deg, #5a8a4a, #3a6a2a);"></span>
+                        <span class="legend-name">Oakhaven</span>
+                        <span class="legend-desc">Ancient Forests</span>
+                    </div>
+                    <div class="legend-item" data-legend="zhongara">
+                        <span class="legend-color" style="background: linear-gradient(135deg, #8a6a4a, #6a4a2a);"></span>
+                        <span class="legend-name">Zhongara</span>
+                        <span class="legend-desc">Central Empire</span>
+                    </div>
+                    <div class="legend-item" data-legend="sundarava">
+                        <span class="legend-color" style="background: linear-gradient(135deg, #4a8a6a, #2a6a4a);"></span>
+                        <span class="legend-name">Sundarava</span>
+                        <span class="legend-desc">Eastern Archipelago</span>
+                    </div>
+                    <div class="legend-item" data-legend="shattered-isles">
+                        <span class="legend-color" style="background: linear-gradient(135deg, #7a4a3a, #5a2a1a);"></span>
+                        <span class="legend-name">Shattered Isles</span>
+                        <span class="legend-desc">Volcanic South</span>
+                    </div>
+                    <div class="legend-item" data-legend="whispering-wastes">
+                        <span class="legend-color" style="background: linear-gradient(135deg, #6a6a6a, #4a4a4a); border: 1px dashed #888;"></span>
+                        <span class="legend-name">Whispering Wastes</span>
+                        <span class="legend-desc">Cursed Lands</span>
+                    </div>
+                </div>
+                <div class="legend-footer">
+                    <div class="legend-divider">⌇ ⌇ ⌇</div>
+                    <p class="legend-note">Click any realm upon the map to unveil its secrets</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="atlas-footer">
+            <div class="footer-ornament">❖ ❖ ❖</div>
+            <p class="footer-text">The Atlas of Aethoria — Compiled by the Cartographers' Guild of the First Age</p>
+            <div class="footer-ornament">❖ ❖ ❖</div>
+        </footer>
+    </div>
+
+    <!-- Loading screen -->
+    <div class="loading-screen" id="loadingScreen">
+        <div class="loading-content">
+            <div class="loading-symbol">⛧</div>
+            <p class="loading-text">Unfurling the ancient maps...</p>
+            <div class="loading-bar">
+                <div class="loading-bar-fill" id="loadingBarFill"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="scripts.js"></script>
+</body>
+</html>

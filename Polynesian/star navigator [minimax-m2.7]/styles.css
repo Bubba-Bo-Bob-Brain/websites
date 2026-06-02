@@ -1,0 +1,1752 @@
+/* ============================================
+   POLYNESIAN CELESTIAL WAYFINDING CHART
+   Te Afualo - The Star Compass
+   CSS Styles & Animations
+   ============================================ */
+
+/* ============================================
+   CSS VARIABLES & ROOT CONFIGURATION
+   ============================================ */
+:root {
+  /* Deep Ocean Color Palette */
+  --ocean-deep: #0a1628;
+  --ocean-mid: #0f2847;
+  --ocean-surface: #1a4a6e;
+  --ocean-light: #2a6a8e;
+  --ocean-glow: #3a9ab8;
+  --ocean-highlight: #5ac0d8;
+  
+  /* Bioluminescent Accents */
+  --bio-luminescent: #00ffc8;
+  --bio-glow: #00ffa0;
+  --bio-soft: rgba(0, 255, 200, 0.3);
+  
+  /* Tapa Cloth Colors */
+  --tapa-dark: #1a3020;
+  --tapa-mid: #2a4a30;
+  --tapa-light: #3a5a40;
+  --tapa-accent: #8b6914;
+  --tapa-gold: #c9a227;
+  
+  /* Wood & Carved Elements */
+  --wood-dark: #3a2010;
+  --wood-mid: #5a3a1a;
+  --wood-light: #8b5a2b;
+  --wood-highlight: #a67c4a;
+  
+  /* Star & Celestial */
+  --star-white: #fffef8;
+  --star-warm: #fff8dc;
+  --star-cool: #e6f0ff;
+  --star-glow: rgba(255, 255, 255, 0.8);
+  
+  /* Text Colors */
+  --text-primary: #b8d4e3;
+  --text-secondary: #7a9aaa;
+  --text-accent: #7ad0c0;
+  --text-gold: #c9a86c;
+  
+  /* Frame & Border */
+  --frame-border: #4a7a8a;
+  --frame-inner: #3a5a6a;
+  
+  /* Gradients */
+  --gradient-ocean: linear-gradient(180deg, var(--ocean-deep) 0%, var(--ocean-mid) 50%, var(--ocean-surface) 100%);
+  --gradient-tapa: linear-gradient(135deg, var(--tapa-dark) 0%, var(--tapa-mid) 50%, var(--tapa-light) 100%);
+  --gradient-wood: linear-gradient(180deg, var(--wood-light) 0%, var(--wood-mid) 50%, var(--wood-dark) 100%);
+  
+  /* Shadows */
+  --shadow-deep: 0 10px 40px rgba(0, 0, 0, 0.5);
+  --shadow-glow: 0 0 20px var(--bio-soft);
+  --shadow-inner: inset 0 2px 10px rgba(0, 0, 0, 0.3);
+  
+  /* Spacing */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 2rem;
+  --space-xl: 4rem;
+  
+  /* Border Radius */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 16px;
+  
+  /* Transitions */
+  --transition-fast: 0.2s ease;
+  --transition-medium: 0.4s ease;
+  --transition-slow: 0.8s ease;
+  
+  /* Z-Index Layers */
+  --z-starfield: 1;
+  --z-ocean: 2;
+  --z-waves: 3;
+  --z-content: 10;
+  --z-markers: 15;
+  --z-panel: 20;
+  --z-tooltip: 25;
+  --z-modal: 30;
+}
+
+/* ============================================
+   BASE STYLES & RESET
+   ============================================ */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  font-size: 16px;
+}
+
+body {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  background: var(--ocean-deep);
+  color: var(--text-primary);
+  min-height: 100vh;
+  overflow-x: hidden;
+  line-height: 1.6;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--ocean-deep);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--ocean-surface);
+  border-radius: var(--radius-sm);
+  border: 2px solid var(--ocean-deep);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--ocean-light);
+}
+
+/* Selection */
+::selection {
+  background: var(--bio-soft);
+  color: var(--star-white);
+}
+
+/* ============================================
+   STAR FIELD LAYER
+   ============================================ */
+.star-field {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: var(--z-starfield);
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.star-field::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(ellipse at 20% 20%, rgba(30, 60, 90, 0.3) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 80%, rgba(20, 50, 80, 0.3) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 50%, rgba(10, 30, 60, 0.5) 0%, transparent 70%);
+  animation: starfieldPulse 8s ease-in-out infinite;
+}
+
+@keyframes starfieldPulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+#starCanvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Shooting Stars */
+.shooting-star {
+  position: absolute;
+  width: 100px;
+  height: 2px;
+  background: linear-gradient(90deg, var(--star-white), transparent);
+  border-radius: 50%;
+  opacity: 0;
+  animation: shootingStar 3s ease-out forwards;
+}
+
+@keyframes shootingStar {
+  0% {
+    transform: translateX(0) translateY(0);
+    opacity: 1;
+  }
+  70% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(300px) translateY(200px);
+    opacity: 0;
+  }
+}
+
+/* ============================================
+   OCEAN LAYER
+   ============================================ */
+.ocean-layer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 40%;
+  z-index: var(--z-ocean);
+  pointer-events: none;
+}
+
+.ocean-gradient {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 100%;
+  background: linear-gradient(
+    to top,
+    var(--ocean-deep) 0%,
+    rgba(15, 40, 71, 0.95) 30%,
+    rgba(26, 74, 110, 0.8) 60%,
+    rgba(42, 106, 142, 0.5) 85%,
+    transparent 100%
+  );
+}
+
+#oceanCanvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Bioluminescent particles in ocean */
+.bio-particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: var(--bio-luminescent);
+  border-radius: 50%;
+  box-shadow: 
+    0 0 10px var(--bio-luminescent),
+    0 0 20px var(--bio-glow),
+    0 0 30px var(--bio-soft);
+  animation: bioFloat 6s ease-in-out infinite;
+  opacity: 0.7;
+}
+
+@keyframes bioFloat {
+  0%, 100% {
+    transform: translateY(0) translateX(0);
+    opacity: 0.3;
+  }
+  25% {
+    transform: translateY(-20px) translateX(10px);
+    opacity: 0.8;
+  }
+  50% {
+    transform: translateY(-10px) translateX(-5px);
+    opacity: 0.5;
+  }
+  75% {
+    transform: translateY(-30px) translateX(15px);
+    opacity: 0.9;
+  }
+}
+
+/* ============================================
+   WAVE PATTERN OVERLAY
+   ============================================ */
+.wave-pattern {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 200px;
+  z-index: var(--z-waves);
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.wave-svg {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 200%;
+  height: 100%;
+  animation: waveSlide 25s linear infinite;
+}
+
+@keyframes waveSlide {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.wave {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.wave-1 {
+  stroke: rgba(58, 154, 184, 0.3);
+  stroke-width: 2;
+  animation: wavePulse1 4s ease-in-out infinite;
+}
+
+.wave-2 {
+  stroke: rgba(58, 154, 184, 0.2);
+  stroke-width: 2;
+  animation: wavePulse2 5s ease-in-out infinite;
+}
+
+.wave-3 {
+  stroke: rgba(58, 154, 184, 0.15);
+  stroke-width: 2;
+  animation: wavePulse3 6s ease-in-out infinite;
+}
+
+@keyframes wavePulse1 {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.7; }
+}
+
+@keyframes wavePulse2 {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.6; }
+}
+
+@keyframes wavePulse3 {
+  0%, 100% { opacity: 0.2; }
+  50% { opacity: 0.5; }
+}
+
+/* ============================================
+   MAIN CHART CONTAINER
+   ============================================ */
+.chart-container {
+  position: relative;
+  z-index: var(--z-content);
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: var(--space-lg);
+  min-height: 100vh;
+}
+
+/* ============================================
+   TAPA CLOTH FRAME STYLING
+   ============================================ */
+.tapa-frame {
+  position: relative;
+  background: var(--gradient-tapa);
+  border: 3px solid var(--frame-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  box-shadow: var(--shadow-deep);
+  overflow: hidden;
+}
+
+/* Tapa cloth texture overlay */
+.tapa-frame::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 10px,
+      rgba(0, 0, 0, 0.03) 10px,
+      rgba(0, 0, 0, 0.03) 20px
+    ),
+    repeating-linear-gradient(
+      -45deg,
+      transparent,
+      transparent 10px,
+      rgba(0, 0, 0, 0.03) 10px,
+      rgba(0, 0, 0, 0.03) 20px
+    );
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+/* Tapa pattern border */
+.tapa-pattern-border {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  right: 8px;
+  bottom: 8px;
+  border: 1px dashed rgba(139, 105, 20, 0.3);
+  border-radius: var(--radius-md);
+  pointer-events: none;
+}
+
+/* Tapa corners */
+.tapa-corner {
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  z-index: 5;
+}
+
+.tapa-corner::before,
+.tapa-corner::after {
+  content: '';
+  position: absolute;
+  background: var(--tapa-accent);
+}
+
+.tapa-corner-tl {
+  top: -2px;
+  left: -2px;
+}
+.tapa-corner-tl::before {
+  top: 0;
+  left: 0;
+  width: 30px;
+  height: 3px;
+}
+.tapa-corner-tl::after {
+  top: 0;
+  left: 0;
+  width: 3px;
+  height: 30px;
+}
+
+.tapa-corner-tr {
+  top: -2px;
+  right: -2px;
+}
+.tapa-corner-tr::before {
+  top: 0;
+  right: 0;
+  width: 30px;
+  height: 3px;
+}
+.tapa-corner-tr::after {
+  top: 0;
+  right: 0;
+  width: 3px;
+  height: 30px;
+}
+
+.tapa-corner-bl {
+  bottom: -2px;
+  left: -2px;
+}
+.tapa-corner-bl::before {
+  bottom: 0;
+  left: 0;
+  width: 30px;
+  height: 3px;
+}
+.tapa-corner-bl::after {
+  bottom: 0;
+  left: 0;
+  width: 3px;
+  height: 30px;
+}
+
+.tapa-corner-br {
+  bottom: -2px;
+  right: -2px;
+}
+.tapa-corner-br::before {
+  bottom: 0;
+  right: 0;
+  width: 30px;
+  height: 3px;
+}
+.tapa-corner-br::after {
+  bottom: 0;
+  right: 0;
+  width: 3px;
+  height: 30px;
+}
+
+/* ============================================
+   HEADER SECTION
+   ============================================ */
+.chart-header {
+  margin-bottom: var(--space-xl);
+  animation: fadeSlideDown 1s ease-out;
+}
+
+@keyframes fadeSlideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.header-frame {
+  text-align: center;
+  padding: var(--space-xl) var(--space-lg);
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-lg);
+  position: relative;
+  z-index: 2;
+}
+
+.chart-title {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.title-line {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-weight: 900;
+  color: var(--text-gold);
+  text-shadow: 
+    0 2px 4px rgba(0, 0, 0, 0.5),
+    0 0 30px rgba(201, 168, 39, 0.3);
+  letter-spacing: 0.1em;
+  animation: titleGlow 3s ease-in-out infinite;
+}
+
+@keyframes titleGlow {
+  0%, 100% {
+    text-shadow: 
+      0 2px 4px rgba(0, 0, 0, 0.5),
+      0 0 30px rgba(201, 168, 39, 0.3);
+  }
+  50% {
+    text-shadow: 
+      0 2px 4px rgba(0, 0, 0, 0.5),
+      0 0 50px rgba(201, 168, 39, 0.5),
+      0 0 80px rgba(201, 168, 39, 0.2);
+  }
+}
+
+.title-subtitle {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(1rem, 2.5vw, 1.5rem);
+  font-weight: 400;
+  font-style: italic;
+  color: var(--text-secondary);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+/* Tiki Markers */
+.tiki-marker {
+  width: 60px;
+  height: 80px;
+  animation: tikiFloat 4s ease-in-out infinite;
+}
+
+.tiki-left {
+  animation-delay: 0s;
+}
+
+.tiki-right {
+  animation-delay: 2s;
+}
+
+@keyframes tikiFloat {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  25% {
+    transform: translateY(-5px) rotate(2deg);
+  }
+  75% {
+    transform: translateY(3px) rotate(-2deg);
+  }
+}
+
+.tiki-svg {
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4));
+}
+
+/* ============================================
+   COMPASS SECTION
+   ============================================ */
+.compass-section {
+  margin-bottom: var(--space-xl);
+  animation: fadeSlideUp 1s ease-out 0.3s both;
+}
+
+@keyframes fadeSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.compass-wrapper {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: var(--space-lg);
+}
+
+.compass-outer-ring {
+  position: relative;
+  width: 100%;
+  max-width: 500px;
+  animation: compassRotate 120s linear infinite;
+}
+
+@keyframes compassRotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.compass-svg {
+  width: 100%;
+  height: auto;
+  filter: drop-shadow(0 10px 30px rgba(0, 0, 0, 0.5));
+}
+
+/* Direction Text Styling */
+.direction-text {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+/* Star Labels */
+.star-label {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.star-sublabel {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 10px;
+  font-style: italic;
+}
+
+/* Canoe Label */
+.canoe-label {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 11px;
+  font-weight: 600;
+  fill: var(--text-accent);
+}
+
+/* Star Paths Animation */
+.star-path {
+  opacity: 0.6;
+  animation: pathPulse 3s ease-in-out infinite;
+}
+
+@keyframes pathPulse {
+  0%, 100% { opacity: 0.4; stroke-width: 2; }
+  50% { opacity: 0.8; stroke-width: 3; }
+}
+
+.path-1 { animation-delay: 0s; }
+.path-2 { animation-delay: 0.5s; }
+.path-3 { animation-delay: 1s; }
+.path-4 { animation-delay: 1.5s; }
+
+/* Star Dome Indicator */
+.star-dome-indicator {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 120%;
+  height: 120%;
+  pointer-events: none;
+}
+
+.dome-ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  border: 1px solid rgba(90, 154, 170, 0.2);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.dome-ring-1 {
+  width: 60%;
+  height: 60%;
+  animation: domeRingPulse 4s ease-in-out infinite;
+}
+
+.dome-ring-2 {
+  width: 80%;
+  height: 80%;
+  animation: domeRingPulse 4s ease-in-out infinite 1s;
+}
+
+.dome-ring-3 {
+  width: 100%;
+  height: 100%;
+  animation: domeRingPulse 4s ease-in-out infinite 2s;
+}
+
+@keyframes domeRingPulse {
+  0%, 100% {
+    opacity: 0.1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  50% {
+    opacity: 0.3;
+    transform: translate(-50%, -50%) scale(1.02);
+  }
+}
+
+/* ============================================
+   PANEL TITLES & COMMON STYLES
+   ============================================ */
+.panel-title {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: clamp(1.2rem, 3vw, 1.8rem);
+  font-weight: 700;
+  color: var(--text-gold);
+  margin-bottom: var(--space-lg);
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  position: relative;
+  z-index: 2;
+}
+
+.title-icon {
+  width: 28px;
+  height: 28px;
+  stroke: var(--text-gold);
+  flex-shrink: 0;
+}
+
+/* ============================================
+   OCEAN CURRENTS PANEL
+   ============================================ */
+.currents-panel {
+  margin-bottom: var(--space-xl);
+  animation: fadeSlideUp 1s ease-out 0.5s both;
+}
+
+.currents-frame {
+  background: linear-gradient(
+    135deg,
+    rgba(26, 74, 110, 0.4) 0%,
+    rgba(42, 106, 142, 0.3) 50%,
+    rgba(26, 74, 110, 0.4) 100%
+  );
+}
+
+.currents-container {
+  position: relative;
+  z-index: 2;
+}
+
+.currents-svg {
+  width: 100%;
+  height: auto;
+}
+
+/* Current Flow Animation */
+.current-flow {
+  cursor: pointer;
+  transition: transform var(--transition-fast);
+}
+
+.current-flow:hover {
+  transform: scale(1.02);
+}
+
+.current-path {
+  transition: stroke-width var(--transition-fast);
+}
+
+.current-flow:hover .current-path {
+  stroke-width: 25;
+}
+
+.current-particle {
+  animation: particleFlow 3s ease-in-out infinite;
+}
+
+.current-flow:nth-child(1) .current-particle:nth-child(2) { animation-delay: 0s; }
+.current-flow:nth-child(1) .current-particle:nth-child(3) { animation-delay: 0.5s; }
+.current-flow:nth-child(1) .current-particle:nth-child(4) { animation-delay: 1s; }
+.current-flow:nth-child(1) .current-particle:nth-child(5) { animation-delay: 1.5s; }
+
+.current-flow:nth-child(2) .current-particle:nth-child(2) { animation-delay: 0.3s; }
+.current-flow:nth-child(2) .current-particle:nth-child(3) { animation-delay: 0.8s; }
+.current-flow:nth-child(2) .current-particle:nth-child(4) { animation-delay: 1.3s; }
+.current-flow:nth-child(2) .current-particle:nth-child(5) { animation-delay: 1.8s; }
+
+@keyframes particleFlow {
+  0%, 100% {
+    transform: translateX(0);
+    opacity: 0.5;
+  }
+  50% {
+    transform: translateX(20px);
+    opacity: 1;
+  }
+}
+
+.current-label {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: 11px;
+  fill: var(--text-primary);
+}
+
+.current-description {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 10px;
+  fill: var(--text-secondary);
+  font-style: italic;
+}
+
+.current-label-small {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 9px;
+  fill: var(--text-secondary);
+}
+
+/* ============================================
+   ISLANDS PANEL
+   ============================================ */
+.islands-panel {
+  margin-bottom: var(--space-xl);
+  animation: fadeSlideUp 1s ease-out 0.7s both;
+}
+
+.islands-frame {
+  background: linear-gradient(
+    135deg,
+    rgba(26, 58, 42, 0.4) 0%,
+    rgba(42, 90, 64, 0.3) 50%,
+    rgba(26, 58, 42, 0.4) 100%
+  );
+}
+
+.islands-track {
+  position: relative;
+  z-index: 2;
+  overflow-x: auto;
+  padding: var(--space-md) 0;
+}
+
+.islands-svg {
+  width: 100%;
+  min-width: 800px;
+  height: auto;
+}
+
+/* Island Markers */
+.island-marker {
+  cursor: pointer;
+  transition: transform var(--transition-fast);
+}
+
+.island-marker:hover {
+  transform: scale(1.1);
+}
+
+.island-marker:hover .island-name {
+  fill: var(--text-gold);
+}
+
+.island-name {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: 11px;
+  fill: var(--text-primary);
+  transition: fill var(--transition-fast);
+}
+
+.island-nickname {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 9px;
+  fill: var(--text-secondary);
+  font-style: italic;
+}
+
+.island-peak {
+  animation: peakGlow 2s ease-in-out infinite;
+}
+
+@keyframes peakGlow {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
+}
+
+/* Navigation Route */
+.navigation-route {
+  animation: routeGlow 4s ease-in-out infinite;
+}
+
+@keyframes routeGlow {
+  0%, 100% {
+    stroke-dashoffset: 0;
+    opacity: 0.5;
+  }
+  50% {
+    stroke-dashoffset: 30;
+    opacity: 0.8;
+  }
+}
+
+/* Current Position Indicator */
+.current-position {
+  animation: positionPulse 2s ease-in-out infinite;
+}
+
+@keyframes positionPulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.7;
+  }
+}
+
+.position-ring {
+  animation: ringExpand 2s ease-out infinite;
+}
+
+@keyframes ringExpand {
+  0% {
+    r: 8;
+    opacity: 1;
+  }
+  100% {
+    r: 20;
+    opacity: 0;
+  }
+}
+
+.position-label {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 10px;
+  fill: var(--text-accent);
+  font-weight: 600;
+}
+
+/* ============================================
+   CONSTELLATIONS PANEL
+   ============================================ */
+.constellations-panel {
+  margin-bottom: var(--space-xl);
+  animation: fadeSlideUp 1s ease-out 0.9s both;
+}
+
+.constellations-frame {
+  background: linear-gradient(
+    135deg,
+    rgba(10, 22, 40, 0.6) 0%,
+    rgba(20, 40, 70, 0.4) 50%,
+    rgba(10, 22, 40, 0.6) 100%
+  );
+}
+
+.constellation-map {
+  position: relative;
+  z-index: 2;
+}
+
+.constellation-svg {
+  width: 100%;
+  height: auto;
+}
+
+/* Constellation Styling */
+.constellation {
+  cursor: pointer;
+  transition: transform var(--transition-fast);
+}
+
+.constellation:hover {
+  transform: scale(1.05);
+}
+
+.constellation:hover .constellation-line {
+  stroke: var(--text-accent);
+  stroke-width: 2;
+}
+
+.constellation:hover .constellation-star {
+  filter: url(#starFilter) brightness(1.3);
+}
+
+.constellation-line {
+  stroke: var(--ocean-light);
+  stroke-width: 1;
+  transition: all var(--transition-fast);
+  animation: lineDraw 2s ease-in-out infinite;
+}
+
+@keyframes lineDraw {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+.constellation-star {
+  transition: all var(--transition-fast);
+}
+
+.constellation-name {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: 12px;
+  fill: var(--text-gold);
+}
+
+.constellation-eng {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 10px;
+  fill: var(--text-secondary);
+  font-style: italic;
+}
+
+/* Navigation Guides */
+.guide-line {
+  animation: guideGlow 3s ease-in-out infinite;
+}
+
+@keyframes guideGlow {
+  0%, 100% { opacity: 0.2; }
+  50% { opacity: 0.5; }
+}
+
+.constellation-instructions {
+  text-align: center;
+  margin-top: var(--space-md);
+  font-style: italic;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+/* ============================================
+   NAVIGATION MARKERS (TIKI)
+   ============================================ */
+.navigation-markers {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: calc(100% - 100px);
+  height: calc(100% - 100px);
+  pointer-events: none;
+  z-index: var(--z-markers);
+}
+
+.marker-tiki {
+  position: absolute;
+  width: 50px;
+  height: 65px;
+  pointer-events: auto;
+  cursor: pointer;
+  transition: transform var(--transition-fast), filter var(--transition-fast);
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.5));
+}
+
+.marker-tiki:hover {
+  transform: scale(1.2);
+  filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.6))
+          drop-shadow(0 0 15px rgba(201, 168, 39, 0.3));
+}
+
+.marker-north {
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.marker-north:hover {
+  transform: translateX(-50%) scale(1.2);
+}
+
+.marker-south {
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%) rotate(180deg);
+}
+
+.marker-south:hover {
+  transform: translateX(-50%) rotate(180deg) scale(1.2);
+}
+
+.marker-east {
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%) rotate(90deg);
+}
+
+.marker-east:hover {
+  transform: translateY(-50%) rotate(90deg) scale(1.2);
+}
+
+.marker-west {
+  left: 20px;
+  top: 50%;
+  transform: translateY(-50%) rotate(-90deg);
+}
+
+.marker-west:hover {
+  transform: translateY(-50%) rotate(-90deg) scale(1.2);
+}
+
+.marker-svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* ============================================
+   INFO PANEL (SLIDE-IN)
+   ============================================ */
+.info-panel {
+  position: fixed;
+  top: 0;
+  right: -400px;
+  width: 400px;
+  max-width: 90vw;
+  height: 100vh;
+  background: linear-gradient(
+    135deg,
+    rgba(15, 40, 71, 0.98) 0%,
+    rgba(26, 74, 110, 0.95) 100%
+  );
+  border-left: 3px solid var(--frame-border);
+  z-index: var(--z-panel);
+  transition: right var(--transition-medium);
+  overflow-y: auto;
+  box-shadow: -10px 0 40px rgba(0, 0, 0, 0.5);
+}
+
+.info-panel.active {
+  right: 0;
+}
+
+.info-panel::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 20px,
+      rgba(0, 0, 0, 0.02) 20px,
+      rgba(0, 0, 0, 0.02) 40px
+    );
+  pointer-events: none;
+}
+
+.info-close {
+  position: absolute;
+  top: var(--space-md);
+  right: var(--space-md);
+  width: 40px;
+  height: 40px;
+  background: transparent;
+  border: 2px solid var(--frame-border);
+  border-radius: 50%;
+  color: var(--text-primary);
+  font-size: 24px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  z-index: 5;
+}
+
+.info-close:hover {
+  background: var(--frame-border);
+  color: var(--ocean-deep);
+  transform: rotate(90deg);
+}
+
+.info-content {
+  padding: var(--space-xl) var(--space-lg);
+  position: relative;
+  z-index: 2;
+}
+
+.info-content h3 {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: 1.5rem;
+  color: var(--text-gold);
+  margin-bottom: var(--space-md);
+}
+
+.info-content p {
+  margin-bottom: var(--space-md);
+  line-height: 1.8;
+}
+
+/* ============================================
+   WAKE TRAIL CONTAINER (BIOLUMINESCENT)
+   ============================================ */
+.wake-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 5;
+  overflow: hidden;
+}
+
+.wake-particle {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background: var(--bio-luminescent);
+  border-radius: 50%;
+  box-shadow: 
+    0 0 10px var(--bio-luminescent),
+    0 0 20px var(--bio-glow),
+    0 0 30px var(--bio-soft);
+  animation: wakeTrail 2s ease-out forwards;
+  pointer-events: none;
+}
+
+@keyframes wakeTrail {
+  0% {
+    transform: scale(1) translateY(0);
+    opacity: 0.9;
+  }
+  50% {
+    opacity: 0.6;
+  }
+  100% {
+    transform: scale(0.3) translateY(30px);
+    opacity: 0;
+  }
+}
+
+/* ============================================
+   TOOLTIP
+   ============================================ */
+.tooltip {
+  position: fixed;
+  z-index: var(--z-tooltip);
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity var(--transition-fast), transform var(--transition-fast);
+}
+
+.tooltip.active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.tooltip-content {
+  background: rgba(15, 40, 71, 0.95);
+  border: 1px solid var(--frame-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-sm) var(--space-md);
+  box-shadow: var(--shadow-deep);
+  max-width: 250px;
+  backdrop-filter: blur(10px);
+}
+
+.tooltip-content h4 {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: 0.9rem;
+  color: var(--text-gold);
+  margin-bottom: var(--space-xs);
+}
+
+.tooltip-content p {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+/* ============================================
+   FOOTER
+   ============================================ */
+.chart-footer {
+  margin-top: var(--space-xl);
+  animation: fadeSlideUp 1s ease-out 1.1s both;
+}
+
+.footer-frame {
+  text-align: center;
+  padding: var(--space-xl) var(--space-lg);
+  background: linear-gradient(
+    135deg,
+    rgba(26, 48, 32, 0.5) 0%,
+    rgba(42, 74, 48, 0.4) 50%,
+    rgba(26, 48, 32, 0.5) 100%
+  );
+}
+
+.footer-content {
+  position: relative;
+  z-index: 2;
+}
+
+.footer-quote {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(1rem, 2vw, 1.3rem);
+  font-style: italic;
+  color: var(--text-primary);
+  margin-bottom: var(--space-sm);
+  max-width: 700px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.footer-attribution {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin-bottom: var(--space-lg);
+}
+
+.footer-navigation {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-lg);
+  margin-bottom: var(--space-lg);
+}
+
+.nav-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: var(--space-sm) var(--space-md);
+  background: transparent;
+  border: 2px solid var(--frame-border);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.nav-btn:hover {
+  background: var(--frame-border);
+  color: var(--ocean-deep);
+}
+
+.nav-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.nav-indicator {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: 0.9rem;
+  color: var(--text-gold);
+}
+
+.footer-credits {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-md);
+  flex-wrap: wrap;
+}
+
+.footer-credits .separator {
+  color: var(--frame-border);
+}
+
+/* ============================================
+   AUDIO INDICATOR
+   ============================================ */
+.audio-indicator {
+  position: fixed;
+  bottom: var(--space-lg);
+  right: var(--space-lg);
+  width: 50px;
+  height: 50px;
+  background: rgba(15, 40, 71, 0.8);
+  border: 2px solid var(--frame-border);
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--z-content);
+  transition: all var(--transition-fast);
+  backdrop-filter: blur(5px);
+}
+
+.audio-indicator:hover {
+  background: var(--frame-border);
+  transform: scale(1.1);
+}
+
+.audio-indicator svg {
+  width: 24px;
+  height: 24px;
+  stroke: var(--text-primary);
+}
+
+.audio-indicator.active {
+  background: var(--bio-soft);
+  border-color: var(--bio-luminescent);
+}
+
+.audio-indicator.active svg {
+  stroke: var(--bio-luminescent);
+}
+
+.sound-waves {
+  animation: soundWave 1s ease-in-out infinite;
+}
+
+.audio-indicator:not(.active) .sound-waves {
+  animation: none;
+  opacity: 0.3;
+}
+
+@keyframes soundWave {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}
+
+/* ============================================
+   INTERACTIVE STATES & HOVERS
+   ============================================ */
+
+/* Star house hover effects */
+.star-house {
+  cursor: pointer;
+  transition: transform var(--transition-fast);
+}
+
+.star-house:hover {
+  transform: scale(1.1);
+}
+
+.star-house:hover .star-dot {
+  filter: url(#glow) brightness(1.5);
+}
+
+.star-dot {
+  transition: all var(--transition-fast);
+}
+
+/* Degree markers */
+.cardinal-marker,
+.intercardinal-marker {
+  cursor: pointer;
+  transition: transform var(--transition-fast);
+}
+
+.cardinal-marker:hover,
+.intercardinal-marker:hover {
+  transform: scale(1.2);
+}
+
+.cardinal-marker:hover .direction-text {
+  fill: var(--text-gold);
+  font-weight: 900;
+}
+
+/* Current flow interactions */
+.current-flow:hover .current-label {
+  fill: var(--text-gold);
+  font-weight: 700;
+}
+
+/* Island marker hover states */
+.island-marker:hover .island-name {
+  fill: var(--text-gold);
+}
+
+.island-marker:hover .island-peak {
+  filter: brightness(1.3);
+}
+
+/* ============================================
+   RESPONSIVE DESIGN
+   ============================================ */
+
+@media (max-width: 1200px) {
+  .chart-container {
+    padding: var(--space-md);
+  }
+  
+  .compass-outer-ring {
+    max-width: 400px;
+  }
+  
+  .navigation-markers {
+    width: calc(100% - 60px);
+    height: calc(100% - 60px);
+  }
+  
+  .marker-tiki {
+    width: 40px;
+    height: 52px;
+  }
+}
+
+@media (max-width: 768px) {
+  .header-content {
+    flex-direction: column;
+    gap: var(--space-md);
+  }
+  
+  .tiki-marker {
+    display: none;
+  }
+  
+  .title-line {
+    font-size: 2rem;
+  }
+  
+  .compass-outer-ring {
+    max-width: 300px;
+  }
+  
+  .direction-text {
+    font-size: 14px;
+  }
+  
+  .star-label {
+    font-size: 10px;
+  }
+  
+  .star-sublabel {
+    font-size: 8px;
+  }
+  
+  .navigation-markers {
+    display: none;
+  }
+  
+  .islands-track {
+    overflow-x: scroll;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .footer-navigation {
+    flex-direction: column;
+    gap: var(--space-md);
+  }
+  
+  .footer-credits {
+    flex-direction: column;
+    gap: var(--space-sm);
+  }
+  
+  .footer-credits .separator {
+    display: none;
+  }
+  
+  .audio-indicator {
+    width: 40px;
+    height: 40px;
+    bottom: var(--space-md);
+    right: var(--space-md);
+  }
+  
+  .tapa-frame {
+    padding: var(--space-md);
+  }
+  
+  .panel-title {
+    font-size: 1.2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .chart-container {
+    padding: var(--space-sm);
+  }
+  
+  .compass-outer-ring {
+    max-width: 260px;
+  }
+  
+  .title-line {
+    font-size: 1.6rem;
+  }
+  
+  .title-subtitle {
+    font-size: 0.9rem;
+  }
+  
+  .info-panel {
+    width: 100%;
+    right: -100%;
+  }
+  
+  .tapa-corner {
+    width: 25px;
+    height: 25px;
+  }
+  
+  .tapa-corner::before {
+    width: 20px;
+  }
+  
+  .tapa-corner::after {
+    height: 20px;
+  }
+}
+
+/* ============================================
+   REDUCED MOTION PREFERENCE
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  .star-field::before,
+  .wave-svg,
+  .compass-outer-ring {
+    animation: none;
+  }
+}
+
+/* ============================================
+   PRINT STYLES
+   ============================================ */
+
+@media print {
+  .star-field,
+  .ocean-layer,
+  .wave-pattern,
+  .navigation-markers,
+  .wake-container,
+  .audio-indicator,
+  .info-panel {
+    display: none !important;
+  }
+  
+  body {
+    background: white;
+    color: black;
+  }
+  
+  .tapa-frame {
+    background: white;
+    border: 2px solid #333;
+    box-shadow: none;
+  }
+  
+  .title-line {
+    color: #333;
+    text-shadow: none;
+  }
+}
+
+/* ============================================
+   LOADING STATE
+   ============================================ */
+
+.loading {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--ocean-deep);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  transition: opacity 0.5s ease;
+}
+
+.loading.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.loading-spinner {
+  width: 60px;
+  height: 60px;
+  border: 3px solid var(--frame-border);
+  border-top-color: var(--bio-luminescent);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ============================================
+   ADDITIONAL DECORATIVE ELEMENTS
+   ============================================ */
+
+/* Subtle grain overlay */
+.chart-container::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  opacity: 0.02;
+  pointer-events: none;
+  z-index: 100;
+}
+
+/* Vignette effect */
+.vignette {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 0%,
+    transparent 60%,
+    rgba(10, 22, 40, 0.4) 100%
+  );
+  pointer-events: none;
+  z-index: 4;
+}

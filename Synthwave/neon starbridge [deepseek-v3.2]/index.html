@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NOVA-SYNTHIA | Bridge Console</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="console-wrapper">
+        <!-- Master Alert Overlay (hidden by default) -->
+        <div class="alert-overlay" id="alertOverlay">
+            <div class="alert-text">W A R N I N G</div>
+        </div>
+
+        <!-- Main Header / Ship Status -->
+        <header class="bridge-header">
+            <h1 class="ship-title"><i class="fas fa-satellite"></i> N O V A - S Y N T H I A</h1>
+            <div class="status-display">
+                <div class="status-item"><span class="label">STATUS:</span> <span class="value" id="sysStatus">NOMINAL</span></div>
+                <div class="status-item"><span class="label">STARDATE:</span> <span class="value" id="starDate">83.7.15</span></div>
+                <div class="status-item"><span class="label">GRID:</span> <span class="value" id="gridCoord">SECTOR Λ-7</span></div>
+            </div>
+            <button class="main-button alert-button" id="alertButton"><i class="fas fa-exclamation-triangle"></i> ALERT</button>
+        </header>
+
+        <!-- Central Viewport -->
+        <section class="main-viewport">
+            <!-- Starfield Background -->
+            <div class="starfield" id="starfield"></div>
+            <!-- Horizon Grid Floor -->
+            <div class="grid-floor"></div>
+            <!-- Overlay Grid / Reticle -->
+            <div class="viewport-overlay">
+                <div class="crosshair"></div>
+                <div class="grid-lines"></div>
+            </div>
+            <!-- Viewport Readout -->
+            <div class="viewport-readout">
+                <div class="readout-line" id="targetReadout">TARGET: NONE</div>
+                <div class="readout-line" id="speedReadout">WARP FACTOR: 0.0</div>
+            </div>
+        </section>
+
+        <!-- Control Panels Grid -->
+        <div class="panels-grid">
+
+            <!-- NAVIGATION PANEL -->
+            <section class="control-panel nav-panel">
+                <h2 class="panel-title"><i class="fas fa-compass"></i> NAVIGATION</h2>
+                <div class="panel-content">
+                    <div class="hologram-display" id="navDisplay">
+                        <!-- 3D Star System Wireframe Placeholder -->
+                        <div class="star-system">
+                            <div class="star"></div>
+                            <div class="orbit orbit-1"><div class="planet p1"></div></div>
+                            <div class="orbit orbit-2"><div class="planet p2"></div></div>
+                            <div class="orbit orbit-3"><div class="planet p3"></div></div>
+                        </div>
+                        <div class="coord-input">
+                            <span class="input-label">JUMP VECTOR:</span>
+                            <input type="text" value="X: 0.0 Y: 0.0 Z: 0.0" readonly class="coord-display">
+                        </div>
+                    </div>
+                    <div class="panel-controls">
+                        <button class="control-btn"><i class="fas fa-bullseye"></i> PLOT COURSE</button>
+                        <button class="control-btn"><i class="fas fa-sync-alt"></i> CALCULATE JUMP</button>
+                        <div class="slider-container">
+                            <span class="slider-label">WARP DRIVE</span>
+                            <input type="range" min="0" max="10" value="0" step="0.1" class="slider" id="warpSlider">
+                            <output class="slider-value" for="warpSlider">0.0</output>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SHIELDS PANEL -->
+            <section class="control-panel shields-panel">
+                <h2 class="panel-title"><i class="fas fa-shield-alt"></i> DEFLECTOR SHIELDS</h2>
+                <div class="panel-content">
+                    <div class="hologram-display">
+                        <!-- Pulsing Shield Ring -->
+                        <div class="shield-ring">
+                            <div class="ring-segment s1"></div>
+                            <div class="ring-segment s2"></div>
+                            <div class="ring-segment s3"></div>
+                            <div class="ring-segment s4"></div>
+                            <div class="ring-core"></div>
+                            <div class="integrity-text">INTEGRITY <span id="shieldIntegrity">100</span>%</div>
+                        </div>
+                        <!-- Shield Frequency Visualizer -->
+                        <div class="freq-visualizer">
+                            <div class="freq-bar" style="--height: 30%;"></div>
+                            <div class="freq-bar" style="--height: 80%;"></div>
+                            <div class="freq-bar" style="--height: 45%;"></div>
+                            <div class="freq-bar" style="--height: 60%;"></div>
+                            <div class="freq-bar" style="--height: 20%;"></div>
+                        </div>
+                    </div>
+                    <div class="panel-controls">
+                        <button class="control-btn toggle-btn active" id="shieldToggle"><i class="fas fa-power-off"></i> ONLINE</button>
+                        <button class="control-btn"><i class="fas fa-random"></i> MODULATE</button>
+                        <div class="shield-level">
+                            <span class="level-label">STRENGTH</span>
+                            <div class="level-bars">
+                                <div class="level-bar" style="--level: 100%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- WEAPONS PANEL -->
+            <section class="control-panel weapons-panel">
+                <h2 class="panel-title"><i class="fas fa-rocket"></i> TACTICAL SYSTEMS</h2>
+                <div class="panel-content">
+                    <div class="hologram-display">
+                        <!-- Target Lock Reticle Animation -->
+                        <div class="target-reticle" id="targetReticle">
+                            <div class="reticle-circle"></div>
+                            <div class="reticle-diag d1"></div>
+                            <div class="reticle-diag d2"></div>
+                            <div class="reticle-dot"></div>
+                            <div class="lock-text">SCANNING...</div>
+                        </div>
+                        <!-- Weapon Status -->
+                        <div class="weapon-status">
+                            <div class="weapon-item">
+                                <span class="wep-label">PHASER BANKS:</span>
+                                <div class="charge-indicator">
+                                    <div class="charge-level" style="--charge: 87%;"></div>
+                                </div>
+                            </div>
+                            <div class="weapon-item">
+                                <span class="wep-label">TORPEDOES:</span>
+                                <div class="ammo-count">12 / 24</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel-controls">
+                        <button class="control-btn fire-btn" id="firePhaser"><i class="fas fa-bolt"></i> FIRE PHASERS</button>
+                        <button class="control-btn fire-btn" id="fireTorpedo"><i class="fas fa-meteor"></i> LAUNCH TORPEDO</button>
+                        <button class="control-btn" id="targetLock"><i class="fas fa-crosshairs"></i> ACQUIRE TARGET</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- COMMUNICATIONS PANEL -->
+            <section class="control-panel comms-panel">
+                <h2 class="panel-title"><i class="fas fa-broadcast-tower"></i> COMMUNICATIONS</h2>
+                <div class="panel-content">
+                    <div class="hologram-display">
+                        <!-- EQ Visualizer -->
+                        <div class="eq-visualizer" id="eqVisualizer">
+                            <!-- Bars will be generated by JS -->
+                        </div>
+                        <!-- Waveform Display -->
+                        <div class="waveform-display" id="waveformDisplay">
+                            <!-- SVG waveform will be generated by JS -->
+                        </div>
+                        <div class="comm-readout">
+                            <div class="comm-line" id="commLine1">>> BAND OPEN: 141.1 MHZ</div>
+                            <div class="comm-line" id="commLine2">>> DECODING: STAND BY</div>
+                        </div>
+                    </div>
+                    <div class="panel-controls">
+                        <button class="control-btn"><i class="fas fa-play"></i> TRANSMIT</button>
+                        <button class="control-btn" id="scanButton"><i class="fas fa-search"></i> SCAN FREQ</button>
+                        <div class="freq-slider-container">
+                            <span class="slider-label">FREQUENCY</span>
+                            <input type="range" min="100" max="200" value="141" class="slider" id="freqSlider">
+                            <output class="slider-value" for="freqSlider">141.1</output>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </div> <!-- End Panels Grid -->
+
+        <!-- Footer / Log -->
+        <footer class="bridge-footer">
+            <div class="log-display" id="systemLog">
+                <div class="log-entry">[83.7.15 09:45] System initialization complete. All panels operational.</div>
+                <div class="log-entry">[83.7.15 09:46] Navigation sensors active. Starfield rendered.</div>
+                <div class="log-entry">[83.7.15 09:47] Shields powered. Frequency stabilized.</div>
+            </div>
+            <div class="master-controls">
+                <button class="master-btn" id="soundToggle"><i class="fas fa-volume-up"></i> AUDIO</button>
+                <button class="master-btn" id="nightModeToggle"><i class="fas fa-moon"></i> NIGHT</button>
+                <button class="master-btn" id="logClear"><i class="fas fa-trash"></i> CLEAR LOG</button>
+            </div>
+        </footer>
+
+    </div> <!-- End Console Wrapper -->
+
+    <!-- We'll add an audio element for ambiance -->
+    <audio id="ambientAudio" loop>
+        <source src="https://assets.mixkit.co/active_storage/sfx/258/258-preview.mp3" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+
+    <script src="scripts.js"></script>
+</body>
+</html>

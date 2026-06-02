@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VOID//HORIZON — Starship Command</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;500;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --neon-cyan: #00f3ff;
+            --neon-pink: #ff00a0;
+            --neon-purple: #bd00ff;
+            --deep-space: #050510;
+            --panel-bg: rgba(10, 15, 30, 0.85);
+            --grid-line: rgba(0, 243, 255, 0.08);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: var(--deep-space);
+            color: #e0e0e0;
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        /* Starfield Canvas */
+        #starfield {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* Brutalist Grid Overlay */
+        .perspective-grid {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(var(--grid-line) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+            background-size: 50px 50px;
+            transform: perspective(500px) rotateX(60deg);
+            transform-origin: center top;
+            opacity: 0.3;
+            z-index: 1;
+            pointer-events: none;
+            mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 80%);
+            -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 80%);
+        }
+
+        /* Main Dashboard Container */
+        .bridge {
+            position: relative;
+            z-index: 2;
+            height: 100vh;
+            display: grid;
+            grid-template-columns: 280px 1fr 280px;
+            grid-template-rows: 60px 1fr 120px;
+            gap: 2px;
+            background: rgba(5, 5, 16, 0.9);
+            backdrop-filter: blur(10px);
+        }
+
+        /* Panel Base */
+        .panel {
+            background: var(--panel-bg);
+            border: 1px solid rgba(0, 243, 255, 0.15);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .panel::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--neon-cyan), transparent);
+            opacity: 0.7;
+        }
+
+        /* Header */
+        .bridge-header {
+            grid-column: 1 / -1;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2rem;
+            border-bottom: 2px solid var(--neon-cyan);
+            background: linear-gradient(180deg, rgba(0,243,255,0.05) 0%, transparent 100%);
+        }
+
+        .logo-text {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: 0.3em;
+            color: var(--neon-cyan);
+            text-shadow: 0 0 10px var(--neon-cyan);
+        }
+
+        .status-bar {
+            display: flex;
+            gap: 2rem;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.75rem;
+            color: rgba(224, 224, 224, 0.7);
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .status-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--neon-cyan);
+            box-shadow: 0 0 8px var(--neon-cyan);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        /* Left Panel - Systems */
+        .systems-panel {
+            grid-row: 2;
+            display: flex;
+            flex-direction: column;
+            padding: 1.5rem;
+            gap: 1rem;
+        }
+
+        .panel-title {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            color: var(--neon-purple);
+            margin-bottom: 0.5rem;
+            border-left: 3px solid var(--neon-purple);
+            padding-left: 0.75rem;
+        }
+
+        .gauge-container {
+            position: relative;
+            width: 100%;
+            height: 160px;
+            margin-bottom: 1rem;
+        }
+
+        .gauge-svg {
+            width: 100%;
+            height: 100%;
+            transform: rotate(-90deg);
+        }
+
+        .gauge-track {
+            fill: none;
+            stroke: rgba(255, 255, 255, 0.05);
+            stroke-width: 8;
+        }
+
+        .gauge-fill {
+            fill: none;
+            stroke: var(--neon-cyan);
+            stroke-width: 8;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 1.5s ease-out;
+            filter: drop-shadow(0 0 4px var(--neon-cyan));
+        }
+
+        .gauge-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+
+        .gauge-value {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--neon-cyan);
+            text-shadow: 0 0 10px var(--neon-cyan);
+        }
+
+        .gauge-label {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: rgba(224, 224, 224, 0.5);
+        }
+
+        /* Center Viewport */
+        .viewport {
+            grid-row: 2;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: radial-gradient(ellipse at center, #1a1a3e 0%, #0a0a1a 100%);
+            overflow: hidden;
+        }
+
+        .viewport-overlay {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background: 
+                repeating-linear-gradient(
+                    0deg,
+                    transparent,
+                    transparent 2px,
+                    rgba(0, 243, 255, 0.03) 2px,
+                    rgba(0, 243, 255, 0.03) 4px
+                );
+            z-index: 10;
+        }
+
+        .horizon-line {
+            position: absolute;
+            width: 100%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--neon-cyan), var(--neon-pink), transparent);
+            box-shadow: 0 0 20px var(--neon-cyan);
+            animation: horizonScan 4s ease-in-out infinite;
+        }
+
+        @keyframes horizonScan {
+            0%, 100% { top: 60%; opacity: 0.3; }
+            50% { top: 40%; opacity: 1; }
+        }
+
+        .center-hud {
+            position: relative;
+            z-index: 5;
+            text-align: center;
+        }
+
+        .hud-ring {
+            width: 300px;
+            height: 300px;
+            border: 1px solid rgba(0, 243, 255, 0.2);
+            border-radius: 50%;
+            position: relative;
+            animation: rotate 20s linear infinite;
+        }
+
+        .hud-ring::before,
+        .hud-ring::after {
+            content: '';
+            position: absolute;
+            border-radius: 50%;
+            border: 1px solid rgba(0, 243, 255, 0.1);
+        }
+
+        .hud-ring::before {
+            inset: 20px;
+            animation: rotate 15s linear infinite reverse;
+        }
+
+        .hud-ring::after {
+            inset: 40px;
+            border-color: rgba(255, 0, 160, 0.15);
+            animation: rotate 10s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .hud-core {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: 'Share Tech Mono', monospace;
+        }
+
+        .hud-core-value {
+            font-size: 3rem;
+            font-weight: 700;
+            background: linear-gradient(180deg, var(--neon-cyan), var(--neon-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: none;
+            filter: drop-shadow(0 0 8px rgba(0, 243, 255, 0.5));
+        }
+
+        /* Right Panel - Comms */
+        .comms-panel {
+            grid-row: 2;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .freq-display {
+            font-family: 'Share Tech Mono', monospace;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(0, 243, 255, 0.2);
+            padding: 1rem;
+            margin-bottom: 1rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .freq-display::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 243, 255, 0.1), transparent);
+            animation: scan 3s linear infinite;
+        }
+
+        @keyframes scan {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        .freq-bar {
+            display: flex;
+            align-items: flex-end;
+            gap: 2px;
+            height: 60px;
+            margin-top: 0.5rem;
+        }
+
+        .freq-segment {
+            flex: 1;
+            background: linear-gradient(to top, var(--neon-cyan), transparent);
+            opacity: 0.3;
+            animation: freqDance 0.5s ease-in-out infinite alternate;
+        }
+
+        .freq-segment:nth-child(odd) {
+            animation-delay: 0.1s;
+            background: linear-gradient(to top, var(--neon-pink), transparent);
+        }
+
+        @keyframes freqDance {
+            0% { height: 20%; opacity: 0.2; }
+            100% { height: 100%; opacity: 0.8; }
+        }
+
+        .log-feed {
+            flex: 1;
+            overflow-y: auto;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.75rem;
+            line-height: 1.8;
+            color: rgba(224, 224, 224, 0.6);
+        }
+
+        .log-entry {
+            border-left: 2px solid transparent;
+            padding-left: 0.75rem;
+            margin-bottom: 0.5rem;
+            opacity: 0;
+            animation: logSlide 0.3s ease-out forwards;
+        }
+
+        .log-entry.alert {
+            border-left-color: var(--neon-pink);
+            color: var(--neon-pink);
+            text-shadow: 0 0 5px var(--neon-pink);
+        }
+
+        .log-entry.info {
+            border-left-color: var(--neon-cyan);
+        }
+
+        @keyframes logSlide {
+            from { opacity: 0; transform: translateX(-10px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        /* Bottom Panel */
+        .tactical-panel {
+            grid-column: 1 / -1;
+            display: flex;
+            align-items: center;
+            padding: 0 2rem;
+            gap: 2rem;
+            border-top: 2px solid var(--neon-cyan);
+        }
+
+        .shield-bar {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex: 1;
+        }
+
+        .shield-label {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: rgba(224, 224, 224, 0.5);
+            min-width: 80px;
+        }
+
+        .shield-track {
+            flex: 1;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .shield-fill {
+            height: 100%;
+            width: 87%;
+            background: linear-gradient(90deg, var(--neon-cyan), var(--neon-purple));
+            border-radius: 4px;
+            position: relative;
+            transition: width 0.5s ease;
+            box-shadow: 0 0 10px rgba(0, 243, 255, 0.3);
+        }
+
+        .shield-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .command-input {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex: 2;
+        }
+
+        .cmd-prompt {
+            font-family: 'Share Tech Mono', monospace;
+            color: var(--neon-cyan);
+            font-size: 0.9rem;
+        }
+
+        .cmd-input {
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid rgba(0, 243, 255, 0.3);
+            color: var(--neon-cyan);
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.9rem;
+            flex: 1;
+            padding: 0.5rem 0;
+            outline: none;
+            caret-color: var(--neon-cyan);
+        }
+
+        .cmd-input:focus {
+            border-bottom-color: var(--neon-cyan);
+            box-shadow: 0 2px 10px rgba(0, 243, 255, 0.2);
+        }
+
+        .engage-btn {
+            background: transparent;
+            border: 1px solid var(--neon-cyan);
+            color: var(--neon-cyan);
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            padding: 0.6rem 2rem;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .engage-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 243, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .engage-btn:hover::before {
+            left: 100%;
+        }
+
+        .engage-btn:hover {
+            background: rgba(0, 243, 255, 0.1);
+            box-shadow: 0 0 20px rgba(0, 243, 255, 0.3);
+            text-shadow: 0 0 8px var(--neon-cyan);
+        }
+
+        /* Glitch Effect */
+        .glitch {
+            position: relative;
+        }
+
+        .glitch::before,
+        .glitch::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.8;
+        }
+
+        .glitch::before {
+            color: var(--neon-pink);
+            animation: glitch-1 2s infinite linear alternate-reverse;
+            clip-path: polygon(0 0, 100% 0, 100% 35%, 0 35%);
+        }
+
+        .glitch::after {
+            color: var(--neon-cyan);
+            animation: glitch-2 3s infinite linear alternate-reverse;
+            clip-path: polygon(0 65%, 100% 65%, 100% 100%, 0 100%);
+        }
+
+        @keyframes glitch-1 {
+            0% { transform: translate(0); }
+            20% { transform: translate(-2px, 2px); }
+            40% { transform: translate(-2px, -2px); }
+            60% { transform: translate(2px, 2px); }
+            80% { transform: translate(2px, -2px); }
+            100% { transform: translate(0); }
+        }
+
+        @keyframes glitch-2 {
+            0% { transform: translate(0); }
+            20% { transform: translate(2px, -2px); }
+            40% { transform: translate(2px, 2px); }
+            60% { transform: translate(-2px, -2px); }
+            80% { transform: translate(-2px, 2px); }
+            100% { transform: translate(0); }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--neon-cyan);
+            border-radius: 2px;
+        }
+
+        /* Corner Accents */
+        .corner-accent {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--neon-cyan);
+            opacity: 0.5;
+        }
+
+        .corner-tl { top: 10px; left: 10px; border-right: none; border-bottom: none; }
+        .corner-tr { top: 10px; right: 10px; border-left: none; border-bottom: none; }
+        .corner-bl { bottom: 10px; left: 10px; border-right: none; border-top: none; }
+        .corner-br { bottom: 10px; right: 10px; border-left: none; border-top: none; }
+
+        /* Warp Button */
+        .warp-btn {
+            position: absolute;
+            bottom: 2rem;
+            right: 2rem;
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 2px solid var(--neon-purple);
+            background: radial-gradient(circle, rgba(189, 0, 255, 0.1) 0%, transparent 70%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            animation: breathe 4s ease-in-out infinite;
+        }
+
+        @keyframes breathe {
+            0%, 100% { box-shadow: 0 0 20px rgba(189, 0, 255, 0.3); transform: scale(1); }
+            50% { box-shadow: 0 0 40px rgba(189, 0, 255, 0.6); transform: scale(1.02); }
+        }
+
+        .warp-btn:hover {
+            background: radial-gradient(circle, rgba(189, 0, 255, 0.2) 0%, transparent 70%);
+            box-shadow: 0 0 60px rgba(189, 0, 255, 0.8);
+        }
+
+        .warp-label {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            color: var(--neon-purple);
+            text-shadow: 0 0 10px var(--neon-purple);
+        }
+
+        /* System collapsed state */
+        .panel.collapsed {
+            grid-template-columns: 60px 1fr !important;
+        }
+
+        .panel.collapsed .panel-content {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .bridge {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto auto 1fr auto;
+            }
+            .systems-panel, .comms-panel {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="starfield"></canvas>
+    <div class="perspective-grid"></div>
+
+    <div class="bridge">
+        <!-- Header -->
+        <header class="bridge-header">
+            <div class="logo-text glitch" data-text="VOID//HORIZON">VOID//HORIZON</div>
+            <div class="status-bar">
+                <div class="status-item">
+                    <div class="status-indicator"></div>
+                    <span>SYSTEMS NOMINAL</span>
+                </div>
+                <div class="status-item">
+                    <span>T+ 04:23:17:09</span>
+                </div>
+                <div class="status-item">
+                    <span>SECTOR 7G</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Left Panel: Systems -->
+        <aside class="panel systems-panel">
+            <div class="corner-accent corner-tl"></div>
+            <div class="corner-accent corner-bl"></div>
+            
+            <div class="panel-title">Propulsion</div>
+            <div class="gauge-container">
+                <svg class="gauge-svg" viewBox="0 0 120 120">
+                    <circle class="gauge-track" cx="60" cy="60" r="50"></circle>
+                    <circle class="gauge-fill" cx="60" cy="60" r="50" 
+                            stroke-dasharray="314" 
+                            stroke-dashoffset="78.5"
+                            id="propulsionGauge"></circle>
+                </svg>
+                <div class="gauge-text">
+                    <div class="gauge-value" id="propulsionVal">75%</div>
+                    <div class="gauge-label">OUTPUT</div>
+                </div>
+            </div>
+
+            <div class="panel-title">Reactor Core</div>
+            <div class="gauge-container">
+                <svg class="gauge-svg" viewBox="0 0 120 120">
+                    <circle class="gauge-track" cx="60" cy="60" r="50"></circle>
+                    <circle class="gauge-fill" cx="60" cy="60" r="50" 
+                            stroke-dasharray="314" 
+                            stroke-dashoffset="31.4"
+                            id="reactorGauge"
+                            style="stroke: var(--neon-pink); filter: drop-shadow(0 0 4px var(--neon-pink));"></circle>
+                </svg>
+                <div class="gauge-text">
+                    <div class="gauge-value" id="reactorVal" style="color: var(--neon-pink);">90%</div>
+                    <div class="gauge-label">STABILITY</div>
+                </div>
+            </div>
+
+            <div class="panel-title">Shield Integrity</div>
+            <div class="gauge-container">
+                <svg class="gauge-svg" viewBox="0 0 120 120">
+                    <circle class="gauge-track" cx="60" cy="60" r="50"></circle>
+                    <circle class="gauge-fill" cx="60" cy="60" r="50" 
+                            stroke-dasharray="314" 
+                            stroke-dashoffset="157"
+                            id="shieldGauge"
+                            style="stroke: #00ff88; filter: drop-shadow(0 0 4px #00ff88);"></circle>
+                </svg>
+                <div class="gauge-text">
+                    <div class="gauge-value" id="shieldVal" style="color: #00ff88;">50%</div>
+                    <div class="gauge-label">DEFLECTORS</div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Center: Viewport -->
+        <main class="viewport">
+            <div class="viewport-overlay"></div>
+            <div class="horizon-line"></div>
+            
+            <div class="center-hud">
+                <div class="hud-ring">
+                    <div class="hud-core">
+                        <div class="hud-core-value" id="warpFactor">0.0c</div>
+                        <div style="font-size: 0.7rem; letter-spacing: 0.3em; margin-top: 0.5rem; color: var(--neon-purple);">WARP FACTOR</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="warp-btn" onclick="engageWarp()">
+                <div class="warp-label">ENGAGE</div>
+                <div style="font-size: 1.5rem; margin-top: 0.25rem;">◈</div>
+            </div>
+        </main>
+
+        <!-- Right Panel: Communications -->
+        <aside class="panel comms-panel">
+            <div class="corner-accent corner-tr"></div>
+            <div class="corner-accent corner-br"></div>
+            
+            <div class="panel-title">Frequency Monitor</div>
+            <div class="freq-display">
+                <div style="font-family: 'Share Tech Mono', monospace; font-size: 0.8rem; color: var(--neon-cyan); margin-bottom: 0.5rem;">
+                    BAND: <span style="color: var(--neon-pink);">X-47.3 MHz</span>
+                </div>
+                <div class="freq-bar" id="freqBar">
+                    <!-- Generated by JS -->
+                </div>
+            </div>
+
+            <div class="panel-title">Signal Log</div>
+            <div class="log-feed" id="logFeed">
+                <div class="log-entry info">[04:23:09] Deep space scan initiated...</div>
+                <div class="log-entry info">[04:23:11] Anomaly detected in sector 7G</div>
+                <div class="log-entry alert">[04:23:15] WARNING: Gravitational shear</div>
+                <div class="log-entry info">[04:23:17] Shield harmonics adjusted</div>
+            </div>
+        </aside>
+
+        <!-- Bottom: Tactical -->
+        <footer class="panel tactical-panel">
+            <div class="shield-bar">
+                <div class="shield-label">Starboard</div>
+                <div class="shield-track">
+                    <div class="shield-fill" id="starboardShield"></div>
+                </div>
+                <div class="shield-label" style="text-align: right; min-width: 40px;">87%</div>
+            </div>
+            
+            <div class="command-input">
+                <span class="cmd-prompt">></span>
+                <input type="text" class="cmd-input" placeholder="Enter command..." id="cmdInput">
+                <button class="engage-btn" onclick="processCommand()">TRANSMIT</button>
+            </div>
+
+            <div class="shield-bar">
+                <div class="shield-label">Port</div>
+                <div class="shield-track">
+                    <div class="shield-fill" id="portShield" style="width: 92%; background: linear-gradient(90deg, #00ff88, var(--neon-cyan));"></div>
+                </div>
+                <div class="shield-label" style="text-align: right; min-width: 40px;">92%</div>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // Starfield Generation
+        const canvas = document.getElementById('starfield');
+        const ctx = canvas.getContext('2d');
+        let stars = [];
+        let warpSpeed = false;
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        class Star {
+            constructor() {
+                this.reset();
+            }
+
+            reset() {
+                this.x = (Math.random() - 0.5) * canvas.width * 2;
+                this.y = (Math.random() - 0.5) * canvas.height * 2;
+                this.z = Math.random() * canvas.width;
+                this.pz = this.z;
+            }
+
+            update() {
+                let speed = warpSpeed ? 50 : 0.5;
+                this.z -= speed;
+                if (this.z <= 0) {
+                    this.reset();
+                    this.z = canvas.width;
+                    this.pz = this.z;
+                }
+            }
+
+            draw() {
+                let x = (this.x / this.z) * canvas.width + canvas.width / 2;
+                let y = (this.y / this.z) * canvas.height + canvas.height / 2;
+                let r = (1 - this.z / canvas.width) * 3;
+                
+                let px = (this.x / this.pz) * canvas.width + canvas.width / 2;
+                let py = (this.y / this.pz) * canvas.height + canvas.height / 2;
+                
+                this.pz = this.z;
+
+                if (x < 0 || x > canvas.width || y < 0 || y > canvas.height) return;
+
+                ctx.beginPath();
+                ctx.moveTo(px, py);
+                ctx.lineTo(x, y);
+                ctx.strokeStyle = `rgba(200, 230, 255, ${1 - this.z / canvas.width})`;
+                ctx.lineWidth = r;
+                ctx.stroke();
+            }
+        }
+
+        for (let i = 0; i < 800; i++) {
+            stars.push(new Star());
+        }
+
+        function animateStars() {
+            ctx.fillStyle = 'rgba(5, 5, 16, 0.3)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            stars.forEach(star => {
+                star.update();
+                star.draw();
+            });
+            
+            requestAnimationFrame(animateStars);
+        }
+        animateStars();
+
+        // Frequency Bar Visualization
+        const freqBar = document.getElementById('freqBar');
+        for (let i = 0; i < 40; i++) {
+            const segment = document.createElement('div');
+            segment.className = 'freq-segment';
+            segment.style.animationDelay = `${i * 0.05}s`;
+            segment.style.height = `${Math.random() * 100}%`;
+            freqBar.appendChild(segment);
+        }
+
+        // Gauge Animation
+        function setGauge(id, value, max) {
+            const circle = document.getElementById(id);
+            const circumference = 314;
+            const offset = circumference - (value / max) * circumference;
+            circle.style.strokeDashoffset = offset;
+        }
+
+        // Randomize gauges periodically
+        setInterval(() => {
+            setGauge('propulsionGauge', 70 + Math.random() * 20, 100);
+            document.getElementById('propulsionVal').textContent = Math.floor(70 + Math.random() * 20) + '%';
+            
+            setGauge('reactorGauge', 85 + Math.random() * 10, 100);
+            document.getElementById('reactorVal').textContent = Math.floor(85 + Math.random() * 10) + '%';
+        }, 3000);
+
+        // Warp Engage
+        let currentWarp = 0;
+        function engageWarp() {
+            warpSpeed = true;
+            const warpDisplay = document.getElementById('warpFactor');
+            let target = 9.9;
+            let current = parseFloat(warpDisplay.textContent);
+            
+            const interval = setInterval(() => {
+                current += 0.1;
+                if (current >= target) {
+                    current = target;
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        warpSpeed = false;
+                        const decel = setInterval(() => {
+                            current -= 0.05;
+                            if (current <= 0) {
+                                current = 0;
+                                clearInterval(decel);
+                            }
+                            warpDisplay.textContent = current.toFixed(1) + 'c';
+                        }, 50);
+                    }, 2000);
+                }
+                warpDisplay.textContent = current.toFixed(1) + 'c';
+            }, 100);
+        }
+
+        // Command Processing
+        function processCommand() {
+            const input = document.getElementById('cmdInput');
+            const cmd = input.value.trim().toLowerCase();
+            if (!cmd) return;
+
+            addLog(`> ${cmd}`, 'info');
+            
+            if (cmd === 'warp') {
+                engageWarp();
+                addLog('WARP DRIVE ENGAGED', 'alert');
+            } else if (cmd === 'shields') {
+                addLog('SHIELD HARMONICS RECALIBRATED', 'info');
+                document.getElementById('starboardShield').style.width = '100%';
+                document.getElementById('portShield').style.width = '100%';
+            } else if (cmd === 'scan') {
+                addLog('INITIATING DEEP SCAN...', 'info');
+                setTimeout(() => addLog('SCAN COMPLETE: No threats detected', 'info'), 2000);
+            } else {
+                addLog('UNKNOWN COMMAND', 'alert');
+            }
+            
+            input.value = '';
+        }
+
+        document.getElementById('cmdInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') processCommand();
+        });
+
+        // Log System
+        function addLog(message, type) {
+            const feed = document.getElementById('logFeed');
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            const time = new Date().toLocaleTimeString('en-US', { hour12: false });
+            entry.textContent = `[${time}] ${message}`;
+            feed.insertBefore(entry, feed.firstChild);
+            
+            while (feed.children.length > 20) {
+                feed.removeChild(feed.lastChild);
+            }
+        }
+
+        // Shield fluctuation
+        setInterval(() => {
+            const sb = document.getElementById('starboardShield');
+            const pb = document.getElementById('portShield');
+            sb.style.width = (80 + Math.random() * 15) + '%';
+            pb.style.width = (85 + Math.random() * 10) + '%';
+        }, 5000);
+
+        // Initial random logs
+        setTimeout(() => addLog('Incoming transmission...', 'alert'), 5000);
+        setTimeout(() => addLog('Signal decoded: FRIENDLY', 'info'), 8000);
+    </script>
+</body>
+</html>

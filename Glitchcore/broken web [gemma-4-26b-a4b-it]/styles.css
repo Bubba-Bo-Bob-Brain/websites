@@ -1,0 +1,362 @@
+/* --- VARIABLES & THEME --- */
+:root {
+    --bg-color: #050505;
+    --terminal-green: #00ff41;
+    --error-red: #ff3131;
+    --accent-cyan: #00f3ff;
+    --accent-magenta: #ff00ff;
+    --window-bg: rgba(15, 15, 15, 0.9);
+    --border-style: 1px solid rgba(255, 255, 255, 0.1);
+    --font-mono: 'Courier New', Courier, monospace;
+    --font-display: 'Georgia', serif; /* For the Core */
+    --glitch-speed: 0.2s;
+}
+
+/* --- RESET & BASE --- */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    cursor: crosshair;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: #e0e0e0;
+    font-family: var(--font-mono);
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden; /* We control scrolling via window layers */
+    user-select: none;
+}
+
+/* --- ATMOSPHERIC LAYERS --- */
+
+/* Grain/Noise Texture */
+.noise-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 9999;
+    pointer-events: none;
+    opacity: 0.05;
+    background: url('https://grainy-gradients.vercel.app/noise.svg');
+}
+
+/* CRT Scanlines Effect */
+.scanlines {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 9998;
+    pointer-events: none;
+    background: linear-gradient(
+        rgba(18, 16, 16, 0) 50%, 
+        rgba(0, 0, 0, 0.25) 50%
+    ), linear-gradient(
+        90deg, 
+        rgba(255, 0, 0, 0.06), 
+        rgba(0, 255, 0, 0.02), 
+        rgba(0, 0, 255, 0.06)
+    );
+    background-size: 100% 4px, 3px 100%;
+}
+
+/* --- OS SHELL --- */
+
+#os-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    width: 100vw;
+    position: relative;
+}
+
+/* Top System Bar */
+.system-bar {
+    height: 30px;
+    background: #000;
+    border-bottom: var(--border-style);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 15px;
+    font-size: 0.75rem;
+    letter-spacing: 1px;
+    z-index: 100;
+}
+
+.status-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    background: var(--terminal-green);
+    border-radius: 50%;
+    margin-right: 8px;
+}
+
+.pulse {
+    animation: pulse-animation 2s infinite;
+}
+
+@keyframes pulse-animation {
+    0% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.3; transform: scale(1.2); }
+    100% { opacity: 1; transform: scale(1); }
+}
+
+/* Desktop Area */
+#desktop {
+    flex-grow: 1;
+    position: relative;
+    padding: 40px;
+    background: radial-gradient(circle at center, #111 0%, #050505 100%);
+}
+
+.icon-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 40px;
+    max-width: 800px;
+}
+
+.icon {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    text-align: center;
+    transition: transform 0.1s;
+}
+
+.icon:hover {
+    transform: scale(1.05);
+}
+
+.icon:active {
+    transform: scale(0.95);
+}
+
+.icon-image {
+    font-size: 2.5rem;
+    filter: drop-shadow(0 0 5px rgba(0, 255, 65, 0.3));
+}
+
+.icon-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #aaa;
+}
+
+/* Window Manager Layer */
+#window-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none; /* Allows clicking icons underneath */
+}
+
+/* Generic Window Style (to be injected via JS) */
+.window {
+    position: absolute;
+    width: 400px;
+    min-height: 250px;
+    background: var(--window-bg);
+    border: var(--border-style);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    pointer-events: all;
+    display: flex;
+    flex-direction: column;
+    animation: window-open 0.2s ease-out;
+}
+
+@keyframes window-open {
+    from { transform: scale(0.9); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+.window-header {
+    padding: 8px 12px;
+    background: #222;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: var(--border-style);
+}
+
+.window-title {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+}
+
+.window-controls {
+    display: flex;
+    gap: 5px;
+}
+
+.control-btn {
+    width: 12px;
+    height: 12px;
+    background: #444;
+    border: none;
+    cursor: pointer;
+}
+
+.control-btn.close { background: var(--error-red); }
+
+.window-content {
+    padding: 20px;
+    font-size: 0.85rem;
+    line-height: 1.5;
+    overflow-y: auto;
+    flex-grow: 1;
+}
+
+/* Terminal Dock */
+.terminal-dock {
+    height: 120px;
+    background: #000;
+    border-top: 2px solid #222;
+    padding: 15px;
+    font-size: 0.8rem;
+    overflow: hidden;
+}
+
+.terminal-line {
+    margin-bottom: 5px;
+    display: flex;
+    gap: 10px;
+}
+
+.prompt { color: var(--terminal-green); }
+.error { color: var(--error-red); }
+.low-health { color: var(--error-red); font-weight: bold; }
+
+/* --- GLITCH ANIMATIONS --- */
+
+.glitch-text {
+    position: relative;
+    display: inline-block;
+}
+
+.glitch-text::before,
+.glitch-text::after {
+    content: attr(data-text);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--bg-color);
+}
+
+.glitch-text::before {
+    left: 2px;
+    text-shadow: -2px 0 var(--accent-cyan);
+    clip: rect(44px, 450px, 56px, 0);
+    animation: glitch-anim 5s infinite linear alternate-reverse;
+}
+
+.glitch-text::after {
+    left: -2px;
+    text-shadow: -2px 0 var(--accent-magenta);
+    clip: rect(44px, 450px, 56px, 0);
+    animation: glitch-anim2 5s infinite linear alternate-reverse;
+}
+
+@keyframes glitch-anim {
+    0% { clip: rect(31px, 9999px, 94px, 0); }
+    20% { clip: rect(62px, 9999px, 42px, 0); }
+    40% { clip: rect(10px, 9999px, 88px, 0); }
+    60% { clip: rect(70px, 9999px, 22px, 0); }
+    80% { clip: rect(50px, 9999px, 90px, 0); }
+    100% { clip: rect(15px, 9999px, 35px, 0); }
+}
+
+@keyframes glitch-anim2 {
+    0% { clip: rect(10px, 9999px, 50px, 0); }
+    25% { clip: rect(80px, 9999px, 20px, 0); }
+    50% { clip: rect(40px, 9999px, 60px, 0); }
+    75% { clip: rect(20px, 9999px, 90px, 0); }
+    100% { clip: rect(50px, 9999px, 10px, 0); }
+}
+
+/* --- THE CORE (Hidden Content) --- */
+#the-core {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #fdfcf0; /* Soft parchment */
+    z-index: 10000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: opacity 3s ease-in-out;
+}
+
+#the-core.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.core-content {
+    text-align: center;
+    max-width: 600px;
+    padding: 40px;
+}
+
+.aesthetic-title {
+    font-family: var(--font-display);
+    font-size: 3.5rem;
+    color: #2c2c2c;
+    margin-bottom: 20px;
+    font-style: italic;
+}
+
+.aesthetic-text {
+    font-family: var(--font-display);
+    font-size: 1.2rem;
+    color: #555;
+    line-height: 1.8;
+}
+
+.garden-artifact {
+    width: 100px;
+    height: 100px;
+    margin: 40px auto;
+    background: linear-gradient(45deg, #d4e09b, #ffccbb);
+    border-radius: 50%;
+    filter: blur(20px);
+    animation: breathe 8s infinite ease-in-out;
+}
+
+@keyframes breathe {
+    0%, 100% { transform: scale(1); opacity: 0.6; }
+    50% { transform: scale(1.5); opacity: 0.9; }
+}
+
+#reset-btn {
+    margin-top: 40px;
+    padding: 10px 25px;
+    background: transparent;
+    border: 1px solid #ccc;
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+#reset-btn:hover {
+    background: #2c2c2c;
+    color: #fff;
+}

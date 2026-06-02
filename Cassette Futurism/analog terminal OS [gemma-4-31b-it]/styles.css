@@ -1,0 +1,527 @@
+:root {
+    /* Color Palette: Amber-Core */
+    --color-bg: #0a0a0a;
+    --color-chassis: #1a1a1a;
+    --color-chassis-light: #2a2a2a;
+    --color-chassis-dark: #0f0f0f;
+    --color-amber: #ffb000;
+    --color-amber-glow: rgba(255, 176, 0, 0.4);
+    --color-amber-dim: #8a6000;
+    --color-glass: rgba(255, 255, 255, 0.05);
+    
+    /* Typography */
+    --font-display: 'Space Mono', monospace;
+    --font-mono: 'JetBrains Mono', monospace;
+    
+    /* CRT Effects */
+    --crt-curvature: 2%;
+    --scanline-opacity: 0.15;
+}
+
+* {
+    box-sizing: border-box;
+    cursor: crosshair;
+}
+
+body {
+    background-color: var(--color-bg);
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    font-family: var(--font-mono);
+    color: var(--color-amber);
+    text-transform: uppercase;
+}
+
+/* --- CRT OVERLAYS --- */
+.crt-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle, transparent 60%, rgba(0,0,0,0.4) 100%);
+    pointer-events: none;
+    z-index: 100;
+}
+
+.scanlines {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        rgba(18, 16, 16, 0) 50%, 
+        rgba(0, 0, 0, var(--scanline-opacity)) 50%
+    );
+    background-size: 100% 4px;
+    z-index: 101;
+    pointer-events: none;
+}
+
+.vignette {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    box-shadow: inset 0 0 100px rgba(0,0,0,0.9);
+    z-index: 102;
+    pointer-events: none;
+}
+
+/* --- HARDWARE CHASSIS --- */
+.chassis {
+    background: var(--color-chassis);
+    width: 95vw;
+    max-width: 1100px;
+    height: 85vh;
+    border-radius: 20px;
+    border: 8px solid var(--color-chassis-dark);
+    box-shadow: 
+        0 20px 50px rgba(0,0,0,0.8),
+        inset 0 2px 2px rgba(255,255,255,0.1);
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    gap: 20px;
+    position: relative;
+}
+
+/* Top Panel */
+.top-panel {
+    height: 80px;
+    background: var(--color-chassis-dark);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 30px;
+    border-bottom: 4px solid #000;
+}
+
+.panel-label {
+    font-family: var(--font-display);
+    font-weight: bold;
+    letter-spacing: 2px;
+    font-size: 0.9rem;
+    color: var(--color-amber-dim);
+}
+
+.switch-group {
+    display: flex;
+    gap: 25px;
+}
+
+.switch-unit {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}
+
+.switch-label {
+    font-size: 0.6rem;
+    color: var(--color-amber-dim);
+}
+
+/* Heavy Duty Toggle Switch */
+.toggle-switch {
+    appearance: none;
+    width: 30px;
+    height: 50px;
+    background: #333;
+    border-radius: 5px;
+    position: relative;
+    cursor: pointer;
+    border: 2px solid #000;
+    transition: all 0.2s;
+}
+
+.toggle-switch:checked {
+    background: #444;
+}
+
+.toggle-switch::before {
+    content: "";
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background: linear-gradient(145deg, #666, #222);
+    left: 5px;
+    top: 25px;
+    border-radius: 3px;
+    transition: top 0.1s ease-in;
+    box-shadow: 0 4px 0 #000;
+}
+
+.toggle-switch:checked::before {
+    top: 5px;
+}
+
+/* Status Lights */
+.status-lights {
+    display: flex;
+    gap: 15px;
+}
+
+.light {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #222;
+    position: relative;
+    box-shadow: inset 0 1px 3px #000;
+}
+
+.light span {
+    position: absolute;
+    top: 15px;
+    left: -5px;
+    font-size: 0.5rem;
+    color: var(--color-amber-dim);
+}
+
+.light.active {
+    background: var(--color-amber);
+    box-shadow: 0 0 10px var(--color-amber);
+}
+
+/* --- MONITOR BEZEL --- */
+.monitor-bezel {
+    flex: 1;
+    background: #111;
+    border-radius: 40px;
+    padding: 30px;
+    border: 15px solid #222;
+    box-shadow: inset 0 0 20px #000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+
+.screen-glass {
+    width: 100%;
+    height: 100%;
+    background: #050505;
+    border-radius: 30px;
+    position: relative;
+    overflow: hidden;
+    border: 4px solid #1a1a1a;
+    box-shadow: 0 0 0 2px #000;
+    /* Barrel Distortion simulation */
+    transform: scale(1.02);
+}
+
+.crt-content {
+    width: 100%;
+    height: 100%;
+    padding: 40px;
+    position: relative;
+    text-shadow: 0 0 5px var(--color-amber-glow);
+    transition: all 0.3s ease;
+}
+
+/* OS Layers */
+.screen-layer {
+    display: none;
+    height: 100%;
+    animation: flicker 0.15s infinite alternate;
+}
+
+.screen-layer.active {
+    display: block;
+}
+
+@keyframes flicker {
+    0% { opacity: 0.98; }
+    100% { opacity: 1; }
+}
+
+/* Boot Screen */
+.boot-text {
+    font-family: var(--font-mono);
+    font-size: 1.1rem;
+    line-height: 1.6;
+}
+
+.blink {
+    animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+    50% { opacity: 0; }
+}
+
+/* --- OS INTERFACE --- */
+.os-nav {
+    display: flex;
+    gap: 20px;
+    border-bottom: 2px solid var(--color-amber-dim);
+    padding-bottom: 10px;
+    margin-bottom: 30px;
+}
+
+.nav-item {
+    font-family: var(--font-display);
+    font-size: 0.8rem;
+    padding: 5px 10px;
+    cursor: pointer;
+    color: var(--color-amber-dim);
+    transition: all 0.2s;
+}
+
+.nav-item.active, .nav-item:hover {
+    color: var(--color-amber);
+    background: var(--color-amber-glow);
+}
+
+.app {
+    display: none;
+    height: calc(100% - 60px);
+}
+
+.app.active {
+    display: block;
+}
+
+/* File Manager */
+.analog-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    font-family: var(--font-display);
+}
+
+.knob-container {
+    width: 40px;
+    height: 40px;
+    background: #222;
+    border-radius: 50%;
+    border: 3px solid var(--color-amber-dim);
+    position: relative;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.rotary-knob::after {
+    content: "";
+    position: absolute;
+    top: 5px;
+    left: 50%;
+    width: 3px;
+    height: 10px;
+    background: var(--color-amber);
+    transform: translateX(-50%);
+}
+
+.file-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.file-entry {
+    padding: 10px;
+    border: 1px solid var(--color-amber-dim);
+    display: flex;
+    justify-content: space-between;
+    cursor: pointer;
+    transition: all 0.1s;
+}
+
+.file-entry:hover {
+    background: var(--color-amber-glow);
+    color: #fff;
+}
+
+.file-size {
+    font-size: 0.7rem;
+    opacity: 0.6;
+}
+
+.action-bar {
+    margin-top: 30px;
+    display: flex;
+    gap: 15px;
+}
+
+.analog-btn {
+    background: #222;
+    color: var(--color-amber);
+    border: 2px solid var(--color-amber-dim);
+    padding: 10px 20px;
+    font-family: var(--font-display);
+    cursor: pointer;
+    box-shadow: 0 4px 0 #000;
+    transition: all 0.1s;
+}
+
+.analog-btn:active {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 #000;
+}
+
+/* Ticker Tape Logs */
+.ticker-tape-container {
+    height: 100%;
+    overflow-y: auto;
+    border: 1px solid var(--color-amber-dim);
+    padding: 15px;
+    background: rgba(0,0,0,0.3);
+}
+
+.ticker-tape p {
+    margin: 0 0 10px 0;
+    font-size: 0.8rem;
+    border-left: 3px solid var(--color-amber);
+    padding-left: 10px;
+    animation: slideIn 0.2s ease-out;
+}
+
+@keyframes slideIn {
+    from { transform: translateX(-20px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+/* Signal Visualizer */
+.signal-visualizer {
+    height: 150px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+}
+
+.wave {
+    width: 4px;
+    background: var(--color-amber);
+    animation: waveAnim 1s infinite ease-in-out;
+}
+
+.wave:nth-child(1) { height: 20px; animation-delay: 0.1s; }
+.wave:nth-child(2) { height: 60px; animation-delay: 0.2s; }
+.wave:nth-child(3) { height: 40px; animation-delay: 0.3s; }
+
+@keyframes waveAnim {
+    0%, 100% { transform: scaleY(1); }
+    50% { transform: scaleY(1.5); }
+}
+
+/* --- BOTTOM PANEL --- */
+.bottom-panel {
+    height: 120px;
+    background: var(--color-chassis-dark);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 30px;
+    border-top: 4px solid #000;
+}
+
+.tape-deck {
+    display: flex;
+    align-items: center;
+    gap: 40px;
+    position: relative;
+}
+
+.reel {
+    width: 70px;
+    height: 70px;
+    border: 4px solid #444;
+    border-radius: 50%;
+    position: relative;
+    background: radial-gradient(circle, #333, #111);
+}
+
+.reel-inner {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 100%;
+    height: 100%;
+    border: 2px dashed var(--color-amber-dim);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: transform 2s linear;
+}
+
+.tape-path {
+    width: 100px;
+    height: 10px;
+    background: #111;
+    position: relative;
+    border-top: 2px solid #333;
+    border-bottom: 2px solid #333;
+}
+
+.tape-head {
+    position: absolute;
+    left: 45%;
+    top: -5px;
+    width: 10px;
+    height: 20px;
+    background: #888;
+    border: 1px solid #000;
+}
+
+.deck-label {
+    position: absolute;
+    top: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.6rem;
+    color: var(--color-amber-dim);
+}
+
+.gauge-group {
+    display: flex;
+    gap: 20px;
+}
+
+.gauge {
+    width: 60px;
+    height: 60px;
+    border: 3px solid #333;
+    border-radius: 50%;
+    position: relative;
+    background: #000;
+}
+
+.gauge-needle {
+    position: absolute;
+    width: 2px;
+    height: 25px;
+    background: red;
+    left: 50%;
+    bottom: 50%;
+    transform-origin: bottom;
+    transform: rotate(-45deg);
+    transition: transform 0.5s ease-out;
+}
+
+.gauge-scale {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 2px solid var(--color-amber-dim);
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%, 0 0, 0 0, 100% 0, 100% 0); /* Simplified for demo */
+}
+
+.gauge-label {
+    position: absolute;
+    bottom: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.5rem;
+    color: var(--color-amber-dim);
+}

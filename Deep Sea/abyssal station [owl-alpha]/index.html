@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ABYSSAL STATION // OPS DASHBOARD</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;500;600;700;800;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Bioluminescent particle canvas behind everything -->
+    <canvas id="particle-canvas"></canvas>
+
+    <!-- Underwater current flow visualization -->
+    <canvas id="current-canvas"></canvas>
+
+    <!-- Caustic light overlay -->
+    <div class="caustic-overlay"></div>
+
+    <!-- Viewport vignette frame -->
+    <div class="viewport-frame">
+        <div class="viewport-glass"></div>
+        <div class="viewport-scratch scratch-1"></div>
+        <div class="viewport-scratch scratch-2"></div>
+        <div class="viewport-scratch scratch-3"></div>
+        <div class="viewport-reflection"></div>
+    </div>
+
+    <!-- Pressure klaxon bar (hidden by default) -->
+    <div id="klaxon-bar" class="klaxon-bar">
+        <div class="klaxon-pulse"></div>
+        <div class="klaxon-content">
+            <span class="klaxon-icon">⚠</span>
+            <span class="klaxon-text">CRITICAL PRESSURE WARNING — HULL STRESS EXCEEDING SAFE PARAMETERS</span>
+            <span class="klaxon-icon">⚠</span>
+        </div>
+        <div class="klaxon-pulse"></div>
+    </div>
+
+    <!-- Main dashboard container -->
+    <div class="dashboard">
+
+        <!-- Header / Station Status Bar -->
+        <header class="station-header">
+            <div class="header-left">
+                <div class="station-logo">
+                    <div class="logo-ring"></div>
+                    <span class="logo-text">ABYSSAL</span>
+                </div>
+                <div class="station-id">
+                    <span class="label">STATION</span>
+                    <span class="value">DSV-07 NEREID</span>
+                </div>
+            </div>
+            <div class="header-center">
+                <div class="mission-timer">
+                    <span class="label">MISSION ELAPSED</span>
+                    <span id="mission-time" class="value timer-value">00:00:00</span>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="system-status">
+                    <span class="label">SYSTEMS</span>
+                    <div class="status-indicators">
+                        <div class="status-dot" id="sys-power" data-label="PWR"></div>
+                        <div class="status-dot" id="sys-life" data-label="LSS"></div>
+                        <div class="status-dot" id="sys-comms" data-label="COM"></div>
+                        <div class="status-dot" id="sys-nav" data-label="NAV"></div>
+                    </div>
+                </div>
+                <div class="clock-display">
+                    <span class="label">UTC</span>
+                    <span id="utc-clock" class="value">00:00:00</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main content grid -->
+        <main class="main-grid">
+
+            <!-- Left Column: Depth & Pressure -->
+            <section class="column-left">
+
+                <!-- Depth Gauge Panel -->
+                <div class="panel depth-panel" id="depth-panel">
+                    <div class="panel-header">
+                        <div class="panel-title">
+                            <span class="panel-icon">◎</span>
+                            <span>DEPTH TELEMETRY</span>
+                        </div>
+                        <div class="panel-status active">LIVE</div>
+                    </div>
+                    <div class="panel-body">
+                        <div class="depth-display">
+                            <div class="depth-gauge-container">
+                                <svg class="depth-gauge" viewBox="0 0 200 200">
+                                    <defs>
+                                        <linearGradient id="gaugeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                            <stop offset="0%" stop-color="#00e5ff"/>
+                                            <stop offset="50%" stop-color="#0091ea"/>
+                                            <stop offset="100%" stop-color="#004ecb"/>
+                                        </linearGradient>
+                                        <filter id="glow">
+                                            <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                                            <feMerge>
+                                                <feMergeNode in="coloredBlur"/>
+                                                <feMergeNode in="SourceGraphic"/>
+                                            </feMerge>
+                                        </filter>
+                                    </defs>
+                                    <circle cx="100" cy="100" r="90" class="gauge-track"/>
+                                    <circle cx="100" cy="100" r="90" class="gauge-fill" id="depth-gauge-fill"/>
+                                    <circle cx="100" cy="100" r="75" class="gauge-inner"/>
+                                    <g class="gauge-marks" id="gauge-marks"></g>
+                                    <line id="gauge-needle" x1="100" y1="100" x2="100" y2="20" class="gauge-needle" filter="url(#glow)"/>
+                                    <circle cx="100" cy="100" r="8" class="gauge-center"/>
+                                    <circle cx="100" cy="100" r="4" class="gauge-center-dot"/>
+                                </svg>
+                                <div class="depth-readout">
+                                    <span class="depth-value" id="depth-value">7,248</span>
+                                    <span class="depth-unit">meters</span>
+                                </div>
+                            </div>
+                            <div class="depth-scale">
+                                <div class="scale-mark"><span>0</span><span>SURFACE</span></div>
+                                <div class="scale-mark"><span>2K</span><span>TWILIGHT</span></div>
+                                <div class="scale-mark"><span>4K</span><span>MIDNIGHT</span></div>
+                                <div class="scale-mark"><span>6K</span><span>ABYSSAL</span></div>
+                                <div class="scale-mark"><span>8K+</span><span>HADAL</span></div>
+                            </div>
+                        </div>
+                        <div class="depth-stats">
+                            <div class="stat-row">
+                                <span class="stat-label">RATE</span>
+                                <span class="stat-value" id="descent-rate">-0.3 m/s</span>
+                            </div>
+                            <div class="stat-row">
+                                <span class="stat-label">MAX DIVE</span>
+                                <span class="stat-value">8,500 m</span>
+                            </div>
+                            <div class="stat-row">
+                                <span class="stat-label">CRUSH DEPTH</span>
+                                <span class="stat-value danger">10,200 m</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pressure Panel -->
+                <div class="panel pressure-panel">
+                    <div class="panel-header">
+                        <div class="panel-title">
+                            <span class="panel-icon">⬡</span>
+                            <span>HULL PRESSURE</span>
+                        </div>
+                        <div class="panel-status active">MONITORING</div>
+                    </div>
+                    <div class="panel-body">
+                        <div class="pressure-bars">
+                            <div class="pressure-segment">
+                                <span class="seg-label">EXTERNAL</span>
+                                <div class="seg-bar">
+                                    <div class="seg-fill" id="ext-pressure-fill" style="width: 72%;"></div>
+                                    <span class="seg-value" id="ext-pressure-val">724 ATM</span>
+                                </div>
+                            </div>
+                            <div class="pressure-segment">
+                                <span class="seg-label">INTERNAL</span>
+                                <div class="seg-bar">
+                                    <div class="seg-fill internal" style="width: 100%;"></div>
+                                    <span class="seg-value">1.0 ATM</span>
+                                </div>
+                            </div>
+                            <div class="pressure-segment">
+                                <span class="seg-label">DIFFERENTIAL</span>
+                                <div class="seg-bar">
+                                    <div class="seg-fill differential" id="diff-pressure-fill" style="width: 72%;"></div>
+                                    <span class="seg-value" id="diff-pressure-val">723 ATM</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="pressure-readout-large">
+                            <div class="big-readout">
+                                <span class="big-value" id="pressure-mpa">73.42</span>
+                                <span class="big-unit">MPa</span>
+                            </div>
+                            <div class="pressure-comparison">
+                                <span>≈ </span>
+                                <span id="pressure-equiv">7,240 tonnes/m²</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </section>
+
+            <!-- Center Column: Sonar & Viewport -->
+            <section class="column-center">
+
+                <!-- Sonar Display -->
+                <div class="panel sonar-panel">
+                    <div class="panel-header">
+                        <div class="panel-title">
+                            <span class="panel-icon">◉</span>
+                            <span>ACTIVE SONAR</span>
+                        </div>
+                        <div class="sonar-controls">
+                            <button class="sonar-btn active" data-range="500">500m</button>
+                            <button class="sonar-btn" data-range="1000">1km</button>
+                            <button class="sonar-btn" data-range="2000">2km</button>
+                        </div>
+                    </div>
+                    <div class="panel-body sonar-body">
+                        <div class="sonar-display">
+                            <canvas id="sonar-canvas" width="500" height="500"></canvas>
+                            <div class="sonar-overlay">
+                                <div class="sonar-crosshair-h"></div>
+                                <div class="sonar-crosshair-v"></div>
+                                <div class="sonar-range-ring" style="width:25%;"></div>
+                                <div class="sonar-range-ring" style="width:50%;"></div>
+                                <div class="sonar-range-ring" style="width:75%;"></div>
+                                <div class="sonar-heading">
+                                    <span class="heading-mark">N</span>
+                                    <span class="heading-mark">E</span>
+                                    <span class="heading-mark">S</span>
+                                    <span class="heading-mark">W</span>
+                                </div>
+                            </div>
+                            <div class="sonar-sweep"></div>
+                        </div>
+                        <div class="sonar-data">
+                            <div class="sonar-stat">
+                                <span class="label">HEADING</span>
+                                <span class="value" id="sonar-heading">042.7°</span>
+                            </div>
+                            <div class="sonar-stat">
+                                <span class="label">PING RATE</span>
+                                <span class="value">2.4s</span>
+                            </div>
+                            <div class="sonar-stat">
+                                <span class="label">CONTACTS</span>
+                                <span class="value" id="sonar-contacts">3</span>
+                            </div>
+                            <div class="sonar-stat">
+                                <span class="label">SIGNAL</span>
+                                <span class="value">ACTIVE</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Viewport Feed / External Camera -->
+                <div class="panel viewport-panel">
+                    <div class="panel-header">
+                        <div class="panel-title">
+                            <span class="panel-icon">◇</span>
+                            <span>EXTERNAL FEED — CAM-01 FORWARD</span>
+                        </div>
+                        <div class="panel-status active">REC ●</div>
+                    </div>
+                    <div class="panel-body viewport-body">
+                        <div class="camera-feed">
+                            <canvas id="camera-canvas" width="600" height="200"></canvas>
+                            <div class="camera-overlay">
+                                <div class="cam-hud">
+                                    <span>CAM-01</span>
+                                    <span>|</span>
+                                    <span>FORWARD</span>
+                                    <span>|</span>
+                                    <span id="cam-temp">-1.7°C</span>
+                                </div>
+                                <div class="cam-hud bottom">
+                                    <span>DEPTH: <span id="cam-depth">7,248m</span></span>
+                                    <span>|</span>
+                                    <span>VIS: <span id="cam-vis">4.2m</span></span>
+                                    <span>|</span>
+                                    <span>ALT: <span id="cam-alt">12.4m</span></span>
+                                </div>
+                                <div class="cam-reticle">
+                                    <div class="reticle-h"></div>
+                                    <div class="reticle-v"></div>
+                                    <div class="reticle-circle"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </section>
+
+            <!-- Right Column: Hull Integrity & Fauna -->
+            <section class="column-right">
+
+                <!-- Hull Integrity -->
+                <div class="panel hull-panel">
+                    <div class="panel-header">
+                        <div class="panel-title">
+                            <span class="panel-icon">⬢</span>
+                            <span>HULL INTEGRITY</span>
+                        </div>
+                        <div class="panel-status" id="hull-status">NOMINAL</div>
+                    </div>
+                    <div class="panel-body">
+                        <div class="hull-visualization">
+                            <svg class="hull-diagram" viewBox="0 0 300 400">
+                                <defs>
+                                    <linearGradient id="hullGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                                        <stop offset="0%" stop-color="#1a3a4a" stop-opacity="0.8"/>
+                                        <stop offset="50%" stop-color="#0d2233" stop-opacity="0.9"/>
+                                        <stop offset="100%" stop-color="#1a3a4a" stop-opacity="0.8"/>
+                                    </linearGradient>
+                                    <filter id="hullGlow">
+                                        <feGaussianBlur stdDeviation="2" result="blur"/>
+                                        <feMerge>
+                                            <feMergeNode in="blur"/>
+                                            <feMergeNode in="SourceGraphic"/>
+                                        </feMerge>
+                                    </filter>
+                                </defs>
+                                <!-- Hull outline -->
+                                <path d="M60,40 Q60,10 150,10 Q240,10 240,40 L250,80 Q260,150 260,200 Q260,280 240,350 Q230,390 150,395 Q70,390 60,350 Q40,280 40,200 Q40,150 50,80 Z" 
+                                      fill="url(#hullGrad)" stroke="#2a6a8a" stroke-width="1.5" class="hull-outline"/>
+                                <!-- Hull sections -->
+                                <line x1="45" y1="100" x2="255" y2="100" stroke="#1a4a6a" stroke-width="0.5" stroke-dasharray="4,4"/>
+                                <line x1="42" y1="180" x2="258" y2="180" stroke="#1a4a6a" stroke-width="0.5" stroke-dasharray="4,4"/>
+                                <line x1="50" y1="260" x2="250" y2="260" stroke="#1a4a6a" stroke-width="0.5" stroke-dasharray="4,4"/>
+                                <line x1="58" y1="330" x2="242" y2="330" stroke="#1a4a6a" stroke-width="0.5" stroke-dasharray="4,4"/>
+                                <!-- Section labels -->
+                                <text x="150" y="60" text-anchor="middle" class="hull-section-label">BOW</text>
+                                <text x="150" y="145" text-anchor="middle" class="hull-section-label">OPS</text>
+                                <text x="150" y="225" text-anchor="middle" class="hull-section-label">LABS</text>
+                                <text x="150" y="300" text-anchor="middle" class="hull-section-label">ENGINE</text>
+                                <text x="150" y="370" text-anchor="middle" class="hull-section-label">STERN</text>
+                                <!-- Stress points -->
+                                <circle id="stress-1" cx="120" cy="100" r="4" class="stress-point" filter="url(#hullGlow)"/>
+                                <circle id="stress-2" cx="180" cy="180" r="4" class="stress-point" filter="url(#hullGlow)"/>
+                                <circle id="stress-3" cx="150" cy="260" r="4" class="stress-point" filter="url(#hullGlow)"/>
+                                <circle id="stress-4" cx="130" cy="330" r="4" class="stress-point" filter="url(#hullGlow)"/>
+                                <circle id="stress-5" cx="200" cy="350" r="4" class="stress-point warning" filter="url(#hullGlow)"/>
+                            </svg>
+                            <div class="hull-integrity-overall">
+                                <span class="integrity-value" id="hull-integrity">97.4%</span>
+                                <span class="integrity-label">INTEGRITY</span>
+                            </div>
+                        </div>
+                        <div class="hull-stress-readings">
+                            <div class="stress-row">
+                                <span class="stress-name">BOW SEGMENT</span>
+                                <div class="stress-bar"><div class="stress-fill" style="width:98%"></div></div>
+                                <span class="stress-pct">98%</span>
+                            </div>
+                            <div class="stress-row">
+                                <span class="stress-name">OPS MODULE</span>
+                                <div class="stress-bar"><div class="stress-fill" style="width:99%"></div></div>
+                                <span class="stress-pct">99%</span>
+                            </div>
+                            <div class="stress-row">
+                                <span class="stress-name">LAB RING</span>
+                                <div class="stress-bar"><div class="stress-fill" style="width:97%"></div></div>
+                                <span class="stress-pct">97%</span>
+                            </div>
+                            <div class="stress-row">
+                                <span class="stress-name">ENGINE BAY</span>
+                                <div class="stress-bar"><div class="stress-fill" style="width:96%"></div></div>
+                                <span class="stress-pct">96%</span>
+                            </div>
+                            <div class="stress-row">
+                                <span class="stress-name">STERN JOINT</span>
+                                <div class="stress-bar"><div class="stress-fill warning" style="width:87%"></div></div>
+                                <span class="stress-pct warning-text">87%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bioluminescent Fauna Tracking -->
+                <div class="panel fauna-panel">
+                    <div class="panel-header">
+                        <div class="panel-title">
+                            <span class="panel-icon">✦</span>
+                            <span>BIO-TRACKER</span>
+                        </div>
+                        <div class="panel-status active">SCANNING</div>
+                    </div>
+                    <div class="panel-body">
+                        <div class="fauna-scanner">
+                            <canvas id="fauna-canvas" width="340" height="180"></canvas>
+                            <div class="fauna-legend">
+                                <div class="legend-item"><span class="dot fauna-1"></span> Cephalopod</div>
+                                <div class="legend-item"><span class="dot fauna-2"></span> Cnidarian</div>
+                                <div class="legend-item"><span class="dot fauna-3"></span> Unknown</div>
+                            </div>
+                        </div>
+                        <div class="fauna-log">
+                            <div class="log-header">
+                                <span>TIME</span>
+                                <span>CLASS</span>
+                                <span>DIST</span>
+                                <span>BEARING</span>
+                            </div>
+                            <div class="log-entries" id="fauna-log">
+                                <div class="log-entry">
+                                    <span>00:14:23</span>
+                                    <span class="fauna-type-1">CEPH</span>
+                                    <span>42m</span>
+                                    <span>042°</span>
+                                </div>
+                                <div class="log-entry">
+                                    <span>00:14:18</span>
+                                    <span class="fauna-type-2">CNID</span>
+                                    <span>128m</span>
+                                    <span>187°</span>
+                                </div>
+                                <div class="log-entry">
+                                    <span>00:14:12</span>
+                                    <span class="fauna-type-3">UNKN</span>
+                                    <span>256m</span>
+                                    <span>315°</span>
+                                </div>
+                                <div class="log-entry">
+                                    <span>00:13:58</span>
+                                    <span class="fauna-type-1">CEPH</span>
+                                    <span>67m</span>
+                                    <span>098°</span>
+                                </div>
+                                <div class="log-entry">
+                                    <span>00:13:45</span>
+                                    <span class="fauna-type-2">CNID</span>
+                                    <span>203m</span>
+                                    <span>234°</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </section>
+        </main>
+
+        <!-- Bottom Status Bar -->
+        <footer class="station-footer">
+            <div class="footer-section">
+                <span class="footer-label">O₂ LEVEL</span>
+                <span class="footer-value">20.8%</span>
+                <div class="footer-bar"><div class="footer-fill" style="width:83%"></div></div>
+            </div>
+            <div class="footer-section">
+                <span class="footer-label">CO₂ SCRUB</span>
+                <span class="footer-value">NOMINAL</span>
+                <div class="footer-bar"><div class="footer-fill" style="width:45%"></div></div>
+            </div>
+            <div class="footer-section">
+                <span class="footer-label">BATTERY</span>
+                <span class="footer-value" id="battery-level">87.3%</span>
+                <div class="footer-bar"><div class="footer-fill" id="battery-bar" style="width:87%"></div></div>
+            </div>
+            <div class="footer-section">
+                <span class="footer-label">TEMP EXT</span>
+                <span class="footer-value">-1.7°C</span>
+            </div>
+            <div class="footer-section">
+                <span class="footer-label">TEMP INT</span>
+                <span class="footer-value">18.2°C</span>
+            </div>
+            <div class="footer-section">
+                <span class="footer-label">BUOYANCY</span>
+                <span class="footer-value">NEUTRAL</span>
+            </div>
+        </footer>
+
+    </div>
+
+    <script src="scripts.js"></script>
+</body>
+</html>

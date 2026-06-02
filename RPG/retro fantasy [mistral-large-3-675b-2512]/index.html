@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Grimscribe’s Tome | Retro Fantasy RPG</title>
+  <link rel="preload" href="https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&family=VT323&family=PixelOperator:wght@400;700&display=swap" as="style">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&family=VT323&family=PixelOperator:wght@400;700&display=swap">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    /* Inline CSS for core aesthetic (moved to styles.css later) */
+    :root {
+      --parchment-light: #f5e7c1;
+      --parchment-dark: #e8d8b0;
+      --ink-dark: #3a2412;
+      --crimson: #6a0000;
+      --crt-green: #4aff00;
+      --crt-amber: #ffbf00;
+      --crt-pink: #ff00aa;
+      --gold: #ffd700;
+      --shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.5);
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'VT323', monospace;
+      background-color: var(--ink-dark);
+      background-image:
+        /* Parchment texture */
+        url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><rect width="200" height="200" fill="%23f5e7c1"/><path d="M20 20 Q40 10 60 20 T100 20 T140 20 T180 20 M20 40 Q40 30 60 40 T100 40 T140 40 T180 40 M20 60 Q40 50 60 60 T100 60 T140 60 T180 60 M20 80 Q40 70 60 80 T100 80 T140 80 T180 80 M20 100 Q40 90 60 100 T100 100 T140 100 T180 100 M20 120 Q40 110 60 120 T100 120 T140 120 T180 120 M20 140 Q40 130 60 140 T100 140 T140 140 T180 140 M20 160 Q40 150 60 160 T100 160 T140 160 T180 160 M20 180 Q40 170 60 180 T100 180 T140 180 T180 180" stroke="%23e8d8b0" stroke-width="0.5" fill="none" opacity="0.3"/></svg>'),
+        /* CRT scanlines */
+        repeating-linear-gradient(to bottom, transparent, transparent 3px, rgba(0, 0, 0, 0.1) 3px, rgba(0, 0, 0, 0.1) 4px);
+      color: var(--ink-dark);
+      overflow-x: hidden;
+      min-height: 100vh;
+    }
+
+    /* Header */
+    header {
+      text-align: center;
+      padding: 1.5rem;
+      background-color: var(--ink-dark);
+      border-bottom: 0.5rem solid var(--gold);
+      box-shadow: var(--shadow);
+    }
+
+    header h1 {
+      font-family: 'UnifrakturMaguntia', cursive;
+      font-size: 3.5rem;
+      color: var(--gold);
+      margin: 0;
+      text-shadow:
+        0.1rem 0.1rem 0 var(--ink-dark),
+        -0.1rem -0.1rem 0 var(--ink-dark),
+        0.1rem -0.1rem 0 var(--ink-dark),
+        -0.1rem 0.1rem 0 var(--ink-dark),
+        0 0 1rem var(--gold);
+    }
+
+    /* Main layout */
+    .app-container {
+      display: grid;
+      grid-template-columns: 25rem 1fr 25rem;
+      gap: 1.5rem;
+      padding: 1.5rem;
+      min-height: calc(100vh - 10rem);
+    }
+
+    /* Sidebar widgets */
+    .widget {
+      background-color: var(--parchment-light);
+      border: 0.3rem solid var(--gold);
+      border-radius: 0.5rem;
+      padding: 1rem;
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .widget::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background:
+        /* Ornamental border */
+        url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20"><rect width="20" height="20" fill="none" stroke="%23ffd700" stroke-width="1"/><rect x="2" y="2" width="16" height="16" fill="none" stroke="%23ffbf00" stroke-width="1"/><circle cx="10" cy="10" r="1" fill="%23ff00aa"/></svg>');
+      opacity: 0.3;
+      pointer-events: none;
+    }
+
+    .widget-header {
+      font-family: 'PixelOperator', monospace;
+      font-size: 1.2rem;
+      color: var(--crimson);
+      padding-bottom: 0.5rem;
+      border-bottom: 0.1rem solid var(--ink-dark);
+      margin-bottom: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .widget-header .icon {
+      font-size: 1rem;
+      color: var(--crt-green);
+    }
+
+    /* Character sheet */
+    .character-sheet {
+      background-color: var(--parchment-dark);
+    }
+
+    .character-portrait {
+      width: 10rem;
+      height: 10rem;
+      background-color: var(--ink-dark);
+      margin: 0 auto 1rem;
+      border: 0.2rem solid var(--gold);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--crt-green);
+      font-family: 'PixelOperator', monospace;
+      text-align: center;
+    }
+
+    .stat {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 0.5rem;
+      padding: 0.3rem;
+      background-color: var(--parchment-light);
+      border-left: 0.3rem solid var(--crt-green);
+    }
+
+    .stat-name {
+      font-weight: bold;
+    }
+
+    /* Quest board */
+    .quest-board {
+      background-color: var(--parchment-dark);
+      min-height: 30rem;
+    }
+
+    .quest-note {
+      background-color: var(--parchment-light);
+      border: 0.2rem dashed var(--crt-pink);
+      padding: 0.8rem;
+      margin-bottom: 1rem;
+      cursor: grab;
+      position: relative;
+      box-shadow: 0 0.2rem 0.3rem rgba(0, 0, 0, 0.2);
+    }
+
+    .quest-note:hover {
+      transform: rotate(-1deg);
+      transition: transform 0.2s ease;
+    }
+
+    .quest-note h3 {
+      margin-top: 0;
+      color: var(--crimson);
+      font-family: 'PixelOperator', monospace;
+      font-size: 1.1rem;
+    }
+
+    /* Spellbook */
+    .spellbook {
+      background-color: var(--ink-dark);
+      color: var(--crt-green);
+    }
+
+    .spellbook-page {
+      background-color: var(--parchment-dark);
+      padding: 1rem;
+      margin-bottom: 1rem;
+      border: 0.2rem solid var(--gold);
+      min-height: 20rem;
+    }
+
+    .spellbook-page h3 {
+      color: var(--gold);
+      font-family: 'UnifrakturMaguntia', cursive;
+      font-size: 1.5rem;
+      margin-top: 0;
+      text-align: center;
+      border-bottom: 0.1rem solid var(--crt-green);
+      padding-bottom: 0.5rem;
+    }
+
+    /* Footer */
+    footer {
+      background-color: var(--ink-dark);
+      border-top: 0.5rem solid var(--gold);
+      padding: 0.8rem;
+      font-family: 'PixelOperator', monospace;
+      font-size: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: var(--crt-green);
+    }
+
+    .footer-stats {
+      display: flex;
+      gap: 1.5rem;
+    }
+
+    .footer-stat {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .footer-stat-icon {
+      color: var(--crt-amber);
+    }
+
+    /* CRT glow effect */
+    .glow {
+      animation: glow-pulse 2s infinite alternate;
+    }
+
+    @keyframes glow-pulse {
+      from { box-shadow: 0 0 0.5rem var(--crt-green); }
+      to { box-shadow: 0 0 1rem var(--crt-green); }
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .app-container {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Grimscribe’s Tome</h1>
+    <p style="font-family: 'VT323', monospace; color: var(--crt-green); margin-top: 0.5rem;">A Digital Grimoire of Retro Fantasy</p>
+  </header>
+
+  <div class="app-container">
+    <!-- Character Sheet -->
+    <div class="widget character-sheet" id="character-sheet">
+      <div class="widget-header">
+        <span>CHARACTER SHEET <span class="icon">🗡️</span></span>
+        <button class="widget-toggle" style="background: none; border: none; color: var(--crt-green); cursor: pointer;">↕</button>
+      </div>
+      <div class="character-portrait glow">
+        [ASCII ART]<br>
+        ⠀⠀⠀⠙⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⠁⠀⠀⠀<br>
+        ⠀⠀⠀⠀⠈⠻⣿⣿⣿⣿⣿⣿⣿⣿⣿⠿⠋⠀⠀⠀⠀⠀<br>
+        ⠀⠀⠀⠀⠀⠀⠈⠙⠿⣿⣿⣿⣿⡿⠋⠁⠀⠀⠀⠀⠀⠀<br>
+        ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠉⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+      </div>
+      <div class="character-info">
+        <div class="stat">
+          <span class="stat-name">NAME</span>
+          <span class="stat-value">ELDRED THE WISE</span>
+        </div>
+        <div class="stat">
+          <span class="stat-name">CLASS</span>
+          <span class="stat-value">ARCHMAGE</span>
+        </div>
+        <div class="stat">
+          <span class="stat-name">LEVEL</span>
+          <span class="stat-value">12</span>
+        </div>
+        <div class="stat">
+          <span class="stat-name">HP</span>
+          <span class="stat-value">❤️❤️❤️❤️❤️</span>
+        </div>
+        <div class="stat">
+          <span class="stat-name">MP</span>
+          <span class="stat-value">✨✨✨✨✨✨</span>
+        </div>
+        <div class="stat">
+          <span class="stat-name">GOLD</span>
+          <span class="stat-value">💰 2,450</span>
+        </div>
+      </div>
+      <div class="widget-header" style="margin-top: 1.5rem;">
+        <span>INVENTORY <span class="icon">🎒</span></span>
+      </div>
+      <div class="inventory-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem;">
+        <div class="inventory-item" style="background-color: var(--parchment-light); padding: 0.5rem; text-align: center; border: 0.1rem solid var(--ink-dark);">
+          <div style="font-family: 'PixelOperator', monospace; font-size: 1.2rem;">🔮</div>
+          <div style="font-size: 0.7rem;">WAND</div>
+        </div>
+        <div class="inventory-item" style="background-color: var(--parchment-light); padding: 0.5rem; text-align: center; border: 0.1rem solid var(--ink-dark);">
+          <div style="font-family: 'PixelOperator', monospace; font-size: 1.2rem;">📖</div>
+          <div style="font-size: 0.7rem;">TOME</div>
+        </div>
+        <div class="inventory-item" style="background-color: var(--parchment-light); padding: 0.5rem; text-align: center; border: 0.1rem solid var(--ink-dark);">
+          <div style="font-family: 'PixelOperator', monospace; font-size: 1.2rem;">🍎</div>
+          <div style="font-size: 0.7rem;">APPLE</div>
+        </div>
+        <div class="inventory-item" style="background-color: var(--parchment-light); padding: 0.5rem; text-align: center; border: 0.1rem solid var(--ink-dark);">
+          <div style="font-family: 'PixelOperator', monospace; font-size: 1.2rem;">💎</div>
+          <div style="font-size: 0.7rem;">GEM</div>
+        </div>
+        <div class="inventory-item" style="background-color: var(--parchment-dark); padding: 0.5rem; text-align: center; border: 0.1rem solid var(--gold); color: var(--crt-green);">
+          <div style="font-family: 'PixelOperator', monospace; font-size: 1.2rem;">?</div>
+          <div style="font-size: 0.7rem;">UNKNOWN</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quest Board -->
+    <div class="widget quest-board" id="quest-board">
+      <div class="widget-header">
+        <span>QUEST BOARD <span class="icon">📜</span></span>
+        <button class="widget-toggle" style="background: none; border: none; color: var(--crt-green); cursor: pointer;">↕</button>
+      </div>
+      <div class="quest-note" draggable="true">
+        <h3>🗡️ THE BLOOD MOON RITUAL</h3>
+        <p>The cult of Vorthas gathers under the blood moon. Infiltrate their temple and disrupt the ritual before the elder sign is completed.</p>
+        <div style="font-family: 'PixelOperator', monospace; font-size: 0.8rem; margin-top: 0.5rem; color: var(--crimson);">
+          REWARD: 💰 500 GOLD | XP: 1200
+        </div>
+      </div>
+      <div class="quest-note" draggable="true">
+        <h3>🐉 THE DRAGON'S HOARD</h3>
+        <p>Smaug the Terrible has been spotted near the Misty Peaks. The local guild offers a bounty for proof of his defeat (or at least his scales).</p>
+        <div style="font-family: 'PixelOperator', monospace; font-size: 0.8rem; margin-top: 0.5rem; color: var(--crimson);">
+          REWARD: 💰 1,000 GOLD | XP: 2500
+        </div>
+      </div>
+      <div class="quest-note" draggable="true">
+        <h3>🔮 SEEK THE ARCANE LENS</h3>
+        <p>The lost Arcane Lens of Thoth is rumored to be hidden in the Ruins of Zal'Kareth. Retrieve it for the Archmage's guild.</p>
+        <div style="font-family: 'PixelOperator', monospace; font-size: 0.8rem; margin-top: 0.5rem; color: var(--crimson);">
+          REWARD: 💰 800 GOLD | XP: 1800
+        </div>
+      </div>
+    </div>
+
+    <!-- Spellbook -->
+    <div class="widget spellbook" id="spellbook">
+      <div class="widget-header">
+        <span>SPELLBOOK <span class="icon">📖</span></span>
+        <button class="widget-toggle" style="background: none; border: none; color: var(--crt-green); cursor: pointer;">↕</button>
+      </div>
+      <div class="spellbook-page">
+        <h3>🔥 FIREBALL</h3>
+        <p><strong>School:</strong> Evocation [Fire]</p>
+        <p><strong>Level:</strong> 3</p>
+        <p><strong>Casting Time:</strong> 1 action</p>
+        <p><strong>Range:</strong> 150 feet</p>
+        <p><strong>Components:</strong> V, S, M (a tiny ball of bat guano and sulfur)</p>
+        <p><strong>Duration:</strong> Instantaneous</p>
+        <p>A bright streak flashes from your pointing finger to a point you choose within range and then blossoms with a low roar into an explosion of flame. Each creature in a 20-foot-radius sphere centered on that point must make a Dexterity saving throw. A target takes 8d6 fire damage on a failed save, or half as much damage on a successful one.</p>
+        <p><em>The fire spreads around corners. It ignites flammable objects in the area that aren’t being worn or carried.</em></p>
+      </div>
+      <div class="spellbook-page" style="display: none;">
+        <h3>❄️ ICE KNIFE</h3>
+        <p><strong>School:</strong> Conjuration</p>
+        <p><strong>Level:</strong> 1</p>
+        <p><strong>Casting Time:</strong> 1 action</p>
+        <p><strong>Range:</strong> 60 feet</p>
+        <p><strong>Components:</strong> S, M (a drop of water or piece of ice)</p>
+        <p><strong>Duration:</strong> Instantaneous</p>
+        <p>You create a shard of ice and fling it at one creature within range. Make a ranged spell attack against the target. On a hit, the target takes 1d10 piercing damage. Hit or miss, the shard then explodes. The target and each creature within 5 feet of it must succeed on a Dexterity saving throw or take 2d6 cold damage.</p>
+      </div>
+      <div class="spellbook-controls" style="display: flex; justify-content: space-between; margin-top: 1rem;">
+        <button id="prev-page" style="background-color: var(--ink-dark); color: var(--crt-green); border: 0.1rem solid var(--gold); padding: 0.5rem 1rem; cursor: pointer; font-family: 'PixelOperator', monospace;">PREVIOUS</button>
+        <button id="next-page" style="background-color: var(--ink-dark); color: var(--crt-green); border: 0.1rem solid var(--gold); padding: 0.5rem 1rem; cursor: pointer; font-family: 'PixelOperator', monospace;">NEXT</button>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="footer-stats">
+      <div class="footer-stat">
+        <span class="footer-stat-icon">❤️</span>
+        <span>HP: 45/45</span>
+      </div>
+      <div class="footer-stat">
+        <span class="footer-stat-icon">✨</span>
+        <span>MP: 72/72</span>
+      </div>
+      <div class="footer-stat">
+        <span class="footer-stat-icon">💰</span>
+        <span>GOLD: 2,450</span>
+      </div>
+    </div>
+    <div id="clock" style="font-family: 'PixelOperator', monospace;">TIME: 14:37:22</div>
+  </footer>
+
+  <script>
+    // Inline JS for basic interactivity (expanded in scripts.js)
+    document.addEventListener('DOMContentLoaded', () => {
+      // Spellbook page navigation
+      const spellbookPages = document.querySelectorAll('.spellbook-page');
+      const prevPageBtn = document.getElementById('prev-page');
+      const nextPageBtn = document.getElementById('next-page');
+      let currentPage = 0;
+
+      function showPage(index) {
+        spellbookPages.forEach((page, i) => {
+          page.style.display = i === index ? 'block' : 'none';
+        });
+      }
+
+      prevPageBtn.addEventListener('click', () => {
+        currentPage = (currentPage - 1 + spellbookPages.length) % spellbookPages.length;
+        showPage(currentPage);
+      });
+
+      nextPageBtn.addEventListener('click', () => {
+        currentPage = (currentPage + 1) % spellbookPages.length;
+        showPage(currentPage);
+      });
+
+      // Clock
+      function updateClock() {
+        const now = new Date();
+        const timeString = now.toLocaleTimeString('en-US', {
+          hour12: false,
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit'
+        });
+        document.getElementById('clock').textContent = `TIME: ${timeString}`;
+      }
+      setInterval(updateClock, 1000);
+      updateClock();
+
+      // Quest note drag-and-drop (placeholder)
+      const questNotes = document.querySelectorAll('.quest-note');
+      questNotes.forEach(note => {
+        note.addEventListener('dragstart', (e) => {
+          e.dataTransfer.setData('text/plain', note.id);
+          note.style.opacity = '0.5';
+        });
+
+        note.addEventListener('dragend', () => {
+          note.style.opacity = '1';
+        });
+      });
+
+      // Add hover effects
+      const widgets = document.querySelectorAll('.widget');
+      widgets.forEach(widget => {
+        widget.addEventListener('mouseenter', () => {
+          widget.style.transform = 'translateY(-0.2rem)';
+          widget.style.transition = 'transform 0.2s ease';
+        });
+
+        widget.addEventListener('mouseleave', () => {
+          widget.style.transform = 'translateY(0)';
+        });
+      });
+    });
+  </script>
+  <script src="scripts.js"></script>
+</body>
+</html>

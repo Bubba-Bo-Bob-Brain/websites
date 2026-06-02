@@ -1,0 +1,489 @@
+/* --- VARIABLES & RESET --- */
+:root {
+  --bg-color: #050505;
+  --term-green: #0f0;
+  --term-dim: #003300;
+  --bsod-blue: #0000AA;
+  --bsod-text: #FFFFFF;
+  --error-red: #FF0000;
+  --void-purple: #1a0b2e;
+  --crt-scanline: rgba(18, 16, 16, 0.1);
+  --font-pixel: 'VT323', monospace;
+  --font-tech: 'Share Tech Mono', monospace;
+  --font-gothic: 'UnifrakturMaguntia', cursive;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  cursor: none; /* Custom cursor logic in JS */
+}
+
+body {
+  background-color: var(--bg-color);
+  color: var(--term-green);
+  font-family: var(--font-pixel);
+  font-size: 1.2rem;
+  overflow: hidden; /* Prevent scrolling, it's an app */
+  height: 100vh;
+  width: 100vw;
+  position: relative;
+}
+
+/* --- CRT OVERLAY EFFECTS --- */
+.crt-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 9999;
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+  background-size: 100% 2px, 3px 100%;
+  animation: flicker 0.15s infinite;
+}
+
+.scanline {
+  width: 100%;
+  height: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  position: absolute;
+  z-index: 9998;
+  animation: scan 6s linear infinite;
+  opacity: 0.3;
+}
+
+@keyframes scan {
+  0% { top: -10%; }
+  100% { top: 110%; }
+}
+
+@keyframes flicker {
+  0% { opacity: 0.9; }
+  5% { opacity: 0.8; }
+  10% { opacity: 0.95; }
+  15% { opacity: 0.6; }
+  20% { opacity: 0.9; }
+  50% { opacity: 0.95; }
+  80% { opacity: 0.7; }
+  100% { opacity: 0.9; }
+}
+
+/* --- UTILITIES --- */
+.hidden {
+  display: none !important;
+}
+
+.blink {
+  animation: blinker 1s linear infinite;
+}
+
+@keyframes blinker {
+  50% { opacity: 0; }
+}
+
+.no-cursor {
+  cursor: none;
+}
+
+/* Custom Cursor */
+.cursor {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--term-green);
+  position: fixed;
+  pointer-events: none;
+  z-index: 10000;
+  transform: translate(-50%, -50%);
+  mix-blend-mode: difference;
+  transition: width 0.1s, height 0.1s;
+}
+
+.cursor.hovered {
+  width: 40px;
+  height: 40px;
+  background-color: rgba(0, 255, 0, 0.2);
+  border-color: transparent;
+}
+
+/* --- BOOT SCREEN --- */
+#boot-screen {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #000;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  padding: 2rem;
+  z-index: 100;
+}
+
+.terminal-text p {
+  margin-bottom: 0.5rem;
+  text-shadow: 0 0 5px var(--term-green);
+}
+
+/* --- MAIN INTERFACE --- */
+#main-interface {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+/* Header */
+.glitch-header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  padding: 1rem 2rem;
+  border-bottom: 2px solid var(--term-dim);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #000;
+  z-index: 10;
+}
+
+.glitch {
+  font-size: 2rem;
+  position: relative;
+  color: var(--term-green);
+  text-shadow: 2px 0 var(--error-red), -2px 0 blue;
+  animation: glitch-anim 2s infinite linear alternate-reverse;
+}
+
+nav a {
+  color: var(--term-dim);
+  text-decoration: none;
+  margin-right: 1rem;
+  font-family: var(--font-tech);
+  text-transform: uppercase;
+  font-size: 0.9rem;
+}
+
+nav a:hover {
+  color: var(--term-green);
+  text-decoration: line-through;
+}
+
+.status {
+  color: var(--error-red);
+  border: 1px solid var(--error-red);
+  padding: 0.2rem 0.5rem;
+  font-size: 0.8rem;
+  animation: blinker 1s infinite;
+}
+
+/* --- SECTOR 1: BSOD --- */
+.sector {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+}
+
+.bsod {
+  background-color: var(--bsod-blue);
+  color: var(--bsod-text);
+  font-family: 'Courier New', Courier, monospace;
+  text-align: left;
+  align-items: flex-start;
+  padding: 4rem;
+}
+
+.bsod h2 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  font-weight: bold;
+}
+
+.bsod p {
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+  line-height: 1.4;
+}
+
+.error-code {
+  margin-top: 2rem;
+  margin-bottom: 2rem;
+  background: #000;
+  padding: 1rem;
+  border: 1px solid #fff;
+}
+
+.progress-container {
+  margin-top: 1rem;
+  width: 100%;
+  max-width: 400px;
+}
+
+.bar {
+  width: 100%;
+  height: 20px;
+  border: 2px solid #fff;
+  margin-top: 5px;
+  position: relative;
+}
+
+.fill {
+  height: 100%;
+  background: #fff;
+  width: 0%;
+  transition: width 0.2s;
+}
+
+/* --- SECTOR 2: GLITCH DATABASE --- */
+#sector-glitch {
+  background: #0a0a0a;
+  align-items: center;
+}
+
+.terminal-window {
+  width: 80%;
+  max-width: 800px;
+  background: #000;
+  border: 1px solid var(--term-dim);
+  box-shadow: 0 0 20px rgba(0, 255, 0, 0.1);
+}
+
+.window-header {
+  background: var(--term-dim);
+  color: var(--term-green);
+  padding: 0.5rem;
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-tech);
+  font-size: 0.9rem;
+}
+
+.window-body {
+  padding: 1.5rem;
+  font-family: var(--font-tech);
+  color: #ccc;
+}
+
+.corrupted-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+  border: 1px solid #333;
+}
+
+.corrupted-table th, .corrupted-table td {
+  border: 1px solid #333;
+  padding: 0.5rem;
+  text-align: left;
+}
+
+.corrupted-table th {
+  color: var(--term-green);
+  background: #111;
+}
+
+.glitch-text {
+  color: var(--error-red);
+  animation: text-glitch 0.3s infinite;
+}
+
+.warning {
+  color: var(--error-red);
+  font-weight: bold;
+  margin-top: 1rem;
+  border-top: 1px dashed var(--error-red);
+  padding-top: 0.5rem;
+}
+
+/* --- SECTOR 3: THE VOID --- */
+#sector-void {
+  background: radial-gradient(circle at center, #1a0b2e 0%, #000 70%);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.melting-text {
+  font-family: var(--font-gothic);
+  font-size: 4rem;
+  color: #d8b4e6;
+  text-shadow: 0 0 10px rgba(216, 180, 230, 0.5);
+  animation: melt 3s ease-in-out infinite alternate;
+  letter-spacing: 0.5rem;
+}
+
+#sector-void p {
+  font-family: var(--font-tech);
+  color: #888;
+  margin-top: 1rem;
+  opacity: 0.7;
+}
+
+.hidden-trigger {
+  position: absolute;
+  top: 10%;
+  right: 10%;
+  width: 50px;
+  height: 50px;
+  /* Invisible but clickable */
+}
+
+/* --- SECTOR 4: SANCTUARY --- */
+#sector-sanctuary {
+  background: #f0f0f0;
+  color: #333;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: background 1s ease;
+}
+
+.sanctuary-content {
+  text-align: center;
+  max-width: 600px;
+}
+
+.sanctuary-content h1 {
+  font-family: 'Helvetica Neue', sans-serif;
+  font-weight: 300;
+  font-size: 3rem;
+  color: #111;
+  margin-bottom: 1rem;
+  letter-spacing: -1px;
+}
+
+.sanctuary-content p {
+  font-family: 'Georgia', serif;
+  font-size: 1.2rem;
+  line-height: 1.6;
+  color: #444;
+  margin-bottom: 2rem;
+}
+
+.art-piece {
+  width: 100px;
+  height: 100px;
+  margin: 0 auto 2rem;
+  position: relative;
+  transform-style: preserve-3d;
+  animation: rotate 10s linear infinite;
+}
+
+.cube {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(45deg, #ff0055, #00ccff);
+  opacity: 0.8;
+  filter: blur(20px);
+  border-radius: 50%;
+  animation: pulse 4s ease-in-out infinite;
+}
+
+.small-text {
+  font-size: 0.8rem !important;
+  color: #999 !important;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+/* --- BUTTONS --- */
+.retro-btn {
+  background: transparent;
+  border: 2px solid currentColor;
+  color: inherit;
+  padding: 0.8rem 2rem;
+  font-family: var(--font-tech);
+  font-size: 1rem;
+  text-transform: uppercase;
+  cursor: none;
+  transition: all 0.2s;
+  margin-top: 1rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.retro-btn:hover {
+  background: currentColor;
+  color: #000;
+  box-shadow: 0 0 15px currentColor;
+}
+
+.bsod .retro-btn {
+  border-color: #fff;
+  color: #fff;
+}
+
+.bsod .retro-btn:hover {
+  background: #fff;
+  color: #000;
+}
+
+#sector-sanctuary .retro-btn {
+  border-color: #333;
+  color: #333;
+}
+
+#sector-sanctuary .retro-btn:hover {
+  background: #333;
+  color: #fff;
+}
+
+/* --- ANIMATIONS --- */
+@keyframes blinker {
+  50% { opacity: 0; }
+}
+
+@keyframes glitch-anim {
+  0% { clip-path: inset(10% 0 80% 0); transform: translate(-2px, 2px); }
+  20% { clip-path: inset(80% 0 10% 0); transform: translate(2px, -2px); }
+  40% { clip-path: inset(30% 0 50% 0); transform: translate(-2px, 2px); }
+  60% { clip-path: inset(10% 0 60% 0); transform: translate(2px, -2px); }
+  80% { clip-path: inset(70% 0 20% 0); transform: translate(-2px, 2px); }
+  100% { clip-path: inset(20% 0 90% 0); transform: translate(2px, -2px); }
+}
+
+@keyframes text-glitch {
+  0% { transform: translate(0); }
+  20% { transform: translate(-2px, 2px); }
+  40% { transform: translate(2px, -2px); }
+  60% { transform: translate(-2px, -2px); }
+  80% { transform: translate(2px, 2px); }
+  100% { transform: translate(0); }
+}
+
+@keyframes melt {
+  0% { transform: scale(1) skewX(0deg); filter: blur(0px); }
+  50% { transform: scale(1.05) skewX(5deg); filter: blur(1px); }
+  100% { transform: scale(1) skewX(-5deg); filter: blur(0px); }
+}
+
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+  0% { transform: scale(0.8); opacity: 0.5; }
+  50% { transform: scale(1.2); opacity: 0.8; }
+  100% { transform: scale(0.8); opacity: 0.5; }
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+  .bsod { padding: 1rem; font-size: 0.8rem; }
+  .melting-text { font-size: 2.5rem; }
+  .glitch-header { flex-direction: column; gap: 1rem; }
+}

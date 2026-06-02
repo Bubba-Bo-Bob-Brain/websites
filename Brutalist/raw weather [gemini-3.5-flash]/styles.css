@@ -1,0 +1,855 @@
+/* ==========================================================================
+   BRUTALIST WEATHER DASHBOARD - SYSTEM CORE STYLESHEET
+   ========================================================================== */
+
+:root {
+    --bg-primary: #0a0a0c;
+    --bg-secondary: #121216;
+    --fg-primary: #00ff66; /* Neon Acid Green */
+    --fg-secondary: #00e1d9; /* Cyan */
+    --accent: #f3f315; /* Warning Yellow */
+    --hazard: #ff003c; /* Toxic Red */
+    --border-color: #00ff66;
+    --border-thick: 4px;
+    --border-thin: 2px;
+    
+    /* Fonts */
+    --font-mono: 'Share Tech Mono', monospace;
+    --font-serif: 'Playfair Display', serif;
+    --font-sans: 'Archivo Black', sans-serif;
+    
+    /* Hard Shadow Offset */
+    --brutal-shadow: 8px 8px 0px #000000;
+    --brutal-shadow-active: 2px 2px 0px #000000;
+    --neon-glow: 0 0 8px rgba(0, 255, 102, 0.4);
+}
+
+/* DEGRADED UI STATE ALTERATION (Triggered by JS) */
+body.degraded {
+    --bg-primary: #1a0000;
+    --bg-secondary: #000000;
+    --fg-primary: #ff0055;
+    --fg-secondary: #ffaa00;
+    --accent: #ffea00;
+    --border-color: #ff0055;
+    filter: hue-rotate(45deg) contrast(1.2);
+}
+
+/* ==========================================================================
+   BASE & RESET SYSTEM
+   ========================================================================== */
+
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: var(--bg-primary);
+    color: var(--fg-primary);
+    font-family: var(--font-mono);
+    line-height: 1.3;
+    overflow-x: hidden;
+    padding: 15px;
+    position: relative;
+}
+
+/* Scanline / CRT Effect Overlay */
+body::before {
+    content: " ";
+    display: block;
+    position: fixed;
+    top: 0; left: 0; bottom: 0; right: 0;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+    aspect-ratio: auto;
+    background-size: 100% 4px, 3px 100%;
+    z-index: 99999;
+    pointer-events: none;
+}
+
+/* Subtle CRT Flicker */
+@keyframes crt-flicker {
+    0% { opacity: 0.985; }
+    50% { opacity: 0.995; }
+    100% { opacity: 0.985; }
+}
+
+.crt-effect {
+    animation: crt-flicker 0.15s infinite;
+}
+
+/* Global Grid Gridline Texture Background */
+.system-grid-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-image: 
+        linear-gradient(rgba(0, 255, 102, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 255, 102, 0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    z-index: -1;
+    pointer-events: none;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 16px;
+    height: 16px;
+}
+::-webkit-scrollbar-track {
+    background: var(--bg-secondary);
+    border-left: var(--border-thick) solid var(--border-color);
+}
+::-webkit-scrollbar-thumb {
+    background: var(--fg-primary);
+    border: 3px solid var(--bg-secondary);
+}
+::-webkit-scrollbar-thumb:hover {
+    background: var(--accent);
+}
+
+/* ==========================================================================
+   HEADER / CONTROLS SYSTEM
+   ========================================================================== */
+
+.system-header {
+    border: var(--border-thick) solid var(--border-color);
+    background: var(--bg-secondary);
+    margin-bottom: 25px;
+    box-shadow: var(--brutal-shadow);
+}
+
+/* Ticker tape system alert banner */
+.ticker-wrap {
+    width: 100%;
+    overflow: hidden;
+    background: var(--hazard);
+    color: #000;
+    font-weight: bold;
+    font-size: 0.9rem;
+    border-bottom: var(--border-thick) solid var(--border-color);
+    padding: 6px 0;
+}
+
+.ticker {
+    display: inline-block;
+    white-space: nowrap;
+    padding-right: 100%;
+    animation: ticker-move 35s linear infinite;
+}
+
+.ticker-item {
+    display: inline-block;
+    padding: 0 2rem;
+}
+
+@keyframes ticker-move {
+    0% { transform: translate3d(0, 0, 0); }
+    100% { transform: translate3d(-100%, 0, 0); }
+}
+
+/* Header Grid Components */
+.header-main {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: stretch;
+}
+
+.branding {
+    padding: 20px;
+    border-right: var(--border-thick) solid var(--border-color);
+    background: #000;
+    flex: 1 1 300px;
+}
+
+.system-id {
+    display: block;
+    font-size: 0.85rem;
+    color: var(--accent);
+    letter-spacing: 2px;
+}
+
+.branding h1 {
+    font-family: var(--font-sans);
+    font-size: 3rem;
+    color: var(--fg-primary);
+    line-height: 0.9;
+    letter-spacing: -2px;
+    text-shadow: 2px 2px 0px var(--hazard);
+}
+
+/* System input controls & selectors */
+.system-controls {
+    display: flex;
+    flex-wrap: wrap;
+    flex: 3 1 600px;
+}
+
+.control-group {
+    padding: 15px;
+    border-right: var(--border-thin) solid var(--border-color);
+    flex: 1 1 200px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.control-group:last-child {
+    border-right: none;
+}
+
+.control-group label {
+    font-size: 0.75rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    color: var(--fg-secondary);
+    margin-bottom: 8px;
+    letter-spacing: 1px;
+}
+
+select, input, button {
+    background: var(--bg-primary);
+    color: var(--fg-primary);
+    border: var(--border-thin) solid var(--border-color);
+    padding: 8px 12px;
+    font-family: var(--font-mono);
+    font-size: 0.95rem;
+    outline: none;
+    border-radius: 0;
+    width: 100%;
+    transition: none;
+}
+
+select:focus, input:focus {
+    background: #000;
+    color: var(--accent);
+    border-color: var(--accent);
+}
+
+.search-group .input-wrapper {
+    display: flex;
+}
+
+.search-group input {
+    border-right: none;
+}
+
+.search-group button {
+    width: auto;
+    background: var(--fg-primary);
+    color: #000;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.search-group button:hover {
+    background: var(--accent);
+}
+
+.toggle-group {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    align-items: center;
+}
+
+.toggle-group button {
+    font-size: 0.8rem;
+    font-weight: bold;
+    height: 100%;
+    cursor: pointer;
+    box-shadow: 4px 4px 0px var(--border-color);
+}
+
+.toggle-group button:active {
+    box-shadow: none;
+    transform: translate(4px, 4px);
+}
+
+.warning-trigger {
+    background: var(--hazard);
+    color: #000;
+    border-color: #000;
+}
+
+.warning-trigger:hover {
+    background: #000 !important;
+    color: var(--hazard) !important;
+    border-color: var(--hazard) !important;
+}
+
+/* ==========================================================================
+   MAIN DASHBOARD VIEWPORT GRID
+   ========================================================================== */
+
+.dashboard-viewport {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 25px;
+    margin-bottom: 40px;
+}
+
+/* Brutalist Panel Construction */
+.panel {
+    background: var(--bg-secondary);
+    border: var(--border-thick) solid var(--border-color);
+    box-shadow: var(--brutal-shadow);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+}
+
+.panel-header {
+    background: #000;
+    border-bottom: var(--border-thick) solid var(--border-color);
+    padding: 10px 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.panel-num {
+    font-size: 0.85rem;
+    color: var(--accent);
+}
+
+.panel-header h2 {
+    font-size: 1.1rem;
+    font-weight: normal;
+    letter-spacing: 1px;
+}
+
+.panel-body {
+    padding: 20px;
+    flex-grow: 1;
+}
+
+.panel-footer {
+    border-top: var(--border-thin) solid var(--border-color);
+    background: var(--bg-primary);
+    padding: 6px 15px;
+    font-size: 0.75rem;
+    color: var(--fg-secondary);
+    display: flex;
+    justify-content: space-between;
+}
+
+/* GRID SPANNING SCHEMES (Intentional Disruption) */
+#panel-primary-telemetry {
+    grid-column: span 8;
+}
+
+#panel-hazard {
+    grid-column: span 4;
+}
+
+#panel-vector {
+    grid-column: span 5;
+}
+
+#panel-chrono {
+    grid-column: span 7;
+}
+
+#panel-spatial {
+    grid-column: span 6;
+}
+
+#panel-raw-json {
+    grid-column: span 6;
+}
+
+/* ==========================================================================
+   PANEL 01: PRIMARY TELEMETRY (HERO)
+   ========================================================================== */
+
+.hero-body {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    background: linear-gradient(135deg, #0a0a0c 0%, #030304 100%);
+}
+
+.glitch-container {
+    flex: 2 1 350px;
+}
+
+.massive-temp-display {
+    font-family: var(--font-sans);
+    font-size: 11vw;
+    line-height: 0.8;
+    color: var(--fg-primary);
+    display: flex;
+    align-items: flex-start;
+    letter-spacing: -6px;
+    position: relative;
+    user-select: none;
+    text-shadow: 4px 4px 0px var(--hazard), -4px -4px 0px var(--fg-secondary);
+}
+
+.temp-sign {
+    font-size: 6vw;
+    margin-top: 1vw;
+    color: var(--accent);
+}
+
+.temp-unit {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-weight: 900;
+    font-size: 7vw;
+    color: var(--fg-secondary);
+    margin-left: 5px;
+}
+
+.hero-sidebar {
+    flex: 1 1 220px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.condition-stamp {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-weight: 900;
+    font-size: 2rem;
+    line-height: 1;
+    color: #000;
+    background: var(--accent);
+    padding: 10px;
+    border: var(--border-thick) solid var(--border-color);
+    transform: rotate(-3deg);
+    text-align: center;
+    box-shadow: 4px 4px 0 var(--hazard);
+}
+
+.telemetry-meta {
+    border: var(--border-thin) solid var(--border-color);
+}
+
+.meta-row {
+    display: flex;
+    justify-content: space-between;
+    border-bottom: var(--border-thin) solid var(--border-color);
+    padding: 8px;
+}
+
+.meta-row:last-child {
+    border-bottom: none;
+}
+
+.meta-row .label {
+    font-size: 0.8rem;
+    color: var(--fg-secondary);
+}
+
+.meta-row .value {
+    font-weight: bold;
+}
+
+/* ==========================================================================
+   PANEL 02: ACTIVE MET THREATS (ALERT)
+   ========================================================================== */
+
+#panel-hazard {
+    background: #000;
+}
+
+.alert-body {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.blink-indicator {
+    background: var(--hazard);
+    color: #fff;
+    padding: 2px 8px;
+    font-weight: bold;
+    animation: urgent-blink 1s steps(2, start) infinite;
+}
+
+@keyframes urgent-blink {
+    to { visibility: hidden; }
+}
+
+.alert-banner {
+    border: var(--border-thick) solid var(--hazard);
+    background: rgba(255, 0, 60, 0.1);
+    padding: 15px;
+}
+
+.alert-banner h3 {
+    color: var(--hazard);
+    font-size: 1.2rem;
+    margin-bottom: 8px;
+}
+
+.alert-banner p {
+    font-size: 0.85rem;
+    color: #ff99aa;
+}
+
+.alert-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.stat-box {
+    border: var(--border-thin) solid var(--border-color);
+    padding: 10px;
+    background: var(--bg-secondary);
+}
+
+.stat-label {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--fg-secondary);
+    margin-bottom: 5px;
+}
+
+.stat-value {
+    font-size: 1.4rem;
+    font-weight: bold;
+}
+
+.red-text {
+    color: var(--hazard);
+}
+
+/* ==========================================================================
+   PANEL 03: WIND VECTOR ANALYSIS
+   ========================================================================== */
+
+.wind-body {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    align-items: center;
+}
+
+.compass-container {
+    flex: 1 1 180px;
+    display: flex;
+    justify-content: center;
+}
+
+.raw-compass {
+    width: 160px;
+    height: 160px;
+    border: var(--border-thick) solid var(--border-color);
+    border-radius: 50%;
+    position: relative;
+    background: var(--bg-primary);
+}
+
+.compass-arrow {
+    width: 6px;
+    height: 110px;
+    background: var(--hazard);
+    position: absolute;
+    top: 25px;
+    left: 77px;
+    transform-origin: 50% 50%;
+    transform: rotate(312deg); /* Initial mechanical rotation */
+}
+
+.compass-arrow::before {
+    content: '';
+    position: absolute;
+    top: -10px;
+    left: -7px;
+    width: 0;
+    height: 0;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-bottom: 15px solid var(--hazard);
+}
+
+.compass-cardinals span {
+    position: absolute;
+    font-weight: bold;
+    font-size: 0.9rem;
+    color: var(--fg-secondary);
+}
+
+.cardinal.N { top: 5px; left: 75px; }
+.cardinal.E { top: 70px; right: 8px; }
+.cardinal.S { bottom: 5px; left: 76px; }
+.cardinal.W { top: 70px; left: 8px; }
+
+.wind-metrics {
+    flex: 1 1 180px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.metric-block {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    border-bottom: 1px dashed var(--border-color);
+    padding-bottom: 5px;
+}
+
+.metric-title {
+    font-size: 0.8rem;
+    color: var(--fg-secondary);
+}
+
+.metric-large {
+    font-family: var(--font-sans);
+    font-size: 1.8rem;
+    color: var(--fg-primary);
+}
+
+.metric-unit {
+    font-size: 0.7rem;
+    color: var(--accent);
+    margin-left: 4px;
+}
+
+/* ==========================================================================
+   PANEL 04: CHRONO FORECAST MATRIX (UNFORGIVING TABLE)
+   ========================================================================== */
+
+.table-wrapper {
+    overflow-x: auto;
+}
+
+.brutal-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    font-size: 0.9rem;
+}
+
+.brutal-table th, .brutal-table td {
+    padding: 12px 10px;
+    border: var(--border-thin) solid var(--border-color);
+}
+
+.brutal-table th {
+    background: var(--bg-primary);
+    color: var(--accent);
+    text-transform: uppercase;
+    font-size: 0.8rem;
+}
+
+.brutal-table tbody tr {
+    transition: none;
+}
+
+.brutal-table tbody tr:nth-child(even) {
+    background: rgba(0, 255, 102, 0.03);
+}
+
+.brutal-table tbody tr:hover {
+    background: var(--fg-primary);
+    color: #000;
+}
+
+.brutal-table tbody tr:hover td {
+    border-color: #000;
+}
+
+/* ==========================================================================
+   PANEL 05: SPATIAL RADAR SCANNER
+   ========================================================================== */
+
+.radar-body {
+    position: relative;
+    padding: 10px;
+    background: #030305;
+}
+
+.radar-display {
+    width: 100%;
+    position: relative;
+    border: var(--border-thin) solid var(--border-color);
+    aspect-ratio: 16/9;
+    overflow: hidden;
+    background: radial-gradient(circle, #0e1f14 0%, #030604 100%);
+}
+
+#radar-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 2;
+}
+
+.radar-grid-lines {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: 
+        linear-gradient(rgba(0, 255, 102, 0.1) 1px, transparent 1px) 50% 50% / 10% 10%,
+        linear-gradient(90deg, rgba(0, 255, 102, 0.1) 1px, transparent 1px) 50% 50% / 10% 10%;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.radar-coordinates {
+    position: absolute;
+    bottom: 8px;
+    left: 8px;
+    right: 8px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.7rem;
+    color: var(--fg-primary);
+    background: rgba(0,0,0,0.8);
+    padding: 4px 8px;
+    border: 1px solid var(--border-color);
+    z-index: 3;
+}
+
+.scanner-sweep {
+    font-size: 0.8rem;
+    color: var(--accent);
+    animation: intense-pulse 0.6s ease-in-out infinite alternate;
+}
+
+@keyframes intense-pulse {
+    from { opacity: 0.4; }
+    to { opacity: 1; }
+}
+
+/* ==========================================================================
+   PANEL 06: RAW JSON TELEMETRY STREAM
+   ========================================================================== */
+
+.raw-body {
+    background: #000;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.panel-action-btn {
+    background: var(--accent);
+    color: #000;
+    font-weight: bold;
+    border: var(--border-thin) solid #000;
+    padding: 2px 8px;
+    cursor: pointer;
+    font-size: 0.75rem;
+}
+
+.panel-action-btn:hover {
+    background: #000;
+    color: var(--accent);
+    border-color: var(--accent);
+}
+
+.raw-code-block {
+    margin: 0;
+}
+
+.raw-code-block code {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    color: var(--fg-secondary);
+    white-space: pre-wrap;
+    word-break: break-all;
+}
+
+/* ==========================================================================
+   SYSTEM FOOTER
+   ========================================================================== */
+
+.system-footer {
+    border: var(--border-thick) solid var(--border-color);
+    background: var(--bg-secondary);
+    padding: 15px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    box-shadow: var(--brutal-shadow);
+}
+
+.footer-left, .footer-right {
+    display: flex;
+    gap: 30px;
+}
+
+.footer-left span, .footer-right span {
+    position: relative;
+}
+
+.footer-left span::after {
+    content: "//";
+    position: absolute;
+    right: -18px;
+    color: var(--accent);
+}
+
+.footer-left span:last-child::after {
+    content: "";
+}
+
+/* ==========================================================================
+   RESPONSIVE GRID ADJUSTMENTS (CLASHING & UNEXPECTED ADAPTATION)
+   ========================================================================== */
+
+@media (max-width: 1024px) {
+    #panel-primary-telemetry,
+    #panel-hazard,
+    #panel-vector,
+    #panel-chrono,
+    #panel-spatial,
+    #panel-raw-json {
+        grid-column: span 12; /* Flatten down but preserve thick brutalist structure */
+    }
+}
+
+@media (max-width: 600px) {
+    body {
+        padding: 8px;
+    }
+    
+    .system-header {
+        margin-bottom: 15px;
+    }
+    
+    .branding h1 {
+        font-size: 2.2rem;
+    }
+    
+    .massive-temp-display {
+        font-size: 18vw;
+    }
+    
+    .temp-sign {
+        font-size: 10vw;
+    }
+    
+    .temp-unit {
+        font-size: 12vw;
+    }
+    
+    .footer-left, .footer-right {
+        flex-direction: column;
+        gap: 5px;
+        width: 100%;
+    }
+    
+    .footer-left span::after {
+        content: "";
+    }
+}

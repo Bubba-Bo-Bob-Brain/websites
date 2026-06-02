@@ -1,0 +1,625 @@
+/* --- VARIABLES & RESET --- */
+:root {
+  /* Palette: Base (Nigredo - Darkness) */
+  --bg-deep: #0a0a0c;
+  --bg-wood: #1a1510;
+  --text-main: #d4c5a3;
+  --text-muted: #6b6358;
+  --accent-gold: #c5a059;
+  --accent-silver: #aebbc4;
+  --accent-crimson: #8a1c1c;
+  --accent-amber: #d48c00;
+  
+  /* Current Stage Colors (Default: Nigredo) */
+  --stage-primary: #2a2a2a;
+  --stage-glow: rgba(255, 255, 255, 0.1);
+  --liquid-color: #1a1a1a;
+  --ring-color: #444;
+  
+  /* Spacing & Layout */
+  --grid-gap: 2rem;
+  --border-radius: 4px;
+  
+  /* Fonts */
+  --font-display: 'UnifrakturMaguntia', cursive;
+  --font-header: 'Cinzel Decorative', serif;
+  --font-body: 'IM Fell English', serif;
+}
+
+/* Stage Transitions */
+body.stage-nigredo {
+  --stage-primary: #2a2a2a;
+  --stage-glow: rgba(100, 100, 100, 0.2);
+  --liquid-color: #111;
+  --ring-color: #555;
+}
+body.stage-albedo {
+  --stage-primary: #aebbc4;
+  --stage-glow: rgba(174, 187, 196, 0.4);
+  --liquid-color: #e0e8ed;
+  --ring-color: #fff;
+}
+body.stage-citrinitas {
+  --stage-primary: #d48c00;
+  --stage-glow: rgba(212, 140, 0, 0.5);
+  --liquid-color: #ffd700;
+  --ring-color: #ffd700;
+}
+body.stage-rubedo {
+  --stage-primary: #8a1c1c;
+  --stage-glow: rgba(138, 28, 28, 0.6);
+  --liquid-color: #8a1c1c;
+  --ring-color: #ff4444;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg-deep);
+  color: var(--text-main);
+  font-family: var(--font-body);
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  perspective: 1200px;
+}
+
+/* --- ATMOSPHERE LAYERS --- */
+#vignette {
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: radial-gradient(circle at center, transparent 40%, #000 100%);
+  pointer-events: none;
+  z-index: 100;
+  opacity: 0.8;
+}
+
+#noise-overlay {
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 99;
+  opacity: 0.4;
+}
+
+#candle-flicker {
+  position: fixed;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 60vw; height: 60vw;
+  background: radial-gradient(circle, rgba(255, 160, 60, 0.08) 0%, transparent 70%);
+  animation: flicker 4s infinite alternate;
+  pointer-events: none;
+  z-index: 98;
+}
+
+@keyframes flicker {
+  0% { opacity: 0.8; transform: translate(-50%, -50%) scale(1); }
+  25% { opacity: 0.9; transform: translate(-50%, -50%) scale(1.02); }
+  50% { opacity: 0.7; transform: translate(-50%, -50%) scale(0.98); }
+  75% { opacity: 0.85; transform: translate(-50%, -50%) scale(1.01); }
+  100% { opacity: 0.8; transform: translate(-50%, -50%) scale(1); }
+}
+
+/* --- LAYOUT --- */
+.workbench {
+  width: 90vw;
+  max-width: 1400px;
+  height: 90vh;
+  display: flex;
+  flex-direction: column;
+  transform-style: preserve-3d;
+  position: relative;
+  z-index: 10;
+}
+
+/* Header */
+.hermetic-header {
+  text-align: center;
+  margin-bottom: 2rem;
+  position: relative;
+}
+
+.main-title {
+  font-family: var(--font-display);
+  font-size: 4rem;
+  color: var(--accent-gold);
+  text-shadow: 0 0 10px rgba(197, 160, 89, 0.3);
+  letter-spacing: 0.2em;
+  margin-bottom: 0.5rem;
+}
+
+.latin-subtitle {
+  font-family: var(--font-header);
+  font-size: 1.2rem;
+  color: var(--text-muted);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.stage-indicator {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  margin-bottom: 1rem;
+  font-family: var(--font-header);
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.stage {
+  cursor: pointer;
+  transition: all 0.5s ease;
+  opacity: 0.3;
+  position: relative;
+}
+
+.stage.active {
+  opacity: 1;
+  color: var(--accent-gold);
+  text-shadow: 0 0 8px var(--accent-gold);
+}
+
+.stage.active::after {
+  content: '♦';
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.6rem;
+  color: var(--accent-gold);
+}
+
+/* Workspace Grid */
+.workspace-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: var(--grid-gap);
+  flex-grow: 1;
+  perspective: 1000px;
+}
+
+.artifact {
+  background: rgba(20, 15, 10, 0.6);
+  border: 1px solid rgba(100, 80, 50, 0.3);
+  border-radius: var(--border-radius);
+  padding: 1.5rem;
+  position: relative;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  transition: transform 0.3s ease, border-color 0.5s ease;
+  backdrop-filter: blur(2px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.artifact:hover {
+  border-color: var(--accent-gold);
+  transform: translateY(-5px);
+  box-shadow: 0 15px 40px rgba(0,0,0,0.6);
+}
+
+.control-label {
+  margin-top: 1rem;
+  font-family: var(--font-header);
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* --- ARTIFACT 1: THE CODEX (Manuscript) --- */
+.book-spread {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  gap: 1rem;
+}
+
+.page {
+  flex: 1;
+  background: #e3d5b8;
+  color: #2a2a2a;
+  padding: 1.5rem;
+  border-radius: 2px;
+  box-shadow: inset 0 0 20px rgba(0,0,0,0.2);
+  position: relative;
+  overflow-y: auto;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  transform: rotateY(2deg);
+}
+
+.page.right-page {
+  transform: rotateY(-2deg);
+}
+
+.page h2 {
+  font-family: var(--font-display);
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+  color: var(--accent-crimson);
+}
+
+.drop-cap {
+  float: left;
+  font-size: 4rem;
+  line-height: 0.8;
+  margin-right: 0.5rem;
+  font-family: var(--font-display);
+}
+
+.marginalia {
+  display: block;
+  margin: 1rem 0;
+  padding: 0.5rem;
+  border-left: 2px solid var(--accent-gold);
+  font-style: italic;
+  color: var(--accent-crimson);
+  opacity: 0;
+  transition: opacity 1s ease;
+}
+
+.marginalia.visible {
+  opacity: 1;
+}
+
+.diagram-placeholder {
+  margin-top: 1rem;
+  text-align: center;
+  font-size: 3rem;
+  color: #444;
+  opacity: 0.5;
+}
+
+.seal-stamp {
+  width: 60px;
+  height: 60px;
+  border: 2px solid var(--accent-crimson);
+  border-radius: 50%;
+  margin: 1rem auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent-crimson);
+  font-size: 0.8rem;
+  transform: rotate(-15deg);
+  opacity: 0.6;
+}
+
+/* --- ARTIFACT 2: THE ALEMBIC (Crucible) --- */
+.alembic-container {
+  position: relative;
+  overflow: visible;
+}
+
+.glass-flask {
+  width: 120px;
+  height: 180px;
+  border-radius: 60px 60px 40px 40px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+  border: 1px solid rgba(255,255,255,0.2);
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 0 20px rgba(0,0,0,0.5);
+  z-index: 2;
+}
+
+.liquid {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 40%; /* Dynamic */
+  background: var(--liquid-color);
+  transition: background 2s ease, height 1s ease;
+  opacity: 0.9;
+  border-top: 1px solid rgba(255,255,255,0.1);
+}
+
+.bubbles {
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background-image: radial-gradient(circle, rgba(255,255,255,0.4) 1px, transparent 1px);
+  background-size: 10px 10px;
+  animation: bubble-rise 3s linear infinite;
+  opacity: 0;
+}
+
+.liquid.bubbling .bubbles {
+  opacity: 1;
+}
+
+.glass-reflection {
+  position: absolute;
+  top: 10px;
+  right: 20px;
+  width: 20px;
+  height: 60px;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.4), transparent);
+  transform: rotate(15deg);
+  border-radius: 10px;
+}
+
+.vapor-cloud {
+  position: absolute;
+  top: -40px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 40px;
+  background: radial-gradient(circle, rgba(255,255,255,0.3), transparent);
+  filter: blur(10px);
+  animation: vapor-rise 2s infinite;
+  opacity: 0;
+}
+
+.liquid.bubbling ~ .vapor-cloud {
+  opacity: 1;
+}
+
+.heat-source {
+  position: absolute;
+  bottom: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 20px;
+  background: radial-gradient(ellipse at center, var(--accent-amber) 0%, transparent 70%);
+  opacity: 0.5;
+  animation: heat-pulse 1s infinite alternate;
+}
+
+@keyframes bubble-rise {
+  0% { background-position: 0 0; }
+  100% { background-position: 0 -20px; }
+}
+
+@keyframes vapor-rise {
+  0% { transform: translateX(-50%) translateY(0) scale(1); opacity: 0; }
+  50% { opacity: 0.6; }
+  100% { transform: translateX(-50%) translateY(-30px) scale(1.5); opacity: 0; }
+}
+
+@keyframes heat-pulse {
+  0% { opacity: 0.3; transform: translateX(-50%) scale(0.9); }
+  100% { opacity: 0.6; transform: translateX(-50%) scale(1.1); }
+}
+
+/* --- ARTIFACT 3: THE ROTUNDA (Circle) --- */
+.rotunda-container {
+  perspective: 800px;
+}
+
+.rotunda {
+  width: 200px;
+  height: 200px;
+  position: relative;
+  transform-style: preserve-3d;
+  transform: rotateX(60deg);
+  transition: transform 1s ease;
+  cursor: pointer;
+}
+
+.rotunda:hover {
+  transform: rotateX(60deg) scale(1.05);
+}
+
+.ring {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  border: 1px solid var(--ring-color);
+  transition: border-color 1s ease;
+}
+
+.outer-ring {
+  width: 200px; height: 200px;
+  animation: spin 60s linear infinite;
+}
+
+.middle-ring {
+  width: 140px; height: 140px;
+  border-color: var(--accent-silver);
+  animation: spin-reverse 40s linear infinite;
+}
+
+.inner-ring {
+  width: 80px; height: 80px;
+  border: 2px solid var(--accent-gold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pentagram {
+  width: 50px; height: 50px;
+  background: var(--accent-gold);
+  clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+  box-shadow: 0 0 15px var(--accent-gold);
+}
+
+.glyph {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform-origin: center;
+  font-size: 1.2rem;
+  color: var(--text-main);
+  text-shadow: 0 0 5px var(--accent-gold);
+}
+
+/* Positioning glyphs in the ring */
+.ring .glyph {
+  width: 30px; height: 30px;
+  margin-left: -15px; margin-top: -15px;
+  transform: rotate(var(--rot)) translate(90px) rotate(calc(var(--rot) * -1));
+}
+
+.middle-ring .glyph {
+  transform: rotate(var(--rot)) translate(65px) rotate(calc(var(--rot) * -1));
+}
+
+@keyframes spin {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+@keyframes spin-reverse {
+  from { transform: translate(-50%, -50%) rotate(360deg); }
+  to { transform: translate(-50%, -50%) rotate(0deg); }
+}
+
+/* --- ATHANOR (Stone Pedestal) --- */
+.athanor-section {
+  margin-top: 2rem;
+  text-align: center;
+  position: relative;
+}
+
+.pedestal {
+  display: inline-block;
+  width: 120px;
+  height: 120px;
+  position: relative;
+}
+
+.stone-base {
+  width: 100%; height: 100%;
+  background: #333;
+  border-radius: 50%;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+  position: relative;
+  z-index: 1;
+}
+
+.philosophers-stone {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  width: 60px; height: 60px;
+  background: radial-gradient(circle at 30% 30%, #ff4444, #8a1c1c);
+  border-radius: 50%;
+  box-shadow: 0 0 30px var(--accent-crimson);
+  transition: transform 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  z-index: 2;
+}
+
+.philosophers-stone.active {
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.stone-glow {
+  position: absolute;
+  top: -20px; left: -20px; right: -20px; bottom: -20px;
+  background: radial-gradient(circle, rgba(255, 68, 68, 0.4), transparent 70%);
+  border-radius: 50%;
+  animation: pulse-glow 2s infinite;
+}
+
+@keyframes pulse-glow {
+  0% { transform: scale(1); opacity: 0.5; }
+  50% { transform: scale(1.2); opacity: 0.8; }
+  100% { transform: scale(1); opacity: 0.5; }
+}
+
+.progress-bar-container {
+  width: 300px;
+  height: 4px;
+  background: #333;
+  margin: 2rem auto 0;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progress-bar {
+  width: 0%;
+  height: 100%;
+  background: var(--accent-gold);
+  transition: width 1s ease;
+  box-shadow: 0 0 10px var(--accent-gold);
+}
+
+.instruction-text {
+  margin-top: 1rem;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+/* --- INTERACTION MODAL --- */
+.interaction-modal {
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0,0,0,0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 200;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.interaction-modal.active {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.modal-content {
+  background: #1a1510;
+  border: 2px solid var(--accent-gold);
+  padding: 2rem;
+  text-align: center;
+  max-width: 400px;
+  box-shadow: 0 0 50px rgba(197, 160, 89, 0.2);
+}
+
+.modal-content h3 {
+  font-family: var(--font-display);
+  color: var(--accent-gold);
+  margin-bottom: 1rem;
+}
+
+.mortar-pestle-anim {
+  font-size: 3rem;
+  color: var(--text-main);
+  margin: 1rem 0;
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+
+.mortar-pestle-anim:active {
+  transform: scale(0.9) rotate(-15deg);
+}
+
+.hidden {
+  display: none;
+}
+
+/* --- RESPONSIVE --- */
+@media (max-width: 900px) {
+  .workspace-grid {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+  .workbench {
+    height: auto;
+    overflow-y: auto;
+    padding-bottom: 2rem;
+  }
+  .book-spread {
+    flex-direction: column;
+  }
+  .page {
+    transform: none !important;
+  }
+}

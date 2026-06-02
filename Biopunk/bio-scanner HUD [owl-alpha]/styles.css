@@ -1,0 +1,1686 @@
+/* ============================================================
+   NEXUS BIOSCAN — BIOPUNK MEDICAL SCANNER HUD
+   v4.7.2-ORGANIC // Full Style System
+   ============================================================ */
+
+/* --- CSS Custom Properties (Bioluminescent Palette) --- */
+:root {
+    /* Core palette */
+    --color-bg-deep: #050a07;
+    --color-bg-panel: #0a1210;
+    --color-bg-panel-alt: #0d1814;
+    --color-bg-card: #0f1c18;
+
+    /* Bioluminescent greens */
+    --color-toxic-green: #00ff88;
+    --color-toxic-green-dim: #00cc6a;
+    --color-toxic-green-dark: #009944;
+    --color-toxic-green-glow: rgba(0, 255, 136, 0.15);
+
+    /* Arterial reds */
+    --color-arterial: #ff2255;
+    --color-arterial-dim: #cc1a44;
+    --color-arterial-dark: #881133;
+    --color-arterial-glow: rgba(255, 34, 85, 0.15);
+
+    /* Necrotic purples */
+    --color-necrotic: #aa44ff;
+    --color-necrotic-dim: #8833cc;
+    --color-necrotic-dark: #552288;
+    --color-necrotic-glow: rgba(170, 68, 255, 0.12);
+
+    /* Cyan nanite glow */
+    --color-nanite: #00ddff;
+    --color-nanite-dim: #00aacc;
+    --color-nanite-dark: #006688;
+    --color-nanite-glow: rgba(0, 221, 255, 0.15);
+
+    /* Amber caution */
+    --color-amber: #ffaa00;
+    --color-amber-dim: #cc8800;
+    --color-amber-glow: rgba(255, 170, 0, 0.15);
+
+    /* Organic browns / vein colors */
+    --color-vein: #2a1a1a;
+    --color-vein-bright: #4a2020;
+    --color-membrane: rgba(20, 8, 8, 0.92);
+
+    /* Text */
+    --color-text-primary: #c8e0d8;
+    --color-text-secondary: #6a8a7e;
+    --color-text-dim: #3a5a4e;
+    --color-text-bright: #e0fff4;
+    --color-text-data: var(--color-toxic-green);
+    --color-text-danger: var(--color-arterial);
+    --color-text-warning: var(--color-amber);
+
+    /* Borders & separators */
+    --color-border: rgba(0, 255, 136, 0.12);
+    --color-border-bright: rgba(0, 255, 136, 0.25);
+    --color-border-danger: rgba(255, 34, 85, 0.3);
+    --color-border-warning: rgba(255, 170, 0, 0.3);
+
+    /* Status colors */
+    --status-optimal: var(--color-toxic-green);
+    --status-caution: var(--color-nanite);
+    --status-warning: var(--color-amber);
+    --status-critical: var(--color-arterial);
+    --status-necrotic: var(--color-necrotic);
+
+    /* Typography */
+    --font-display: 'Orbitron', monospace;
+    --font-body: 'Rajdhani', sans-serif;
+    --font-mono: 'Share Tech Mono', monospace;
+
+    /* Spacing */
+    --space-xs: 4px;
+    --space-sm: 8px;
+    --space-md: 12px;
+    --space-lg: 16px;
+    --space-xl: 24px;
+
+    /* Timing */
+    --heartbeat-interval: 0.833s;
+    --breathe-interval: 3.5s;
+    --scan-speed: 4s;
+
+    /* Radius */
+    --radius-sm: 3px;
+    --radius-md: 6px;
+    --radius-lg: 10px;
+}
+
+/* --- Reset & Base --- */
+*, *::before, *::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: var(--color-bg-deep);
+    color: var(--color-text-primary);
+    font-family: var(--font-body);
+    font-size: 14px;
+    line-height: 1.4;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* --- Ambient Scanning Line --- */
+.scan-line {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(90deg,
+        transparent 0%,
+        rgba(0, 255, 136, 0.08) 20%,
+        rgba(0, 255, 136, 0.2) 50%,
+        rgba(0, 255, 136, 0.08) 80%,
+        transparent 100%
+    );
+    z-index: 1000;
+    pointer-events: none;
+    animation: scanSweep var(--scan-speed) linear infinite;
+    filter: blur(1px);
+}
+
+@keyframes scanSweep {
+    0% { top: -2px; opacity: 0; }
+    5% { opacity: 1; }
+    95% { opacity: 1; }
+    100% { top: 100vh; opacity: 0; }
+}
+
+/* --- Nanite Particle Field Background --- */
+#nanite-field {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.6;
+}
+
+/* --- Vignette Overlay --- */
+.vignette {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 998;
+    pointer-events: none;
+    background: radial-gradient(
+        ellipse at center,
+        transparent 40%,
+        rgba(5, 10, 7, 0.6) 70%,
+        rgba(5, 10, 7, 0.9) 100%
+    );
+}
+
+/* --- Organic Membrane Texture Overlay --- */
+.membrane-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 997;
+    pointer-events: none;
+    background:
+        repeating-conic-gradient(
+            rgba(0, 255, 136, 0.008) 0% 25%,
+            transparent 0% 50%
+        ) 0 0 / 120px 120px;
+    opacity: 0.5;
+}
+
+/* --- Main HUD Container --- */
+.hud-container {
+    position: relative;
+    z-index: 1;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding: var(--space-sm);
+    gap: var(--space-sm);
+}
+
+/* ============================================================
+   TOP HEADER BAR
+   ============================================================ */
+.top-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-sm) var(--space-md);
+    background: linear-gradient(180deg, rgba(10, 18, 16, 0.95), rgba(8, 14, 12, 0.9));
+    border: 1px solid var(--color-border);
+    border-left: 3px solid var(--color-toxic-green-dark);
+    border-radius: var(--radius-sm);
+    position: relative;
+    overflow: hidden;
+}
+
+.top-bar::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(90deg,
+        transparent,
+        var(--color-toxic-green),
+        transparent
+    );
+    opacity: 0.4;
+}
+
+.header-left, .header-center, .header-right {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+}
+
+/* Logo */
+.logo-mark {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+}
+
+.logo-icon {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.dna-icon {
+    width: 36px;
+    height: 36px;
+}
+
+.dna-strand-1, .dna-strand-2 {
+    stroke: var(--color-toxic-green);
+    opacity: 0.8;
+}
+
+.dna-rung {
+    stroke: var(--color-nanite);
+    opacity: 0.5;
+}
+
+.logo-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.logo-name {
+    font-family: var(--font-display);
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--color-toxic-green);
+    letter-spacing: 3px;
+    text-shadow: 0 0 10px var(--color-toxic-green-glow);
+}
+
+.logo-sub {
+    font-weight: 400;
+    color: var(--color-nanite);
+    font-size: 10px;
+    letter-spacing: 5px;
+    margin-left: 1px;
+}
+
+.logo-ver {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    color: var(--color-text-dim);
+    letter-spacing: 1px;
+    margin-top: 1px;
+}
+
+/* Scan Status */
+.scan-status {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-xs) var(--space-md);
+    background: rgba(0, 255, 136, 0.05);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+}
+
+.status-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--color-text-dim);
+    position: relative;
+}
+
+.status-indicator.active {
+    background: var(--color-toxic-green);
+    box-shadow: 0 0 8px var(--color-toxic-green-glow), 0 0 2px var(--color-toxic-green);
+    animation: indicatorPulse 2s ease-in-out infinite;
+}
+
+@keyframes indicatorPulse {
+    0%, 100% { opacity: 1; box-shadow: 0 0 8px var(--color-toxic-green-glow); }
+    50% { opacity: 0.6; box-shadow: 0 0 16px var(--color-toxic-green-glow), 0 0 4px var(--color-toxic-green); }
+}
+
+.status-text {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--color-toxic-green);
+    letter-spacing: 2px;
+}
+
+.scan-frequency {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--color-nanite);
+    padding-left: var(--space-sm);
+    border-left: 1px solid var(--color-border);
+}
+
+/* System Time */
+.system-time {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.time-label {
+    font-family: var(--font-mono);
+    font-size: 8px;
+    color: var(--color-text-dim);
+    letter-spacing: 2px;
+}
+
+.time-value {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    color: var(--color-toxic-green);
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-shadow: 0 0 6px var(--color-toxic-green-glow);
+}
+
+/* Alert Badge */
+.alert-badge {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    padding: var(--space-xs) var(--space-sm);
+    background: rgba(255, 34, 85, 0.1);
+    border: 1px solid var(--color-border-danger);
+    border-radius: var(--radius-sm);
+    animation: alertBlink 3s ease-in-out infinite;
+}
+
+@keyframes alertBlink {
+    0%, 90%, 100% { opacity: 1; }
+    95% { opacity: 0.4; }
+}
+
+.alert-count {
+    font-family: var(--font-display);
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--color-arterial);
+}
+
+.alert-icon {
+    font-size: 14px;
+}
+
+/* ============================================================
+   MAIN CONTENT AREA
+   ============================================================ */
+.main-content {
+    display: flex;
+    gap: var(--space-sm);
+    flex: 1;
+    min-height: 0;
+}
+
+/* ============================================================
+   PANEL BASE STYLES
+   ============================================================ */
+.panel {
+    background: linear-gradient(145deg, var(--color-bg-panel) 0%, rgba(8, 14, 12, 0.95) 100%);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.panel::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(90deg,
+        transparent 0%,
+        var(--color-toxic-green) 30%,
+        var(--color-toxic-green-dim) 70%,
+        transparent 100%
+    );
+    opacity: 0.3;
+}
+
+/* Organic vein border effect on left side */
+.panel-vein-border {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 3px;
+    height: 100%;
+    background: linear-gradient(180deg,
+        var(--color-toxic-green-dark) 0%,
+        var(--color-vein-bright) 20%,
+        var(--color-toxic-green-dark) 40%,
+        var(--color-vein) 50%,
+        var(--color-toxic-green-dark) 60%,
+        var(--color-vein-bright) 80%,
+        var(--color-toxic-green-dark) 100%
+    );
+    opacity: 0.6;
+    z-index: 2;
+}
+
+.panel-vein-border::after {
+    content: '';
+    position: absolute;
+    left: 3px;
+    top: 10%;
+    width: 8px;
+    height: 1px;
+    background: var(--color-vein-bright);
+    opacity: 0.3;
+    box-shadow:
+        0 120px 0 var(--color-vein-bright),
+        4px 60px 0 var(--color-vein-bright),
+        0 200px 0 var(--color-vein-bright),
+        5px 180px 0 var(--color-vein-bright);
+}
+
+.panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-sm) var(--space-md);
+    border-bottom: 1px solid var(--color-border);
+    position: relative;
+    z-index: 3;
+    padding-left: var(--space-lg);
+}
+
+.panel-title {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+}
+
+.panel-icon {
+    font-size: 10px;
+    color: var(--color-toxic-green);
+    opacity: 0.7;
+}
+
+.panel-title h2 {
+    font-family: var(--font-display);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 3px;
+    color: var(--color-text-secondary);
+    text-transform: uppercase;
+}
+
+.panel-controls {
+    display: flex;
+    gap: 4px;
+}
+
+.control-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--color-text-dim);
+    opacity: 0.4;
+}
+
+.control-dot.active {
+    background: var(--color-toxic-green);
+    opacity: 0.8;
+    box-shadow: 0 0 4px var(--color-toxic-green-glow);
+}
+
+/* ============================================================
+   LEFT PANEL: ORGAN STATUS
+   ============================================================ */
+.organ-panel {
+    flex: 0 0 30%;
+    min-width: 340px;
+}
+
+.organ-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-sm);
+    padding: var(--space-sm) var(--space-md) var(--space-sm) var(--space-lg);
+    flex: 1;
+    overflow-y: auto;
+}
+
+/* Organ Card */
+.organ-card {
+    background: linear-gradient(135deg, rgba(15, 28, 24, 0.9), rgba(10, 18, 14, 0.95));
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    padding: var(--space-sm);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    animation: organBreathe var(--breathe-interval) ease-in-out infinite;
+}
+
+.organ-card:hover {
+    border-color: var(--color-border-bright);
+    box-shadow: inset 0 0 20px rgba(0, 255, 136, 0.05), 0 0 10px rgba(0, 255, 136, 0.05);
+}
+
+.organ-card[data-organ="heart"] { animation-delay: 0s; }
+.organ-card[data-organ="lungs"] { animation-delay: 0.5s; }
+.organ-card[data-organ="liver"] { animation-delay: 1s; }
+.organ-card[data-organ="brain"] { animation-delay: 1.5s; }
+.organ-card[data-organ="kidneys"] { animation-delay: 2s; }
+.organ-card[data-organ="stomach"] { animation-delay: 2.5s; }
+
+@keyframes organBreathe {
+    0%, 100% { 
+        transform: scale(1); 
+        box-shadow: inset 0 0 10px rgba(0, 255, 136, 0.02);
+    }
+    50% { 
+        transform: scale(1.008); 
+        box-shadow: inset 0 0 15px rgba(0, 255, 136, 0.04);
+    }
+}
+
+.organ-visual {
+    position: relative;
+    width: 64px;
+    height: 64px;
+    align-self: center;
+}
+
+.organ-svg {
+    width: 100%;
+    height: 100%;
+}
+
+.organ-outline {
+    stroke: var(--color-toxic-green);
+    opacity: 0.6;
+}
+
+.organ-fill {
+    color: var(--color-toxic-green);
+}
+
+.organ-pulse-marker {
+    color: var(--color-toxic-green);
+    animation: organPulseMarker 1.5s ease-in-out infinite;
+}
+
+@keyframes organPulseMarker {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+}
+
+.organ-glow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 40px;
+    height: 40px;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    background: radial-gradient(circle, var(--color-toxic-green-glow) 0%, transparent 70%);
+    opacity: 0.5;
+    animation: organGlow 2s ease-in-out infinite;
+}
+
+@keyframes organGlow {
+    0%, 100% { opacity: 0.3; transform: translate(-50%, -50%) scale(1); }
+    50% { opacity: 0.6; transform: translate(-50%, -50%) scale(1.2); }
+}
+
+.organ-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.organ-name {
+    font-family: var(--font-display);
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--color-toxic-green);
+    letter-spacing: 2px;
+}
+
+.organ-sublabel {
+    font-family: var(--font-mono);
+    font-size: 8px;
+    color: var(--color-text-dim);
+    letter-spacing: 1px;
+}
+
+.organ-metrics {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 2px;
+}
+
+.metric {
+    display: flex;
+    flex-direction: column;
+}
+
+.metric-label {
+    font-family: var(--font-mono);
+    font-size: 7px;
+    color: var(--color-text-dim);
+    letter-spacing: 1px;
+}
+
+.metric-value {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--color-text-data);
+    font-weight: 600;
+    text-shadow: 0 0 4px var(--color-toxic-green-glow);
+}
+
+.health-bar {
+    width: 100%;
+    height: 3px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 2px;
+    overflow: hidden;
+    position: relative;
+    margin-top: 2px;
+}
+
+.health-fill {
+    height: 100%;
+    background: var(--color-toxic-green);
+    border-radius: 2px;
+    position: relative;
+    transition: width 1s ease;
+    box-shadow: 0 0 6px var(--color-toxic-green-glow);
+}
+
+.health-fill.caution {
+    background: var(--color-nanite);
+    box-shadow: 0 0 6px var(--color-nanite-glow);
+}
+
+.health-fill.warning {
+    background: var(--color-amber);
+    box-shadow: 0 0 6px var(--color-amber-glow);
+}
+
+.health-pulse {
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 4px;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 2px;
+    animation: healthPulseSlide 2s ease-in-out infinite;
+}
+
+@keyframes healthPulseSlide {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
+}
+
+.organ-status-badge {
+    position: absolute;
+    top: var(--space-xs);
+    right: var(--space-xs);
+    font-family: var(--font-mono);
+    font-size: 7px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    padding: 2px 5px;
+    border-radius: 2px;
+}
+
+.organ-status-badge.optimal {
+    color: var(--color-toxic-green);
+    background: rgba(0, 255, 136, 0.1);
+    border: 1px solid rgba(0, 255, 136, 0.2);
+}
+
+.organ-status-badge.caution {
+    color: var(--color-nanite);
+    background: rgba(0, 221, 255, 0.1);
+    border: 1px solid rgba(0, 221, 255, 0.2);
+}
+
+.organ-status-badge.warning {
+    color: var(--color-amber);
+    background: rgba(255, 170, 0, 0.1);
+    border: 1px solid rgba(255, 170, 0, 0.2);
+    animation: warningBadgePulse 2s ease-in-out infinite;
+}
+
+@keyframes warningBadgePulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+/* ============================================================
+   CENTER SECTION: ANATOMICAL BODY + NEURAL LINK
+   ============================================================ */
+.center-section {
+    flex: 0 0 26%;
+    min-width: 260px;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+}
+
+/* Anatomy Container */
+.anatomy-container {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.anatomy-scan-ring {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    border: 1px solid rgba(0, 255, 136, 0.1);
+    border-radius: 50%;
+    animation: scanRingPulse 4s ease-in-out infinite;
+}
+
+.ring-1 {
+    width: 160px;
+    height: 160px;
+    animation-delay: 0s;
+}
+
+.ring-2 {
+    width: 220px;
+    height: 220px;
+    animation-delay: 1.3s;
+    border-color: rgba(0, 221, 255, 0.08);
+}
+
+.ring-3 {
+    width: 280px;
+    height: 280px;
+    animation-delay: 2.6s;
+    border-color: rgba(170, 68, 255, 0.06);
+}
+
+@keyframes scanRingPulse {
+    0%, 100% { opacity: 0.3; transform: translate(-50%, -50%) scale(1); }
+    50% { opacity: 0.8; transform: translate(-50%, -50%) scale(1.05); }
+}
+
+/* Body Wireframe */
+.body-wireframe {
+    width: 100%;
+    height: 100%;
+    max-height: 100%;
+    position: relative;
+    z-index: 2;
+}
+
+.wireframe-head {
+    stroke: var(--color-toxic-green);
+    stroke-width: 1.2;
+    fill: none;
+    opacity: 0.5;
+}
+
+.wireframe-eye {
+    fill: var(--color-toxic-green);
+    opacity: 0.8;
+    animation: eyeGlow 3s ease-in-out infinite;
+}
+
+@keyframes eyeGlow {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 1; }
+}
+
+.wireframe-feature {
+    stroke: var(--color-toxic-green);
+    stroke-width: 0.8;
+    opacity: 0.4;
+}
+
+.wireframe-line,
+.wireframe-torso,
+.wireframe-pelvis {
+    stroke: var(--color-toxic-green);
+    stroke-width: 1;
+    fill: none;
+    opacity: 0.4;
+}
+
+.wireframe-rib {
+    stroke: var(--color-toxic-green);
+    stroke-width: 0.7;
+    opacity: 0.2;
+}
+
+.wireframe-spine {
+    stroke: var(--color-nanite);
+    stroke-width: 1.2;
+    opacity: 0.3;
+}
+
+.wireframe-arm,
+.wireframe-leg {
+    stroke: var(--color-toxic-green);
+    stroke-width: 1;
+    fill: none;
+    opacity: 0.35;
+}
+
+.wireframe-joint {
+    stroke: var(--color-toxic-green);
+    stroke-width: 0.8;
+    fill: rgba(0, 255, 136, 0.15);
+    opacity: 0.6;
+}
+
+.wireframe-foot {
+    stroke: var(--color-toxic-green);
+    stroke-width: 0.8;
+    fill: none;
+    opacity: 0.3;
+}
+
+/* Organ Hotspots */
+.hotspot {
+    fill: var(--color-toxic-green);
+    stroke: var(--color-toxic-green);
+    stroke-width: 0.5;
+    opacity: 0.2;
+    cursor: pointer;
+    transition: opacity 0.3s;
+}
+
+.hotspot:hover {
+    opacity: 0.5;
+}
+
+/* Data Flow Lines */
+.data-flow {
+    stroke: var(--color-nanite);
+    stroke-width: 0.8;
+    opacity: 0.3;
+}
+
+/* Body Label */
+.body-label {
+    position: absolute;
+    bottom: var(--space-sm);
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    z-index: 3;
+}
+
+.label-line {
+    width: 30px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--color-toxic-green));
+    opacity: 0.4;
+}
+
+.label-text {
+    font-family: var(--font-mono);
+    font-size: 8px;
+    color: var(--color-text-dim);
+    letter-spacing: 2px;
+    white-space: nowrap;
+}
+
+/* ============================================================
+   NEURAL LINK PANEL
+   ============================================================ */
+.neural-panel {
+    flex: 0 0 auto;
+}
+
+.neural-overall {
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--color-toxic-green);
+    text-shadow: 0 0 8px var(--color-toxic-green-glow);
+}
+
+.neural-content {
+    display: flex;
+    flex-direction: column;
+    padding: var(--space-sm) var(--space-md) var(--space-sm) var(--space-lg);
+}
+
+#neural-canvas {
+    width: 100%;
+    height: 120px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.neural-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-xs) var(--space-md);
+    margin-top: var(--space-sm);
+}
+
+.neural-stat {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.ns-label {
+    font-family: var(--font-mono);
+    font-size: 8px;
+    color: var(--color-text-dim);
+    letter-spacing: 1px;
+}
+
+.ns-value {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--color-nanite);
+    font-weight: 600;
+}
+
+.ns-bar {
+    width: 100%;
+    height: 2px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 1px;
+    overflow: hidden;
+}
+
+.ns-fill {
+    height: 100%;
+    background: var(--color-nanite);
+    border-radius: 1px;
+    box-shadow: 0 0 4px var(--color-nanite-glow);
+    transition: width 1s ease;
+}
+
+/* ============================================================
+   RIGHT SECTION
+   ============================================================ */
+.right-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    min-width: 300px;
+}
+
+/* ============================================================
+   MUTATION PANEL
+   ============================================================ */
+.mutation-panel {
+    flex: 0 0 auto;
+}
+
+.mutation-content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    padding: var(--space-sm) var(--space-md) var(--space-sm) var(--space-lg);
+}
+
+.mutation-timeline {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+}
+
+.timeline-track {
+    width: 100%;
+    height: 6px;
+    background: linear-gradient(90deg,
+        rgba(0, 255, 136, 0.15),
+        rgba(0, 221, 255, 0.15),
+        rgba(255, 170, 0, 0.15),
+        rgba(255, 34, 85, 0.15)
+    );
+    border-radius: 3px;
+    position: relative;
+    overflow: hidden;
+}
+
+.timeline-progress {
+    height: 100%;
+    background: linear-gradient(90deg,
+        var(--color-toxic-green),
+        var(--color-nanite)
+    );
+    border-radius: 3px;
+    transition: width 2s ease;
+    box-shadow: 0 0 8px var(--color-toxic-green-glow);
+}
+
+.timeline-marker {
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 12px;
+    height: 12px;
+    background: var(--color-toxic-green);
+    border-radius: 50%;
+    border: 2px solid var(--color-bg-deep);
+    box-shadow: 0 0 8px var(--color-toxic-green-glow);
+}
+
+.marker-pulse {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 20px;
+    height: 20px;
+    border: 1px solid var(--color-toxic-green);
+    border-radius: 50%;
+    animation: markerPulseExpand 2s ease-out infinite;
+}
+
+@keyframes markerPulseExpand {
+    0% { width: 12px; height: 12px; opacity: 0.8; }
+    100% { width: 30px; height: 30px; opacity: 0; }
+}
+
+.timeline-labels {
+    display: flex;
+    justify-content: space-between;
+    font-family: var(--font-mono);
+    font-size: 7px;
+    color: var(--color-text-dim);
+    letter-spacing: 1px;
+}
+
+/* Mutation Entries */
+.mutation-entries {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.mutation-entry {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-xs) var(--space-sm);
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    border-radius: var(--radius-sm);
+    transition: background 0.3s, border-color 0.3s;
+}
+
+.mutation-entry:hover {
+    background: rgba(0, 255, 136, 0.03);
+    border-color: var(--color-border);
+}
+
+.me-icon {
+    font-size: 10px;
+    opacity: 0.6;
+    color: var(--color-toxic-green);
+}
+
+.mutation-entry.stable .me-icon { color: var(--color-toxic-green); }
+.mutation-entry.adaptive .me-icon { color: var(--color-nanite); }
+.mutation-entry.warning .me-icon { color: var(--color-amber); }
+
+.me-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.me-name {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--color-text-primary);
+    letter-spacing: 1px;
+    font-weight: 600;
+}
+
+.me-detail {
+    font-family: var(--font-mono);
+    font-size: 8px;
+    color: var(--color-text-dim);
+}
+
+.me-status {
+    font-family: var(--font-mono);
+    font-size: 8px;
+    font-weight: 600;
+    color: var(--color-toxic-green);
+    padding: 2px 6px;
+    background: rgba(0, 255, 136, 0.08);
+    border: 1px solid rgba(0, 255, 136, 0.15);
+    border-radius: 2px;
+    letter-spacing: 1px;
+    white-space: nowrap;
+}
+
+.me-status.adaptive {
+    color: var(--color-nanite);
+    background: rgba(0, 221, 255, 0.08);
+    border-color: rgba(0, 221, 255, 0.15);
+}
+
+.me-status.warning {
+    color: var(--color-amber);
+    background: rgba(255, 170, 0, 0.08);
+    border-color: rgba(255, 170, 0, 0.15);
+    animation: mutationWarningPulse 2s ease-in-out infinite;
+}
+
+@keyframes mutationWarningPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+/* ============================================================
+   NANITE PANEL
+   ============================================================ */
+.nanite-panel {
+    flex: 0 0 auto;
+}
+
+.nanite-count {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.count-value {
+    font-family: var(--font-display);
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--color-nanite);
+    text-shadow: 0 0 8px var(--color-nanite-glow);
+}
+
+.count-label {
+    font-family: var(--font-mono);
+    font-size: 7px;
+    color: var(--color-text-dim);
+    letter-spacing: 2px;
+}
+
+.nanite-content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    padding: var(--space-sm) var(--space-md) var(--space-sm) var(--space-lg);
+}
+
+#nanite-swarm-canvas {
+    width: 100%;
+    height: 100px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: rgba(0, 0, 0, 0.4);
+}
+
+.nanite-deploy-zones {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-xs) var(--space-sm);
+}
+
+.zone {
+    display: grid;
+    grid-template-columns: 52px 1fr 30px;
+    align-items: center;
+    gap: var(--space-xs);
+}
+
+.zone-name {
+    font-family: var(--font-mono);
+    font-size: 8px;
+    color: var(--color-text-dim);
+    letter-spacing: 1px;
+}
+
+.zone-bar {
+    width: 100%;
+    height: 3px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.zone-fill {
+    height: 100%;
+    background: var(--color-nanite);
+    border-radius: 2px;
+    box-shadow: 0 0 4px var(--color-nanite-glow);
+    transition: width 1.5s ease;
+}
+
+.zone-pct {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    color: var(--color-nanite);
+    text-align: right;
+}
+
+/* ============================================================
+   TOXIN PANEL
+   ============================================================ */
+.toxin-panel {
+    flex: 0 0 auto;
+}
+
+.toxin-content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    padding: var(--space-sm) var(--space-md) var(--space-sm) var(--space-lg);
+}
+
+.toxin-gauge-container {
+    display: flex;
+    justify-content: center;
+}
+
+.toxin-gauge {
+    width: 140px;
+    height: 85px;
+}
+
+.toxin-gauge-fill {
+    stroke: var(--color-amber);
+    transition: stroke-dashoffset 2s ease, stroke 1s ease;
+}
+
+.toxin-gauge-value {
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 700;
+    fill: var(--color-amber);
+    text-anchor: middle;
+}
+
+.toxin-gauge-label {
+    font-family: var(--font-mono);
+    font-size: 8px;
+    fill: var(--color-text-dim);
+    text-anchor: middle;
+    letter-spacing: 2px;
+}
+
+.toxin-breakdown {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.toxin-item {
+    display: grid;
+    grid-template-columns: 80px 1fr 32px;
+    align-items: center;
+    gap: var(--space-xs);
+}
+
+.ti-name {
+    font-family: var(--font-mono);
+    font-size: 8px;
+    color: var(--color-text-dim);
+    letter-spacing: 0.5px;
+}
+
+.ti-bar {
+    width: 100%;
+    height: 3px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.ti-fill {
+    height: 100%;
+    background: var(--color-arterial);
+    border-radius: 2px;
+    box-shadow: 0 0 4px var(--color-arterial-glow);
+    opacity: 0.7;
+    transition: width 1.5s ease;
+}
+
+.ti-value {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    color: var(--color-arterial);
+    text-align: right;
+    opacity: 0.8;
+}
+
+/* ============================================================
+   GENE-SPLICE MATRIX PANEL
+   ============================================================ */
+.gene-panel {
+    flex: 1;
+    min-height: 0;
+}
+
+.gene-content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    padding: var(--space-sm) var(--space-md) var(--space-sm) var(--space-lg);
+    flex: 1;
+}
+
+.gene-hex-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 3px;
+    flex: 1;
+}
+
+.hex-cell {
+    aspect-ratio: 1;
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    position: relative;
+}
+
+.hex-cell:hover {
+    filter: brightness(1.5);
+    z-index: 2;
+}
+
+.hex-cell.optimal {
+    background: rgba(0, 255, 136, 0.25);
+    border: 1px solid rgba(0, 255, 136, 0.15);
+}
+
+.hex-cell.caution {
+    background: rgba(0, 221, 255, 0.2);
+    border: 1px solid rgba(0, 221, 255, 0.12);
+}
+
+.hex-cell.warning {
+    background: rgba(255, 34, 85, 0.2);
+    border: 1px solid rgba(255, 34, 85, 0.12);
+    animation: hexWarningPulse 3s ease-in-out infinite;
+}
+
+.hex-cell.neutral {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.hex-cell.necrotic {
+    background: rgba(170, 68, 255, 0.15);
+    border: 1px solid rgba(170, 68, 255, 0.1);
+}
+
+@keyframes hexWarningPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.gene-legend {
+    display: flex;
+    justify-content: center;
+    gap: var(--space-md);
+    padding-top: var(--space-xs);
+    border-top: 1px solid var(--color-border);
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-family: var(--font-mono);
+    font-size: 8px;
+    color: var(--color-text-dim);
+    letter-spacing: 0.5px;
+}
+
+.legend-color {
+    width: 8px;
+    height: 8px;
+    border-radius: 2px;
+}
+
+.legend-color.optimal { background: var(--color-toxic-green); opacity: 0.5; }
+.legend-color.caution { background: var(--color-nanite); opacity: 0.5; }
+.legend-color.warning { background: var(--color-arterial); opacity: 0.5; }
+.legend-color.neutral { background: rgba(255, 255, 255, 0.15); }
+
+/* ============================================================
+   BOTTOM BAR
+   ============================================================ */
+.bottom-bar {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    padding: var(--space-sm) var(--space-md);
+    background: linear-gradient(0deg, rgba(10, 18, 16, 0.95), rgba(8, 14, 12, 0.9));
+    border: 1px solid var(--color-border);
+    border-right: 3px solid var(--color-toxic-green-dark);
+    border-radius: var(--radius-sm);
+    position: relative;
+    overflow: hidden;
+}
+
+.bottom-bar::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(90deg,
+        transparent,
+        var(--color-toxic-green),
+        transparent
+    );
+    opacity: 0.3;
+}
+
+/* Heartbeat */
+.heartbeat-container {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    flex: 0 0 320px;
+}
+
+#heartbeat-canvas {
+    flex: 1;
+    height: 50px;
+}
+
+.bpm-display {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 0 0 60px;
+}
+
+.bpm-value {
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--color-arterial);
+    text-shadow: 0 0 10px var(--color-arterial-glow);
+    animation: bpmPulse var(--heartbeat-interval) ease-in-out infinite;
+}
+
+@keyframes bpmPulse {
+    0%, 100% { transform: scale(1); }
+    15% { transform: scale(1.08); }
+    30% { transform: scale(1); }
+}
+
+.bpm-unit {
+    font-family: var(--font-mono);
+    font-size: 8px;
+    color: var(--color-text-dim);
+    letter-spacing: 2px;
+}
+
+/* Vitals Strip */
+.vitals-strip {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    padding: var(--space-xs) var(--space-md);
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+}
+
+.vital {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1px;
+}
+
+.vital-icon {
+    font-size: 12px;
+    opacity: 0.5;
+}
+
+.vital-label {
+    font-family: var(--font-mono);
+    font-size: 7px;
+    color: var(--color-text-dim);
+    letter-spacing: 1px;
+}
+
+.vital-value {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--color-toxic-green);
+    font-weight: 600;
+    text-shadow: 0 0 4px var(--color-toxic-green-glow);
+}
+
+.vital-separator {
+    width: 1px;
+    height: 28px;
+    background: var(--color-border);
+}
+
+/* System Log */
+.system-log {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.log-header {
+    font-family: var(--font-mono);
+    font-size: 8px;
+    color: var(--color-text-dim);
+    letter-spacing: 2px;
+    padding-bottom: 2px;
+}
+
+.log-entries {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    max-height: 48px;
+}
+
+.log-entry {
+    display: flex;
+    gap: var(--space-sm);
+    font-family: var(--font-mono);
+    font-size: 9px;
+    padding: 1px 0;
+    opacity: 0.8;
+    animation: logEntryFade 8s ease-in-out forwards;
+}
+
+.log-entry.warning {
+    color: var(--color-amber);
+}
+
+.log-time {
+    color: var(--color-text-dim);
+    flex-shrink: 0;
+}
+
+.log-msg {
+    color: var(--color-text-secondary);
+}
+
+.log-entry.warning .log-msg {
+    color: var(--color-amber);
+}
+
+@keyframes logEntryFade {
+    0% { opacity: 0; transform: translateY(-5px); }
+    5% { opacity: 0.8; transform: translateY(0); }
+    85% { opacity: 0.8; }
+    100% { opacity: 0.3; }
+}
+
+/* ============================================================
+   SCROLLBAR STYLING
+   ============================================================ */
+::-webkit-scrollbar {
+    width: 3px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.2);
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(0, 255, 136, 0.2);
+    border-radius: 2px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 255, 136, 0.4);
+}
+
+/* ============================================================
+   SELECTION STYLING
+   ============================================================ */
+::selection {
+    background: rgba(0, 255, 136, 0.2);
+    color: var(--color-text-bright);
+}
+
+/* ============================================================
+   RESPONSIVE CONSIDERATIONS
+   ============================================================ */
+@media (max-width: 1200px) {
+    .organ-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .center-section {
+        min-width: 200px;
+    }
+}
+
+@media (max-width: 900px) {
+    .main-content {
+        flex-direction: column;
+    }
+    
+    .organ-panel,
+    .center-section {
+        flex: 0 0 auto;
+        min-width: 0;
+    }
+    
+    .right-section {
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+    
+    .right-section .panel {
+        flex: 1 1 45%;
+    }
+}

@@ -1,0 +1,1148 @@
+/* ==========================================================================
+   1. SYSTEM VARIABLES & THEME SETUP
+   ========================================================================== */
+:root {
+  /* Dynamic Sunlight Variables (Manipulated by JS slider) */
+  --sun-intensity: 0.65; /* Base intensity scale 0 to 1 */
+  --sun-hue: calc(45 + (var(--sun-intensity) * 40)); /* Shifting from gold to warm amber */
+  --leaf-hue: calc(140 - (var(--sun-intensity) * 30)); /* Shifting from deep forest to vibrant emerald */
+  
+  /* Primary Color Palette */
+  --color-bg-deep: hsl(var(--leaf-hue), 35%, 8%);
+  --color-bg-base: hsl(var(--leaf-hue), 25%, 12%);
+  --color-bg-card: hsl(var(--leaf-hue), 20%, 15%);
+  --color-bg-card-glass: hsla(var(--leaf-hue), 20%, 15%, 0.7);
+  
+  /* Accent Colors */
+  --color-accent-sun: hsl(var(--sun-hue), 90%, 55%);
+  --color-accent-sun-glow: hsla(var(--sun-hue), 90%, 55%, 0.35);
+  --color-accent-leaf: hsl(var(--leaf-hue), 75%, 45%);
+  --color-accent-leaf-glow: hsla(var(--leaf-hue), 75%, 45%, 0.25);
+  
+  /* Neutral / Text Palette */
+  --color-text-bright: hsl(var(--sun-hue), 40%, 95%);
+  --color-text-main: hsl(var(--leaf-hue), 15%, 82%);
+  --color-text-muted: hsl(var(--leaf-hue), 10%, 60%);
+  --color-border: hsla(var(--sun-hue), 30%, 40%, 0.25);
+  --color-border-glow: hsla(var(--sun-hue), 60%, 50%, 0.45);
+  
+  /* Fonts */
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-body: 'Plus Jakarta Sans', system-ui, sans-serif;
+  
+  /* Layout Sizing */
+  --radius-organic-lg: 32px 8px 32px 8px;
+  --radius-organic-md: 16px 4px 16px 4px;
+  --radius-organic-sm: 8px 2px 8px 2px;
+  --transition-organic: all 0.45s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+/* ==========================================================================
+   2. GLOBAL STYLES & LAYOUT RESET
+   ========================================================================== */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  background-color: var(--color-bg-deep);
+  color: var(--color-text-main);
+  font-family: var(--font-body);
+  line-height: 1.6;
+}
+
+body {
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* Scrollbar customization */
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-bg-deep);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 10px;
+  border: 2px solid var(--color-bg-deep);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-accent-leaf);
+}
+
+/* Ambient Background Orbs */
+.ambient-glows {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.glow-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(140px);
+  opacity: calc(0.15 + (var(--sun-intensity) * 0.15));
+  transition: var(--transition-organic);
+}
+
+.orb-1 {
+  width: 50vw;
+  height: 50vw;
+  top: -10vw;
+  right: -10vw;
+  background: radial-gradient(circle, var(--color-accent-sun) 0%, transparent 70%);
+}
+
+.orb-2 {
+  width: 60vw;
+  height: 60vw;
+  bottom: -20vw;
+  left: -10vw;
+  background: radial-gradient(circle, var(--color-accent-leaf) 0%, transparent 70%);
+}
+
+/* ==========================================================================
+   3. PHOTOSYNTHESIS LOADING INDICATOR
+   ========================================================================== */
+.loader-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--color-bg-deep);
+  z-index: 9999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+}
+
+.loader-content {
+  text-align: center;
+  max-width: 320px;
+}
+
+.leaf-svg-container {
+  width: 120px;
+  height: 120px;
+  margin: 0 auto 24px auto;
+}
+
+.leaf-loader {
+  width: 100%;
+  height: 100%;
+}
+
+.leaf-outline {
+  fill: none;
+  stroke: var(--color-accent-leaf);
+  stroke-width: 2.5;
+  stroke-dasharray: 300;
+  stroke-dashoffset: 300;
+  animation: drawOutline 2s ease-out forwards;
+}
+
+.leaf-veins {
+  fill: none;
+  stroke: var(--color-accent-sun);
+  stroke-width: 1.5;
+  stroke-dasharray: 200;
+  stroke-dashoffset: 200;
+  animation: drawVeins 2s ease-out 1s forwards;
+}
+
+.loader-text {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  color: var(--color-text-bright);
+  margin-bottom: 16px;
+  letter-spacing: 0.05em;
+}
+
+.progress-bar-container {
+  width: 100%;
+  height: 4px;
+  background: hsla(var(--leaf-hue), 20%, 25%, 0.6);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.progress-bar {
+  width: 0%;
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-accent-leaf), var(--color-accent-sun));
+  border-radius: 10px;
+  animation: loadProgress 2.5s cubic-bezier(0.1, 0.8, 0.1, 1) forwards;
+}
+
+@keyframes drawOutline {
+  to { stroke-dashoffset: 0; }
+}
+
+@keyframes drawVeins {
+  to { stroke-dashoffset: 0; }
+}
+
+@keyframes loadProgress {
+  to { width: 100%; }
+}
+
+/* ==========================================================================
+   4. APP CONTAINER & HEADER
+   ========================================================================== */
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  padding: 1.5rem;
+  gap: 1.5rem;
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+/* Header Styling */
+.main-header {
+  background: var(--color-bg-card-glass);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-organic-md);
+  padding: 1.25rem 2rem;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1.5rem;
+  box-shadow: 0 8px 32px -4px rgba(0, 0, 0, 0.3);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.logo-mark {
+  width: 48px;
+  height: 48px;
+}
+
+.logo-svg {
+  width: 100%;
+  height: 100%;
+}
+
+.sun-ring {
+  fill: none;
+  stroke: var(--color-accent-sun);
+  stroke-width: 4;
+  stroke-dasharray: 6 3;
+}
+
+.leaf-inner {
+  fill: var(--color-accent-leaf);
+}
+
+.brand-text h1 {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  color: var(--color-text-bright);
+  line-height: 1.1;
+}
+
+.brand-text .subtitle {
+  font-size: 0.75rem;
+  color: var(--color-accent-leaf);
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* Telemetry Panel */
+.telemetry-panel {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 2rem;
+}
+
+.telemetry-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.telemetry-item .label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-text-muted);
+}
+
+.telemetry-item .val {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  color: var(--color-text-bright);
+  font-weight: 600;
+}
+
+.glow-text {
+  text-shadow: 0 0 10px var(--color-accent-leaf-glow);
+}
+
+/* Interactive Solar Battery Visual */
+.bar-visual {
+  width: 80px;
+  height: 6px;
+  background: hsla(var(--leaf-hue), 20%, 30%, 0.6);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-top: 2px;
+}
+
+.bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-accent-leaf), var(--color-accent-sun));
+  border-radius: 4px;
+  box-shadow: 0 0 8px var(--color-accent-sun);
+}
+
+/* Sunlight Controller Slider */
+.slider-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+#sun-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100px;
+  height: 6px;
+  border-radius: 4px;
+  background: hsla(var(--leaf-hue), 20%, 30%, 0.6);
+  outline: none;
+}
+
+#sun-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--color-accent-sun);
+  cursor: pointer;
+  box-shadow: 0 0 10px var(--color-accent-sun);
+  transition: transform 0.1s ease;
+}
+
+#sun-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+}
+
+/* ==========================================================================
+   5. LAYOUT: SIDEBAR & MAIN WRAPPER
+   ========================================================================== */
+.layout-wrapper {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+@media (max-width: 968px) {
+  .layout-wrapper {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ==========================================================================
+   6. VINE & LEAF NAVIGATION (SIDEBAR)
+   ========================================================================== */
+.sidebar-nav {
+  background: var(--color-bg-card-glass);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-organic-md);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  box-shadow: 0 8px 32px -4px rgba(0, 0, 0, 0.2);
+}
+
+.sidebar-header h3 {
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  letter-spacing: 0.1em;
+  color: var(--color-accent-sun);
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: 0.5rem;
+}
+
+/* Organic Navigation Branching */
+.organic-nav ul {
+  list-style: none;
+  position: relative;
+}
+
+.organic-nav > ul::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 10px;
+  width: 2px;
+  height: calc(100% - 20px);
+  background: linear-gradient(to bottom, var(--color-accent-leaf-glow), var(--color-border));
+}
+
+.nav-item {
+  position: relative;
+  margin-bottom: 1.25rem;
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--color-text-main);
+  text-decoration: none;
+  font-size: 0.95rem;
+  font-weight: 500;
+  padding: 0.35rem 0.5rem 0.35rem 1.5rem;
+  border-radius: var(--radius-organic-sm);
+  transition: var(--transition-organic);
+}
+
+/* Interactive Vine connection line */
+.nav-link::before {
+  content: '';
+  position: absolute;
+  left: 10px;
+  top: 15px;
+  width: 8px;
+  height: 2px;
+  background: var(--color-border);
+  transition: var(--transition-organic);
+}
+
+.nav-link:hover {
+  color: var(--color-text-bright);
+  background: hsla(var(--leaf-hue), 20%, 20%, 0.4);
+}
+
+.nav-link:hover::before {
+  background: var(--color-accent-sun);
+  width: 12px;
+}
+
+/* Sub-Navigation (Leaves growing off the main vine) */
+.sub-nav {
+  margin-left: 1.5rem;
+  margin-top: 0.5rem;
+  padding-left: 0.75rem;
+  border-left: 1px dashed var(--color-border);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.sub-link {
+  color: var(--color-text-muted);
+  text-decoration: none;
+  font-size: 0.85rem;
+  transition: var(--transition-organic);
+  display: inline-block;
+  padding: 0.15rem 0;
+}
+
+.sub-link:hover {
+  color: var(--color-accent-leaf);
+  transform: translateX(4px);
+}
+
+.sub-link.active {
+  color: var(--color-accent-sun);
+  font-weight: 600;
+}
+
+/* Node Map Widget */
+.node-map-card {
+  background: hsla(var(--leaf-hue), 30%, 8%, 0.5);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-organic-sm);
+  padding: 1rem;
+}
+
+.node-map-card h4 {
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+  color: var(--color-text-bright);
+  margin-bottom: 0.75rem;
+}
+
+.mini-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  width: 60px;
+  margin-bottom: 0.75rem;
+}
+
+.grid-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: hsla(var(--leaf-hue), 10%, 30%, 0.8);
+}
+
+.grid-dot.active {
+  background: var(--color-accent-leaf);
+  box-shadow: 0 0 6px var(--color-accent-leaf);
+  animation: pulseLight 2s infinite ease-in-out;
+}
+
+.grid-dot.active:nth-child(2) { animation-delay: 0.3s; }
+.grid-dot.active:nth-child(5) { animation-delay: 0.6s; }
+
+.grid-desc {
+  font-size: 0.65rem;
+  color: var(--color-text-muted);
+  line-height: 1.3;
+}
+
+@keyframes pulseLight {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+/* ==========================================================================
+   7. WIKI CONTENT AREA
+   ========================================================================== */
+.wiki-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Wiki Toolbar */
+.wiki-toolbar {
+  background: var(--color-bg-card-glass);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-organic-md);
+  padding: 0.75rem 1.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.breadcrumbs {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+}
+
+.breadcrumbs span.current {
+  color: var(--color-text-bright);
+  font-weight: 500;
+}
+
+.actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.btn {
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-organic-sm);
+  border: none;
+  cursor: pointer;
+  transition: var(--transition-organic);
+}
+
+.btn-primary {
+  background: var(--color-accent-leaf);
+  color: var(--color-bg-deep);
+}
+
+.btn-primary:hover {
+  background: var(--color-accent-sun);
+  box-shadow: 0 0 12px var(--color-accent-sun-glow);
+  transform: translateY(-2px);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--color-text-main);
+  border: 1px solid var(--color-border);
+}
+
+.btn-secondary:hover {
+  background: hsla(var(--leaf-hue), 20%, 20%, 0.4);
+  color: var(--color-text-bright);
+}
+
+/* Article Layout Grid */
+.article-grid {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 1.5rem;
+}
+
+@media (max-width: 1200px) {
+  .article-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ==========================================================================
+   8. WIKI ARTICLE STYLING (THEMED CONTENT)
+   ========================================================================== */
+.wiki-article {
+  background: var(--color-bg-card-glass);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-organic-lg);
+  padding: 2.5rem;
+  box-shadow: 0 12px 40px -8px rgba(0, 0, 0, 0.3);
+}
+
+@media (max-width: 600px) {
+  .wiki-article {
+    padding: 1.5rem;
+  }
+}
+
+.article-badge {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--color-accent-sun);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 0.75rem;
+}
+
+.article-header h1 {
+  font-family: var(--font-display);
+  font-size: 2.4rem;
+  line-height: 1.15;
+  color: var(--color-text-bright);
+  margin-bottom: 1rem;
+  font-weight: 800;
+}
+
+.article-header .meta {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+/* Elegant drop cap */
+.intro {
+  font-size: 1.15rem;
+  line-height: 1.7;
+  color: var(--color-text-bright);
+  margin-bottom: 2rem;
+}
+
+.dropcap {
+  font-family: var(--font-display);
+  font-size: 4rem;
+  float: left;
+  line-height: 0.8;
+  padding-right: 12px;
+  padding-top: 4px;
+  color: var(--color-accent-sun);
+  font-weight: 800;
+}
+
+.section {
+  margin-bottom: 2.5rem;
+}
+
+.section h2 {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  color: var(--color-text-bright);
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.section h2::after {
+  content: '';
+  flex-grow: 1;
+  height: 1px;
+  background: linear-gradient(90deg, var(--color-border), transparent);
+}
+
+.section p {
+  margin-bottom: 1.25rem;
+  color: var(--color-text-main);
+}
+
+.section strong {
+  color: var(--color-accent-sun);
+}
+
+/* Beautiful Blockquote */
+.quote-box {
+  margin: 2rem 0;
+  padding: 1.5rem;
+  background: hsla(var(--sun-hue), 20%, 15%, 0.15);
+  border-left: 3px solid var(--color-accent-sun);
+  border-radius: 0 var(--radius-organic-md) var(--radius-organic-md) 0;
+  position: relative;
+}
+
+.quote-box blockquote {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-style: italic;
+  color: var(--color-text-bright);
+  margin-bottom: 0.5rem;
+}
+
+.quote-box cite {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ==========================================================================
+   9. INTERACTIVE SEED BANK WIDGET
+   ========================================================================== */
+.seed-bank-widget {
+  background: hsla(var(--leaf-hue), 25%, 8%, 0.6);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-organic-md);
+  padding: 1.5rem;
+  margin-top: 2rem;
+}
+
+.widget-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.widget-header h3 {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  color: var(--color-text-bright);
+}
+
+.filter-bar {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.filter-btn {
+  background: transparent;
+  color: var(--color-text-muted);
+  border: 1px solid var(--color-border);
+  padding: 0.35rem 0.75rem;
+  border-radius: var(--radius-organic-sm);
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 600;
+  transition: var(--transition-organic);
+}
+
+.filter-btn.active, .filter-btn:hover {
+  background: var(--color-accent-leaf-glow);
+  color: var(--color-accent-sun);
+  border-color: var(--color-accent-sun);
+}
+
+.seed-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.seed-card {
+  display: flex;
+  gap: 1.25rem;
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-organic-sm);
+  padding: 1.25rem;
+  transition: var(--transition-organic);
+}
+
+.seed-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--color-border-glow);
+  box-shadow: 0 6px 20px -6px rgba(0, 0, 0, 0.4);
+}
+
+.seed-visual {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 48px;
+  height: 48px;
+  background: hsla(var(--leaf-hue), 20%, 10%, 0.6);
+  border-radius: 50%;
+  border: 1px solid var(--color-border);
+  font-size: 1.5rem;
+}
+
+.seed-pulse {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 1px solid var(--color-accent-leaf);
+  opacity: 0.5;
+  animation: seedPulse 2.5s infinite ease-in-out;
+}
+
+@keyframes seedPulse {
+  0% { transform: scale(1); opacity: 0.5; }
+  50% { transform: scale(1.2); opacity: 0.1; }
+  100% { transform: scale(1); opacity: 0.5; }
+}
+
+.seed-details {
+  flex-grow: 1;
+}
+
+.seed-details h4 {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  color: var(--color-text-bright);
+}
+
+.seed-details .scientific {
+  font-size: 0.8rem;
+  font-style: italic;
+  color: var(--color-text-muted);
+  margin-bottom: 0.5rem;
+}
+
+.tags {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.75rem;
+}
+
+.tag {
+  background: hsla(var(--leaf-hue), 30%, 20%, 0.4);
+  color: var(--color-text-main);
+  font-size: 0.65rem;
+  font-weight: 600;
+  padding: 0.2rem 0.6rem;
+  border-radius: 10px;
+  border: 1px solid var(--color-border);
+}
+
+/* Germination/Symbiosis Progress bar inside widget */
+.germination-tracker {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.track-label {
+  font-size: 0.7rem;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.track-bar {
+  flex-grow: 1;
+  height: 5px;
+  background: hsla(var(--leaf-hue), 10%, 20%, 0.6);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.track-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-accent-leaf), var(--color-accent-sun));
+  border-radius: 3px;
+}
+
+.track-val {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--color-accent-sun);
+}
+
+/* ==========================================================================
+   10. PLANT-FIBER INFOBOX & RIGHT SIDEBAR
+   ========================================================================== */
+.article-meta-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Plant-Fiber Textured Panel styling */
+.plant-fiber-texture {
+  position: relative;
+  background-color: var(--color-bg-card);
+  /* Organic fiber microtexture generated via radial-gradients and lines */
+  background-image: 
+    radial-gradient(circle at 10% 20%, hsla(var(--sun-hue), 20%, 15%, 0.1) 0%, transparent 40%),
+    radial-gradient(circle at 80% 70%, hsla(var(--leaf-hue), 20%, 15%, 0.1) 0%, transparent 40%),
+    linear-gradient(90deg, rgba(255,255,255,0.01) 1px, transparent 1px),
+    linear-gradient(0deg, rgba(255,255,255,0.01) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 8px 8px, 8px 8px;
+  border: 2px solid var(--color-border);
+  box-shadow: 0 8px 24px -6px rgba(0, 0, 0, 0.4);
+  border-radius: var(--radius-organic-md);
+  padding: 1.5rem;
+  overflow: hidden;
+}
+
+/* Brass corners look to emulate Art Nouveau hardware */
+.plant-fiber-texture::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 16px;
+  height: 16px;
+  border-top: 2px solid var(--color-accent-sun);
+  border-left: 2px solid var(--color-accent-sun);
+  border-radius: 4px 0 0 0;
+}
+
+.plant-fiber-texture::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 16px;
+  height: 16px;
+  border-bottom: 2px solid var(--color-accent-sun);
+  border-right: 2px solid var(--color-accent-sun);
+  border-radius: 0 0 4px 0;
+}
+
+.infobox-header {
+  margin-bottom: 1.25rem;
+}
+
+.infobox-header h3 {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  color: var(--color-text-bright);
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
+.infobox-header .badge {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--color-accent-leaf);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Diagram Container */
+.infobox-media {
+  background: hsla(var(--leaf-hue), 30%, 8%, 0.4);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-organic-sm);
+  height: 140px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 1.25rem;
+  position: relative;
+}
+
+.diagram-placeholder {
+  text-align: center;
+}
+
+.concentric-rings {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100px;
+  height: 100px;
+  border: 1px dashed var(--color-accent-leaf-glow);
+  border-radius: 50%;
+}
+
+.concentric-rings::before {
+  content: '';
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  width: 68px;
+  height: 68px;
+  border: 1px solid var(--color-accent-sun-glow);
+  border-radius: 50%;
+}
+
+.diagram-text {
+  font-size: 0.7rem;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Table Information */
+.infobox-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1.25rem;
+}
+
+.infobox-table th, .infobox-table td {
+  padding: 0.5rem 0;
+  font-size: 0.85rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.infobox-table th {
+  text-align: left;
+  color: var(--color-text-muted);
+  font-weight: 500;
+  width: 45%;
+}
+
+.infobox-table td {
+  color: var(--color-text-bright);
+}
+
+.infobox-table tr:last-child th, .infobox-table tr:last-child td {
+  border-bottom: none;
+}
+
+.infobox-footer {
+  font-size: 0.7rem;
+  color: var(--color-accent-sun);
+}
+
+/* Chatter Widget */
+.community-notes {
+  background: var(--color-bg-card-glass);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-organic-md);
+  padding: 1.25rem;
+}
+
+.community-notes h3 {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  color: var(--color-text-bright);
+  margin-bottom: 1rem;
+}
+
+.chat-item {
+  border-bottom: 1px solid var(--color-border);
+  padding: 0.75rem 0;
+}
+
+.chat-item:last-child {
+  border-bottom: none;
+}
+
+.chat-user {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--color-accent-leaf);
+}
+
+.chat-item p {
+  font-size: 0.8rem;
+  color: var(--color-text-main);
+  line-height: 1.4;
+}
+
+/* ==========================================================================
+   11. SYSTEM FOOTER
+   ========================================================================== */
+.main-footer {
+  background: var(--color-bg-card-glass);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-organic-md);
+  padding: 1.5rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+}
+
+.footer-left p {
+  font-size: 0.85rem;
+  color: var(--color-text-main);
+}
+
+.footer-left .license {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  margin-top: 0.25rem;
+}
+
+.footer-left a {
+  color: var(--color-accent-leaf);
+  text-decoration: none;
+}
+
+.footer-left a:hover {
+  text-decoration: underline;
+}
+
+.node-health {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--color-text-bright);
+}
+
+.pulse-indicator {
+  width: 8px;
+  height: 8px;
+  background-color: var(--color-accent-leaf);
+  border-radius: 50%;
+  box-shadow: 0 0 8px var(--color-accent-leaf);
+  animation: pulseLight 1.5s infinite ease-in-out;
+}

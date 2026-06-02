@@ -1,0 +1,1191 @@
+/* ==========================================================================
+   CODEX TENEBRIS - Master Stylesheet
+   Theme: Medieval Dark Gothic / Occult Alchemy
+   ========================================================================== */
+
+:root {
+    /* Color Palette */
+    --color-abyss: #080707;
+    --color-stone: #151313;
+    --color-stone-light: #2c2525;
+    --color-crimson: #7c1a1a;
+    --color-crimson-bright: #d12323;
+    --color-parchment: #e6dfcb;
+    --color-parchment-dark: #cbbb9a;
+    --color-gold: #c9a054;
+    --color-gold-bright: #ffd700;
+    --color-amber: #e58e26;
+    --color-text-dark: #1e1b15;
+    --color-text-light: #d1cbbd;
+    --color-text-muted: #8b8070;
+
+    /* Fonts */
+    --font-gothic: 'Grenze Gotisch', serif;
+    --font-medieval: 'MedievalSharp', cursive;
+    --font-serif: 'Cardo', serif;
+
+    /* Lighting Effects */
+    --torch-glow: radial-gradient(circle, rgba(229, 142, 38, 0.15) 0%, rgba(124, 26, 26, 0.05) 50%, transparent 100%);
+    --torch-flicker-x: 0px;
+    --torch-flicker-y: 0px;
+    --torch-scale: 1;
+}
+
+/* ==========================================================================
+   Base & Reset Styles
+   ========================================================================== */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: var(--color-abyss);
+    color: var(--color-text-light);
+    font-family: var(--font-serif);
+    font-size: 1.1rem;
+    line-height: 1.6;
+    overflow-x: hidden;
+    min-height: 100vh;
+    cursor: none; /* Hide default cursor to use occult custom cursor */
+}
+
+/* Scrollbar Customization */
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--color-stone);
+    border-left: 1px solid var(--color-stone-light);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--color-crimson);
+    border: 2px solid var(--color-stone);
+    border-radius: 2px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--color-crimson-bright);
+}
+
+/* ==========================================================================
+   Atmospheric Overlays
+   ========================================================================== */
+#vignette-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle, transparent 40%, rgba(0, 0, 0, 0.95) 95%);
+    pointer-events: none;
+    z-index: 999;
+}
+
+#torch-glow {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: radial-gradient(
+        circle 400px at calc(50% + var(--torch-flicker-x)) calc(50% + var(--torch-flicker-y)), 
+        rgba(229, 142, 38, 0.12) 0%, 
+        rgba(124, 26, 26, 0.04) 60%, 
+        transparent 100%
+    );
+    pointer-events: none;
+    z-index: 998;
+    mix-blend-mode: screen;
+    transition: opacity 0.5s ease;
+}
+
+/* Spark Particle System Container */
+#spark-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 997;
+    overflow: hidden;
+}
+
+/* Custom Occult Cursor */
+#custom-cursor {
+    position: fixed;
+    width: 30px;
+    height: 30px;
+    pointer-events: none;
+    z-index: 10000;
+    transform: translate(-50%, -50%);
+    mix-blend-mode: difference;
+    display: none; /* Shown via JS once mouse moves */
+}
+
+.cursor-ring {
+    width: 100%;
+    height: 100%;
+    border: 1px solid var(--color-gold);
+    border-radius: 50%;
+    opacity: 0.6;
+    animation: spin 8s linear infinite;
+}
+
+.cursor-flame {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 6px;
+    height: 6px;
+    background: var(--color-amber);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 0 8px 2px var(--color-crimson-bright), 0 0 15px 4px var(--color-amber);
+}
+
+/* ==========================================================================
+   Gate Keeper / Entry Screen
+   ========================================================================== */
+#gate-keeper {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle, #1c1515 0%, #050505 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    transition: opacity 1.5s cubic-bezier(0.77, 0, 0.175, 1), transform 1.5s cubic-bezier(0.77, 0, 0.175, 1);
+}
+
+#gate-keeper.hidden {
+    opacity: 0;
+    transform: translateY(-100%);
+    pointer-events: none;
+}
+
+.gate-content {
+    text-align: center;
+    max-width: 600px;
+    padding: 40px;
+    position: relative;
+    border: 1px solid rgba(199, 160, 84, 0.15);
+    background: rgba(10, 8, 8, 0.85);
+    box-shadow: 0 0 50px rgba(0,0,0,0.8);
+    border-radius: 4px;
+}
+
+/* Decorative Medieval Gate Borders */
+.gate-border-top, .gate-border-bottom {
+    height: 15px;
+    background: linear-gradient(90deg, transparent, var(--color-gold) 50%, transparent);
+    position: relative;
+    opacity: 0.4;
+}
+.gate-border-top::after, .gate-border-bottom::after {
+    content: "❖";
+    color: var(--color-gold);
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+}
+.gate-border-top::after { top: -8px; }
+.gate-border-bottom::after { bottom: -8px; }
+
+.gate-title {
+    font-family: var(--font-gothic);
+    font-size: 4.5rem;
+    font-weight: 800;
+    color: var(--color-crimson-bright);
+    letter-spacing: 4px;
+    text-shadow: 0 0 15px rgba(209, 35, 35, 0.3), 2px 2px 4px rgba(0,0,0,0.8);
+    margin: 20px 0 10px;
+}
+
+.gate-subtitle {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: 1.1rem;
+    color: var(--color-text-muted);
+    margin-bottom: 40px;
+}
+
+/* Occult Seal Interaction */
+.runic-lock-container {
+    position: relative;
+    width: 180px;
+    height: 180px;
+    margin: 0 auto 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.runic-circle {
+    position: absolute;
+    border: 1px dashed rgba(199, 160, 84, 0.3);
+    border-radius: 50%;
+}
+
+.outer-ring {
+    width: 100%;
+    height: 100%;
+    border-top: 2px solid var(--color-gold);
+    border-bottom: 2px solid var(--color-gold);
+    animation: spin 25s linear infinite;
+}
+
+.inner-ring {
+    width: 80%;
+    height: 80%;
+    border-left: 2px solid var(--color-crimson);
+    border-right: 2px solid var(--color-crimson);
+    animation: spin-reverse 15s linear infinite;
+}
+
+.seal-button {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    background: var(--color-stone);
+    border: 2px solid var(--color-gold);
+    color: var(--color-gold);
+    cursor: none;
+    position: relative;
+    z-index: 2;
+    transition: all 0.4s ease;
+    box-shadow: inset 0 0 15px rgba(0,0,0,0.8);
+    outline: none;
+}
+
+.seal-svg {
+    width: 100%;
+    height: 100%;
+    padding: 10px;
+    transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.seal-button:hover {
+    color: var(--color-crimson-bright);
+    border-color: var(--color-crimson-bright);
+    box-shadow: 0 0 25px rgba(209, 35, 35, 0.6), inset 0 0 10px rgba(0,0,0,0.5);
+}
+
+.seal-button:hover .seal-svg {
+    transform: rotate(180deg) scale(1.1);
+}
+
+.seal-button:active {
+    transform: scale(0.9);
+}
+
+.gate-hint {
+    font-family: var(--font-medieval);
+    font-size: 0.9rem;
+    color: var(--color-gold);
+    letter-spacing: 2px;
+    animation: pulse 2s infinite ease-in-out;
+}
+
+/* ==========================================================================
+   Main App Structure & Header
+   ========================================================================== */
+#main-interface {
+    opacity: 0;
+    transition: opacity 1.5s ease-in;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+#main-interface.active {
+    opacity: 1;
+}
+
+.codex-header {
+    background: linear-gradient(180deg, var(--color-stone) 0%, rgba(21,19,19,0.9) 80%, transparent 100%);
+    border-bottom: 1px solid rgba(199, 160, 84, 0.15);
+    padding: 15px 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+    z-index: 10;
+}
+
+.header-seal {
+    color: var(--color-gold);
+    width: 50px;
+    height: 50px;
+    opacity: 0.8;
+}
+
+.mini-seal {
+    width: 100%;
+    height: 100%;
+}
+
+.brand {
+    display: flex;
+    flex-direction: column;
+    margin-right: auto;
+    margin-left: 15px;
+}
+
+.brand-title {
+    font-family: var(--font-gothic);
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: var(--color-gold);
+    line-height: 1;
+    letter-spacing: 2px;
+}
+
+.brand-subtitle {
+    font-family: var(--font-serif);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+    letter-spacing: 3px;
+    margin-top: 3px;
+}
+
+/* Medieval Gothic Navigation */
+.medieval-nav {
+    display: flex;
+    gap: 15px;
+}
+
+.nav-btn {
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--color-text-muted);
+    font-family: var(--font-medieval);
+    font-size: 1.1rem;
+    padding: 10px 20px;
+    cursor: none;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.nav-btn::before {
+    content: "✦";
+    position: absolute;
+    left: 5px;
+    opacity: 0;
+    color: var(--color-crimson-bright);
+    transition: opacity 0.3s ease;
+}
+
+.nav-btn:hover {
+    color: var(--color-text-light);
+    border-bottom: 1px solid rgba(199, 160, 84, 0.4);
+}
+
+.nav-btn.active {
+    color: var(--color-gold-bright);
+    border-bottom: 1px solid var(--color-gold);
+    background: linear-gradient(180deg, transparent, rgba(199, 160, 84, 0.05));
+    text-shadow: 0 0 10px rgba(201, 160, 84, 0.3);
+}
+
+.nav-btn.active::before {
+    opacity: 1;
+}
+
+/* Ambient Control Elements */
+.ambient-controls {
+    display: flex;
+    gap: 10px;
+    margin-left: 20px;
+}
+
+.control-btn {
+    background: var(--color-stone-light);
+    border: 1px solid rgba(199,160,84,0.2);
+    color: var(--color-text-muted);
+    font-family: var(--font-serif);
+    font-size: 0.8rem;
+    padding: 6px 12px;
+    border-radius: 3px;
+    cursor: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.3s ease;
+}
+
+.control-btn:hover, .control-btn.active {
+    color: var(--color-text-light);
+    border-color: var(--color-crimson);
+    background: rgba(124, 26, 26, 0.2);
+}
+
+.control-btn.active .icon {
+    filter: drop-shadow(0 0 5px var(--color-amber));
+}
+
+/* ==========================================================================
+   Tome Container / Book Page Framework
+   ========================================================================== */
+.tome-container {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 40px 20px;
+    position: relative;
+    max-width: 1200px;
+    width: 100%;
+    margin: 0 auto;
+}
+
+/* Spine effect running down behind the center of page frames */
+.tome-spine {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 8px;
+    background: linear-gradient(90deg, #000 0%, #3a3333 50%, #000 100%);
+    box-shadow: 0 0 15px rgba(0,0,0,0.9);
+    z-index: 1;
+    opacity: 0.5;
+}
+
+.tome-page {
+    position: relative;
+    width: 100%;
+    min-height: 650px;
+    background-color: var(--color-parchment-dark);
+    box-shadow: 
+        0 30px 70px rgba(0,0,0,0.85),
+        inset 0 0 100px rgba(71, 56, 37, 0.4);
+    border-radius: 6px;
+    overflow: hidden;
+    z-index: 2;
+    transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.tome-page.hidden {
+    display: none;
+    opacity: 0;
+    transform: scale(0.95);
+}
+
+/* Extremely Detailed Parchment Styling */
+.parchment-texture {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    opacity: 0.18;
+    background-image: 
+        radial-gradient(circle at 20% 30%, #443118 0%, transparent 60%),
+        radial-gradient(circle at 80% 70%, #2f200d 0%, transparent 50%),
+        repeating-linear-gradient(45deg, rgba(0,0,0,0.05) 0px, rgba(0,0,0,0.05) 2px, transparent 2px, transparent 10px);
+    mix-blend-mode: multiply;
+}
+
+/* Medieval Ornate Manuscript Page Borders */
+.page-border {
+    position: absolute;
+    top: 15px;
+    bottom: 15px;
+    left: 15px;
+    right: 15px;
+    border: 1px solid rgba(131, 99, 44, 0.45);
+    pointer-events: none;
+}
+
+.page-border::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    bottom: 3px;
+    left: 3px;
+    right: 3px;
+    border: 1px solid rgba(131, 99, 44, 0.2);
+}
+
+/* Intricate Corner Ornaments */
+.corner-ornament {
+    position: absolute;
+    width: 32px;
+    height: 32px;
+    border: 3px double var(--color-gold);
+}
+
+.corner-ornament.top-left {
+    top: -1px;
+    left: -1px;
+    border-right: none;
+    border-bottom: none;
+}
+.corner-ornament.top-right {
+    top: -1px;
+    right: -1px;
+    border-left: none;
+    border-bottom: none;
+}
+.corner-ornament.bottom-left {
+    bottom: -1px;
+    left: -1px;
+    border-right: none;
+    border-top: none;
+}
+.corner-ornament.bottom-right {
+    bottom: -1px;
+    right: -1px;
+    border-left: none;
+    border-top: none;
+}
+
+/* Decorative corner symbols inside corners */
+.corner-ornament::before {
+    content: "❖";
+    color: var(--color-gold);
+    font-size: 10px;
+    position: absolute;
+}
+.corner-ornament.top-left::before { top: 2px; left: 2px; }
+.corner-ornament.top-right::before { top: 2px; right: 2px; }
+.corner-ornament.bottom-left::before { bottom: 2px; left: 2px; }
+.corner-ornament.bottom-right::before { bottom: 2px; right: 2px; }
+
+.page-content {
+    position: relative;
+    padding: 50px 60px;
+    height: 100%;
+    color: var(--color-text-dark);
+    display: flex;
+    flex-direction: column;
+}
+
+/* ==========================================================================
+   Chapter 1: The Prophecy Styling
+   ========================================================================== */
+.chapter-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.chapter-num {
+    font-family: var(--font-medieval);
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    color: var(--color-crimson);
+    letter-spacing: 4px;
+    display: block;
+    margin-bottom: 5px;
+}
+
+.chapter-title {
+    font-family: var(--font-gothic);
+    font-size: 3.2rem;
+    font-weight: 700;
+    color: #1a1611;
+    line-height: 1.1;
+    text-shadow: 1px 1px 0px rgba(255,255,255,0.4);
+}
+
+.illuminated-text {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.prophecy-para {
+    font-family: var(--font-serif);
+    font-size: 1.25rem;
+    line-height: 1.8;
+    text-align: justify;
+    margin-bottom: 25px;
+    color: #2e261f;
+}
+
+/* Highly intricate drop cap styled like a medieval illuminated manuscript */
+.drop-cap {
+    font-family: var(--font-gothic);
+    font-size: 5.2rem;
+    float: left;
+    line-height: 0.8;
+    padding: 6px 12px 2px 6px;
+    margin: 4px 10px 0 0;
+    background: #1e1515;
+    color: var(--color-parchment);
+    border: 3px solid var(--color-gold);
+    text-shadow: 2px 2px 0px var(--color-crimson);
+    box-shadow: 3px 3px 10px rgba(0,0,0,0.3);
+}
+
+/* The Prophetic Verse Scroll Container */
+.scroll-poem {
+    margin: 40px auto;
+    max-width: 500px;
+    position: relative;
+    padding: 25px;
+    text-align: center;
+}
+
+.scroll-roller-top, .scroll-roller-bottom {
+    height: 8px;
+    background: linear-gradient(90deg, #3d2b1f, var(--color-gold) 50%, #3d2b1f);
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.scroll-body {
+    background: rgba(224, 212, 184, 0.4);
+    border-left: 2px solid rgba(131, 99, 44, 0.3);
+    border-right: 2px solid rgba(131, 99, 44, 0.3);
+    padding: 20px;
+}
+
+.poem-line {
+    font-family: var(--font-medieval);
+    font-style: italic;
+    font-size: 1.2rem;
+    color: var(--color-crimson);
+    margin: 8px 0;
+    letter-spacing: 1px;
+}
+
+.prophecy-footer {
+    margin-top: auto;
+    text-align: center;
+}
+
+.page-number {
+    font-family: var(--font-medieval);
+    font-size: 0.85rem;
+    letter-spacing: 2px;
+    color: var(--color-text-muted);
+}
+
+/* ==========================================================================
+   Chapter 2: The Bestiary Styling
+   ========================================================================== */
+.bestiary-layout {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 40px;
+    padding: 30px 40px;
+}
+
+.bestiary-sidebar {
+    border-right: 1px solid rgba(131, 99, 44, 0.25);
+    padding-right: 20px;
+}
+
+.sidebar-title {
+    font-family: var(--font-gothic);
+    font-size: 2rem;
+    color: var(--color-crimson);
+    margin-bottom: 20px;
+    border-bottom: 2px solid rgba(131, 99, 44, 0.2);
+    padding-bottom: 10px;
+}
+
+.creature-list {
+    list-style: none;
+}
+
+.creature-item {
+    font-family: var(--font-medieval);
+    font-size: 1.1rem;
+    padding: 12px 15px;
+    margin-bottom: 8px;
+    color: var(--color-text-dark);
+    cursor: none;
+    border-radius: 4px;
+    transition: all 0.25s ease;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(0,0,0,0.03);
+}
+
+.creature-item:hover {
+    background: rgba(124, 26, 26, 0.1);
+    color: var(--color-crimson);
+    transform: translateX(5px);
+}
+
+.creature-item.active {
+    background: var(--color-stone);
+    color: var(--color-gold-bright);
+    box-shadow: 2px 4px 10px rgba(0,0,0,0.15);
+}
+
+.creature-icon {
+    font-size: 1.2rem;
+}
+
+/* Bestiary Main Content Display */
+.bestiary-details {
+    display: flex;
+    flex-direction: column;
+}
+
+.creature-display-card {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    animation: fadeIn 0.5s ease-out;
+}
+
+.creature-header {
+    border-bottom: 1px dashed rgba(131, 99, 44, 0.3);
+    padding-bottom: 15px;
+}
+
+.creature-name {
+    font-family: var(--font-gothic);
+    font-size: 2.8rem;
+    color: #1a1611;
+    line-height: 1;
+}
+
+.creature-class {
+    font-family: var(--font-medieval);
+    font-size: 0.9rem;
+    color: var(--color-crimson);
+    letter-spacing: 2px;
+}
+
+/* Sketch Border & Hand-drawn Creature SVG */
+.creature-illustration-container {
+    width: 100%;
+    max-width: 320px;
+    margin: 0 auto;
+    background: rgba(255,255,255,0.05);
+}
+
+.sketch-border {
+    border: 1px solid rgba(0,0,0,0.15);
+    padding: 10px;
+    background: rgba(224, 212, 184, 0.3);
+    box-shadow: inset 0 0 15px rgba(0,0,0,0.05);
+}
+
+.creature-svg {
+    width: 100%;
+    height: auto;
+    filter: sepia(0.5) contrast(1.1);
+    transition: filter 0.5s ease;
+}
+
+.creature-illustration-container:hover .creature-svg {
+    filter: sepia(0.2) contrast(1.2) drop-shadow(0 0 8px rgba(209, 35, 35, 0.2));
+}
+
+.glowing-eye {
+    animation: eye-pulse 3s infinite ease-in-out;
+}
+
+.creature-description {
+    font-family: var(--font-serif);
+    font-size: 1.15rem;
+    line-height: 1.6;
+    color: #2e261f;
+}
+
+.lore-text {
+    font-style: italic;
+    border-left: 3px solid var(--color-crimson);
+    padding-left: 15px;
+    margin-bottom: 20px;
+}
+
+.creature-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background: rgba(0,0,0,0.04);
+    padding: 15px;
+    border-radius: 4px;
+}
+
+.stat-row {
+    display: flex;
+    justify-content: space-between;
+    font-family: var(--font-medieval);
+    font-size: 0.95rem;
+}
+
+.stat-label {
+    color: var(--color-crimson);
+}
+
+.stat-val {
+    color: #1a1611;
+    font-weight: bold;
+}
+
+/* ==========================================================================
+   Chapter 3: The Rune Forge Styling
+   ========================================================================== */
+.forge-layout {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 30px;
+}
+
+.forge-header {
+    text-align: center;
+    max-width: 700px;
+}
+
+.forge-instructions {
+    font-family: var(--font-serif);
+    font-size: 1.1rem;
+    color: #3d342c;
+    margin-top: 10px;
+}
+
+/* Interactive Forge Altar Elements */
+.forge-altar {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 40px;
+    width: 100%;
+}
+
+.altar-seal-container {
+    position: relative;
+    width: 340px;
+    height: 340px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.altar-circle {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    color: var(--color-crimson);
+    animation: spin 60s linear infinite;
+    opacity: 0.55;
+    pointer-events: none;
+}
+
+/* Slots for Rune Stones */
+.rune-slot {
+    position: absolute;
+    width: 80px;
+    height: 80px;
+    background: #1e1b15;
+    border: 2px dashed rgba(131, 99, 44, 0.5);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-text-muted);
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.8);
+}
+
+#slot-1 {
+    left: 10px;
+}
+
+#slot-2 {
+    right: 10px;
+}
+
+.rune-slot.highlighted {
+    border-color: var(--color-gold-bright);
+    box-shadow: 0 0 15px rgba(201, 160, 84, 0.4), inset 0 0 10px rgba(0,0,0,0.5);
+}
+
+.rune-slot.occupied {
+    border-style: solid;
+    border-color: var(--color-crimson-bright);
+    background: var(--color-stone);
+    color: var(--color-gold-bright);
+    box-shadow: 0 0 15px rgba(209, 35, 35, 0.3);
+}
+
+.slot-placeholder {
+    font-family: var(--font-medieval);
+    font-size: 0.75rem;
+    text-align: center;
+    pointer-events: none;
+    line-height: 1.2;
+}
+
+/* Central Ignition Button */
+.forge-button {
+    position: relative;
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: #0d0c0c;
+    border: 3px solid var(--color-stone-light);
+    color: var(--color-text-muted);
+    font-family: var(--font-medieval);
+    font-size: 1rem;
+    letter-spacing: 1px;
+    font-weight: bold;
+    cursor: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 5;
+    outline: none;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+    transition: all 0.3s ease;
+}
+
+.forge-button:disabled {
+    opacity: 0.5;
+}
+
+.forge-button:not(:disabled) {
+    border-color: var(--color-gold);
+    color: var(--color-gold-bright);
+}
+
+.forge-button:not(:disabled):hover {
+    box-shadow: 0 0 25px var(--color-amber), inset 0 0 15px var(--color-crimson);
+    color: #fff;
+    transform: scale(1.05);
+}
+
+.forge-btn-text {
+    position: relative;
+    z-index: 2;
+}
+
+/* Glow Effect inside Catalyst button */
+.glow-effect {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: radial-gradient(circle, var(--color-amber) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.forge-button:not(:disabled):hover .glow-effect {
+    opacity: 0.6;
+    animation: pulse 1s infinite alternate;
+}
+
+/* Rune Stones Shelf Selection Grid */
+.runes-shelf {
+    width: 100%;
+    max-width: 500px;
+    background: rgba(0, 0, 0, 0.05);
+    padding: 20px;
+    border-radius: 4px;
+    border: 1px solid rgba(131, 99, 44, 0.2);
+    box-shadow: inset 0 0 15px rgba(0,0,0,0.05);
+}
+
+.shelf-title {
+    font-family: var(--font-medieval);
+    font-size: 1rem;
+    color: var(--color-crimson);
+    text-align: center;
+    margin-bottom: 15px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.runes-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+}
+
+.rune-stone {
+    background: var(--color-stone);
+    border: 2px solid var(--color-stone-light);
+    border-radius: 8px;
+    padding: 12px 5px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    cursor: none;
+    transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+}
+
+.rune-stone:hover {
+    transform: translateY(-5px);
+    border-color: var(--color-gold);
+    box-shadow: 0 8px 15px rgba(201, 160, 84, 0.2);
+}
+
+.rune-stone.selected-in-slot {
+    opacity: 0.4;
+    transform: none;
+    pointer-events: none;
+}
+
+.rune-symbol {
+    font-family: var(--font-medieval);
+    font-size: 2.2rem;
+    line-height: 1;
+    color: var(--color-text-light);
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.15);
+}
+
+.rune-stone:hover .rune-symbol {
+    color: var(--color-gold-bright);
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.4);
+}
+
+.rune-name {
+    font-family: var(--font-serif);
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+}
+
+/* Alchemical Synthesis Output Panel */
+.output-panel {
+    width: 100%;
+    max-width: 600px;
+    text-align: center;
+    margin-top: 15px;
+    animation: slideDown 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.output-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(131, 99, 44, 0.4) 50%, transparent);
+    margin-bottom: 15px;
+}
+
+.output-subtitle {
+    font-family: var(--font-medieval);
+    font-size: 1rem;
+    color: var(--color-crimson);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+.output-text {
+    font-family: var(--font-serif);
+    font-size: 1.2rem;
+    font-style: italic;
+    color: #1a1611;
+    margin: 15px 0 20px;
+    line-height: 1.6;
+}
+
+.secondary-btn {
+    background: transparent;
+    border: 1px solid var(--color-crimson);
+    color: var(--color-crimson);
+    font-family: var(--font-medieval);
+    font-size: 0.85rem;
+    padding: 8px 16px;
+    cursor: none;
+    transition: all 0.3s ease;
+    border-radius: 3px;
+}
+
+.secondary-btn:hover {
+    background: var(--color-crimson);
+    color: var(--color-parchment);
+    box-shadow: 0 0 10px rgba(124, 26, 26, 0.4);
+}
+
+/* ==========================================================================
+   Footer
+   ========================================================================== */
+.codex-footer {
+    padding: 30px 40px;
+    text-align: center;
+    position: relative;
+    z-index: 10;
+    margin-top: auto;
+    background: linear-gradient(0deg, var(--color-stone) 0%, transparent 100%);
+}
+
+.footer-border {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(199, 160, 84, 0.15) 50%, transparent);
+    margin-bottom: 15px;
+}
+
+.footer-text {
+    font-family: var(--font-medieval);
+    font-size: 0.9rem;
+    color: var(--color-gold);
+    letter-spacing: 2px;
+}
+
+.footer-creators {
+    font-family: var(--font-serif);
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    margin-top: 5px;
+}
+
+/* ==========================================================================
+   Animations Code
+   ========================================================================== */
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+@keyframes spin-reverse {
+    from { transform: rotate(360deg); }
+    to { transform: rotate(0deg); }
+}
+
+@keyframes pulse {
+    0% { opacity: 0.4; }
+    50% { opacity: 1; }
+    100% { opacity: 0.4; }
+}
+
+@keyframes eye-pulse {
+    0%, 100% { opacity: 0.3; filter: drop-shadow(0 0 1px red); }
+    50% { opacity: 1; filter: drop-shadow(0 0 5px red); }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-15px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Utility visibility helpers */
+.hidden {
+    display: none !important;
+}
+
+/* Dynamic Sparks */
+.spark {
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    background: var(--color-amber);
+    border-radius: 50%;
+    pointer-events: none;
+    box-shadow: 0 0 4px var(--color-amber), 0 0 8px var(--color-crimson-bright);
+}

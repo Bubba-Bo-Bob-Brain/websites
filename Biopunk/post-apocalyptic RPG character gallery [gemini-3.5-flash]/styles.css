@@ -1,0 +1,842 @@
+/* ==========================================================================
+   BIOPUNK RPG TERMINAL STYLESHEET
+   ========================================================================== */
+
+:root {
+    --bg-dark: #080a09;
+    --bg-panel: #0e1311;
+    --bg-panel-light: #161f1b;
+    --border-dim: #21352b;
+    --border-bright: #39e684;
+    
+    /* Terminal Color Scheme */
+    --text-glowing: #39e684;
+    --text-dim: #1d7343;
+    --text-dark: #092616;
+    
+    /* Faction Accents */
+    --color-myco: #da1ef0;
+    --color-rust: #ff6200;
+    --color-glow: #39e684;
+    --color-pure: #00f0ff;
+    
+    /* Fonts */
+    --font-header: 'Press Start 2P', monospace;
+    --font-body: 'VT323', monospace;
+}
+
+/* Base Terminal Settings & Scanlines */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: var(--bg-dark);
+    color: var(--text-glowing);
+    font-family: var(--font-body);
+    font-size: 1.25rem;
+    line-height: 1.4;
+    overflow-x: hidden;
+    height: 100vh;
+}
+
+/* CRT Screen Overlays */
+.crt-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: radial-gradient(circle, rgba(18,32,24,0) 60%, rgba(0,0,0,0.8) 120%);
+    pointer-events: none;
+    z-index: 9999;
+}
+
+.scanlines {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: linear-gradient(
+        rgba(18, 16, 16, 0) 50%, 
+        rgba(0, 0, 0, 0.25) 50%
+    ), linear-gradient(
+        90deg,
+        rgba(255, 0, 0, 0.06),
+        rgba(0, 255, 0, 0.02),
+        rgba(0, 0, 255, 0.06)
+    );
+    background-size: 100% 4px, 6px 100%;
+    pointer-events: none;
+    z-index: 9998;
+}
+
+/* Custom Scrollbar for Retro Aesthetic */
+::-webkit-scrollbar {
+    width: 12px;
+}
+::-webkit-scrollbar-track {
+    background: var(--bg-dark);
+    border-left: 2px solid var(--border-dim);
+}
+::-webkit-scrollbar-thumb {
+    background: var(--text-dim);
+    border: 2px solid var(--bg-dark);
+}
+::-webkit-scrollbar-thumb:hover {
+    background: var(--text-glowing);
+}
+
+/* Layout Framework */
+.terminal-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    padding: 15px;
+}
+
+/* Header UI Elements */
+.terminal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 3px solid var(--border-bright);
+    background-color: var(--bg-panel);
+    padding: 15px 20px;
+    box-shadow: 0 0 15px rgba(57, 230, 132, 0.2);
+    margin-bottom: 10px;
+}
+
+.system-status {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.status-indicator {
+    width: 12px;
+    height: 12px;
+    background-color: #ff3333;
+    border-radius: 50%;
+    box-shadow: 0 0 8px #ff3333;
+}
+
+.blinking {
+    animation: pulse-red 1.5s infinite alternate;
+}
+
+.status-text {
+    font-family: var(--font-header);
+    font-size: 0.65rem;
+    letter-spacing: 1px;
+}
+
+.terminal-title {
+    font-family: var(--font-header);
+    font-size: 1.4rem;
+    text-shadow: 0 0 8px var(--text-glowing);
+    letter-spacing: 2px;
+}
+
+.date-stamp {
+    font-family: var(--font-header);
+    font-size: 0.65rem;
+    color: var(--text-dim);
+}
+
+/* Scrolling News Ticker */
+.bio-ticker {
+    background-color: var(--text-dark);
+    border-left: 3px solid var(--border-bright);
+    border-right: 3px solid var(--border-bright);
+    border-bottom: 3px solid var(--border-bright);
+    overflow: hidden;
+    white-space: nowrap;
+    padding: 6px 0;
+    margin-bottom: 15px;
+}
+
+.ticker-content {
+    display: inline-block;
+    font-family: var(--font-header);
+    font-size: 0.6rem;
+    color: var(--border-bright);
+    animation: ticker 25s linear infinite;
+}
+
+/* Terminal Body Layout */
+.terminal-body {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 15px;
+    flex: 1;
+    min-height: 0; /* Important for inner scrolls */
+}
+
+/* Sidebar Controls */
+.control-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    background-color: var(--bg-panel);
+    border: 3px solid var(--border-dim);
+    padding: 15px;
+    overflow-y: auto;
+}
+
+.panel-section {
+    border: 2px solid var(--border-dim);
+    padding: 12px;
+    background-color: rgba(22, 31, 27, 0.4);
+}
+
+.panel-title {
+    font-family: var(--font-header);
+    font-size: 0.7rem;
+    margin-bottom: 12px;
+    border-bottom: 2px dashed var(--border-dim);
+    padding-bottom: 6px;
+    color: var(--text-glowing);
+}
+
+/* Filters & Inputs */
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 15px;
+}
+
+.filter-group:last-child {
+    margin-bottom: 0;
+}
+
+.filter-label {
+    font-family: var(--font-header);
+    font-size: 0.55rem;
+    color: var(--text-dim);
+}
+
+.filter-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.filter-btn {
+    background-color: var(--bg-dark);
+    border: 1px solid var(--border-dim);
+    color: var(--text-dim);
+    font-family: var(--font-body);
+    font-size: 1.15rem;
+    padding: 6px 10px;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.filter-btn:hover {
+    border-color: var(--border-bright);
+    color: var(--text-glowing);
+    background-color: var(--text-dark);
+}
+
+.filter-btn.active {
+    background-color: var(--border-bright);
+    color: var(--bg-dark);
+    border-color: var(--border-bright);
+    font-weight: bold;
+    box-shadow: 0 0 8px rgba(57, 230, 132, 0.4);
+}
+
+.terminal-select {
+    background-color: var(--bg-dark);
+    border: 1px solid var(--border-dim);
+    color: var(--text-glowing);
+    font-family: var(--font-body);
+    font-size: 1.15rem;
+    padding: 6px;
+    outline: none;
+    cursor: pointer;
+    width: 100%;
+}
+
+.terminal-select option {
+    background-color: var(--bg-dark);
+    color: var(--text-glowing);
+}
+
+/* Animated Biosensor Panel (DNA) */
+.biosensor-panel {
+    display: flex;
+    flex-direction: column;
+}
+
+.dna-animation {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    height: 50px;
+    margin-bottom: 12px;
+    background-color: var(--bg-dark);
+    border: 1px solid var(--border-dim);
+    overflow: hidden;
+}
+
+.dna-node {
+    width: 6px;
+    height: 6px;
+    background-color: var(--border-bright);
+    border-radius: 50%;
+    animation: dna-wave 1.5s ease-in-out infinite alternate;
+    animation-delay: calc(var(--i) * 0.15s);
+    box-shadow: 0 0 5px var(--border-bright);
+}
+
+.radiation-level {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 1.1rem;
+}
+
+.rad-meter {
+    height: 10px;
+    background-color: var(--bg-dark);
+    border: 1px solid var(--border-dim);
+    position: relative;
+}
+
+.rad-fill {
+    height: 100%;
+    background-color: #e6c300;
+    box-shadow: 0 0 8px #e6c300;
+}
+
+.rad-value {
+    align-self: flex-end;
+    font-family: var(--font-header);
+    font-size: 0.55rem;
+    color: #e6c300;
+}
+
+/* System Log Panel */
+.log-output {
+    font-family: var(--font-body);
+    font-size: 1rem;
+    color: var(--text-dim);
+    height: 80px;
+    overflow-y: auto;
+    background-color: var(--bg-dark);
+    padding: 5px;
+    border: 1px solid var(--border-dim);
+}
+
+.log-output p {
+    margin-bottom: 4px;
+    line-height: 1.2;
+}
+
+/* Gallery Section Grid Layout */
+.gallery-section {
+    background-color: var(--bg-panel);
+    border: 3px solid var(--border-dim);
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+}
+
+/* Character Card Master Styling */
+.char-card {
+    position: relative;
+    background-color: var(--bg-dark);
+    border: 2px solid var(--border-dim);
+    overflow: hidden;
+    transition: transform 0.2s, border-color 0.2s;
+}
+
+.char-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--border-bright);
+}
+
+.card-inner {
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    height: 100%;
+}
+
+/* Dynamic glow indicators for cards */
+.char-card[data-faction="myco"]:hover { border-color: var(--color-myco); box-shadow: 0 0 10px rgba(218, 30, 240, 0.3); }
+.char-card[data-faction="rust"]:hover { border-color: var(--color-rust); box-shadow: 0 0 10px rgba(255, 98, 0, 0.3); }
+.char-card[data-faction="glow"]:hover { border-color: var(--color-glow); box-shadow: 0 0 10px rgba(57, 230, 132, 0.3); }
+.char-card[data-faction="pure"]:hover { border-color: var(--color-pure); box-shadow: 0 0 10px rgba(0, 240, 255, 0.3); }
+
+/* Portrait Placeholders (Bio-Glow themed) */
+.portrait-container {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 3/4;
+    border: 2px solid var(--border-dim);
+    background-color: #050706;
+    overflow: hidden;
+}
+
+.portrait-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+/* Unique Neon Color Schemes for Portraits */
+.myco-portrait {
+    background: radial-gradient(circle, rgba(218,30,240,0.15) 0%, rgba(0,0,0,0.9) 100%);
+    border: 1px solid var(--color-myco);
+}
+.myco-portrait .bio-hazard-symbol {
+    color: var(--color-myco);
+    text-shadow: 0 0 15px var(--color-myco);
+}
+
+.rust-portrait {
+    background: radial-gradient(circle, rgba(255,98,0,0.15) 0%, rgba(0,0,0,0.9) 100%);
+    border: 1px solid var(--color-rust);
+}
+.rust-portrait .bio-hazard-symbol {
+    color: var(--color-rust);
+    text-shadow: 0 0 15px var(--color-rust);
+}
+
+.glow-portrait {
+    background: radial-gradient(circle, rgba(57,230,132,0.15) 0%, rgba(0,0,0,0.9) 100%);
+    border: 1px solid var(--color-glow);
+}
+.glow-portrait .bio-hazard-symbol {
+    color: var(--color-glow);
+    text-shadow: 0 0 15px var(--color-glow);
+}
+
+.pure-portrait {
+    background: radial-gradient(circle, rgba(0,240,255,0.15) 0%, rgba(0,0,0,0.9) 100%);
+    border: 1px solid var(--color-pure);
+}
+.pure-portrait .bio-hazard-symbol {
+    color: var(--color-pure);
+    text-shadow: 0 0 15px var(--color-pure);
+}
+
+.bio-hazard-symbol {
+    font-size: 4rem;
+    opacity: 0.8;
+}
+
+/* Pixel static overlay animation */
+.static-noise {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: repeating-linear-gradient(
+        0deg,
+        rgba(0, 0, 0, 0.15),
+        rgba(0, 0, 0, 0.15) 1px,
+        transparent 1px,
+        transparent 2px
+    );
+    pointer-events: none;
+    opacity: 0.4;
+}
+
+.faction-badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    font-family: var(--font-header);
+    font-size: 0.55rem;
+    padding: 3px 6px;
+    border: 1px solid transparent;
+}
+
+.badge-myco { border-color: var(--color-myco); background: rgba(218,30,240,0.2); color: var(--color-myco); }
+.badge-rust { border-color: var(--color-rust); background: rgba(255,98,0,0.2); color: var(--color-rust); }
+.badge-glow { border-color: var(--color-glow); background: rgba(57,230,132,0.2); color: var(--color-glow); }
+.badge-pure { border-color: var(--color-pure); background: rgba(0,240,255,0.2); color: var(--color-pure); }
+
+/* Character Details Block */
+.char-info {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.char-name {
+    font-family: var(--font-header);
+    font-size: 0.95rem;
+    letter-spacing: 1px;
+}
+
+.char-codename {
+    font-family: var(--font-body);
+    font-size: 1.1rem;
+    color: var(--text-dim);
+    margin-top: -4px;
+}
+
+/* Stat Bars */
+.stat-bar-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.stat-header {
+    display: flex;
+    justify-content: space-between;
+    font-family: var(--font-header);
+    font-size: 0.5rem;
+    color: var(--text-dim);
+}
+
+.stat-track {
+    height: 8px;
+    background-color: var(--bg-panel-light);
+    border: 1px solid var(--border-dim);
+}
+
+.stat-fill {
+    height: 100%;
+    background-color: var(--text-glowing);
+}
+
+/* Faction customized bar coloring when hover */
+.char-card[data-faction="myco"] .stat-fill { background-color: var(--color-myco); }
+.char-card[data-faction="rust"] .stat-fill { background-color: var(--color-rust); }
+.char-card[data-faction="glow"] .stat-fill { background-color: var(--color-glow); }
+.char-card[data-faction="pure"] .stat-fill { background-color: var(--color-pure); }
+
+/* Contamination variant bar */
+.contamination .stat-fill {
+    background-color: #ff3333 !important;
+    box-shadow: 0 0 5px #ff3333;
+}
+
+/* Skill Tags */
+.skills-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 4px;
+}
+
+.skill-tag {
+    font-family: var(--font-header);
+    font-size: 0.45rem;
+    background-color: var(--bg-panel-light);
+    border: 1px solid var(--border-dim);
+    padding: 3px 5px;
+    color: var(--text-glowing);
+}
+
+/* Diagnostic Action Trigger */
+.inspect-btn {
+    background-color: var(--text-dark);
+    border: 2px solid var(--border-dim);
+    color: var(--text-glowing);
+    font-family: var(--font-header);
+    font-size: 0.6rem;
+    padding: 8px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s ease;
+    margin-top: auto;
+}
+
+.inspect-btn:hover {
+    background-color: var(--text-glowing);
+    color: var(--bg-dark);
+    border-color: var(--text-glowing);
+    box-shadow: 0 0 10px rgba(57, 230, 132, 0.4);
+}
+
+/* UI Footer Block */
+.terminal-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 3px solid var(--border-dim);
+    background-color: var(--bg-panel);
+    padding: 10px 20px;
+    margin-top: 10px;
+}
+
+.footer-block {
+    font-family: var(--font-header);
+    font-size: 0.55rem;
+    color: var(--text-dim);
+}
+
+.pulse {
+    animation: text-pulse 1.5s infinite alternate;
+}
+
+/* ==========================================================================
+   MODAL DOSSIER SYSTEM
+   ========================================================================== */
+.dossier-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(5, 7, 6, 0.95);
+    display: none; /* Controlled by JS */
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    padding: 20px;
+}
+
+.modal-content {
+    background-color: var(--bg-panel);
+    border: 4px solid var(--border-bright);
+    box-shadow: 0 0 30px rgba(57, 230, 132, 0.3);
+    width: 100%;
+    max-width: 850px;
+    position: relative;
+    padding: 25px;
+}
+
+.close-btn {
+    position: absolute;
+    top: -15px;
+    right: 20px;
+    background-color: var(--bg-dark);
+    border: 3px solid var(--border-bright);
+    color: var(--border-bright);
+    font-family: var(--font-header);
+    font-size: 0.75rem;
+    padding: 6px 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.close-btn:hover {
+    background-color: var(--border-bright);
+    color: var(--bg-dark);
+}
+
+.modal-grid {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 25px;
+    margin-top: 15px;
+}
+
+.modal-portrait-wrapper {
+    border: 3px solid var(--border-bright);
+    aspect-ratio: 3/4;
+    overflow: hidden;
+    background-color: #000;
+}
+
+.modal-portrait {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+/* DNA Micro-analyzer Graphic */
+.dna-analyzer {
+    margin-top: 15px;
+    border: 1px solid var(--border-dim);
+    padding: 8px;
+    background-color: var(--bg-dark);
+}
+
+.analyzer-title {
+    font-family: var(--font-header);
+    font-size: 0.5rem;
+    color: var(--text-dim);
+    display: block;
+    margin-bottom: 6px;
+}
+
+.dna-bars {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    height: 40px;
+}
+
+.dna-bar {
+    width: 8%;
+    height: var(--h);
+    background-color: var(--border-bright);
+    transition: height 0.3s ease;
+}
+
+/* Modal text descriptions */
+.modal-header {
+    border-bottom: 3px double var(--border-dim);
+    padding-bottom: 12px;
+    margin-bottom: 15px;
+}
+
+.modal-header h2 {
+    font-family: var(--font-header);
+    font-size: 1.6rem;
+    color: var(--text-glowing);
+}
+
+.modal-codename {
+    font-size: 1.4rem;
+    color: var(--text-dim);
+}
+
+.bio-log {
+    background-color: var(--bg-dark);
+    border: 2px solid var(--border-dim);
+    padding: 12px;
+    margin-bottom: 15px;
+}
+
+.bio-log h3 {
+    font-family: var(--font-header);
+    font-size: 0.65rem;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+}
+
+.bio-log p {
+    font-size: 1.15rem;
+    line-height: 1.4;
+}
+
+.dossier-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.dossier-stat-row {
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 1px dashed var(--border-dim);
+    padding-bottom: 4px;
+    font-size: 1.2rem;
+}
+
+.glow-text {
+    text-shadow: 0 0 5px var(--text-glowing);
+}
+
+.red-alert {
+    color: #ff3333;
+    text-shadow: 0 0 5px #ff3333;
+}
+
+/* Live Diagnostics Area */
+.diagnostic-run {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.diagnostic-btn {
+    background-color: var(--text-dark);
+    border: 2px solid var(--border-bright);
+    color: var(--border-bright);
+    font-family: var(--font-header);
+    font-size: 0.7rem;
+    padding: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.diagnostic-btn:hover {
+    background-color: var(--border-bright);
+    color: var(--bg-dark);
+}
+
+.diagnostic-output {
+    background-color: #000;
+    border: 1px solid var(--border-dim);
+    padding: 10px;
+    font-size: 1rem;
+    min-height: 48px;
+    color: var(--text-dim);
+}
+
+/* ==========================================================================
+   ANIMATIONS & KEYFRAMES
+   ========================================================================== */
+
+@keyframes pulse-red {
+    from {
+        opacity: 0.4;
+        box-shadow: 0 0 2px #ff3333;
+    }
+    to {
+        opacity: 1;
+        box-shadow: 0 0 10px #ff3333;
+    }
+}
+
+@keyframes text-pulse {
+    from {
+        opacity: 0.5;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes ticker {
+    0% {
+        transform: translate3d(100%, 0, 0);
+    }
+    100% {
+        transform: translate3d(-100%, 0, 0);
+    }
+}
+
+@keyframes dna-wave {
+    0% {
+        transform: translateY(-15px);
+    }
+    100% {
+        transform: translateY(15px);
+    }
+}
+
+/* Responsive adjustment */
+@media (max-width: 900px) {
+    .terminal-body {
+        grid-template-columns: 1fr;
+    }
+    .modal-grid {
+        grid-template-columns: 1fr;
+    }
+    .modal-content {
+        overflow-y: auto;
+        max-height: 90vh;
+    }
+}

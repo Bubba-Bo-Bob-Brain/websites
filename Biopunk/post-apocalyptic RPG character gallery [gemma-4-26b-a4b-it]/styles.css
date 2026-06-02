@@ -1,0 +1,396 @@
+/* 
+   BIO-MECHANICAL BRUTALIST THEME
+   Project: Specimen Archive Terminal
+*/
+
+:root {
+    /* Color Palette */
+    --bg-void: #050705;
+    --bg-card: rgba(10, 15, 10, 0.85);
+    --accent-toxic: #39ff14; /* Neon Green */
+    --accent-cyan: #00f2ff;  /* Bio-luminescent Cyan */
+    --accent-blood: #ff003c; /* Warning Red */
+    --accent-rust: #b87333;  /* Oxidized Copper/Rust */
+    
+    --text-main: #d0e0d0;
+    --text-dim: #5a6b5a;
+    --text-glitch: #ff003c;
+
+    /* Spacing & Borders */
+    --border-width: 1px;
+    --glitch-speed: 3s;
+    
+    /* Typography */
+    --font-mono: 'Courier New', Courier, monospace;
+    --font-display: 'Arial Black', 'Gadget', sans-serif; /* Fallback for heavy display */
+}
+
+/* --- Reset & Base --- */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: var(--bg-void);
+    color: var(--text-main);
+    font-family: var(--font-mono);
+    overflow-x: hidden;
+    min-height: 100vh;
+    line-height: 1.4;
+}
+
+/* --- Atmospheric Overlays --- */
+
+/* Scanlines effect */
+.scanline {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        to bottom,
+        rgba(18, 16, 16, 0) 50%,
+        rgba(0, 0, 0, 0.25) 50%
+    );
+    background-size: 100% 4px;
+    z-index: 100;
+    pointer-events: none;
+}
+
+/* Moving grain/noise */
+.grain {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3%3Ffilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    opacity: 0.07;
+    z-index: 99;
+    pointer-events: none;
+}
+
+/* Vignette for depth */
+.vignette {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle, transparent 40%, rgba(0,0,0,0.8) 100%);
+    z-index: 98;
+    pointer-events: none;
+}
+
+/* --- Layout Container --- */
+
+.terminal-container {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    padding: 20px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* --- HUD Header & Footer --- */
+
+.hud-header, .hud-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    border: var(--border-width) solid var(--text-dim);
+    background: rgba(20, 30, 20, 0.3);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-size: 0.8rem;
+}
+
+.hud-header {
+    border-bottom-left-radius: 15px;
+    border-bottom-right-radius: 15px;
+    border-top: none;
+}
+
+.hud-footer {
+    margin-top: auto;
+    border-top-left-radius: 15px;
+    border-top-right-radius: 15px;
+    border-bottom: none;
+}
+
+.status-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--accent-toxic);
+}
+
+.pulse-dot {
+    width: 8px;
+    height: 8px;
+    background-color: var(--accent-toxic);
+    border-radius: 50%;
+    animation: pulse 1.5s infinite;
+}
+
+/* --- Archive Viewport --- */
+
+.archive-viewport {
+    padding: 40px 0;
+}
+
+.header-section {
+    text-align: center;
+    margin-bottom: 60px;
+}
+
+.title-main {
+    font-family: var(--font-display);
+    font-size: 4rem;
+    letter-spacing: -2px;
+    color: var(--text-main);
+    line-height: 0.9;
+}
+
+.title-main .accent {
+    color: var(--accent-toxic);
+    text-shadow: 0 0 15px rgba(57, 255, 20, 0.5);
+}
+
+.subtitle {
+    color: var(--text-dim);
+    font-size: 0.9rem;
+    margin-top: 10px;
+    text-transform: uppercase;
+}
+
+/* --- Character Grid & Cards --- */
+
+.character-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 30px;
+}
+
+.character-card {
+    position: relative;
+    background: var(--bg-card);
+    border: 1px solid rgba(57, 255, 20, 0.2);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    cursor: pointer;
+    overflow: hidden;
+}
+
+.character-card:hover {
+    transform: translateY(-10px) scale(1.02);
+    border-color: var(--accent-toxic);
+    box-shadow: 0 0 30px rgba(57, 255, 20, 0.15);
+}
+
+/* Decorative "welded" border effect */
+.card-border {
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    right: 5px;
+    bottom: 5px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    pointer-events: none;
+}
+
+.portrait-frame {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    overflow: hidden;
+    background: #000;
+    border-bottom: 2px solid var(--accent-toxic);
+}
+
+.portrait-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    background: linear-gradient(45deg, #0a0f0a, #1a251a);
+}
+
+.placeholder-text {
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    letter-spacing: 4px;
+}
+
+/* DNA Strand Decoration */
+.dna-strand {
+    width: 40px;
+    height: 60px;
+    background: repeating-linear-gradient(
+        transparent,
+        transparent 5px,
+        var(--accent-cyan) 5px,
+        var(--accent-cyan) 7px
+    );
+    opacity: 0.3;
+    mask-image: radial-gradient(circle, black 20%, transparent 70%);
+    animation: dna-float 4s ease-in-out infinite;
+}
+
+.faction-badge {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    background: var(--accent-toxic);
+    color: var(--bg-void);
+    font-weight: bold;
+    padding: 2px 8px;
+    font-size: 0.7rem;
+    clip-path: polygon(10% 0, 100% 0, 90% 100%, 0 100%);
+}
+
+.card-content {
+    padding: 20px;
+}
+
+.char-name {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    margin-bottom: 15px;
+    color: var(--text-main);
+    text-transform: uppercase;
+}
+
+/* Bio-Meta Bars (Mutation/Contamination) */
+.bio-meta {
+    margin-bottom: 20px;
+}
+
+.meta-item {
+    margin-bottom: 8px;
+}
+
+.meta-item label {
+    display: block;
+    font-size: 0.6rem;
+    color: var(--text-dim);
+    margin-bottom: 3px;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.05);
+    position: relative;
+}
+
+.progress-fill {
+    height: 100%;
+    background: var(--accent-cyan);
+    box-shadow: 0 0 10px var(--accent-cyan);
+}
+
+.progress-fill.warning {
+    background: var(--accent-blood);
+    box-shadow: 0 0 10px var(--accent-blood);
+}
+
+/* Skills Grid */
+.skills-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.skill-block {
+    display: flex;
+    flex-direction: column;
+}
+
+.skill-label {
+    font-size: 0.6rem;
+    color: var(--text-dim);
+    margin-bottom: 2px;
+}
+
+.skill-bar {
+    width: 100%;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.skill-val {
+    height: 100%;
+    background: var(--accent-toxic);
+    transition: width 1s ease-out;
+}
+
+/* --- Animations --- */
+
+@keyframes pulse {
+    0% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(1.2); }
+    100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes dna-float {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-10px) rotate(5deg); }
+}
+
+@keyframes glitch {
+    0% { transform: translate(0); }
+    20% { transform: translate(-2px, 2px); }
+    40% { transform: translate(-2px, -2px); }
+    60% { transform: translate(2px, 2px); }
+    80% { transform: translate(2px, -2px); }
+    100% { transform: translate(0); }
+}
+
+.glitch-text {
+    position: relative;
+    display: inline-block;
+}
+
+.glitch-text:hover {
+    animation: glitch 0.3s infinite;
+    color: var(--accent-blood);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-void);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--text-dim);
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--accent-toxic);
+}
+
+/* --- Responsive Adjustments --- */
+
+@media (max-width: 768px) {
+    .title-main {
+        font-size: 2.5rem;
+    }
+    
+    .character-grid {
+        grid-template-columns: 1fr;
+    }
+}

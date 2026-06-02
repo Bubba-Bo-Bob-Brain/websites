@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Atlas of the Ancients — Interactive Cartography of the Forgotten Realms</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Cinzel+Decorative:wght@400;700;900&family=MedievalSharp&family=IM+Fell+English:opsz,wght@8..72,400;400;500&family=Uncial+Antiqua&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Ambient dust particles -->
+    <div id="dust-particles" aria-hidden="true"></div>
+
+    <!-- Background texture overlay -->
+    <div class="bg-texture" aria-hidden="true"></div>
+
+    <!-- ═══════════════════════════════════════════ HEADER ═══════════════════════════════════════════ -->
+    <header class="site-header">
+        <div class="header-frame-top" aria-hidden="true">
+            <span class="cuneiform-decoration" aria-hidden="true">𒂍𒀭𒊏𒆠𒂗𒆠 𒈗𒌷𒆠 𒁕𒈝𒆠𒂊𒋫 𒀭𒂗𒂠𒁕𒀴𒋼</span>
+        </div>
+        <div class="header-content">
+            <div class="compass-rose" aria-hidden="true">
+                <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <radialGradient id="compassGrad" cx="50%" cy="50%" r="50%">
+                            <stop offset="0%" stop-color="#c9a84c"/>
+                            <stop offset="50%" stop-color="#8b6914"/>
+                            <stop offset="100%" stop-color="#4a3508"/>
+                        </radialGradient>
+                        <filter id="compassShadow">
+                            <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#000" flood-opacity="0.6"/>
+                        </filter>
+                    </defs>
+                    <circle cx="100" cy="100" r="95" fill="url(#compassGrad)" filter="url(#compassShadow)"/>
+                    <circle cx="100" cy="100" r="82" fill="none" stroke="#2a1a00" stroke-width="2"/>
+                    <circle cx="100" cy="100" r="78" fill="none" stroke="#d4a83c" stroke-width="0.5"/>
+                    <!-- Cardinal directions -->
+                    <polygon points="100,12 93,35 107,35" fill="#8b1a1a"/>
+                    <polygon points="100,188 93,165 107,165" fill="#2a5090"/>
+                    <polygon points="12,100 35,93 35,107" fill="#2a6030"/>
+                    <polygon points="188,100 165,93 165,107" fill="#8b3a1a"/>
+                    <!-- N,S,E,W labels -->
+                    <text x="100" y="28" text-anchor="middle" font-size="16" font-family="Uncial Antiqua" fill="#fff" font-weight="700">N</text>
+                    <text x="100" y="178" text-anchor="middle" font-size="16" font-family="Uncial Antiqua" fill="#fff" font-weight="700">S</text>
+                    <text x="30" y="105" text-anchor="middle" font-size="16" font-family="Uncial Antiqua" fill="#fff" font-weight="700">W</text>
+                    <text x="172" y="105" text-anchor="middle" font-size="16" font-family="Uncial Antiqua" fill="#fff" font-weight="700">E</text>
+                    <!-- Inner decoration -->
+                    <circle cx="100" cy="100" r="5" fill="#c9a84c"/>
+                    <circle cx="100" cy="100" r="2" fill="#fff"/>
+                    <!-- Cross motif -->
+                    <line x1="100" y1="25" x2="100" y2="175" stroke="#2a1a00" stroke-width="1" stroke-dasharray="4,3" opacity="0.5"/>
+                    <line x1="25" y1="100" x2="175" y2="100" stroke="#2a1a00" stroke-width="1" stroke-dasharray="4,3" opacity="0.5"/>
+                </svg>
+            </div>
+            <h1 class="site-title">
+                <span class="title-ornament" aria-hidden="true">☩</span>
+                Atlas of the Ancients
+                <span class="title-ornament" aria-hidden="true">☩</span>
+            </h1>
+            <p class="site-subtitle">Cartography of the Forgotten Realms · Compiled in the Fourth Age of Knowing</p>
+            <div class="header-ornament" aria-hidden="true">
+                <svg width="400" height="30" viewBox="0 0 400 30">
+                    <line x1="0" y1="15" x2="100" y2="15" stroke="#c9a84c" stroke-width="1" opacity="0.4"/>
+                    <polygon points="105,10 115,15 105,20" fill="#c9a84c" opacity="0.6"/>
+                    <line x1="120" y1="15" x2="200" y2="15" stroke="#c9a84c" stroke-width="1" opacity="0.6"/>
+                    <polygon points="205,8 210,15 205,22" fill="#c9a84c" opacity="0.7"/>
+                    <line x1="220" y1="15" x2="300" y2="15" stroke="#c9a84c" stroke-width="1" opacity="0.6"/>
+                    <polygon points="305,10 315,15 305,20" fill="#c9a84c" opacity="0.6"/>
+                    <line x1="320" y1="15" x2="400" y2="15" stroke="#c9a84c" stroke-width="1" opacity="0.4"/>
+                </svg>
+            </div>
+        </div>
+        <div class="header-frame-bottom" aria-hidden="true">
+            <span class="cuneiform-decoration" aria-hidden="true">𒂍𒀭𒊏𒆠𒂗𒆠 𒈗𒌷𒆠 𒁕𒈝𒆠𒂊𒋫 𒀭𒂗𒂠𒁕𒀴𒋼</span>
+        </div>
+    </header>
+
+    <!-- ═══════════════════════════════════════════ MAIN ═══════════════════════════════════════════ -->
+    <main class="main-content">
+        <div class="layout-grid">
+            <!-- ═══ LEFT PANEL: CONTROLS ═══ -->
+            <aside class="control-panel" aria-label="Map controls">
+                <!-- Era Timeline -->
+                <section class="panel-section era-panel">
+                    <h2 class="panel-section-title">
+                        <span class="panel-icon" aria-hidden="true">⏳</span>
+                        Age of the World
+                    </h2>
+                    <div class="era-slider-container">
+                        <input type="range" id="era-slider" min="1" max="4" value="3" class="era-slider" aria-label="Select era">
+                        <div class="era-labels">
+                            <span class="era-label" data-era="1">First Age</span>
+                            <span class="era-label" data-era="2">Age of Flames</span>
+                            <span class="era-label active" data-era="3">Third Dominion</span>
+                            <span class="era-label" data-era="4">The Sundering</span>
+                        </div>
+                    </div>
+                    <div class="era-description" id="era-description">
+                        The Third Dominion — Kingdoms rise and fall across the known world. Trade flourishes along ancient routes while old magics stir beneath the earth.
+                    </div>
+                </section>
+
+                <!-- Legend -->
+                <section class="panel-section legend-panel">
+                    <h2 class="panel-section-title">
+                        <span class="panel-icon" aria-hidden="true">⬟</span>
+                        Stone of Symbols
+                    </h2>
+                    <div class="legend-content">
+                        <div class="legend-item">
+                            <div class="legend-swatch" style="background: #c17a34;"></div>
+                            <span>Desert Dominion</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-swatch" style="background: #5a7088;"></div>
+                            <span>High Kingdom</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-swatch" style="background: #3a6b4a;"></div>
+                            <span>Verdant Deep</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-swatch" style="background: #8b3a3a;"></div>
+                            <span>Coastal Republic</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-swatch" style="background: #4a2a4a;"></div>
+                            <span>Volcanic Empire</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-swatch" style="background: #7a6a3a;"></div>
+                            <span>Endless Steppe</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-swatch" style="background: #2a6060;"></div>
+                            <span>Jungle Realm</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-swatch" style="background: #5a5a88;"></div>
+                            <span>Shattered Isles</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-swatch legend-swatch-line" style="background: repeating-linear-gradient(90deg, #c9a84c 0, #c9a84c 4px, transparent 4px, transparent 8px);"></div>
+                            <span>Trade Route</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-swatch legend-swatch-dot" style="background: radial-gradient(circle, #d4a83c 30%, transparent 30%);"></div>
+                            <span>City of Note</span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Mythological Calendar -->
+                <section class="panel-section calendar-panel">
+                    <h2 class="panel-section-title">
+                        <span class="panel-icon" aria-hidden="true">🌙</span>
+                        Celestial Calendar
+                    </h2>
+                    <div class="calendar-widget" id="calendar-widget">
+                        <div class="calendar-display">
+                            <div class="calendar-day" id="calendar-day">17</div>
+                            <div class="calendar-month" id="calendar-month">Moon of Asharan</div>
+                            <div class="calendar-year" id="calendar-year">Year 4,217 of the Third Dominion</div>
+                        </div>
+                        <div class="calendar-constellation" id="constellation">
+                            <svg viewBox="0 0 120 80" xmlns="http://www.w3.org/2000/svg">
+                                <circle cx="20" cy="25" r="2" fill="#c9a84c"/>
+                                <circle cx="45" cy="15" r="2" fill="#c9a84c"/>
+                                <circle cx="65" cy="10" r="2.5" fill="#d4a83c"/>
+                                <circle cx="90" cy="20" r="2" fill="#c9a84c"/>
+                                <circle cx="100" cy="45" r="2" fill="#c9a84c"/>
+                                <circle cx="70" cy="55" r="2" fill="#c9a84c"/>
+                                <circle cx="40" cy="60" r="2" fill="#c9a84c"/>
+                                <line x1="20" y1="25" x2="45" y2="15" stroke="#c9a84c" stroke-width="0.8" opacity="0.5"/>
+                                <line x1="45" y1="15" x2="65" y2="10" stroke="#c9a84c" stroke-width="0.8" opacity="0.5"/>
+                                <line x1="65" y1="10" x2="90" y2="20" stroke="#c9a84c" stroke-width="0.8" opacity="0.5"/>
+                                <line x1="90" y1="20" x2="100" y2="45" stroke="#c9a84c" stroke-width="0.8" opacity="0.5"/>
+                                <line x1="100" y1="45" x2="70" y2="55" stroke="#c9a84c" stroke-width="0.8" opacity="0.5"/>
+                                <line x1="70" y1="55" x2="40" y2="60" stroke="#c9a84c" stroke-width="0.8" opacity="0.5"/>
+                                <line x1="40" y1="60" x2="20" y2="25" stroke="#c9a84c" stroke-width="0.8" opacity="0.5"/>
+                            </svg>
+                            <p class="constellation-name">The Weaver's Loom</p>
+                        </div>
+                    </div>
+                </section>
+            </aside>
+
+            <!-- ═══ CENTER: MAP ═══ -->
+            <section class="map-section" aria-label="Interactive map">
+                <div class="map-wrapper">
+                    <div class="map-toolbar" aria-label="Map toolbar">
+                        <button class="toolbar-btn" id="btn-zoom-in" aria-label="Zoom in" title="Zoom In">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+                        </button>
+                        <button class="toolbar-btn" id="btn-zoom-out" aria-label="Zoom out" title="Zoom Out">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+                        </button>
+                        <button class="toolbar-btn" id="btn-reset" aria-label="Reset view" title="Reset View">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 3a9 9 0 1 0 9 9 9.75 9.75 0 0 0-6.74-2.74L21 16"/><path d="M16 16l4 4"/><path d="M21 16v-5h-5"/></svg>
+                        </button>
+                        <div class="toolbar-separator"></div>
+                        <button class="toolbar-btn active" id="btn-trade-routes" aria-label="Toggle trade routes" title="Toggle Trade Routes">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4m0 12v4M2 12h4m12 0h4M7 7l2 2m6-2 2 2m-6 6 2 2m-2-10-2 2m10 8-2 2"/></svg>
+                        </button>
+                        <button class="toolbar-btn" id="btn-mythology" aria-label="Toggle mythology markers" title="Toggle Mythology Markers">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+                        </button>
+                        <div class="toolbar-separator"></div>
+                        <div class="search-container">
+                            <input type="text" id="search-input" class="search-input" placeholder="Search regions, cities, lore..." autocomplete="off">
+                            <button class="search-btn" id="search-btn" aria-label="Search">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/></svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="map-container" id="map-container">
+                        <svg id="world-map" viewBox="0 0 1000 650" xmlns="http://www.w3.org/2000/svg" aria-label="Ancient World Map">
+                            <defs>
+                                <!-- Ocean pattern -->
+                                <pattern id="wave-pattern" x="0" y="0" width="60" height="60" patternUnits="userSpaceOnUse">
+                                    <path d="M0 30 Q15 20 30 30 Q45 40 60 30" fill="none" stroke="#3a4a5a" stroke-width="0.5" opacity="0.3"/>
+                                    <path d="M0 45 Q15 35 30 45 Q45 55 60 45" fill="none" stroke="#3a4a5a" stroke-width="0.5" opacity="0.2"/>
+                                </pattern>
+                                <!-- Parchment texture filter -->
+                                <filter id="parchmentShadow">
+                                    <feDropShadow dx="3" dy="3" stdDeviation="5" flood-color="#000" flood-opacity="0.3"/>
+                                </filter>
+                                <filter id="glow-gold">
+                                    <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                                    <feMerge>
+                                        <feMergeNode in="coloredBlur"/>
+                                        <feMergeNode in="SourceGraphic"/>
+                                    </feMerge>
+                                </filter>
+                                <filter id="innerGlow">
+                                    <feGaussianBlur in="SourceAlpha" stdDeviation="4" result="blur"/>
+                                    <feOffset dx="0" dy="0"/>
+                                    <feComposite in2="SourceAlpha" operator="arithmetic" k2="-1" k3="1"/>
+                                    <feFlood flood-color="#c9a84c" flood-opacity="0.3" result="color"/>
+                                    <feComposite in2="color" operator="in"/>
+                                    <feComposite in="SourceGraphic"/>
+                                </filter>
+                                <!-- Gradient for the map background -->
+                                <linearGradient id="mapBg" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" stop-color="#2a2018"/>
+                                    <stop offset="50%" stop-color="#1f1a12"/>
+                                    <stop offset="100%" stop-color="#2a2018"/>
+                                </linearGradient>
+                                <!-- Trade route glow -->
+                                <filter id="routeGlow">
+                                    <feGaussianBlur stdDeviation="2" result="blur"/>
+                                    <feMerge>
+                                        <feMergeNode in="blur"/>
+                                        <feMergeNode in="SourceGraphic"/>
+                                    </feMerge>
+                                </filter>
+                                <!-- Marker glow -->
+                                <filter id="markerGlow">
+                                    <feGaussianBlur stdDeviation="3" result="blur"/>
+                                    <feMerge>
+                                        <feMergeNode in="blur"/>
+                                        <feMergeNode in="SourceGraphic"/>
+                                    </feMerge>
+                                </filter>
+                                <!-- Clip for the map border -->
+                                <clipPath id="mapClip">
+                                    <path d="M30,20 L970,20 Q990,20 990,40 L990,610 Q990,630 970,630 L30,630 Q10,630 10,610 L10,40 Q10,20 30,20 Z"/>
+                                </clipPath>
+                            </defs>
+
+                            <!-- Ocean background -->
+                            <rect x="0" y="0" width="1000" height="650" fill="url(#mapBg)"/>
+                            <rect x="0" y="0" width="1000" height="650" fill="url(#wave-pattern)"/>
+
+                            <!-- Decorative sea creatures -->
+                            <g class="sea-creature" opacity="0.15">
+                                <path d="M150,120 Q160,100 170,120 Q180,140 170,160 Q160,150 150,160 Q140,140 150,120Z" fill="#4a6a8a"/>
+                            </g>
+                            <g class="sea-creature" opacity="0.1">
+                                <path d="M820,200 Q830,180 840,200 Q850,220 840,240 Q830,230 820,240 Q810,220 820,200Z" fill="#4a6a8a"/>
+                            </g>
+                            <g class="sea-creature" opacity="0.12">
+                                <path d="M450,500 Q458,485 466,500 Q474,515 466,530 Q458,522 450,530 Q442,515 450,500Z" fill="#4a6a8a"/>
+                            </g>
+
+                            <!-- ═════════════════════════════════════ REGIONS ═════════════════════════════════════ -->
+                            <g id="regions-layer" clip-path="url(#mapClip)">
+
+                                <!-- REGION: Valthorin (Mountains, Upper Left) -->
+                                <g id="region-valthorin" class="region" data-region="valthorin">
+                                    <path d="M80,60 L180,30 L260,55 L280,120 L250,180 L180,200 L120,170 L80,110 Z"
+                                          class="region-path"
+                                          fill="#5a7088"
+                                          stroke="#3a5068"
+                                          stroke-width="1.5"
+                                          opacity="0.85"/>
+                                    <!-- Mountain icons -->
+                                    <text x="150" y="120" font-size="20" text-anchor="middle" opacity="0.3">⛰</text>
+                                    <text x="190" y="80" font-size="16" text-anchor="middle" opacity="0.25">⛰</text>
+                                    <text x="120" y="95" font-size="14" text-anchor="middle" opacity="0.2">⛰</text>
+                                    <!-- Region label -->
+                                    <text x="160" y="125" class="region-label" font-family="Cinzel" font-size="16" font-weight="700" fill="#d4c8a8" text-anchor="middle" opacity="0.95">VALTHORIN</text>
+                                    <text x="160" y="142" class="region-sublabel" font-family="IM Fell English" font-size="10" fill="#a8b8c8" text-anchor="middle">The High Kingdom</text>
+                                    <!-- City markers -->
+                                    <g class="city-marker" data-city="ironpeak">
+                                        <circle cx="160" cy="100" r="4" fill="#d4a83c" filter="url(#markerGlow)"/>
+                                        <circle cx="160" cy="100" r="2" fill="#fff"/>
+                                    </g>
+                                    <g class="city-marker" data-city="stonehaven">
+                                        <circle cx="130" cy="155" r="3" fill="#d4a83c" filter="url(#markerGlow)"/>
+                                        <circle cx="130" cy="155" r="1.5" fill="#fff"/>
+                                    </g>
+                                </g>
+
+                                <!-- REGION: Aurelion (Coastal, Left) -->
+                                <g id="region-aurelion" class="region" data-region="aurelion">
+                                    <path d="M30,200 L100,185 L160,200 L180,260 L160,340 L100,370 L40,340 L30,280 Z"
+                                          class="region-path"
+                                          fill="#8b3a3a"
+                                          stroke="#6b2a2a"
+                                          stroke-width="1.5"
+                                          opacity="0.85"/>
+                                    <!-- Ship icon -->
+                                    <text x="80" y="290" font-size="18" text-anchor="middle" opacity="0.25">⛵</text>
+                                    <text x="120" y="330" font-size="14" text-anchor="middle" opacity="0.2">⚓</text>
+                                    <text x="80" y="240" class="region-label" font-family="Cinzel" font-size="16" font-weight="700" fill="#d4c8a8" text-anchor="middle" opacity="0.95">AURELION</text>
+                                    <text x="80" y="257" class="region-sublabel" font-family="IM Fell English" font-size="10" fill="#c8a898" text-anchor="middle">The Coastal Republic</text>
+                                    <g class="city-marker" data-city="port-solace">
+                                        <circle cx="75" cy="280" r="4" fill="#d4a83c" filter="url(#markerGlow)"/>
+                                        <circle cx="75" cy="280" r="1.5" fill="#fff"/>
+                                    </g>
+                                    <g class="city-marker" data-city="coralwatch">
+                                        <circle cx="100" cy="340" r="3" fill="#d4a83c" filter="url(#markerGlow)"/>
+                                        <circle cx="100" cy="340" r="1.5" fill="#fff"/>
+                                    </g>
+                                </g>
+
+                                <!-- REGION: Selenmoor (Swamp/Forest, Center-Left) -->
+                                <g id="region-selenmoor" class="region" data-region="selenmoor">
+                                    <path d="M180,200 L280,180 L340,220 L360,300 L320,370 L230,380 L160,340 L160,260 Z"
+                                          class="region-path"
+                                          fill="#3a6b4a"
+                                          stroke="#2a5030"
+                                          stroke-width="1.5"
+                                          opacity="0.85"/>
+                                    <!-- Tree icons -->
+                                    <text x="260" y="260" font-size="20" text-anchor="middle" opacity="0.2">🌳</text>
+                                    <text x="230" y="330" font-size="18" text-anchor="middle" opacity="0.18">🌿</text>
+                                    <text x="300" y="310" font-size="16" text-anchor="middle" opacity="0.15">🍃</text>
+                                    <text x="240" y="290" class="region-label" font-family="Cinzel" font-size="15" font-weight="700" fill="#d4c8a8" text-anchor="middle" opacity="0.95">SELENMOOR</text>
+                                    <text x="240" y="307" class="region-sublabel" font-family="IM Fell English" font-size="10" fill="#a8b8a8" text-anchor="middle">The Verdant Deep</text>
+                                    <g class="city-marker" data-city="willowmere">
+                                        <circle cx="255" cy="340" r="4" fill="#d4a83c" filter="url(#markerGlow)"/>
+                                        <circle cx="255" cy="340" r="1.5" fill="#fff"/>
+                                    </g>
+                                </g>
+
+                                <!-- REGION: Kethara (Desert Empire, Upper Center) -->
+                                <g id="region-kethara" class="region" data-region="kethara">
+                                    <path d="M300,40 L520,25 L620,50 L640,130 L600,200 L480,220 L340,200 L300,130 Z"
+                                          class="region-path"
+                                          fill="#c17a34"
+                                          stroke="#915a24"
+                                          stroke-width="1.5"
+                                          opacity="0.85"/>
+                                    <!-- Sand dune patterns -->
+                                    <path d="M350,80 Q380,65 410,80 Q440,95 470,80" fill="none" stroke="#b06a24" stroke-width="0.8" opacity="0.3"/>
+                                    <path d="M370,110 Q400,95 430,110 Q460,125 490,110" fill="none" stroke="#b06a24" stroke-width="0.8" opacity="0.25"/>
+                                    <path d="M400,140 Q430,125 460,140 Q490,155 520,140" fill="none" stroke="#b06a24" stroke-width="0.8" opacity="0.2"/>
+                                    <!-- Pyramid icon -->
+                                    <text x="430" y="130" font-size="22" text-anchor="middle" opacity="0.2">🔺</text>
+                                    <text x="430" y="115" class="region-label" font-family="Cinzel" font-size="18" font-weight="900" fill="#d4c8a8" text-anchor="middle" opacity="0.95">KETHARA</text>
+                                    <text x="430" y="135" class="region-sublabel" font-family="IM Fell English" font-size="11" fill="#d4b888" text-anchor="middle">The Golden Dominion</text>
+                                    <g class="city-marker" data-city="sunspire">
+                                        <circle cx="430" cy="75" r="5" fill="#d4a83c" filter="url(#markerGlow)"/>
+                                        <circle cx="430" cy="75" r="2" fill="#fff"/>
+                                    </g>
+                                    <g class="city-marker" data-city="obsidian-gate">
+                                        <circle cx="370" cy="170" r="4" fill="#d4a83c" filter="url(#markerGlow)"/>
+                                        <circle cx="370" cy="170" r="1.5" fill="#fff"/>
+                                    </g>
+                                    <g class="city-marker" data-city="amber-citadel">
+                                        <circle cx="530" cy="130" r="4" fill="#d4a83c" filter="url(#markerGlow)"/>
+                                        <circle cx="530" cy="130" r="1.5" fill="#fff"/>
+                                    </g>
+                                </g>
+
+                                <!-- REGION: Drakthar (Volcanic North, Upper Right) -->
+                                <g id="region-drakthar" class="region" data-region="drakthar">
+                                    <path d="M620,20 L820,30 L970,50 L970,170 L900,230 L800,240 L700,180 L640,130 L620,70 Z"
+                                          class="region-path"
+                                          fill="#4a2a4a"
+                                          stroke="#3a1a3a"
+                                          stroke-width="1.5"
+                                          opacity="0.85"/>
+                                    <!-- Volcano icon -->
+                                    <text x="870" y="100" font-size="22" text-anchor="middle" opacity="0.2">🌋</text>
+                                    <!-- Lava lines -->
+                                    <path d="M850,70 Q860,80 855,90 Q850,100 858,108" fill="none" stroke="#d4443c" stroke-width="1" opacity="0.2"/>
+                                    <path d="M865,75 Q870,82 867,92 Q864,100 870,105" fill="none" stroke="#d4443c" stroke-width="0.8" opacity="0.15"/>
+                                    <text x="810" y="130" class="region-label" font-family="Cinzel" font-size="16" font-weight="700" fill="#d4c8a8" text-anchor="middle" opacity="0.95">DRAKTHAR</text>
+                                    <text x="810" y="147" class="region-sublabel" font-family="IM Fell English" font-size="10" fill="#b8a8c8" text-anchor="middle">The Volcanic Empire</text>
+                                    <g class="city-marker" data-city="ashhold">
+                                        <circle cx="850" cy="85" r="4" fill="#d4a83c" filter="url(#markerGlow)"/>
+                                        <circle cx="850" cy="85" r="1.5" fill="#fff"/>
+                                    </g>
+                                    <g class="city-marker" data-city="dragonmouth">
+                                        <circle cx="770" cy="180" r="4" fill="#d4a83c" filter="url(#markerGlow)"/>
+                                        <circle cx="770" cy="180" r="1.5" fill="#fff"/>
+                                    </g>
+                                </g>
+
+                                <!-- REGION: Lyrian Steppe (Bottom Center) -->
+                                <g id="region-lyrian" class="region" data-region="lyrian">
+                                    <path d="M340,380 L500,360 L640,390 L680,460 L640,540 L500,560 L360,530 L320,460 Z"
+                                          class="region-path"
+                                          fill="#7a6a3a"
+                                          stroke="#5a4a2a"
+                                          stroke-width="1.5"
+                                          opacity="0.85"/>
+                                    <!-- Grass patterns -->
+                                    <path d="M400,420 Q405,410 410,420 Q415,430 420,420" fill="none" stroke="#8a7a4a" stroke-width="0.8" opacity="0.3"/>
+                                    <path d="M450,450 Q455,440 460,450 Q465,460 470,450" fill="none" stroke="#8a7a4a" stroke-width="0.8" opacity="0.25"/>
+                                    <path d="M520,430 Q525,420 530,430 Q535,440 540,430" fill="none" stroke="#8a7a4a" stroke-width="0.8" opacity="0.2"/>
+                                    <!-- Horse icon -->
+                                    <text x="490" y="450" font-size="20" text-anchor="middle" opacity="0.2">🐎</text>
+                                    <text x="490" y="425" class="region-label" font-family="Cinzel" font-size="17" font-weight="700" fill="#d4c8a8" text-anchor="middle" opacity="0.95">LYRIAN STEPPE</text>
+                                    <text x="490" y="442" class="region-sublabel" font-family="IM Fell English" font-size="10" fill="#c8b898" text-anchor="middle">The Endless Grass Sea</text>
+                                    <g class="city-marker" data-city="windfall">
+                                        <circle cx="490" cy="490" r="4" fill="#d4a83c" filter="url(#markerGlow)"/>
+                                        <circle cx="490" cy="490" r="1.5" fill="#fff"/>
+                                    </g>
+                                    <g class="city-marker" data-city="thunderpost">
+                                        <circle cx="420" cy="460" r="3" fill="#d4a83c" filter="url(#markerGlow)"/>
+                                        <circle cx="420" cy="460" r="1.5" fill="#fff"/>
+                                    </g>
+                                </g>
+
+                                <!-- REGION: Verdantis (Jungle, Right) -->
+                                <g id="region-verdantis" class="region" data-region="verdantis">
+                                    <path d="M640,390 L780,370 L940,400 L970,520 L900,580 L760,570 L640,540 L640,460 Z"
+                                          class="region-path"
+                                          fill="#2a6060"
+                                          stroke="#1a5050"
+                                          stroke-width="1.5"
+                                          opacity="0.85"/>
+                                    <!-- Jungle foliage -->
+                                    <text x="740" y="440" font-size="22" text-anchor="middle" opacity="0.18">🌴</text>
+                                    <text x="840" y="480" font-size="20" text-anchor="middle" opacity="0.15">🌿</text>
+                                    <text x="800" y="530" font-size="18" text-anchor="middle" opacity="0.12">🍀</text>
+                                    <text x="740" y="480" class="region-label" font-family="Cinzel" font-size="16" font-weight="700" fill="#d4c8a8" text-anchor="middle" opacity="0.95">VERDANTIS</text>
+                                    <text x="740" y="497" class="region-sublabel" font-family="IM Fell English" font-size="10" fill="#a8c0c0" text-anchor="middle">The Emerald Dominion</text>
+                                    <g class="city-marker" data-city="jade-heart">
+                                        <circle cx="800" cy="460" r="4" fill="#d4a83c" filter="url(#markerGlow)"/>
+                                        <circle cx="800" cy="460" r="1.5" fill="#fff"/>
+                                    </g>
+                                    <g class="city-marker" data-city="vinecrest">
+                                        <circle cx="870" cy="530" r="3" fill="#d4a83c" filter="url(#markerGlow)"/>
+                                        <circle cx="870" cy="530" r="1.5" fill="#fff"/>
+                                    </g>
+                                </g>
+
+                                <!-- REGION: The Shattered Isles (Bottom Right Islands) -->
+                                <g id="region-shattered-isles" class="region" data-region="shattered-isles">
+                                    <!-- Island 1 -->
+                                    <path d="M820,460 L870,440 L900,470 L890,510 L840,530 L810,510 L800,480 Z"
+                                          class="region-path island"
+                                          fill="#5a5a88"
+                                          stroke="#404070"
+                                          stroke-width="1.5"
+                                          opacity="0.85"/>
+                                    <!-- Island 2 -->
+                                    <path d="M900,480 L940,465 L960,490 L950,530 L910,540 L890,510 Z"
+                                          class="region-path island"
+                                          fill="#5a5a88"
+                                          stroke="#404070"
+                                          stroke-width="1.5"
+                                          opacity="0.85"/>
+                                    <!-- Island 3 -->
+                                    <path d="M800,530 L840,515 L860,550 L830,580 L790,575 L780,545 Z"
+                                          class="region-path island"
+                                          fill="#5a5a88"
+                                          stroke="#404070"
+                                          stroke-width="1.5"
+                                          opacity="0.85"/>
+                                    <!-- Wave icons between islands -->
+                                    <text x="860" y="495" font-size="10" text-anchor="middle" opacity="0.2">~</text>
+                                    <text x="880" y="515" font-size="10" text-anchor="middle" opacity="0.2">~</text>
+                                    <text x="830" y="550" font-size="10" text-anchor="middle" opacity="0.2">~</text>
+                                    <text x="880" y="500" class="region-label" font-family="Cinzel" font-size="13" font-weight="700" fill="#d4c8a8" text-anchor="middle" opacity="0.95">SHATTERED</text>
+                                    <text x="880" y="515" class="region-sublabel" font-family="IM Fell English" font-size="10" fill="#b8b0d0" text-anchor="middle">Isles</text>
+                                    <g class="city-marker" data-city="tidegate">
+                                        <circle cx="860" cy="480" r="4" fill="#d4a83c" filter="url(#markerGlow)"/>
+                                        <circle cx="860" cy="480" r="1.5" fill="#fff"/>
+                                    </g>
+                                    <g class="city-marker" data-city="abyss-reach">
+                                        <circle cx="930" cy="510" r="3" fill="#d4a83c" filter="url(#markerGlow)"/>
+                                        <circle cx="930" cy="510" r="1.5" fill="#fff"/>
+                                    </g>
+                                </g>
+
+                            </g>
+
+                            <!-- ═════════════════════════════════════ TRADE ROUTES ═════════════════════════════════════ -->
+                            <g id="trade-routes-layer" filter="url(#routeGlow)">
+                                <!-- Spice Route: Aurelion → Kethara → Drakthar -->
+                                <g class="trade-route" data-route="spice">
+                                    <path d="M120,270 Q200,230 300,160 Q400,100 430,80 Q500,75 550,90 Q600,100 650,85 Q700,70 760,70 Q800,72 830,85"
+                                          fill="none"
+                                          stroke="#c9a84c"
+                                          stroke-width="2"
+                                          stroke-dasharray="8,4"
+                                          opacity="0.5"
+                                          class="route-path"/>
+                                    <!-- Animated caravans on this route -->
+                                    <circle class="caravan-dot" r="3" fill="#d4a83c" filter="url(#markerGlow)">
+                                        <animateMotion dur="12s" repeatCount="indefinite" rotate="auto">
+                                            <mpath href="#spice-route-path"/>
+                                        </animateMotion>
+                                    </circle>
+                                    <circle class="caravan-dot caravan-dot-2" r="3" fill="#e8c36a" filter="url(#markerGlow)">
+                                        <animateMotion dur="12s" repeatCount="indefinite" rotate="auto" begin="4s">
+                                            <mpath href="#spice-route-path"/>
+                                        </animateMotion>
+                                    </circle>
+                                    <path id="spice-route-path" d="M120,270 Q200,230 300,160 Q400,100 430,80 Q500,75 550,90 Q600,100 650,85 Q700,70 760,70 Q800,72 830,85" fill="none"/>
+                                    <!-- Waypoint labels -->
+                                    <text x="115" y="265" font-family="IM Fell English" font-size="9" fill="#c9a84c" opacity="0.7" text-anchor="end">Aurelion</text>
+                                    <text x="430" y="65" font-family="IM Fell English" font-size="9" fill="#c9a84c" opacity="0.7" text-anchor="middle">Kethara</text>
+                                    <text x="835" y="80" font-family="IM Fell English" font-size="9" fill="#c9a84c" opacity="0.7">Drakthar</text>
+                                </g>
+
+                                <!-- Amber Road: Drakthar → Valthorin → Lyrian Steppe -->
+                                <g class="trade-route" data-route="amber">
+                                    <path d="M770,180 Q700,190 600,200 Q500,210 400,220 Q300,240 250,280 Q200,320 180,370 Q170,400 200,430 Q250,450 350,450 Q420,450 470,460"
+                                          fill="none"
+                                          stroke="#b89a3c"
+                                          stroke-width="2"
+                                          stroke-dasharray="8,4"
+                                          opacity="0.45"
+                                          class="route-path"/>
+                                    <circle class="caravan-dot" r="3" fill="#d4a83c" filter="url(#markerGlow)">
+                                        <animateMotion dur="15s" repeatCount="indefinite" rotate="auto">
+                                            <mpath href="#amber-route-path"/>
+                                        </animateMotion>
+                                    </circle>
+                                    <circle class="caravan-dot caravan-dot-2" r="3" fill="#e8c36a" filter="url(#markerGlow)">
+                                        <animateMotion dur="15s" repeatCount="indefinite" rotate="auto" begin="5s">
+                                            <mpath href="#amber-route-path"/>
+                                        </animateMotion>
+                                    </circle>
+                                    <path id="amber-route-path" d="M770,180 Q700,190 600,200 Q500,210 400,220 Q300,240 250,280 Q200,320 180,370 Q170,400 200,430 Q250,450 350,450 Q420,450 470,460" fill="none"/>
+                                    <text x="760" y="175" font-family="IM Fell English" font-size="9" fill="#b89a3c" opacity="0.7" text-anchor="end">Drakthar</text>
+                                    <text x="175" y="365" font-family="IM Fell English" font-size="9" fill="#b89a3c" opacity="0.7" text-anchor="end">Valthorin</text>
+                                    <text x="475" y="468" font-family="IM Fell English" font-size="9" fill="#b89a3c" opacity="0.7">Lyrian Steppe</text>
+                                </g>
+
+                                <!-- Silk of the South: Kethara → Selenmoor → Verdantis -->
+                                <g class="trade-route" data-route="silk">
+                                    <path d="M430,200 Q400,240 360,280 Q320,310 280,320 Q250,310 240,290 Q230,320 240,360 Q250,400 300,430 Q380,460 450,450 Q530,440 580,410 Q610,400 630,390"
+                                          fill="none"
+                                          stroke="#6aaa6a"
+                                          stroke-width="2"
+                                          stroke-dasharray="8,4"
+                                          opacity="0.45"
+                                          class="route-path"/>
+                                    <circle class="caravan-dot" r="3" fill="#6aaa6a" filter="url(#markerGlow)">
+                                        <animateMotion dur="14s" repeatCount="indefinite" rotate="auto">
+                                            <mpath href="#silk-route-path"/>
+                                        </animateMotion>
+                                    </circle>
+                                    <circle class="caravan-dot caravan-dot-2" r="3" fill="#88cc88" filter="url(#markerGlow)">
+                                        <animateMotion dur="14s" repeatCount="indefinite" rotate="auto" begin="7s">
+                                            <mpath href="#silk-route-path"/>
+                                        </animateMotion>
+                                    </circle>
+                                    <path id="silk-route-path" d="M430,200 Q400,240 360,280 Q320,310 280,320 Q250,310 240,290 Q230,320 240,360 Q250,400 300,430 Q380,460 450,450 Q530,440 580,410 Q610,400 630,390" fill="none"/>
+                                    <text x="435" y="195" font-family="IM Fell English" font-size="9" fill="#6aaa6a" opacity="0.7" text-anchor="start">Kethara</text>
+                                    <text x="235" y="300" font-family="IM Fell English" font-size="9" fill="#6aaa6a" opacity="0.7" text-anchor="end">Selenmoor</text>
+                                    <text x="635" y="385" font-family="IM Fell English" font-size="9" fill="#6aaa6a" opacity="0.7">Verdantis</text>
+                                </g>
+
+                                <!-- Maritime Jade Route: Aurelion → Shattered Isles → Verdantis -->
+                                <g class="trade-route" data-route="jade">
+                                    <path d="M90,340 Q110,380 140,410 Q170,440 210,460 Q280,490 350,510 Q450,530 550,520 Q650,510 730,490"
+                                          fill="none"
+                                          stroke="#4a90a8"
+                                          stroke-width="2"
+                                          stroke-dasharray="8,4"
+                                          opacity="0.4"
+                                          class="route-path"/>
+                                    <circle class="caravan-dot" r="3" fill="#4a90a8" filter="url(#markerGlow)">
+                                        <animateMotion dur="18s" repeatCount="indefinite" rotate="auto">
+                                            <mpath href="#jade-route-path"/>
+                                        </animateMotion>
+                                    </circle>
+                                    <circle class="caravan-dot caravan-dot-2" r="3" fill="#6ab0c8" filter="url(#markerGlow)">
+                                        <animateMotion dur="18s" repeatCount="indefinite" rotate="auto" begin="9s">
+                                            <mpath href="#jade-route-path"/>
+                                        </animateMotion>
+                                    </circle>
+                                    <path id="jade-route-path" d="M90,340 Q110,380 140,410 Q170,440 210,460 Q280,490 350,510 Q450,530 550,520 Q650,510 730,490" fill="none"/>
+                                    <text x="85" y="335" font-family="IM Fell English" font-size="9" fill="#4a90a8" opacity="0.7" text-anchor="end">Aurelion</text>
+                                    <text x="735" y="485" font-family="IM Fell English" font-size="9" fill="#4a90a8" opacity="0.7">Shattered Isles</text>
+                                </g>
+                            </g>
+
+                            <!-- ═════════════════════════════════════ MYTHOLOGY LAYER ═════════════════════════════════════ -->
+                            <g id="mythology-layer" class="mythology-layer" opacity="0">
+                                <!-- Myth: The Titan's Rest (mountains) -->
+                                <g class="myth-marker" data-myth="titans-rest">
+                                    <circle cx="160" cy="80" r="18" fill="none" stroke="#c9a84c" stroke-width="1" stroke-dasharray="3,3" opacity="0.6"/>
+                                    <text x="160" y="76" font-size="18" text-anchor="middle">✦</text>
+                                </g>
+                                <!-- Myth: The Drowned God's Maw (sea) -->
+                                <g class="myth-marker" data-myth="drowned-god">
+                                    <circle cx="750" cy="520" r="22" fill="none" stroke="#4a90a8" stroke-width="1" stroke-dasharray="3,3" opacity="0.5"/>
+                                    <text x="750" y="525" font-size="20" text-anchor="middle">☬</text>
+                                </g>
+                                <!-- Myth: The Eternal Flame (volcano) -->
+                                <g class="myth-marker" data-myth="eternal-flame">
+                                    <circle cx="880" cy="55" r="16" fill="none" stroke="#d4443c" stroke-width="1" stroke-dasharray="3,3" opacity="0.5"/>
+                                    <text x="880" y="52" font-size="18" text-anchor="middle">⚡</text>
+                                </g>
+                                <!-- Myth: The Whispering Grove -->
+                                <g class="myth-marker" data-myth="whispering-grove">
+                                    <circle cx="280" cy="320" r="15" fill="none" stroke="#3a8a5a" stroke-width="1" stroke-dasharray="3,3" opacity="0.5"/>
+                                    <text x="280" y="325" font-size="18" text-anchor="middle">🌀</text>
+                                </g>
+                                <!-- Myth: The Starfall Crater -->
+                                <g class="myth-marker" data-myth="starfall">
+                                    <circle cx="500" cy="480" r="20" fill="none" stroke="#9a8ac9" stroke-width="1" stroke-dasharray="3,3" opacity="0.5"/>
+                                    <text x="500" y="485" font-size="18" text-anchor="middle">✧</text>
+                                </g>
+                            </g>
+
+                            <!-- ═════════════════════════════════════ BORDER DECORATIONS ═════════════════════════════════════ -->
+                            <!-- Map border frame -->
+                            <rect x="10" y="10" width="980" height="630" rx="5" ry="5"
+                                  fill="none" stroke="#c9a84c" stroke-width="2" opacity="0.4"/>
+                            <rect x="15" y="15" width="970" height="620" rx="3" ry="3"
+                                  fill="none" stroke="#c9a84c" stroke-width="0.5" opacity="0.2"/>
+
+                            <!-- Corner ornaments -->
+                            <g class="corner-ornament" opacity="0.5">
+                                <path d="M20,20 L50,20 L50,25 L25,25 L25,50 L20,50 Z" fill="#c9a84c"/>
+                            </g>
+                            <g class="corner-ornament" opacity="0.5">
+                                <path d="M980,20 L950,20 L950,25 L975,25 L975,50 L980,50 Z" fill="#c9a84c"/>
+                            </g>
+                            <g class="corner-ornament" opacity="0.5">
+                                <path d="M20,630 L50,630 L50,625 L25,625 L25,600 L20,600 Z" fill="#c9a84c"/>
+                            </g>
+                            <g class="corner-ornament" opacity="0.5">
+                                <path d="M980,630 L950,630 L950,625 L975,625 L975,600 L980,600 Z" fill="#c9a84c"/>
+                            </g>
+
+                            <!-- Scale bar -->
+                            <g class="scale-bar" transform="translate(50, 610)">
+                                <line x1="0" y1="0" x2="80" y2="0" stroke="#c9a84c" stroke-width="1" opacity="0.5"/>
+                                <line x1="0" y1="-4" x2="0" y2="4" stroke="#c9a84c" stroke-width="1" opacity="0.5"/>
+                                <line x1="40" y1="-4" x2="40" y2="4" stroke="#c9a84c" stroke-width="1" opacity="0.5"/>
+                                <line x1="80" y1="-4" x2="80" y2="4" stroke="#c9a84c" stroke-width="1" opacity="0.5"/>
+                                <text x="0" y="16" font-family="IM Fell English" font-size="9" fill="#c9a84c" opacity="0.6">200 leagues</text>
+                            </g>
+
+                            <!-- North arrow -->
+                            <g class="north-arrow" transform="translate(940, 600)">
+                                <polygon points="0,-12 5,0 -5,0" fill="#c9a84c" opacity="0.6"/>
+                                <line x1="0" y1="-12" x2="0" y2="8" stroke="#c9a84c" stroke-width="1" opacity="0.5"/>
+                                <text x="0" y="22" font-family="IM Fell English" font-size="8" fill="#c9a84c" opacity="0.6" text-anchor="middle">N</text>
+                            </g>
+                        </svg>
+                    </div>
+
+                    <!-- Map title overlay -->
+                    <div class="map-title-overlay">
+                        <span class="map-title-text" style="--i:1">T</span>
+                        <span class="map-title-text" style="--i:2">h</span>
+                        <span class="map-title-text" style="--i:3">e</span>
+                        <span class="map-title-text" style="--i:4">&nbsp;</span>
+                        <span class="map-title-text" style="--i:5">K</span>
+                        <span class="map-title-text" style="--i:6">n</span>
+                        <span class="map-title-text" style="--i:7">o</span>
+                        <span class="map-title-text" style="--i:8">w</span>
+                        <span class="map-title-text" style="--i:9">n</span>
+                        <span class="map-title-text" style="--i:10">&nbsp;</span>
+                        <span class="map-title-text" style="--i:11">W</span>
+                        <span class="map-title-text" style="--i:12">o</span>
+                        <span class="map-title-text" style="--i:13">r</span>
+                        <span class="map-title-text" style="--i:14">l</span>
+                        <span class="map-title-text" style="--i:15">d</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ═══ RIGHT PANEL: LORE ═══ -->
+            <section class="lore-panel" id="lore-panel">
+                <div class="lore-panel-inner">
+                    <!-- Default state -->
+                    <div class="lore-default" id="lore-default">
+                        <div class="lore-default-icon" aria-hidden="true">🗺</div>
+                        <h2 class="lore-default-title">Select a Region</h2>
+                        <p class="lore-default-text">
+                            Click on any region of the map to reveal its ancient lore, trade routes, and mythological annotations. 
+                            Explore the forgotten realms of old.
+                        </p>
+                        <div class="lore-instructions">
+                            <div class="instruction-item">
+                                <span class="instruction-icon">👆</span>
+                                <span>Click a region to explore</span>
+                            </div>
+                            <div class="instruction-item">
+                                <span class="instruction-icon">🔍</span>
+                                <span>Search for cities & lore</span>
+                            </div>
+                            <div class="instruction-item">
+                                <span class="instruction-icon">⏳</span>
+                                <span>Shift eras to see borders change</span>
+                            </div>
+                            <div class="instruction-item">
+                                <span class="instruction-icon">📜</span>
+                                <span>Toggle mythological markers</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Active lore content (hidden by default) -->
+                    <div class="lore-active" id="lore-active" style="display: none;">
+                        <!-- Close button -->
+                        <button class="lore-close-btn" id="lore-close-btn" aria-label="Close lore panel">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                        </button>
+
+                        <!-- Region header -->
+                        <header class="lore-header" id="lore-header">
+                            <div class="lore-header-icon" id="lore-header-icon">🏛</div>
+                            <div>
+                                <h2 class="lore-region-name" id="lore-region-name">—</h2>
+                                <p class="lore-region-title" id="lore-region-title">—</p>
+                            </div>
+                        </header>
+
+                        <!-- Scrollable lore content -->
+                        <div class="lore-scroll" id="lore-scroll">
+                            <!-- Description -->
+                            <section class="lore-section">
+                                <h3 class="lore-section-title">
+                                    <span class="section-icon">📜</span> Chronicle
+                                </h3>
+                                <div class="lore-text" id="lore-chronicle">
+                                    <!-- Filled by JS -->
+                                </div>
+                            </section>
+
+                            <!-- Capital & Cities -->
+                            <section class="lore-section">
+                                <h3 class="lore-section-title">
+                                    <span class="section-icon">🏰</span> Seats of Power
+                                </h3>
+                                <div class="lore-cities" id="lore-cities">
+                                    <!-- Filled by JS -->
+                                </div>
+                            </section>
+
+                            <!-- Trade Routes -->
+                            <section class="lore-section">
+                                <h3 class="lore-section-title">
+                                    <span class="section-icon">🐪</span> Trade Routes
+                                </h3>
+                                <div class="lore-text" id="lore-trade">
+                                    <!-- Filled by JS -->
+                                </div>
+                            </section>
+
+                            <!-- Mythology -->
+                            <section class="lore-section">
+                                <h3 class="lore-section-title">
+                                    <span class="section-icon">🔮</span> Mythological Annotations
+                                </h3>
+                                <div class="lore-text" id="lore-mythology">
+                                    <!-- Filled by JS -->
+                                </div>
+                            </section>
+
+                            <!-- Notable Artifacts -->
+                            <section class="lore-section">
+                                <h3 class="lore-section-title">
+                                    <span class="section-icon">⚔️</span> Artifacts & Relics
+                                </h3>
+                                <div class="lore-artifacts" id="lore-artifacts">
+                                    <!-- Filled by JS -->
+                                </div>
+                            </section>
+
+                            <!-- Era Variations -->
+                            <section class="lore-section">
+                                <h3 class="lore-section-title">
+                                    <span class="section-icon">⏳</span> Era Variations
+                                </h3>
+                                <div class="lore-text" id="lore-eras">
+                                    <!-- Filled by JS -->
+                                </div>
+                            </section>
+                        </div>
+
+                        <!-- Footer stats -->
+                        <footer class="lore-footer" id="lore-footer">
+                            <div class="lore-stat">
+                                <span class="stat-label">Population</span>
+                                <span class="stat-value" id="stat-pop">—</span>
+                            </div>
+                            <div class="lore-stat">
+                                <span class="stat-label">Wealth</span>
+                                <span class="stat-value" id="stat-wealth">—</span>
+                            </div>
+                            <div class="lore-stat">
+                                <span class="stat-label">Military</span>
+                                <span class="stat-value" id="stat-military">—</span>
+                            </div>
+                            <div class="lore-stat">
+                                <span class="stat-label">Magic</span>
+                                <span class="stat-value" id="stat-magic">—</span>
+                            </div>
+                        </footer>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- ═════════════════════════════════════ FOOTER ═════════════════════════════════════ -->
+    <footer class="site-footer">
+        <div class="footer-frame-top" aria-hidden="true">
+            <span class="cuneiform-decoration">𒂍𒀭𒊏𒆠𒂗𒆠 𒈗𒌷𒆠 𒁕𒈝𒆠𒂊𒋫 𒀭𒂗𒂠𒁕𒀴𒋼</span>
+        </div>
+        <div class="footer-content">
+            <p>Compiled by the Order of the Eternal Quill · Fourth Age of Knowing · Year 4,217</p>
+            <p class="footer-note">All borders are approximate and reflect the state of the Third Dominion. Consult your local scribe for the most current cartographic records.</p>
+        </div>
+        <div class="footer-frame-bottom" aria-hidden="true">
+            <span class="cuneiform-decoration">𒂍𒀭𒊏𒆠𒂗𒆠 𒈗𒌷𒆠 𒁕𒈝𒆠𒂊𒋫 𒀭𒂗𒂠𒁕𒀴𒋼</span>
+        </div>
+    </footer>
+
+    <!-- ═════════════════════════════════════ TOOLTIP ═════════════════════════════════════ -->
+    <div class="tooltip" id="tooltip" role="tooltip" aria-hidden="true"></div>
+
+    <!-- Audio toggle for ambient sound -->
+    <button class="ambient-toggle" id="ambient-toggle" aria-label="Toggle ambient sounds" title="Toggle Ambient Sound">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" id="ambient-icon">
+            <path d="M12 3v9l4-4"/>
+            <path d="M12 3v9l-4-4"/>
+            <path d="M12 13v7"/>
+            <path d="M8 10v6"/>
+            <path d="M16 10v6"/>
+        </svg>
+    </button>
+
+    <script src="scripts.js"></script>
+</body>
+</html>

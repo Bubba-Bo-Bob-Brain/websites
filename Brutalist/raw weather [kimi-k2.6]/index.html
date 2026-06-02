@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WX-STATION // LIVE FEED</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600;700&family=STIX+Two+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="crt-overlay"></div>
+    
+    <header class="station-header">
+        <div class="header-left">
+            <span class="station-id">WX-07</span>
+            <span class="station-location">DETROIT, MICHIGAN</span>
+            <span class="station-coords">42.3314° N, 83.0458° W</span>
+        </div>
+        <div class="header-right">
+            <span class="timestamp" id="current-time">--:--:--</span>
+            <span class="utc-offset">UTC-5</span>
+            <span class="feed-status">LIVE</span>
+        </div>
+    </header>
+
+    <main class="dashboard-grid">
+        <!-- Massive Temperature Display -->
+        <section class="temp-monolith">
+            <div class="temp-primary" id="main-temp">-3</div>
+            <div class="temp-unit">°C</div>
+            <div class="temp-feels-like">FEELS LIKE -8</div>
+            <div class="temp-trend" id="temp-trend">▼ 2.3°/HR</div>
+        </section>
+
+        <!-- Overlapping Condition Panel -->
+        <section class="condition-panel panel-overlap">
+            <div class="panel-header">
+                <span class="panel-label">COND</span>
+                <span class="panel-status">ACTIVE</span>
+            </div>
+            <div class="condition-main" id="condition-text">HEAVY SNOW</div>
+            <div class="condition-vis">VIS: 0.4 KM</div>
+            <div class="condition-humidity">RH: 87%</div>
+        </section>
+
+        <!-- Wind Panel - Offset and rotated -->
+        <section class="wind-panel panel-rotated">
+            <div class="panel-header">
+                <span class="panel-label">WND</span>
+                <span class="panel-status">GUSTING</span>
+            </div>
+            <div class="wind-compass">
+                <div class="compass-ring">
+                    <span class="compass-n">N</span>
+                    <span class="compass-e">E</span>
+                    <span class="compass-s">S</span>
+                    <span class="compass-w">W</span>
+                    <div class="wind-arrow" id="wind-arrow"></div>
+                </div>
+            </div>
+            <div class="wind-data">
+                <div class="wind-speed" id="wind-speed">28</div>
+                <div class="wind-unit">KM/H</div>
+                <div class="wind-gust">GUST 41</div>
+            </div>
+            <div class="wind-dir-text" id="wind-dir">NNW</div>
+        </section>
+
+        <!-- Raw Pressure Display -->
+        <section class="pressure-panel">
+            <div class="panel-header">
+                <span class="panel-label">BARO</span>
+                <span class="panel-status">FALLING</span>
+            </div>
+            <div class="pressure-value" id="pressure">982.4</div>
+            <div class="pressure-unit">HPA</div>
+            <div class="pressure-trend">
+                <div class="trend-bar" id="pressure-trend"></div>
+            </div>
+        </section>
+
+        <!-- Sunrise/Sunset - Cramped corner -->
+        <section class="celestial-panel panel-crammed">
+            <div class="panel-header">
+                <span class="panel-label">SOL</span>
+            </div>
+            <div class="celestial-row">
+                <span class="celestial-icon">↑</span>
+                <span class="celestial-time">07:23</span>
+                <span class="celestial-dur">9H 41M DAY</span>
+            </div>
+            <div class="celestial-row">
+                <span class="celestial-icon">↓</span>
+                <span class="celestial-time">17:04</span>
+                <span class="celestial-dur">14H 19M NIGHT</span>
+            </div>
+        </section>
+
+        <!-- UV Index - Small, aggressive -->
+        <section class="uv-panel">
+            <div class="panel-header">
+                <span class="panel-label">UVI</span>
+            </div>
+            <div class="uv-value">0</div>
+            <div class="uv-desc">NONE</div>
+        </section>
+
+        <!-- Precipitation Accumulation -->
+        <section class="precip-panel">
+            <div class="panel-header">
+                <span class="panel-label">PRECIP</span>
+                <span class="panel-status">ACCUM</span>
+            </div>
+            <div class="precip-value" id="precip-total">12.7</div>
+            <div class="precip-unit">CM SNOW</div>
+            <div class="precip-rate">2.3 CM/HR</div>
+            <div class="precip-bar">
+                <div class="precip-fill" id="precip-fill"></div>
+            </div>
+        </section>
+
+        <!-- Raw Hourly Forecast Table -->
+        <section class="forecast-section">
+            <div class="panel-header">
+                <span class="panel-label">FCST // 24H PROJECTION</span>
+                <span class="panel-status">MODEL: GFS</span>
+            </div>
+            <table class="forecast-table" id="forecast-table">
+                <thead>
+                    <tr>
+                        <th>HOUR</th>
+                        <th>TEMP</th>
+                        <th>COND</th>
+                        <th>WND</th>
+                        <th>PCP</th>
+                        <th>BARO</th>
+                    </tr>
+                </thead>
+                <tbody id="forecast-body">
+                    <!-- Populated by JS -->
+                </tbody>
+            </table>
+        </section>
+
+        <!-- Emergency Alert Panel -->
+        <section class="alert-panel" id="alert-panel">
+            <div class="alert-strip">
+                <span class="alert-blink">⚠</span>
+                <span class="alert-type">WINTER STORM WARNING</span>
+                <span class="alert-blink">⚠</span>
+            </div>
+            <div class="alert-details">
+                <p>BLIZZARD CONDITIONS EXPECTED. TOTAL SNOW ACCUMULATION 15-25 CM. WIND GUSTS TO 60 KM/H. VISIBILITY NEAR ZERO.</p>
+                <p class="alert-time">ISSUED: 14:32 // EXPIRES: 06:00</p>
+            </div>
+        </section>
+
+        <!-- 7 Day Extended -->
+        <section class="extended-panel">
+            <div class="panel-header">
+                <span class="panel-label">EXT // 7 DAY</span>
+            </div>
+            <div class="extended-grid" id="extended-grid">
+                <!-- Populated by JS -->
+            </div>
+        </section>
+    </main>
+
+    <footer class="system-footer">
+        <div class="footer-left">
+            <span class="sys-item">SYS: ONLINE</span>
+            <span class="sys-item">SENSOR: 4/4</span>
+            <span class="sys-item">LAST CAL: 2024-01-15</span>
+        </div>
+        <div class="footer-center">
+            <span class="sys-item memory-dump" id="memory-dump">MEM: 0047F2A3</span>
+        </div>
+        <div class="footer-right">
+            <span class="sys-item">UPDATE: 00:00:15</span>
+            <span class="sys-item">LATENCY: 23MS</span>
+        </div>
+    </footer>
+
+    <script src="scripts.js"></script>
+</body>
+</html>

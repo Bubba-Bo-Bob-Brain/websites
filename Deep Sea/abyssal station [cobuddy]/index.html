@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ABYSSAL STATION — Crushing Depth Operations Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@400;500;600;700&family=JetBrains+Mono:wght@300;400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Viewport Frame -->
+    <div class="viewport-frame">
+        <div class="viewport-glass">
+            <div class="viewport-inner">
+                
+                <!-- Top Bar -->
+                <header class="top-bar">
+                    <div class="station-id">
+                        <span class="station-name">ABYSSAL STATION HYDRA-7</span>
+                        <span class="station-location">LAT 11°21'N — LON 142°12'E — MARIANA TRENCH</span>
+                    </div>
+                    <div class="datetime">
+                        <span class="mission-clock" id="missionClock">00:00:00</span>
+                        <span class="mission-day">MISSION DAY 847</span>
+                    </div>
+                    <div class="system-status">
+                        <span class="status-indicator" id="systemStatus">● NOMINAL</span>
+                        <span class="crew-count">CREW: 4 / 6</span>
+                    </div>
+                </header>
+
+                <!-- Main Grid -->
+                <div class="dashboard-grid">
+
+                    <!-- Depth Gauge - Left Column -->
+                    <section class="panel depth-panel">
+                        <div class="panel-header">
+                            <span class="panel-title">DEPTH</span>
+                            <span class="panel-unit">meters</span>
+                        </div>
+                        <div class="depth-gauge-container">
+                            <div class="depth-gauge" id="depthGauge">
+                                <div class="depth-bar">
+                                    <div class="depth-fill" id="depthFill"></div>
+                                    <div class="depth-markers">
+                                        <div class="marker" data-depth="1000"><span>1,000</span></div>
+                                        <div class="marker" data-depth="2000"><span>2,000</span></div>
+                                        <div class="marker" data-depth="3000"><span>3,000</span></div>
+                                        <div class="marker" data-depth="4000"><span>4,000</span></div>
+                                        <div class="marker" data-depth="5000"><span>5,000</span></div>
+                                        <div class="marker" data-depth="6000"><span>6,000</span></div>
+                                        <div class="marker" data-depth="7000"><span>7,000</span></div>
+                                        <div class="marker" data-depth="8000"><span>8,000</span></div>
+                                        <div class="marker" data-depth="9000"><span>9,000</span></div>
+                                        <div class="marker" data-depth="10000"><span>10,000</span></div>
+                                    </div>
+                                </div>
+                                <div class="depth-readout">
+                                    <span class="depth-value" id="depthValue">0</span>
+                                    <span class="depth-label">CURRENT DEPTH</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="ambient-info">
+                            <span class="ambient-temp" id="ambientTemp">2.1°C</span>
+                            <span class="ambient-pressure" id="ambientPressure">0 MPa</span>
+                        </div>
+                    </section>
+
+                    <!-- Sonar Display - Center -->
+                    <section class="panel sonar-panel">
+                        <div class="panel-header">
+                            <span class="panel-title">SONAR FEED</span>
+                            <span class="panel-subtitle" id="sonarMode">ACTIVE PING — 12kHz</span>
+                        </div>
+                        <div class="sonar-container">
+                            <canvas id="sonarCanvas" width="400" height="400"></canvas>
+                            <div class="sonar-overlay">
+                                <div class="sonar-range">
+                                    <span>RANGE: <span id="sonarRange">500m</span></span>
+                                </div>
+                                <div class="sonar-bearings">
+                                    <span>N</span><span>E</span><span>S</span><span>W</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="sonar-controls">
+                            <button class="btn btn-sonar" id="sonarPingBtn" onclick="triggerSonarPing()">
+                                ◉ PING
+                            </button>
+                            <div class="sonar-stats">
+                                <span>CONTACTS: <strong id="contactCount">3</strong></span>
+                                <span>NOISE: <strong id="noiseLevel">LOW</strong></span>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Pressure Monitor - Right Column Top -->
+                    <section class="panel pressure-panel">
+                        <div class="panel-header">
+                            <span class="panel-title">PRESSURE</span>
+                            <span class="panel-unit">MPa</span>
+                        </div>
+                        <div class="pressure-gauge-container">
+                            <div class="pressure-ring" id="pressureRing">
+                                <svg viewBox="0 0 200 200">
+                                    <circle class="ring-bg" cx="100" cy="100" r="85"/>
+                                    <circle class="ring-fill" id="pressureArc" cx="100" cy="100" r="85"/>
+                                    <text x="100" y="90" text-anchor="middle" class="gauge-value" id="pressureValue">0.0</text>
+                                    <text x="100" y="110" text-anchor="middle" class="gauge-label">EXTERNAL</text>
+                                </svg>
+                            </div>
+                            <div class="pressure-readings">
+                                <div class="reading">
+                                    <span class="reading-label">EXTERIOR</span>
+                                    <span class="reading-value" id="extPressure">0.0 MPa</span>
+                                </div>
+                                <div class="reading">
+                                    <span class="reading-label">INTERIOR</span>
+                                    <span class="reading-value" id="intPressure">0.1 MPa</span>
+                                </div>
+                                <div class="reading warning">
+                                    <span class="reading-label">DELTA</span>
+                                    <span class="reading-value" id="deltaPressure">—</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="klaxon-bar" id="klaxonBar">
+                            <span class="klaxon-text" id="klaxonText">PRESSURE NOMINAL</span>
+                        </div>
+                    </section>
+
+                    <!-- Hull Integrity - Right Column Bottom -->
+                    <section class="panel hull-panel">
+                        <div class="panel-header">
+                            <span class="panel-title">HULL INTEGRITY</span>
+                            <span class="panel-unit" id="hullPercent">100%</span>
+                        </div>
+                        <div class="hull-visualization">
+                            <div class="hull-diagram">
+                                <div class="hull-outline">
+                                    <div class="hull-section" data-section="bow">
+                                        <span class="section-label">BOW</span>
+                                        <div class="section-bar"><div class="section-fill" id="hullBow"></div></div>
+                                    </div>
+                                    <div class="hull-section" data-section="port">
+                                        <span class="section-label">PORT</span>
+                                        <div class="section-bar"><div class="section-fill" id="hullPort"></div></div>
+                                    </div>
+                                    <div class="hull-section" data-section="starboard">
+                                        <span class="section-label">STBD</span>
+                                        <div class="section-bar"><div class="section-fill" id="hullStarboard"></div></div>
+                                    </div>
+                                    <div class="hull-section" data-section="stern">
+                                        <span class="section-label">STERN</span>
+                                        <div class="section-bar"><div class="section-fill" id="hullStern"></div></div>
+                                    </div>
+                                    <div class="hull-section" data-section="keel">
+                                        <span class="section-label">KEEL</span>
+                                        <div class="section-bar"><div class="section-fill" id="hullKeel"></div></div>
+                                    </div>
+                                    <div class="hull-section" data-section="top">
+                                        <span class="section-label">TOP</span>
+                                        <div class="section-bar"><div class="section-fill" id="hullTop"></div></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="hull-status">
+                                <span id="hullStatusText">STRUCTURAL INTEGRITY: NOMINAL</span>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Bioluminescent Fauna Tracker - Bottom Center -->
+                    <section class="panel fauna-panel">
+                        <div class="panel-header">
+                            <span class="panel-title">BIOLUMINESCENT FAUNA TRACKER</span>
+                            <span class="panel-subtitle" id="faunaCount">SPECIES DETECTED: 7</span>
+                        </div>
+                        <div class="fauna-grid" id="faunaGrid">
+                            <!-- Populated by JS -->
+                        </div>
+                        <div class="fauna-feed">
+                            <div class="feed-header">LIVE BIOLUMINESCENCE FEED</div>
+                            <div class="feed-canvas-container">
+                                <canvas id="faunaCanvas" width="800" height="150"></canvas>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Current Flow Visualization -->
+                    <section class="panel current-panel">
+                        <div class="panel-header">
+                            <span class="panel-title">THERMOHALINE CURRENT</span>
+                            <span class="panel-subtitle" id="currentSpeed">FLOW: 0.3 kn</span>
+                        </div>
+                        <div class="current-visualization">
+                            <canvas id="currentCanvas" width="400" height="200"></canvas>
+                        </div>
+                        <div class="current-stats">
+                            <div class="current-stat">
+                                <span class="stat-label">SALINITY</span>
+                                <span class="stat-value" id="salinity">34.8 PSU</span>
+                            </div>
+                            <div class="current-stat">
+                                <span class="stat-label">DENSITY</span>
+                                <span class="stat-value" id="density">1,028 kg/m³</span>
+                            </div>
+                            <div class="current-stat">
+                                <span class="stat-label">VISIBILITY</span>
+                                <span class="stat-value" id="visibility">0.3 m</span>
+                            </div>
+                        </div>
+                    </section>
+
+                </div>
+
+                <!-- Bottom Status Bar -->
+                <footer class="bottom-bar">
+                    <div class="o2-level">
+                        <span>O₂ RESERVES</span>
+                        <div class="o2-bar">
+                            <div class="o2-fill" id="o2Fill"></div>
+                        </div>
+                        <span id="o2Percent">94%</span>
+                    </div>
+                    <div class="power-status">
+                        <span>REACTOR: <strong id="reactorStatus">ONLINE</strong></span>
+                        <span id="powerOutput">OUTPUT: 12.4 MW</span>
+                    </div>
+                    <div class="comms-status">
+                        <span>SURFACE COMMS: <strong id="commsStatus">DELAYED 4.2s</strong></span>
+                    </div>
+                    <div class="water-temp">
+                        <span>OUTSIDE TEMP: <strong id="waterTemp">1.8°C</strong></span>
+                    </div>
+                </footer>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Bioluminescent Particles Background -->
+    <canvas id="particleCanvas" class="particle-layer"></canvas>
+
+    <!-- Viewport Edge Overlay -->
+    <div class="viewport-edge-overlay"></div>
+
+    <script src="scripts.js"></script>
+</body>
+</html>

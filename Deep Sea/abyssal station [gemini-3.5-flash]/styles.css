@@ -1,0 +1,802 @@
+/* ==========================================================================
+   DESIGN VARIABLES & SYSTEM SETUP
+   ========================================================================== */
+:root {
+    --bg-darkest: #010409;
+    --bg-panel: rgba(5, 12, 22, 0.85);
+    --panel-border: rgba(0, 255, 170, 0.25);
+    
+    /* Neon Glow Palette */
+    --neon-green: #00ffaa;
+    --neon-blue: #00d2ff;
+    --neon-yellow: #ffcc00;
+    --neon-red: #ff3344;
+    --neon-orange: #ff7700;
+    
+    /* Active State Glows */
+    --glow-green: 0 0 12px rgba(0, 255, 170, 0.4);
+    --glow-red: 0 0 15px rgba(255, 51, 68, 0.6);
+    --glow-blue: 0 0 12px rgba(0, 210, 255, 0.4);
+    
+    /* Typography */
+    --font-display: 'Orbitron', sans-serif;
+    --font-mono: 'Share Tech Mono', monospace;
+    
+    /* Animation Speeds */
+    --transition-speed: 0.3s;
+}
+
+/* Silent Running Overrides */
+body.silent-running-active {
+    --bg-darkest: #000105;
+    --bg-panel: rgba(2, 6, 15, 0.9);
+    --neon-green: #0066ff;
+    --panel-border: rgba(0, 102, 255, 0.3);
+    --glow-green: 0 0 12px rgba(0, 102, 255, 0.5);
+    --neon-yellow: #0044cc;
+}
+
+/* Emergency Klaxon Overrides */
+body.klaxon-active {
+    animation: emergency-flash 1.5s infinite alternate ease-in-out;
+}
+
+/* ==========================================================================
+   RESET & FOUNDATION
+   ========================================================================== */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    user-select: none;
+}
+
+body {
+    background-color: var(--bg-darkest);
+    color: #e2f1f6;
+    font-family: var(--font-mono);
+    font-size: 14px;
+    height: 100vh;
+    overflow: hidden;
+    position: relative;
+}
+
+/* Abyssal Ambient Background Mesh */
+.abyssal-dashboard-wrapper {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: radial-gradient(circle at 50% 50%, #031326 0%, #010610 80%);
+    transition: background var(--transition-speed) ease;
+}
+
+/* Refraction/Water Ripple Shimmer Overlay */
+.water-refraction-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(130deg, rgba(0,255,170,0.01) 0%, rgba(0,0,0,0) 50%, rgba(0,210,255,0.02) 100%);
+    pointer-events: none;
+    z-index: 10;
+}
+
+/* Inner Vignette / Crushing Shadow Overlay */
+.vignette-shadow {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    box-shadow: inset 0 0 100px rgba(0, 0, 0, 0.95);
+    pointer-events: none;
+    z-index: 9;
+}
+
+/* Heavy Submarine Riveted Bezel Frame overlay */
+.heavy-bezel-frame {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: 12px solid #0b0f19;
+    pointer-events: none;
+    z-index: 12;
+    box-shadow: inset 0 0 15px rgba(0,0,0,0.8);
+}
+
+/* ==========================================================================
+   HEADER SECTION
+   ========================================================================== */
+.station-header {
+    background: #080c14;
+    border-bottom: 2px solid var(--panel-border);
+    position: relative;
+    z-index: 11;
+}
+
+.hazard-stripes {
+    height: 6px;
+    background: repeating-linear-gradient(
+        -45deg,
+        #ffcc00,
+        #ffcc00 10px,
+        #111 10px,
+        #111 20px
+    );
+}
+
+.header-main-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 24px;
+}
+
+.header-left .system-label {
+    font-size: 0.75rem;
+    color: var(--neon-blue);
+    letter-spacing: 2px;
+}
+
+.header-left .station-title {
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-size: 1.5rem;
+    color: #ffffff;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+}
+
+.status-pill {
+    background: rgba(0, 255, 170, 0.08);
+    border: 1px solid var(--neon-green);
+    padding: 6px 14px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: var(--glow-green);
+}
+
+.pulse-indicator {
+    width: 8px;
+    height: 8px;
+    background-color: var(--neon-green);
+    border-radius: 50%;
+    animation: indicator-pulse 1.5s infinite alternate;
+}
+
+.status-text {
+    font-size: 0.8rem;
+    font-weight: bold;
+    color: var(--neon-green);
+    letter-spacing: 1px;
+}
+
+.time-readout {
+    text-align: right;
+}
+
+.time-readout .label {
+    font-size: 0.75rem;
+    color: #6a8292;
+    display: block;
+}
+
+.time-readout #mission-clock {
+    font-size: 1.3rem;
+    font-weight: bold;
+    color: #ffffff;
+}
+
+/* ==========================================================================
+   DASHBOARD GRID LAYOUT
+   ========================================================================== */
+.dashboard-grid {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 320px 1fr 320px;
+    gap: 20px;
+    padding: 20px;
+    align-items: stretch;
+    overflow: hidden;
+    position: relative;
+    z-index: 5;
+}
+
+/* Console Panels */
+.console-panel {
+    background-color: var(--bg-panel);
+    border: 1px solid var(--panel-border);
+    border-radius: 6px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    transition: all var(--transition-speed) ease;
+}
+
+.panel-header {
+    background: rgba(0, 255, 170, 0.04);
+    border-bottom: 1px solid var(--panel-border);
+    padding: 10px 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.panel-header h2 {
+    font-family: var(--font-display);
+    font-size: 0.95rem;
+    color: var(--neon-green);
+    letter-spacing: 1px;
+}
+
+.panel-header .panel-sub {
+    font-size: 0.7rem;
+    color: #6a8292;
+}
+
+.panel-content {
+    padding: 15px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    overflow-y: auto;
+}
+
+/* Custom Scrollbar for Panels */
+.panel-content::-webkit-scrollbar {
+    width: 4px;
+}
+.panel-content::-webkit-scrollbar-track {
+    background: rgba(0,0,0,0.1);
+}
+.panel-content::-webkit-scrollbar-thumb {
+    background: var(--panel-border);
+}
+
+/* Metric Cards */
+.metric-card {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+    padding: 12px;
+}
+
+.card-label {
+    font-size: 0.75rem;
+    color: #6a8292;
+    margin-bottom: 8px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+/* ==========================================================================
+   LEFT PANEL - TELEMETRY & METRICS
+   ========================================================================== */
+.depth-card .gauge-display-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.depth-card .digital-readout {
+    font-family: var(--font-display);
+    font-size: 2.2rem;
+    font-weight: 900;
+    color: #ffffff;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+}
+
+.depth-card .digital-readout .unit {
+    font-size: 1rem;
+    color: var(--neon-blue);
+    margin-left: 4px;
+}
+
+.depth-bar-container {
+    flex: 1;
+    height: 50px;
+    background: #06111a;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    position: relative;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.depth-bar-fill {
+    width: 100%;
+    height: 0%;
+    background: linear-gradient(to top, var(--neon-blue), var(--neon-green));
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    transition: height 0.8s cubic-bezier(0.1, 0.8, 0.2, 1);
+}
+
+.depth-marker {
+    position: absolute;
+    width: 100%;
+    font-size: 0.6rem;
+    color: rgba(255, 255, 255, 0.4);
+    padding: 2px 4px;
+    border-top: 1px dashed rgba(255, 255, 255, 0.2);
+}
+
+.marker-10k { bottom: 30%; }
+.marker-11k { 
+    bottom: 5%; 
+    color: var(--neon-red);
+    border-top-color: var(--neon-red);
+}
+
+/* Pressure Card */
+.pressure-stat {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: var(--neon-yellow);
+    margin-bottom: 6px;
+}
+
+.pressure-stat .unit {
+    font-size: 0.85rem;
+    color: #6a8292;
+}
+
+.limit-indicator {
+    height: 4px;
+    background: #111;
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.limit-bar {
+    height: 100%;
+    width: 0%;
+    background: var(--neon-yellow);
+    box-shadow: 0 0 8px var(--neon-yellow);
+    transition: width 0.8s ease;
+}
+
+/* Hull Integrity Matrix */
+.integrity-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.hull-segment {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 8px;
+    border-radius: 3px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.hull-segment:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.hull-segment.green { border-left: 3px solid var(--neon-green); }
+.hull-segment.yellow { border-left: 3px solid var(--neon-yellow); }
+.hull-segment.orange { border-left: 3px solid var(--neon-orange); }
+.hull-segment.red { border-left: 3px solid var(--neon-red); }
+
+.seg-name {
+    font-size: 0.75rem;
+    color: #a4b8c4;
+}
+
+.seg-val {
+    font-weight: bold;
+}
+
+.hull-segment.green .seg-val { color: var(--neon-green); }
+.hull-segment.yellow .seg-val { color: var(--neon-yellow); }
+.hull-segment.orange .seg-val { color: var(--neon-orange); }
+.hull-segment.red .seg-val { color: var(--neon-red); }
+
+.integrity-detail {
+    font-size: 0.75rem;
+    display: flex;
+    justify-content: space-between;
+    padding-top: 5px;
+}
+
+/* ==========================================================================
+   CENTER SECTION - SUBMARINE VIEWPORT
+   ========================================================================== */
+.central-viewport-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+/* Circular Submarine Steel Outer Port */
+.viewport-outer-ring {
+    width: 480px;
+    height: 480px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #1a2233 60%, #0d121c 100%);
+    box-shadow: 
+        0 15px 40px rgba(0, 0, 0, 0.8),
+        inset 0 10px 20px rgba(255, 255, 255, 0.05),
+        inset 0 -10px 20px rgba(0,0,0,0.6);
+    padding: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+/* Inner Brass / Steel Bezel with Rivet Accents */
+.viewport-inner-bezel {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: #030812;
+    border: 10px solid #101622;
+    box-shadow: inset 0 0 25px rgba(0, 0, 0, 0.95);
+    position: relative;
+    overflow: hidden;
+}
+
+/* The Glass HUD Screen Display */
+.viewport-display {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(1,14,31,0.5) 0%, rgba(0,5,15,0.95) 100%);
+}
+
+#bioluminescent-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+}
+
+/* Interactive Sonar Waves */
+.sonar-ping-wave {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 2px solid rgba(0, 255, 170, 0.6);
+    pointer-events: none;
+    z-index: 2;
+}
+
+.sonar-ping-wave.pinging {
+    animation: sonar-sweep-animation 2.2s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
+}
+
+/* Glass Refraction Curve Overlay on Viewport */
+.viewport-display::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0) 50%, rgba(0,0,0,0.3) 100%);
+    pointer-events: none;
+    z-index: 4;
+}
+
+/* Viewport HUD Overlays */
+.hud-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 3;
+    pointer-events: none;
+}
+
+.hud-crosshair {
+    width: 100%;
+    height: 100%;
+    opacity: 0.85;
+}
+
+.hud-readout {
+    position: absolute;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--neon-green);
+    text-shadow: 0 0 5px rgba(0, 255, 170, 0.5);
+}
+
+.compass-heading {
+    top: 15%;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.vertical-velocity {
+    bottom: 15%;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.coordinates {
+    top: 50%;
+    right: 8%;
+    transform: translateY(-50%);
+    text-align: right;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: 0.65rem;
+    color: rgba(0, 255, 170, 0.6);
+}
+
+/* ==========================================================================
+   RIGHT PANEL - FAUNA & BIO-LOGS
+   ========================================================================== */
+.fauna-tracker {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.fauna-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    overflow-y: auto;
+    max-height: 200px;
+}
+
+.fauna-item {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 3px;
+    padding: 8px 10px;
+    cursor: pointer;
+    transition: background var(--transition-speed);
+}
+
+.fauna-item:hover, .fauna-item.target-pulse {
+    background: rgba(0, 255, 170, 0.05);
+    border-color: rgba(0, 255, 170, 0.3);
+}
+
+.fauna-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.65rem;
+    color: #6a8292;
+    margin-bottom: 4px;
+}
+
+.fauna-body {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.fauna-name {
+    font-weight: bold;
+    color: #ffffff;
+    font-size: 0.8rem;
+}
+
+.fauna-sig {
+    font-size: 0.65rem;
+    font-weight: bold;
+    padding: 1px 4px;
+    border-radius: 2px;
+}
+
+.signal-strong {
+    background: rgba(0, 255, 170, 0.15);
+    color: var(--neon-green);
+}
+
+.signal-weak {
+    background: rgba(255, 204, 0, 0.15);
+    color: var(--neon-yellow);
+}
+
+/* Life Support & System Power */
+.life-support-metrics {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.sub-metric .metric-name {
+    font-size: 0.65rem;
+    color: #a4b8c4;
+    display: block;
+    margin-bottom: 4px;
+}
+
+.progress-bar-glow {
+    height: 6px;
+    background: rgba(0,0,0,0.5);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.5s ease;
+}
+
+.progress-fill.green {
+    background: var(--neon-green);
+    box-shadow: 0 0 6px var(--neon-green);
+}
+
+.progress-fill.yellow {
+    background: var(--neon-yellow);
+    box-shadow: 0 0 6px var(--neon-yellow);
+}
+
+.metric-stats {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.7rem;
+    margin-top: 3px;
+    color: #8da4b4;
+}
+
+/* ==========================================================================
+   FOOTER SECTION
+   ========================================================================== */
+.console-footer {
+    background: #080c14;
+    border-top: 2px solid var(--panel-border);
+    padding: 12px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 11;
+}
+
+.system-status-ticker {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 6px 15px;
+    border-radius: 4px;
+    width: 50%;
+    overflow: hidden;
+}
+
+.ticker-prefix {
+    font-size: 0.75rem;
+    font-weight: bold;
+    color: var(--neon-blue);
+    white-space: nowrap;
+}
+
+.ticker-scroll {
+    font-size: 0.8rem;
+    color: #a4b8c4;
+    white-space: nowrap;
+}
+
+/* Action Control Dashboard buttons */
+.interactive-controls {
+    display: flex;
+    gap: 12px;
+}
+
+.console-btn {
+    background: linear-gradient(to bottom, #101926, #090e15);
+    border: 1px solid var(--panel-border);
+    color: #ffffff;
+    padding: 10px 18px;
+    font-family: var(--font-display);
+    font-size: 0.75rem;
+    font-weight: bold;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+    transition: all 0.2s cubic-bezier(0.1, 0.8, 0.2, 1);
+}
+
+.console-btn:hover {
+    border-color: var(--neon-green);
+    background: linear-gradient(to bottom, #132435, #0a1420);
+    box-shadow: var(--glow-green);
+    transform: translateY(-1px);
+}
+
+.console-btn:active {
+    transform: translateY(1px);
+}
+
+.console-btn.danger-btn {
+    border-color: rgba(255, 51, 68, 0.4);
+}
+
+.console-btn.danger-btn:hover {
+    border-color: var(--neon-red);
+    box-shadow: var(--glow-red);
+}
+
+/* ==========================================================================
+   ANIMATIONS
+   ========================================================================== */
+@keyframes indicator-pulse {
+    0% {
+        opacity: 0.4;
+        box-shadow: 0 0 2px var(--neon-green);
+    }
+    100% {
+        opacity: 1;
+        box-shadow: 0 0 10px var(--neon-green);
+    }
+}
+
+@keyframes sonar-sweep-animation {
+    0% {
+        transform: translate(-50%, -50%) scale(0);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 0;
+    }
+}
+
+@keyframes emergency-flash {
+    0% {
+        background-color: #010409;
+        box-shadow: inset 0 0 50px rgba(255, 0, 0, 0.1);
+    }
+    50% {
+        box-shadow: inset 0 0 100px rgba(255, 0, 0, 0.4);
+    }
+    100% {
+        background-color: #0b0101;
+        box-shadow: inset 0 0 50px rgba(255, 0, 0, 0.1);
+    }
+}
+
+/* Responsive Scaling Constraints */
+@media (max-width: 1024px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+        overflow-y: auto;
+    }
+    .viewport-outer-ring {
+        width: 340px;
+        height: 340px;
+    }
+    .console-panel {
+        height: auto;
+    }
+}

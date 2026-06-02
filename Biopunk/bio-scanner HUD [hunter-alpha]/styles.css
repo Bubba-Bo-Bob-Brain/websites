@@ -1,0 +1,1474 @@
+/* ============================================
+   NEXUS-7 BIOLOGICAL INTEGRITY MONITOR
+   Biopunk Medical HUD - CSS Stylesheet
+   ============================================ */
+
+/* CSS Variables - Biopunk Color Palette */
+:root {
+    --bg-primary: #0a0a0f;
+    --bg-secondary: #0d1117;
+    --bg-panel: #111820;
+    --bg-panel-hover: #151d27;
+    
+    --border-primary: #1a2633;
+    --border-glow: #00ff8840;
+    
+    --text-primary: #e0e6ed;
+    --text-secondary: #7a8b9a;
+    --text-dim: #3d4f5f;
+    
+    --healthy: #00ff88;
+    --healthy-dim: #00ff8840;
+    --warning: #ffaa00;
+    --warning-dim: #ffaa0040;
+    --critical: #ff0044;
+    --critical-dim: #ff004440;
+    --mutation: #cc44ff;
+    --mutation-dim: #cc44ff40;
+    
+    --accent-cyan: #00ffff;
+    --accent-blue: #0066ff;
+    
+    --scanline-color: rgba(0, 255, 136, 0.03);
+    --glow-primary: 0 0 20px rgba(0, 255, 136, 0.3);
+    --glow-critical: 0 0 20px rgba(255, 0, 68, 0.5);
+    --glow-warning: 0 0 20px rgba(255, 170, 0, 0.4);
+    --glow-mutation: 0 0 20px rgba(204, 68, 255, 0.4);
+    
+    --font-display: 'Orbitron', monospace;
+    --font-mono: 'Share Tech Mono', monospace;
+    --font-body: 'Rajdhani', sans-serif;
+    
+    --heartbeat-duration: 0.85s;
+    --breath-duration: 3s;
+}
+
+/* Reset and Base */
+*, *::before, *::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+body {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+/* Scanline Overlay Effect */
+.scanline-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 9999;
+    background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        var(--scanline-color) 2px,
+        var(--scanline-color) 4px
+    );
+}
+
+.crt-flicker {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 9998;
+    animation: flicker 0.15s infinite;
+    opacity: 0.02;
+    background: white;
+}
+
+@keyframes flicker {
+    0%, 100% { opacity: 0.02; }
+    50% { opacity: 0.04; }
+}
+
+/* Main Container */
+.hud-container {
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding: 8px;
+    gap: 8px;
+    background: 
+        radial-gradient(ellipse at 20% 20%, rgba(0, 255, 136, 0.03) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 80%, rgba(204, 68, 255, 0.02) 0%, transparent 50%),
+        var(--bg-primary);
+}
+
+/* Top Bar */
+.top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 20px;
+    background: var(--bg-panel);
+    border: 1px solid var(--border-primary);
+    border-radius: 4px;
+    position: relative;
+    overflow: hidden;
+}
+
+.top-bar::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--healthy), transparent);
+    opacity: 0.6;
+}
+
+.top-bar-left, .top-bar-center, .top-bar-right {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.system-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.logo-hex {
+    width: 32px;
+    height: 32px;
+    background: linear-gradient(135deg, var(--healthy), var(--accent-cyan));
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    animation: pulse-glow 2s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+    0%, 100% { filter: brightness(1); }
+    50% { filter: brightness(1.3); }
+}
+
+.logo-text {
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    color: var(--text-primary);
+}
+
+.logo-accent {
+    color: var(--healthy);
+    text-shadow: var(--glow-primary);
+}
+
+.system-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--text-dim);
+}
+
+.status-dot.active {
+    background: var(--healthy);
+    box-shadow: var(--glow-primary);
+    animation: blink 1.5s ease-in-out infinite;
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.status-divider {
+    color: var(--text-dim);
+}
+
+.patient-id {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.label-tiny {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+}
+
+.patient-name {
+    font-family: var(--font-display);
+    font-size: 14px;
+    letter-spacing: 2px;
+    color: var(--warning);
+    text-shadow: var(--glow-warning);
+}
+
+.threat-level {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.threat-meter {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 4px;
+}
+
+.threat-fill {
+    width: 80px;
+    height: 6px;
+    background: var(--bg-primary);
+    border-radius: 3px;
+    overflow: hidden;
+    position: relative;
+}
+
+.threat-fill::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 37%;
+    background: linear-gradient(90deg, var(--healthy), var(--warning));
+    border-radius: 3px;
+    animation: threat-pulse 2s ease-in-out infinite;
+}
+
+@keyframes threat-pulse {
+    0%, 100% { opacity: 0.8; }
+    50% { opacity: 1; }
+}
+
+.threat-value {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    color: var(--warning);
+}
+
+.alert-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    background: var(--critical-dim);
+    border: 1px solid var(--critical);
+    border-radius: 4px;
+    animation: alert-flash 1s ease-in-out infinite;
+}
+
+@keyframes alert-flash {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+.alert-icon {
+    font-size: 16px;
+    color: var(--critical);
+}
+
+.alert-text {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 1px;
+    color: var(--critical);
+}
+
+/* Heartbeat Container */
+.heartbeat-container {
+    position: relative;
+    height: 80px;
+    background: var(--bg-panel);
+    border: 1px solid var(--border-primary);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.ecg-canvas {
+    width: 100%;
+    height: 100%;
+}
+
+.bpm-display {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 10;
+}
+
+.bpm-value {
+    font-family: var(--font-display);
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--critical);
+    text-shadow: var(--glow-critical);
+    animation: heartbeat-text var(--heartbeat-duration) ease-in-out infinite;
+}
+
+@keyframes heartbeat-text {
+    0%, 100% { transform: scale(1); }
+    15% { transform: scale(1.1); }
+    30% { transform: scale(1); }
+    45% { transform: scale(1.05); }
+    60% { transform: scale(1); }
+}
+
+.bpm-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--text-dim);
+}
+
+.pulse-ring {
+    position: absolute;
+    left: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 40px;
+    height: 40px;
+    border: 2px solid var(--critical);
+    border-radius: 50%;
+    animation: pulse-ring var(--heartbeat-duration) ease-out infinite;
+}
+
+@keyframes pulse-ring {
+    0% { transform: translateY(-50%) scale(0.8); opacity: 1; }
+    100% { transform: translateY(-50%) scale(1.5); opacity: 0; }
+}
+
+/* Main Grid */
+.main-grid {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 1.5fr 1fr;
+    gap: 8px;
+    min-height: 0;
+}
+
+.column-left, .column-center, .column-right {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-height: 0;
+    overflow-y: auto;
+}
+
+.column-left::-webkit-scrollbar,
+.column-center::-webkit-scrollbar,
+.column-right::-webkit-scrollbar {
+    width: 4px;
+}
+
+.column-left::-webkit-scrollbar-track,
+.column-center::-webkit-scrollbar-track,
+.column-right::-webkit-scrollbar-track {
+    background: var(--bg-primary);
+}
+
+.column-left::-webkit-scrollbar-thumb,
+.column-center::-webkit-scrollbar-thumb,
+.column-right::-webkit-scrollbar-thumb {
+    background: var(--border-primary);
+    border-radius: 2px;
+}
+
+/* Panels */
+.panel {
+    background: var(--bg-panel);
+    border: 1px solid var(--border-primary);
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+}
+
+.panel::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--healthy-dim), transparent);
+}
+
+.panel-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 15px;
+    border-bottom: 1px solid var(--border-primary);
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.panel-icon {
+    font-family: var(--font-display);
+    font-size: 14px;
+    color: var(--healthy);
+    text-shadow: var(--glow-primary);
+}
+
+.panel-title {
+    font-family: var(--font-display);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    color: var(--text-primary);
+    flex: 1;
+}
+
+.panel-status {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 1px;
+    padding: 3px 8px;
+    border-radius: 3px;
+    background: var(--text-dim);
+    color: var(--bg-primary);
+}
+
+.panel-status.online {
+    background: var(--healthy);
+    color: var(--bg-primary);
+}
+
+.panel-status.warning {
+    background: var(--warning);
+    color: var(--bg-primary);
+}
+
+/* Body Scanner */
+.body-scanner {
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.body-outline-container {
+    position: relative;
+    width: 200px;
+    height: 350px;
+    margin: 0 auto;
+}
+
+.body-part {
+    position: absolute;
+    border: 1px solid var(--healthy-dim);
+    background: transparent;
+}
+
+.body-part.head {
+    width: 50px;
+    height: 60px;
+    left: 50%;
+    top: 0;
+    transform: translateX(-50%);
+    border-radius: 50% 50% 45% 45%;
+}
+
+.body-part.neck {
+    width: 20px;
+    height: 25px;
+    left: 50%;
+    top: 58px;
+    transform: translateX(-50%);
+}
+
+.body-part.torso {
+    width: 80px;
+    height: 120px;
+    left: 50%;
+    top: 80px;
+    transform: translateX(-50%);
+    border-radius: 10px 10px 20px 20px;
+}
+
+.body-part.arm-left {
+    width: 15px;
+    height: 100px;
+    left: 25px;
+    top: 85px;
+    transform: rotate(15deg);
+    border-radius: 8px;
+}
+
+.body-part.arm-right {
+    width: 15px;
+    height: 100px;
+    right: 25px;
+    top: 85px;
+    transform: rotate(-15deg);
+    border-radius: 8px;
+}
+
+.body-part.leg-left {
+    width: 20px;
+    height: 130px;
+    left: 60px;
+    top: 195px;
+    border-radius: 5px 5px 10px 10px;
+}
+
+.body-part.leg-right {
+    width: 20px;
+    height: 130px;
+    right: 60px;
+    top: 195px;
+    border-radius: 5px 5px 10px 10px;
+}
+
+/* Organ Dots */
+.organ-dot {
+    position: absolute;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.organ-dot::after {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    border: 1px solid currentColor;
+    opacity: 0.3;
+    animation: organ-pulse 2s ease-in-out infinite;
+}
+
+@keyframes organ-pulse {
+    0%, 100% { transform: scale(1); opacity: 0.3; }
+    50% { transform: scale(1.2); opacity: 0.1; }
+}
+
+.organ-dot[data-status="healthy"] {
+    background: var(--healthy);
+    box-shadow: var(--glow-primary);
+    color: var(--healthy);
+}
+
+.organ-dot[data-status="warning"] {
+    background: var(--warning);
+    box-shadow: var(--glow-warning);
+    color: var(--warning);
+    animation: warning-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes warning-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+}
+
+.organ-dot[data-status="critical"] {
+    background: var(--critical);
+    box-shadow: var(--glow-critical);
+    color: var(--critical);
+    animation: critical-pulse 0.85s ease-in-out infinite;
+}
+
+@keyframes critical-pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.15); }
+}
+
+.organ-dot[data-status="mutated"] {
+    background: var(--mutation);
+    box-shadow: var(--glow-mutation);
+    color: var(--mutation);
+    animation: mutate-pulse 3s ease-in-out infinite;
+}
+
+@keyframes mutate-pulse {
+    0%, 100% { opacity: 0.7; filter: hue-rotate(0deg); }
+    50% { opacity: 1; filter: hue-rotate(30deg); }
+}
+
+.organ-dot.brain { width: 28px; height: 25px; left: 50%; top: 15px; transform: translateX(-50%); }
+.organ-dot.heart { width: 16px; height: 16px; left: 50%; top: 115px; transform: translateX(-50%); }
+.organ-dot.lung-left { width: 14px; height: 20px; left: 35%; top: 110px; }
+.organ-dot.lung-right { width: 14px; height: 20px; right: 35%; top: 110px; }
+.organ-dot.liver { width: 18px; height: 12px; left: 42%; top: 145px; }
+.organ-dot.kidney-left { width: 10px; height: 14px; left: 38%; top: 160px; }
+.organ-dot.kidney-right { width: 10px; height: 14px; right: 38%; top: 160px; }
+.organ-dot.stomach { width: 14px; height: 18px; left: 55%; top: 140px; }
+
+.mutation-zone {
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    left: 50%;
+    top: 120px;
+    transform: translateX(-50%);
+    border-radius: 50%;
+    background: radial-gradient(circle, var(--mutation-dim), transparent);
+    animation: mutation-expand 3s ease-in-out infinite;
+}
+
+@keyframes mutation-expand {
+    0%, 100% { transform: translateX(-50%) scale(0.9); opacity: 0.3; }
+    50% { transform: translateX(-50%) scale(1.1); opacity: 0.5; }
+}
+
+.scan-line {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--healthy), transparent);
+    box-shadow: var(--glow-primary);
+    animation: scan 4s linear infinite;
+}
+
+@keyframes scan {
+    0% { top: 0; }
+    100% { top: 100%; }
+}
+
+.body-scan-info {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    margin-top: 15px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border-primary);
+}
+
+.scan-coord, .scan-depth {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+}
+
+/* Neural Panel */
+.neural-content {
+    padding: 15px;
+}
+
+.neural-hub {
+    background: var(--bg-primary);
+    border-radius: 4px;
+    margin-bottom: 15px;
+    overflow: hidden;
+}
+
+#neuralCanvas {
+    display: block;
+    width: 100%;
+    height: 180px;
+}
+
+.neural-stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+}
+
+.neural-stat {
+    display: flex;
+    flex-direction: column;
+    padding: 8px;
+    background: var(--bg-primary);
+    border-radius: 4px;
+    border: 1px solid var(--border-primary);
+}
+
+.stat-label {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 1px;
+    color: var(--text-dim);
+    margin-bottom: 4px;
+}
+
+.stat-value {
+    font-family: var(--font-display);
+    font-size: 16px;
+    color: var(--healthy);
+}
+
+.stat-value.warning {
+    color: var(--warning);
+}
+
+.stat-value.critical {
+    color: var(--critical);
+}
+
+/* Organ Status Grid */
+.organ-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    padding: 15px;
+}
+
+.organ-card {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-primary);
+    border-radius: 4px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.organ-card:hover {
+    border-color: var(--healthy-dim);
+    transform: translateY(-2px);
+}
+
+.organ-card.critical {
+    border-color: var(--critical-dim);
+    animation: card-critical 2s ease-in-out infinite;
+}
+
+@keyframes card-critical {
+    0%, 100% { box-shadow: inset 0 0 20px var(--critical-dim); }
+    50% { box-shadow: inset 0 0 30px var(--critical-dim); }
+}
+
+.organ-card.warning {
+    border-color: var(--warning-dim);
+}
+
+.organ-card.mutated {
+    border-color: var(--mutation-dim);
+    animation: card-mutate 3s ease-in-out infinite;
+}
+
+@keyframes card-mutate {
+    0%, 100% { box-shadow: inset 0 0 15px var(--mutation-dim); }
+    50% { box-shadow: inset 0 0 25px var(--mutation-dim); }
+}
+
+.organ-card.healthy {
+    border-color: var(--healthy-dim);
+}
+
+.organ-card-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--border-primary);
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.organ-icon {
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+.organ-card.critical .organ-icon { color: var(--critical); }
+.organ-card.warning .organ-icon { color: var(--warning); }
+.organ-card.mutated .organ-icon { color: var(--mutation); }
+.organ-card.healthy .organ-icon { color: var(--healthy); }
+
+.organ-name {
+    font-family: var(--font-display);
+    font-size: 10px;
+    letter-spacing: 1px;
+    flex: 1;
+}
+
+.organ-flag {
+    font-family: var(--font-mono);
+    font-size: 8px;
+    padding: 2px 6px;
+    border-radius: 2px;
+    letter-spacing: 1px;
+}
+
+.organ-flag.critical {
+    background: var(--critical-dim);
+    color: var(--critical);
+}
+
+.organ-flag.warning {
+    background: var(--warning-dim);
+    color: var(--warning);
+}
+
+.organ-flag.mutated {
+    background: var(--mutation-dim);
+    color: var(--mutation);
+}
+
+.organ-flag.healthy {
+    background: var(--healthy-dim);
+    color: var(--healthy);
+}
+
+.organ-card-body {
+    padding: 10px;
+}
+
+.organ-metric {
+    display: grid;
+    grid-template-columns: 70px 1fr 35px;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+}
+
+.organ-metric:last-child {
+    margin-bottom: 0;
+}
+
+.metric-label {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    color: var(--text-dim);
+    letter-spacing: 0.5px;
+}
+
+.metric-bar {
+    height: 4px;
+    background: var(--bg-panel);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.metric-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.5s ease;
+}
+
+.metric-fill.healthy { background: var(--healthy); }
+.metric-fill.warning { background: var(--warning); }
+.metric-fill.critical { background: var(--critical); }
+.metric-fill.mutation { background: var(--mutation); }
+
+.metric-value {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-secondary);
+    text-align: right;
+}
+
+.organ-card-footer {
+    padding: 6px 10px;
+    border-top: 1px solid var(--border-primary);
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.footer-note {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    color: var(--text-dim);
+    letter-spacing: 0.5px;
+}
+
+/* Nanomachine Panel */
+.nanomachine-content {
+    padding: 15px;
+}
+
+.nano-canvas {
+    width: 100%;
+    height: 150px;
+    background: var(--bg-primary);
+    border-radius: 4px;
+    margin-bottom: 15px;
+}
+
+.nano-stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-bottom: 15px;
+}
+
+.nano-stat {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px;
+    background: var(--bg-primary);
+    border-radius: 4px;
+    border: 1px solid var(--border-primary);
+}
+
+.nano-stat-icon {
+    font-size: 16px;
+    color: var(--healthy);
+}
+
+.nano-stat-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.nano-stat-value {
+    font-family: var(--font-display);
+    font-size: 14px;
+    color: var(--text-primary);
+}
+
+.nano-stat-value.warning {
+    color: var(--warning);
+}
+
+.nano-stat-label {
+    font-family: var(--font-mono);
+    font-size: 8px;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+}
+
+.deployment-controls {
+    display: flex;
+    gap: 8px;
+}
+
+.deploy-btn {
+    flex: 1;
+    padding: 10px 15px;
+    font-family: var(--font-display);
+    font-size: 10px;
+    letter-spacing: 1px;
+    border: 1px solid var(--healthy);
+    background: var(--healthy-dim);
+    color: var(--healthy);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.deploy-btn:hover {
+    background: var(--healthy);
+    color: var(--bg-primary);
+    box-shadow: var(--glow-primary);
+}
+
+.deploy-btn.secondary {
+    border-color: var(--accent-cyan);
+    background: rgba(0, 255, 255, 0.1);
+    color: var(--accent-cyan);
+}
+
+.deploy-btn.secondary:hover {
+    background: var(--accent-cyan);
+    color: var(--bg-primary);
+}
+
+.deploy-btn.danger {
+    border-color: var(--critical);
+    background: var(--critical-dim);
+    color: var(--critical);
+}
+
+.deploy-btn.danger:hover {
+    background: var(--critical);
+    color: var(--bg-primary);
+    box-shadow: var(--glow-critical);
+}
+
+/* Mutation Panel */
+.mutation-content {
+    padding: 15px;
+}
+
+.mutation-timeline {
+    margin-bottom: 15px;
+}
+
+.timeline-track {
+    position: relative;
+    height: 30px;
+    background: var(--bg-primary);
+    border-radius: 4px;
+    overflow: visible;
+    border: 1px solid var(--border-primary);
+}
+
+.timeline-progress {
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    background: linear-gradient(90deg, var(--healthy), var(--warning), var(--mutation));
+    border-radius: 3px;
+    opacity: 0.3;
+    transition: width 0.5s ease;
+}
+
+.timeline-marker {
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 2;
+}
+
+.marker-label {
+    position: absolute;
+    bottom: -20px;
+    font-family: var(--font-mono);
+    font-size: 8px;
+    color: var(--text-dim);
+    white-space: nowrap;
+    letter-spacing: 0.5px;
+}
+
+.marker-status {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    background: var(--bg-panel);
+    border: 2px solid var(--text-dim);
+    color: var(--text-dim);
+}
+
+.marker-status.complete {
+    border-color: var(--healthy);
+    background: var(--healthy-dim);
+    color: var(--healthy);
+}
+
+.marker-status.active {
+    border-color: var(--warning);
+    background: var(--warning-dim);
+    color: var(--warning);
+    animation: marker-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes marker-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 var(--warning-dim); }
+    50% { box-shadow: 0 0 0 8px transparent; }
+}
+
+.marker-status.pending {
+    border-color: var(--text-dim);
+}
+
+.gene-sequence {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px;
+    padding: 10px;
+    background: var(--bg-primary);
+    border-radius: 4px;
+    margin-bottom: 15px;
+    min-height: 40px;
+}
+
+.gene-base {
+    width: 10px;
+    height: 14px;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 2px;
+    color: var(--text-dim);
+}
+
+.gene-base.a { background: rgba(0, 255, 136, 0.2); color: var(--healthy); }
+.gene-base.t { background: rgba(255, 0, 68, 0.2); color: var(--critical); }
+.gene-base.g { background: rgba(255, 170, 0, 0.2); color: var(--warning); }
+.gene-base.c { background: rgba(0, 102, 255, 0.2); color: var(--accent-blue); }
+.gene-base.mutated { background: rgba(204, 68, 255, 0.3); color: var(--mutation); }
+
+.mutation-details {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+.mutation-detail {
+    display: flex;
+    flex-direction: column;
+    padding: 8px;
+    background: var(--bg-primary);
+    border-radius: 4px;
+    border: 1px solid var(--border-primary);
+}
+
+.detail-label {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    color: var(--text-dim);
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+}
+
+.detail-value {
+    font-family: var(--font-display);
+    font-size: 16px;
+    color: var(--text-primary);
+}
+
+.detail-value.warning {
+    color: var(--warning);
+}
+
+/* Toxin Panel */
+.toxin-content {
+    padding: 15px;
+}
+
+.toxin-item {
+    margin-bottom: 12px;
+}
+
+.toxin-item:last-of-type {
+    margin-bottom: 15px;
+}
+
+.toxin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+}
+
+.toxin-name {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.5px;
+    color: var(--text-secondary);
+}
+
+.toxin-level {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    padding: 2px 6px;
+    border-radius: 2px;
+    letter-spacing: 1px;
+}
+
+.toxin-level.critical {
+    background: var(--critical-dim);
+    color: var(--critical);
+}
+
+.toxin-level.warning {
+    background: var(--warning-dim);
+    color: var(--warning);
+}
+
+.toxin-level.healthy {
+    background: var(--healthy-dim);
+    color: var(--healthy);
+}
+
+.toxin-bar-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.toxin-bar {
+    flex: 1;
+    height: 8px;
+    background: var(--bg-primary);
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+}
+
+.toxin-bar-fill {
+    height: 100%;
+    width: var(--fill);
+    background: var(--color);
+    border-radius: 4px;
+    transition: width 0.5s ease;
+    position: relative;
+}
+
+.toxin-bar-fill::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 20px;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2));
+}
+
+.toxin-value {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-dim);
+    min-width: 70px;
+    text-align: right;
+}
+
+.toxin-summary {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    background: var(--bg-primary);
+    border-radius: 4px;
+    border: 1px solid var(--critical-dim);
+}
+
+.summary-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 1px;
+    color: var(--text-secondary);
+    flex: 1;
+}
+
+.summary-value {
+    font-family: var(--font-display);
+    font-size: 24px;
+    font-weight: 700;
+}
+
+.summary-value.critical {
+    color: var(--critical);
+    text-shadow: var(--glow-critical);
+}
+
+.summary-unit {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text-dim);
+}
+
+/* Gene Matrix Panel */
+.gene-matrix {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 3px;
+    padding: 15px;
+}
+
+.matrix-cell {
+    aspect-ratio: 1;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-mono);
+    font-size: 8px;
+    color: var(--text-primary);
+    transition: all 0.3s ease;
+}
+
+.matrix-cell.compatible {
+    background: var(--healthy-dim);
+    border: 1px solid var(--healthy);
+}
+
+.matrix-cell.partial {
+    background: var(--warning-dim);
+    border: 1px solid var(--warning);
+}
+
+.matrix-cell.unstable {
+    background: var(--mutation-dim);
+    border: 1px solid var(--mutation);
+}
+
+.matrix-cell.reject {
+    background: var(--critical-dim);
+    border: 1px solid var(--critical);
+    animation: reject-pulse 1s ease-in-out infinite;
+}
+
+@keyframes reject-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.matrix-cell.header {
+    background: transparent;
+    border: none;
+    font-size: 7px;
+    color: var(--text-dim);
+}
+
+.matrix-legend {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    padding: 10px 15px;
+    border-top: 1px solid var(--border-primary);
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    color: var(--text-dim);
+    letter-spacing: 0.5px;
+}
+
+.legend-swatch {
+    width: 12px;
+    height: 12px;
+    border-radius: 2px;
+}
+
+.legend-swatch.compatible {
+    background: var(--healthy-dim);
+    border: 1px solid var(--healthy);
+}
+
+.legend-swatch.partial {
+    background: var(--warning-dim);
+    border: 1px solid var(--warning);
+}
+
+.legend-swatch.unstable {
+    background: var(--mutation-dim);
+    border: 1px solid var(--mutation);
+}
+
+.legend-swatch.reject {
+    background: var(--critical-dim);
+    border: 1px solid var(--critical);
+}
+
+/* Bottom Bar */
+.bottom-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 15px;
+    background: var(--bg-panel);
+    border: 1px solid var(--border-primary);
+    border-radius: 4px;
+    gap: 15px;
+}
+
+.log-container {
+    flex: 1;
+    height: 24px;
+    overflow: hidden;
+    position: relative;
+}
+
+.log-entry {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    white-space: nowrap;
+}
+
+.log-time {
+    color: var(--text-dim);
+}
+
+.log-type {
+    padding: 2px 6px;
+    border-radius: 2px;
+    font-size: 9px;
+    letter-spacing: 1px;
+}
+
+.log-type.info {
+    background: var(--healthy-dim);
+    color: var(--healthy);
+}
+
+.log-type.warn {
+    background: var(--warning-dim);
+    color: var(--warning);
+}
+
+.log-type.error {
+    background: var(--critical-dim);
+    color: var(--critical);
+}
+
+.log-msg {
+    color: var(--text-secondary);
+}
+
+.bottom-stats {
+    display: flex;
+    gap: 20px;
+}
+
+.bottom-stat {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 0.5px;
+}
+
+.bottom-stat span {
+    color: var(--text-secondary);
+}
+
+/* Breathing Animation for Panels */
+[data-breath="true"] {
+    animation: breathe var(--breath-duration) ease-in-out infinite;
+}
+
+@keyframes breathe {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.002); }
+}
+
+/* Responsive adjustments */
+@media (max-width: 1400px) {
+    .main-grid {
+        grid-template-columns: 1fr 1.2fr 1fr;
+    }
+    
+    .nano-stats-row {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 1100px) {
+    .main-grid {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto;
+    }
+    
+    .column-left, .column-center, .column-right {
+        max-height: none;
+        overflow: visible;
+    }
+}

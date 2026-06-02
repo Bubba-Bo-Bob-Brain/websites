@@ -1,0 +1,772 @@
+/* =========================================
+   1. VARIABLES & RESET
+   ========================================= */
+:root {
+  /* Palette: Obsidian, Jade, Gold, Blood */
+  --color-bg: #050505;
+  --color-obsidian: #0a0a0a;
+  --color-obsidian-light: #1a1a1a;
+  --color-jade: #00a86b;
+  --color-jade-dark: #004d33;
+  --color-jade-glow: rgba(0, 168, 107, 0.4);
+  --color-gold: #d4af37;
+  --color-gold-dim: #8a7020;
+  --color-blood: #8a0303;
+  --color-text: #e0e0e0;
+  --color-text-muted: #888888;
+
+  /* Dimensions */
+  --wheel-size: 600px;
+  --wheel-inner-size: 400px;
+  --wheel-center-size: 200px;
+
+  /* Fonts */
+  --font-header: 'Cinzel', serif;
+  --font-body: 'Lato', sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  cursor: none; /* Custom cursor used */
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  overflow-x: hidden;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* =========================================
+   2. ATMOSPHERIC LAYERS
+   ========================================= */
+#noise-overlay {
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: url('data:image/svg+xml;utf8,%3Csvg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"%3E%3Cfilter id="noise"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch"/%3E%3C/filter%3E%3Crect width="100%25" height="100%25" filter="url(%23noise)" opacity="0.05"/%3E%3C/svg%3E');
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.07;
+}
+
+#vignette {
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: radial-gradient(circle, transparent 40%, #000000 100%);
+  pointer-events: none;
+  z-index: 9998;
+}
+
+#starfield {
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background-image: 
+    radial-gradient(1px 1px at 20px 30px, #fff, rgba(0,0,0,0)),
+    radial-gradient(1px 1px at 40px 70px, #fff, rgba(0,0,0,0)),
+    radial-gradient(1px 1px at 50px 160px, #fff, rgba(0,0,0,0)),
+    radial-gradient(1px 1px at 90px 40px, #fff, rgba(0,0,0,0)),
+    radial-gradient(1px 1px at 130px 80px, #fff, rgba(0,0,0,0));
+  background-size: 200px 200px;
+  animation: starMove 100s linear infinite;
+  z-index: -1;
+  opacity: 0.3;
+}
+
+@keyframes starMove {
+  from { transform: translateY(0); }
+  to { transform: translateY(-200px); }
+}
+
+/* Custom Cursor */
+#cursor-follower {
+  width: 20px;
+  height: 20px;
+  border: 1px solid var(--color-gold);
+  border-radius: 50%;
+  position: fixed;
+  pointer-events: none;
+  z-index: 10000;
+  transform: translate(-50%, -50%);
+  transition: width 0.2s, height 0.2s, background-color 0.2s;
+  mix-blend-mode: difference;
+}
+
+body.hovering #cursor-follower {
+  width: 40px;
+  height: 40px;
+  background-color: rgba(212, 175, 55, 0.2);
+  border-color: transparent;
+}
+
+/* =========================================
+   3. MAIN LAYOUT & HEADER
+   ========================================= */
+.ceremonial-interface {
+  width: 100%;
+  max-width: 1200px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  padding: 2rem;
+  z-index: 10;
+}
+
+.ritual-header {
+  text-align: center;
+  margin-bottom: 2rem;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+  padding-bottom: 1.5rem;
+  position: relative;
+}
+
+.header-glyphs {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  margin-bottom: 1rem;
+  color: var(--color-gold-dim);
+}
+
+.header-glyphs svg {
+  width: 40px;
+  height: 40px;
+  animation: pulse-glow 4s infinite ease-in-out;
+}
+
+.ceremonial-title {
+  font-family: var(--font-header);
+  font-size: 2.5rem;
+  font-weight: 900;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  background: linear-gradient(to bottom, var(--color-gold), var(--color-gold-dim));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 0.5rem;
+  text-shadow: 0 4px 10px rgba(0,0,0,0.5);
+}
+
+.accent-gold {
+  color: var(--color-gold);
+  -webkit-text-fill-color: var(--color-gold);
+}
+
+.subtitle {
+  font-family: var(--font-header);
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+  letter-spacing: 0.1em;
+  margin-bottom: 1.5rem;
+}
+
+/* Eclipse Timer */
+.eclipse-timer-container {
+  background: rgba(10, 10, 10, 0.6);
+  border: 1px solid var(--color-jade-dark);
+  padding: 1.5rem;
+  display: inline-block;
+  border-radius: 4px;
+  box-shadow: 0 0 20px rgba(0, 168, 107, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.eclipse-timer-container::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--color-jade), transparent);
+}
+
+.countdown-display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin: 1rem 0;
+}
+
+.time-segment {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.time-val {
+  font-family: var(--font-header);
+  font-size: 2rem;
+  color: var(--color-text);
+  line-height: 1;
+}
+
+.time-label {
+  font-size: 0.7rem;
+  color: var(--color-jade);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-top: 0.5rem;
+}
+
+.separator {
+  color: var(--color-gold-dim);
+  font-size: 1.5rem;
+  margin-top: 1rem;
+}
+
+.prophecy-text {
+  font-style: italic;
+  color: var(--color-blood);
+  font-size: 0.9rem;
+  margin-top: 1rem;
+  min-height: 1.2em;
+}
+
+/* Navigation */
+.top-nav {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.nav-btn {
+  background: transparent;
+  border: 1px solid var(--color-obsidian-light);
+  color: var(--color-text-muted);
+  padding: 0.8rem 2rem;
+  font-family: var(--font-header);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.nav-btn::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; width: 0; height: 100%;
+  background: var(--color-jade-dark);
+  transition: width 0.3s ease;
+  z-index: -1;
+}
+
+.nav-btn:hover, .nav-btn.active {
+  color: var(--color-text);
+  border-color: var(--color-jade);
+}
+
+.nav-btn:hover::before, .nav-btn.active::before {
+  width: 100%;
+}
+
+/* =========================================
+   4. CONTENT STAGE & VIEWS
+   ========================================= */
+.content-stage {
+  flex: 1;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 600px;
+}
+
+.view {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.6s ease, visibility 0.6s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.view.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* =========================================
+   5. THE CALENDAR WHEEL (TONALPOHUALLI)
+   ========================================= */
+#wheel-calendar {
+  perspective: 1000px;
+}
+
+.wheel-container {
+  position: relative;
+  width: var(--wheel-size);
+  height: var(--wheel-size);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transform-style: preserve-3d;
+}
+
+/* Outer Ring */
+.wheel-outer-ring {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 2px solid var(--color-obsidian-light);
+  box-shadow: 0 0 30px rgba(0,0,0,0.8), inset 0 0 20px rgba(0, 168, 107, 0.1);
+  animation: rotate-wheel 120s linear infinite;
+}
+
+.wheel-outer-ring::after {
+  content: '';
+  position: absolute;
+  top: -5px; left: -5px; right: -5px; bottom: -5px;
+  border-radius: 50%;
+  border: 1px dashed var(--color-gold-dim);
+  opacity: 0.3;
+}
+
+/* Inner Ring */
+.wheel-inner-ring {
+  position: absolute;
+  width: var(--wheel-inner-size);
+  height: var(--wheel-inner-size);
+  border-radius: 50%;
+  border: 1px solid var(--color-jade-dark);
+  background: radial-gradient(circle, rgba(0,20,10,0.4) 0%, rgba(0,0,0,0) 70%);
+  animation: rotate-wheel-reverse 80s linear infinite;
+}
+
+/* Center Knot */
+.wheel-center {
+  position: absolute;
+  width: var(--wheel-center-size);
+  height: var(--wheel-center-size);
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #2a2a2a, #000);
+  border: 2px solid var(--color-gold-dim);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+  z-index: 10;
+}
+
+.center-knot {
+  text-align: center;
+  position: relative;
+}
+
+.central-glyph {
+  width: 80px;
+  height: 80px;
+  color: var(--color-gold);
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  animation: pulse-glow 3s infinite ease-in-out;
+  margin-bottom: 1rem;
+}
+
+.current-date-display .big-glyph {
+  display: block;
+  font-family: var(--font-header);
+  font-size: 1.5rem;
+  color: var(--color-text);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.current-date-display .god-name {
+  display: block;
+  font-size: 0.9rem;
+  color: var(--color-jade);
+  margin-top: 0.5rem;
+  font-style: italic;
+}
+
+/* Wheel Markers (Generated via JS mostly, but styled here) */
+.ring-markers {
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  border-radius: 50%;
+}
+
+.marker {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 4px;
+  height: 15px;
+  background: var(--color-gold-dim);
+  transform-origin: top center;
+  margin-left: -2px;
+  margin-top: -100%; /* Push to edge */
+}
+
+.marker.major {
+  width: 6px;
+  height: 25px;
+  background: var(--color-jade);
+  box-shadow: 0 0 10px var(--color-jade-glow);
+}
+
+/* Controls */
+.wheel-controls {
+  margin-top: 3rem;
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+.control-btn {
+  background: transparent;
+  border: 1px solid var(--color-gold-dim);
+  color: var(--color-gold);
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  font-size: 1.2rem;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.control-btn:hover {
+  border-color: var(--color-jade);
+  color: var(--color-jade);
+  box-shadow: 0 0 15px var(--color-jade-glow);
+  transform: scale(1.1);
+}
+
+.ritual-status {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.status-indicator {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: var(--color-gold-dim);
+  margin-bottom: 0.5rem;
+  box-shadow: 0 0 5px var(--color-gold-dim);
+}
+
+/* =========================================
+   6. DEITIES GRID
+   ========================================= */
+.section-title {
+  font-family: var(--font-header);
+  font-size: 2rem;
+  color: var(--color-gold);
+  margin-bottom: 3rem;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  border-bottom: 1px solid var(--color-obsidian-light);
+  padding-bottom: 1rem;
+  width: 80%;
+  text-align: center;
+}
+
+.deity-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  width: 100%;
+  padding: 0 2rem;
+}
+
+.deity-card {
+  position: relative;
+  background: var(--color-obsidian);
+  border: 1px solid var(--color-obsidian-light);
+  padding: 2rem;
+  transition: transform 0.3s, box-shadow 0.3s;
+  overflow: hidden;
+}
+
+.deity-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 4px;
+  background: var(--color-jade-dark);
+  transition: background 0.3s;
+}
+
+.deity-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 10px 30px rgba(0, 168, 107, 0.1);
+  border-color: var(--color-jade-dark);
+}
+
+.deity-card:hover::before {
+  background: var(--color-jade);
+}
+
+.card-obsidian-frame {
+  position: absolute;
+  top: 10px; left: 10px; right: 10px; bottom: 10px;
+  border: 1px solid rgba(255,255,255,0.05);
+  pointer-events: none;
+}
+
+.deity-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.3));
+}
+
+.deity-card h3 {
+  font-family: var(--font-header);
+  color: var(--color-text);
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.deity-domain {
+  color: var(--color-jade);
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 1rem;
+}
+
+.deity-lore {
+  color: var(--color-text-muted);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  margin-bottom: 1.5rem;
+}
+
+.jade-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--color-jade-dark), transparent);
+  margin: 1.5rem 0;
+}
+
+.invoke-btn {
+  width: 100%;
+  background: transparent;
+  border: 1px solid var(--color-gold-dim);
+  color: var(--color-gold);
+  padding: 0.8rem;
+  font-family: var(--font-header);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  transition: all 0.3s;
+}
+
+.invoke-btn:hover {
+  background: var(--color-gold);
+  color: #000;
+  box-shadow: 0 0 20px rgba(212, 175, 55, 0.4);
+}
+
+/* =========================================
+   7. TRIBUTE LIST
+   ========================================= */
+.tribute-list {
+  width: 100%;
+  max-width: 600px;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.tribute-item {
+  display: flex;
+  align-items: center;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid var(--color-obsidian-light);
+  padding: 1.5rem;
+  transition: border-color 0.3s;
+}
+
+.tribute-item:hover {
+  border-color: var(--color-jade-dark);
+}
+
+.tribute-icon {
+  font-size: 2rem;
+  margin-right: 1.5rem;
+  width: 40px;
+  text-align: center;
+}
+
+.tribute-info {
+  flex: 1;
+}
+
+.tribute-info h4 {
+  font-family: var(--font-header);
+  color: var(--color-text);
+  margin-bottom: 0.3rem;
+}
+
+.tribute-info p {
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+}
+
+.checkbox-container {
+  position: relative;
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+}
+
+.checkbox-container input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+
+.checkmark {
+  position: absolute;
+  top: 0; left: 0;
+  height: 24px; width: 24px;
+  background-color: transparent;
+  border: 1px solid var(--color-gold-dim);
+  transition: all 0.3s;
+}
+
+.checkbox-container input:checked ~ .checkmark {
+  background-color: var(--color-jade);
+  border-color: var(--color-jade);
+  box-shadow: 0 0 10px var(--color-jade-glow);
+}
+
+.checkmark:after {
+  content: "";
+  position: absolute;
+  display: none;
+  left: 8px; top: 4px;
+  width: 5px; height: 10px;
+  border: solid #000;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.checkbox-container input:checked ~ .checkmark:after {
+  display: block;
+}
+
+/* =========================================
+   8. FOOTER & TOOLTIP
+   ========================================= */
+.ritual-footer {
+  margin-top: auto;
+  padding-top: 2rem;
+  border-top: 1px solid rgba(212, 175, 55, 0.1);
+  display: flex;
+  justify-content: space-between;
+  color: var(--color-text-muted);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.status-ok {
+  color: var(--color-jade);
+}
+
+#glyph-tooltip {
+  position: fixed;
+  background: rgba(10, 10, 10, 0.95);
+  border: 1px solid var(--color-gold-dim);
+  padding: 1rem;
+  z-index: 10001;
+  pointer-events: none;
+  transform: translate(-50%, -120%);
+  opacity: 0;
+  transition: opacity 0.2s;
+  max-width: 250px;
+  backdrop-filter: blur(5px);
+}
+
+#glyph-tooltip.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+#glyph-tooltip:not(.hidden) {
+  opacity: 1;
+}
+
+.tooltip-content h4 {
+  color: var(--color-gold);
+  font-family: var(--font-header);
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+}
+
+.tooltip-content p {
+  color: var(--color-text);
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+/* =========================================
+   9. ANIMATIONS
+   ========================================= */
+@keyframes rotate-wheel {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes rotate-wheel-reverse {
+  from { transform: rotate(360deg); }
+  to { transform: rotate(0deg); }
+}
+
+@keyframes pulse-glow {
+  0% { filter: drop-shadow(0 0 2px rgba(212, 175, 55, 0.2)); }
+  50% { filter: drop-shadow(0 0 8px rgba(212, 175, 55, 0.6)); }
+  100% { filter: drop-shadow(0 0 2px rgba(212, 175, 55, 0.2)); }
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  :root {
+    --wheel-size: 300px;
+    --wheel-inner-size: 200px;
+    --wheel-center-size: 100px;
+  }
+  
+  .ceremonial-title {
+    font-size: 1.8rem;
+  }
+  
+  .countdown-display {
+    gap: 0.5rem;
+  }
+  
+  .time-val {
+    font-size: 1.5rem;
+  }
+  
+  .time-label {
+    font-size: 0.6rem;
+  }
+  
+  .deity-grid {
+    grid-template-columns: 1fr;
+  }
+}

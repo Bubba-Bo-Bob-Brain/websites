@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ABYSSAL WATCH - Deep-Sea Research Station</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="station-dashboard">
+        <!-- Immersive viewport canvas with bioluminescent particles and depth-based color shift -->
+        <canvas id="viewport"></canvas>
+        
+        <!-- Ambient light overlay for depth-based color temperature -->
+        <div class="ambient-overlay" id="ambient-overlay"></div>
+        
+        <!-- Hull crack overlay (appears on damage) -->
+        <div class="hull-cracks" id="hull-cracks"></div>
+        
+        <!-- Top Header Bar -->
+        <header class="header-bar">
+            <div class="header-left">
+                <div class="station-identity">
+                    <div class="logo-mark">AW</div>
+                    <div class="station-info">
+                        <h1>ABYSSAL WATCH</h1>
+                        <p>Challenger Deep Research Station</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="header-center">
+                <div class="depth-display-primary">
+                    <div class="depth-ring">
+                        <svg viewBox="0 0 120 120">
+                            <circle class="depth-ring-bg" cx="60" cy="60" r="54"></circle>
+                            <circle class="depth-ring-fill" cx="60" cy="60" r="54" id="depth-ring-fill"></circle>
+                        </svg>
+                        <div class="depth-value" id="primary-depth">0</div>
+                        <div class="depth-label">METERS</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="header-right">
+                <div class="system-status">
+                    <div class="status-indicator-wrapper">
+                        <div class="status-indicator" id="status-indicator"></div>
+                        <span class="status-text" id="status-text">ALL SYSTEMS NOMINAL</span>
+                    </div>
+                    <div class="pressure-warning-indicator" id="pressure-warning-indicator">
+                        <div class="warning-icon">⚠</div>
+                        <span>PRESSURE ALERT</span>
+                    </div>
+                </div>
+                <div class="clock-display">
+                    <div class="date" id="current-date">--/--/----</div>
+                    <div class="time" id="current-time">--:--:--</div>
+                    <div class="timezone">UTC-12</div>
+                </div>
+            </div>
+        </header>
+        
+        <!-- Left Panel - Pressure & Environmental -->
+        <aside class="panel left-panel">
+            <section class="module pressure-module">
+                <div class="module-header">
+                    <h2>HULL PRESSURE</h2>
+                    <div class="module-status online" id="pressure-status"></div>
+                </div>
+                <div class="pressure-main">
+                    <div class="pressure-value" id="pressure-value">0.0</div>
+                    <div class="pressure-unit">ATMOSPHERES</div>
+                </div>
+                <div class="pressure-graph">
+                    <div class="pressure-bar-container">
+                        <div class="pressure-bar-fill" id="pressure-bar-fill"></div>
+                        <div class="pressure-bar-threshold" style="left: 80%"></div>
+                    </div>
+                    <div class="pressure-scale">
+                        <span>0</span><span>100</span><span>200</span><span>300</span><span>400</span><span>500</span>
+                    </div>
+                </div>
+                <div class="pressure-trend">
+                    <span>Δ: <span id="pressure-trend">+0.0</span> atm/min</span>
+                    <span class="trend-indicator" id="trend-indicator">→</span>
+                </div>
+                <div class="klaxon-bar" id="klaxon-bar">
+                    <div class="klaxon-fill" id="klaxon-fill"></div>
+                </div>
+                <div class="klaxon-warning" id="klaxon-warning">
+                    <span class="warning-text">⚠ CRITICAL PRESSURE - SOUNDING ALARM</span>
+                </div>
+            </section>
+            
+            <section class="module environment-module">
+                <div class="module-header">
+                    <h2>ENVIRONMENT</h2>
+                </div>
+                <div class="env-grid">
+                    <div class="env-item">
+                        <div class="env-label">TEMPERATURE</div>
+                        <div class="env-value"><span id="temperature">2.1</span>°C</div>
+                    </div>
+                    <div class="env-item">
+                        <div class="env-label">SALINITY</div>
+                        <div class="env-value"><span id="salinity">34.5</span> ppt</div>
+                    </div>
+                    <div class="env-item">
+                        <div class="env-label">CURRENT</div>
+                        <div class="env-value"><span id="current-speed-env">0.3</span> m/s</div>
+                    </div>
+                    <div class="env-item">
+                        <div class="env-label">VISIBILITY</div>
+                        <div class="env-value"><span id="visibility">0.5</span> m</div>
+                    </div>
+                </div>
+            </section>
+        </aside>
+        
+        <!-- Right Panel - Sonar & Fauna -->
+        <aside class="panel right-panel">
+            <section class="module sonar-module">
+                <div class="module-header">
+                    <h2>ACTIVE SONAR</h2>
+                    <div class="sonar-mode">PULSE</div>
+                </div>
+                <div class="sonar-container">
+                    <div class="sonar-display">
+                        <div class="sonar-grid"></div>
+                        <div class="sonar-ring ring-1"></div>
+                        <div class="sonar-ring ring-2"></div>
+                        <div class="sonar-ring ring-3"></div>
+                        <div class="sonar-sweep" id="sonar-sweep"></div>
+                        <div class="sonar-center"></div>
+                        <div class="sonar-blips" id="sonar-blips"></div>
+                        <div class="sonar-ping-ripples" id="sonar-ping-ripples"></div>
+                    </div>
+                    <div class="sonar-controls">
+                        <button class="ping-button" id="manual-ping">
+                            <span class="btn-text">MANUAL PING</span>
+                            <span class="btn-icon">◉</span>
+                        </button>
+                        <div class="ping-rate">
+                            AUTO PING: <span id="ping-rate">1.0</span> Hz
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <section class="module fauna-module">
+                <div class="module-header">
+                    <h2>BIOLUMINESCENT FAUNA</h2>
+                    <div class="fauna-count-badge" id="fauna-count-badge">0</div>
+                </div>
+                <div class="fauna-tracker">
+                    <div class="fauna-list" id="fauna-list">
+                        <!-- Dynamically populated -->
+                    </div>
+                    <div class="fauna-legend">
+                        <div class="legend-item"><span class="legend-dot type-jellyfish"></span> Jellyfish</div>
+                        <div class="legend-item"><span class="legend-dot type-viperfish"></span> Viperfish</div>
+                        <div class="legend-item"><span class="legend-dot type-giant squid"></span> Giant Squid</div>
+                        <div class="legend-item"><span class="legend-dot type-unknown"></span> Unknown</div>
+                    </div>
+                </div>
+            </section>
+        </aside>
+        
+        <!-- Bottom Panel - Hull Integrity & Current -->
+        <section class="panel bottom-panel">
+            <div class="hull-integrity-module">
+                <div class="module-header">
+                    <h2>HULL INTEGRITY</h2>
+                    <div class="integrity-percentage" id="integrity-percentage">100%</div>
+                </div>
+                <div class="hull-grid">
+                    <div class="hull-section" data-section="fore-port" id="hull-fore-port"></div>
+                    <div class="hull-section" data-section="fore-starboard" id="hull-fore-starboard"></div>
+                    <div class="hull-section" data-section="mid-port" id="hull-mid-port"></div>
+                    <div class="hull-section" data-section="mid-starboard" id="hull-mid-starboard"></div>
+                    <div class="hull-section" data-section="aft-port" id="hull-aft-port"></div>
+                    <div class="hull-section" data-section="aft-starboard" id="hull-aft-starboard"></div>
+                </div>
+                <div class="integrity-details">
+                    <div class="damage-log" id="damage-log">
+                        <!-- Dynamically populated -->
+                    </div>
+                </div>
+            </div>
+            
+            <div class="current-flow-module">
+                <div class="module-header">
+                    <h2>UNDERWATER CURRENT FLOW</h2>
+                    <div class="flow-intensity" id="flow-intensity">0.3 m/s</div>
+                </div>
+                <div class="current-flow-visualization">
+                    <canvas id="current-flow-canvas"></canvas>
+                    <div class="flow-direction-indicator" id="flow-direction">
+                        <div class="direction-arrow"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Alert Overlay -->
+        <div class="alert-overlay" id="alert-overlay">
+            <div class="critical-alert" id="critical-alert">
+                <div class="alert-content">
+                    <div class="alert-icon">🚨</div>
+                    <div class="alert-message" id="alert-message">SYSTEM ALERT</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Scanline effect for CRT monitor feel -->
+        <div class="scanlines"></div>
+        
+        <!-- Vignette overlay -->
+        <div class="vignette"></div>
+    </div>
+    
+    <script src="scripts.js"></script>
+</body>
+</html>

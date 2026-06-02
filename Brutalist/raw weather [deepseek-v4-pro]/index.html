@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>BRUTALIST WEATHER // RAW DATA FEED</title>
+  <meta name="description" content="Unpolished meteorological data. No comfort. Just numbers.">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="preload" href="styles.css" as="style">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Overpass+Mono:wght@300;400;600;700&family=Archivo+Black&family=DM+Mono:wght@300;500&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <div class="system-alert" id="alert-banner" aria-live="assertive">
+    <div class="alert-marquee"><span class="alert-label">⚠ SYSTEM NOTICE // SEVERE WEATHER ADVISORY</span><span class="alert-text" id="alert-message">LOADING LIVE ALERTS...</span></div>
+    <button class="alert-close" id="dismiss-alert" aria-label="Dismiss weather alert">[X]</button>
+  </div>
+
+  <header class="raw-header">
+    <div class="header-grid">
+      <div class="site-id">
+        <span class="id-bracket">{</span>
+        <h1 class="site-title">WEATHER<br>BRUT</h1>
+        <span class="id-bracket">}</span>
+      </div>
+      <div class="location-block">
+        <div class="geo-coords">
+          <span class="coord-label">LAT</span>
+          <span class="coord-value" id="lat-value">--</span>
+          <span class="coord-separator">/</span>
+          <span class="coord-label">LON</span>
+          <span class="coord-value" id="lon-value">--</span>
+        </div>
+        <div class="city-name" id="city-display">
+          <span class="city-prefix">></span> LOCATION_<span id="city-name">UNKNOWN</span>
+        </div>
+      </div>
+      <div class="timestamp-block">
+        <div class="clock" id="live-clock">00:00:00</div>
+        <div class="date-stamp" id="live-date">0000-00-00</div>
+        <div class="refresh-indicator">
+          <span class="refresh-dot"></span> LIVE
+        </div>
+      </div>
+    </div>
+    <div class="header-warning">
+      <span class="warning-text">DATA STREAM UNFILTERED — INTERPRET AT YOUR OWN RISK</span>
+    </div>
+  </header>
+
+  <main class="dashboard-grid">
+    <section class="hero-temp panel" id="current-conditions">
+      <div class="panel-label top-left">[ CURRENT_CONDITIONS ]</div>
+      <div class="temp-block">
+        <div class="temp-mega" id="main-temp">--°</div>
+        <div class="feels-like">
+          <span class="feels-label">FEELS LIKE</span>
+          <span class="feels-value" id="feels-temp">--°</span>
+        </div>
+      </div>
+      <div class="weather-icon-block">
+        <div class="weather-symbol" id="weather-icon">☁</div>
+        <div class="condition-text" id="condition-desc">LOADING</div>
+      </div>
+      <div class="sun-cycle">
+        <div class="sun-row">
+          <span class="sun-icon">▲</span>
+          <span class="sun-time" id="sunrise-time">--:--</span>
+          <span class="sun-label">RISE</span>
+        </div>
+        <div class="sun-row">
+          <span class="sun-icon">▼</span>
+          <span class="sun-time" id="sunset-time">--:--</span>
+          <span class="sun-label">SET</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="stats-grid panel" id="detailed-stats">
+      <div class="panel-label top-right">[ ATMOSPHERIC_PARAMETERS ]</div>
+      <div class="stat-item">
+        <span class="stat-label">HUMIDITY</span>
+        <span class="stat-value" id="humidity-value">--%</span>
+        <div class="stat-bar"><span class="bar-fill" id="humidity-bar"></span></div>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">PRESSURE</span>
+        <span class="stat-value" id="pressure-value">---- hPa</span>
+        <div class="stat-bar"><span class="bar-fill" id="pressure-bar"></span></div>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">VISIBILITY</span>
+        <span class="stat-value" id="visibility-value">-- km</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">WIND</span>
+        <span class="stat-value" id="wind-speed-value">-- m/s</span>
+        <div class="wind-direction">
+          <span class="wind-arrow" id="wind-arrow">↑</span>
+          <span class="wind-deg" id="wind-deg">---°</span>
+        </div>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">UV INDEX</span>
+        <span class="stat-value" id="uv-value">--</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">CLOUD COVER</span>
+        <span class="stat-value" id="cloud-value">--%</span>
+      </div>
+    </section>
+
+    <section class="hourly-forecast panel" id="hourly-section">
+      <div class="panel-label bottom-left">[ HOURLY_FORECAST_24H ]</div>
+      <div class="table-container">
+        <table class="raw-table">
+          <thead>
+            <tr>
+              <th>TIME</th>
+              <th>TEMP</th>
+              <th>WIND</th>
+              <th>GUST</th>
+              <th>PRECIP</th>
+              <th>HUM</th>
+              <th>CLOUD</th>
+              <th>ICON</th>
+            </tr>
+          </thead>
+          <tbody id="hourly-body">
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="wind-compass panel" id="wind-section">
+      <div class="panel-label bottom-right">[ WIND_VECTOR ]</div>
+      <div class="compass-container">
+        <div class="compass-rose">
+          <span class="compass-n">N</span>
+          <span class="compass-e">E</span>
+          <span class="compass-s">S</span>
+          <span class="compass-w">W</span>
+          <div class="compass-needle" id="compass-needle">
+            <div class="needle-head"></div>
+          </div>
+          <div class="compass-center"></div>
+        </div>
+        <div class="wind-details">
+          <div class="wind-gust">
+            <span class="gust-label">GUST</span>
+            <span class="gust-value" id="gust-value">-- m/s</span>
+          </div>
+          <div class="wind-dir-text" id="wind-dir-text">---</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="daily-forecast panel" id="daily-section">
+      <div class="panel-label top-left">[ 7_DAY_OUTLOOK ]</div>
+      <div class="daily-list" id="daily-container">
+      </div>
+    </section>
+
+    <section class="raw-log panel" id="raw-data-panel">
+      <div class="panel-label top-right">[ RAW_JSON_FEED ]</div>
+      <pre class="json-output" id="raw-json">AWAITING DATA STREAM...</pre>
+    </section>
+  </main>
+
+  <footer class="raw-footer">
+    <div class="footer-grid">
+      <div class="footer-left">
+        <span class="footer-bracket">/*</span>
+        <span>DATA COURTESY OF OPEN-METEO & NOMINATIM</span>
+        <span class="footer-bracket">*/</span>
+      </div>
+      <div class="footer-center">
+        <span class="blink">█</span> STREAM ACTIVE <span class="blink">█</span>
+      </div>
+      <div class="footer-right">
+        <span>NO COOKIES. NO TRACKING. NO MERCY.</span>
+      </div>
+    </div>
+  </footer>
+
+  <div class="overlay-grid"></div>
+  <div class="scanline-effect"></div>
+  <div class="noise-overlay"></div>
+
+  <script src="scripts.js" defer></script>
+</body>
+</html>

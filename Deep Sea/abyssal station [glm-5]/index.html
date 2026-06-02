@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NERVANA-7 | Abyssal Research Station</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="ocean-void"></div>
+    <canvas id="particles-canvas"></canvas>
+    <canvas id="currents-canvas"></canvas>
+    
+    <div class="viewport-frame">
+        <div class="viewport-outer-ring"></div>
+        <div class="viewport-inner-ring"></div>
+        <div class="viewport-glass">
+            <div class="glass-reflection"></div>
+            <div class="sonar-container" id="sonar-container">
+                <div class="sonar-grid"></div>
+                <div class="sonar-sweep" id="sonar-sweep"></div>
+                <div class="sonar-center-dot"></div>
+                <div class="ping-ring ping-ring-1"></div>
+                <div class="ping-ring ping-ring-2"></div>
+                <div class="ping-ring ping-ring-3"></div>
+                <div class="ping-ring ping-ring-4"></div>
+                <div class="contact-blip" id="contact-1"></div>
+                <div class="contact-blip" id="contact-2"></div>
+                <div class="contact-blip" id="contact-3"></div>
+            </div>
+        </div>
+    </div>
+
+    <header class="station-header">
+        <div class="station-identity">
+            <div class="station-logo">
+                <svg viewBox="0 0 60 60" class="logo-svg">
+                    <circle cx="30" cy="30" r="28" fill="none" stroke="currentColor" stroke-width="2"/>
+                    <circle cx="30" cy="30" r="20" fill="none" stroke="currentColor" stroke-width="1"/>
+                    <circle cx="30" cy="30" r="8" fill="currentColor"/>
+                    <line x1="30" y1="2" x2="30" y2="58" stroke="currentColor" stroke-width="1"/>
+                    <line x1="2" y1="30" x2="58" y2="30" stroke="currentColor" stroke-width="1"/>
+                </svg>
+            </div>
+            <div class="station-info">
+                <h1 class="station-name">NERVANA-7</h1>
+                <p class="station-subtitle">Abyssal Research Station</p>
+            </div>
+        </div>
+        <div class="station-status">
+            <div class="status-indicator status-nominal">
+                <span class="status-dot"></span>
+                <span class="status-text">OPERATIONAL</span>
+            </div>
+            <div class="mission-clock">
+                <span class="clock-label">MISSION TIME</span>
+                <span class="clock-value" id="mission-clock">127:42:18</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="dashboard-grid">
+        <section class="panel panel-depth" id="panel-depth">
+            <div class="panel-header">
+                <h2 class="panel-title">DEPTH MONITOR</h2>
+                <span class="panel-icon">
+                    <svg viewBox="0 0 24 24" width="18" height="18">
+                        <path d="M12 2L12 22M12 2L8 6M12 2L16 6" fill="none" stroke="currentColor" stroke-width="2"/>
+                    </svg>
+                </span>
+            </div>
+            <div class="depth-gauge">
+                <div class="gauge-track">
+                    <div class="gauge-fill" id="depth-fill"></div>
+                    <div class="gauge-markers">
+                        <span class="marker" style="bottom: 100%">0m</span>
+                        <span class="marker" style="bottom: 75%">2500m</span>
+                        <span class="marker" style="bottom: 50%">5000m</span>
+                        <span class="marker" style="bottom: 25%">7500m</span>
+                        <span class="marker" style="bottom: 0%">10000m</span>
+                    </div>
+                </div>
+                <div class="depth-readout">
+                    <span class="depth-value" id="depth-value">8,247</span>
+                    <span class="depth-unit">METERS</span>
+                </div>
+            </div>
+            <div class="depth-zone" id="depth-zone">
+                <span class="zone-label">ZONE</span>
+                <span class="zone-name">HADOPELAGIC</span>
+            </div>
+            <div class="depth-stats">
+                <div class="stat">
+                    <span class="stat-label">PRESSURE</span>
+                    <span class="stat-value" id="pressure-value">834.2</span>
+                    <span class="stat-unit">ATM</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">TEMP</span>
+                    <span class="stat-value" id="temp-value">1.4</span>
+                    <span class="stat-unit">°C</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="panel panel-pressure" id="panel-pressure">
+            <div class="panel-header">
+                <h2 class="panel-title">HULL INTEGRITY</h2>
+                <span class="panel-status status-ok" id="hull-status">NOMINAL</span>
+            </div>
+            <div class="hull-visualization">
+                <div class="hull-cross-section">
+                    <div class="hull-ring hull-ring-outer"></div>
+                    <div class="hull-ring hull-ring-inner"></div>
+                    <div class="hull-stress-points" id="hull-stress-points">
+                        <div class="stress-point" data-sector="A1"></div>
+                        <div class="stress-point" data-sector="A2"></div>
+                        <div class="stress-point" data-sector="B1"></div>
+                        <div class="stress-point" data-sector="B2"></div>
+                        <div class="stress-point" data-sector="C1"></div>
+                        <div class="stress-point" data-sector="C2"></div>
+                        <div class="stress-point" data-sector="D1"></div>
+                        <div class="stress-point" data-sector="D2"></div>
+                    </div>
+                </div>
+                <div class="integrity-readout">
+                    <div class="integrity-gauge">
+                        <svg viewBox="0 0 120 120" class="integrity-svg">
+                            <circle cx="60" cy="60" r="54" fill="none" stroke="rgba(0,255,170,0.1)" stroke-width="8"/>
+                            <circle cx="60" cy="60" r="54" fill="none" stroke="url(#integrity-gradient)" stroke-width="8" stroke-linecap="round" class="integrity-arc" id="integrity-arc"/>
+                            <defs>
+                                <linearGradient id="integrity-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                    <stop offset="0%" stop-color="#00ffaa"/>
+                                    <stop offset="100%" stop-color="#00ff88"/>
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                        <div class="integrity-center">
+                            <span class="integrity-value" id="integrity-value">94.7</span>
+                            <span class="integrity-percent">%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="sector-readings">
+                <div class="sector-reading">
+                    <span class="sector-name">SECTOR A</span>
+                    <div class="sector-bar">
+                        <div class="sector-fill" style="width: 96%"></div>
+                    </div>
+                    <span class="sector-val">96%</span>
+                </div>
+                <div class="sector-reading">
+                    <span class="sector-name">SECTOR B</span>
+                    <div class="sector-bar">
+                        <div class="sector-fill" style="width: 94%"></div>
+                    </div>
+                    <span class="sector-val">94%</span>
+                </div>
+                <div class="sector-reading">
+                    <span class="sector-name">SECTOR C</span>
+                    <div class="sector-bar">
+                        <div class="sector-fill" style="width: 93%"></div>
+                    </div>
+                    <span class="sector-val">93%</span>
+                </div>
+                <div class="sector-reading">
+                    <span class="sector-name">SECTOR D</span>
+                    <div class="sector-bar">
+                        <div class="sector-fill" style="width: 96%"></div>
+                    </div>
+                    <span class="sector-val">96%</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="panel panel-fauna" id="panel-fauna">
+            <div class="panel-header">
+                <h2 class="panel-title">BIOLUMINESCENT FAUNA</h2>
+                <span class="panel-count"><span id="fauna-count">12</span> ACTIVE</span>
+            </div>
+            <div class="fauna-list" id="fauna-list">
+                <div class="fauna-item" data-id="F-001">
+                    <div class="fauna-indicator" style="--glow-color: #00ffcc"></div>
+                    <div class="fauna-info">
+                        <span class="fauna-name">Anglerfish (Melanocetus)</span>
+                        <span class="fauna-distance">47m NE</span>
+                    </div>
+                    <div class="fauna-signal">
+                        <div class="signal-bars">
+                            <span class="signal-bar"></span>
+                            <span class="signal-bar"></span>
+                            <span class="signal-bar"></span>
+                            <span class="signal-bar"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="fauna-item" data-id="F-002">
+                    <div class="fauna-indicator" style="--glow-color: #00aaff"></div>
+                    <div class="fauna-info">
+                        <span class="fauna-name">Lanternfish (Myctophidae)</span>
+                        <span class="fauna-distance">123m SW</span>
+                    </div>
+                    <div class="fauna-signal">
+                        <div class="signal-bars">
+                            <span class="signal-bar"></span>
+                            <span class="signal-bar"></span>
+                            <span class="signal-bar active"></span>
+                            <span class="signal-bar active"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="fauna-item" data-id="F-003">
+                    <div class="fauna-indicator" style="--glow-color: #ff00aa"></div>
+                    <div class="fauna-info">
+                        <span class="fauna-name">Vampire Squid</span>
+                        <span class="fauna-distance">89m S</span>
+                    </div>
+                    <div class="fauna-signal">
+                        <div class="signal-bars">
+                            <span class="signal-bar"></span>
+                            <span class="signal-bar active"></span>
+                            <span class="signal-bar active"></span>
+                            <span class="signal-bar active"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="fauna-item" data-id="F-004">
+                    <div class="fauna-indicator" style="--glow-color: #ffaa00"></div>
+                    <div class="fauna-info">
+                        <span class="fauna-name">Flashlight Fish</span>
+                        <span class="fauna-distance">234m NW</span>
+                    </div>
+                    <div class="fauna-signal">
+                        <div class="signal-bars">
+                            <span class="signal-bar active"></span>
+                            <span class="signal-bar active"></span>
+                            <span class="signal-bar active"></span>
+                            <span class="signal-bar active"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="fauna-spectrum">
+                <span class="spectrum-label">LIGHT SPECTRUM</span>
+                <div class="spectrum-bar">
+                    <div class="spectrum-gradient"></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="panel panel-sonar" id="panel-sonar">
+            <div class="panel-header">
+                <h2 class="panel-title">SONAR FEED</h2>
+                <div class="sonar-controls">
+                    <button class="sonar-btn" id="btn-ping">PING</button>
+                    <span class="sonar-range">RANGE: 500m</span>
+                </div>
+            </div>
+            <div class="sonar-readings">
+                <div class="reading">
+                    <span class="reading-label">CONTACTS</span>
+                    <span class="reading-value" id="contact-count">3</span>
+                </div>
+                <div class="reading">
+                    <span class="reading-label">CLOSEST</span>
+                    <span class="reading-value" id="closest-contact">47m</span>
+                </div>
+                <div class="reading">
+                    <span class="reading-label">PING RATE</span>
+                    <span class="reading-value">2s</span>
+                </div>
+            </div>
+            <div class="sonar-frequency">
+                <span class="freq-label">FREQUENCY</span>
+                <div class="freq-slider">
+                    <input type="range" min="1" max="10" value="5" class="freq-range" id="freq-range">
+                    <span class="freq-value" id="freq-value">12 kHz</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="panel panel-environment" id="panel-environment">
+            <div class="panel-header">
+                <h2 class="panel-title">ENVIRONMENT</h2>
+            </div>
+            <div class="env-grid">
+                <div class="env-item">
+                    <div class="env-icon">
+                        <svg viewBox="0 0 24 24" width="24" height="24">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z" fill="currentColor"/>
+                        </svg>
+                    </div>
+                    <div class="env-data">
+                        <span class="env-label">CURRENT</span>
+                        <span class="env-value" id="current-value">0.3 m/s</span>
+                        <span class="env-direction" id="current-dir">NNE</span>
+                    </div>
+                </div>
+                <div class="env-item">
+                    <div class="env-icon">
+                        <svg viewBox="0 0 24 24" width="24" height="24">
+                            <path d="M12 3v18m-9-9h18" stroke="currentColor" stroke-width="2" fill="none"/>
+                            <circle cx="12" cy="12" r="3" fill="currentColor"/>
+                        </svg>
+                    </div>
+                    <div class="env-data">
+                        <span class="env-label">SALINITY</span>
+                        <span class="env-value" id="salinity-value">34.8 PSU</span>
+                    </div>
+                </div>
+                <div class="env-item">
+                    <div class="env-icon">
+                        <svg viewBox="0 0 24 24" width="24" height="24">
+                            <path d="M4 20h16v-2H4v2zm0-6h16v-2H4v2zm0-6h16V6H4v2z" fill="currentColor"/>
+                        </svg>
+                    </div>
+                    <div class="env-data">
+                        <span class="env-label">VISIBILITY</span>
+                        <span class="env-value" id="visibility-value">12m</span>
+                    </div>
+                </div>
+                <div class="env-item">
+                    <div class="env-icon">
+                        <svg viewBox="0 0 24 24" width="24" height="24">
+                            <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/>
+                            <path d="M12 6v6l4 2" fill="none" stroke="currentColor" stroke-width="2"/>
+                        </svg>
+                    </div>
+                    <div class="env-data">
+                        <span class="env-label">O2 LEVEL</span>
+                        <span class="env-value" id="o2-value">18.2%</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <div class="warning-bar" id="warning-bar">
+        <div class="warning-segments">
+            <div class="warning-segment"></div>
+            <div class="warning-segment"></div>
+            <div class="warning-segment"></div>
+            <div class="warning-segment"></div>
+            <div class="warning-segment"></div>
+            <div class="warning-segment"></div>
+            <div class="warning-segment"></div>
+            <div class="warning-segment"></div>
+            <div class="warning-segment"></div>
+            <div class="warning-segment"></div>
+        </div>
+        <div class="warning-text">
+            <span class="warning-icon">⚠</span>
+            <span id="warning-message">HULL STRESS DETECTED - SECTOR C2</span>
+        </div>
+    </div>
+
+    <footer class="station-footer">
+        <div class="footer-info">
+            <span class="footer-label">CREW</span>
+            <span class="footer-value">6 ACTIVE</span>
+        </div>
+        <div class="footer-info">
+            <span class="footer-label">POWER</span>
+            <span class="footer-value">94% BATTERY</span>
+        </div>
+        <div class="footer-info">
+            <span class="footer-label">O2 RESERVES</span>
+            <span class="footer-value">127 HOURS</span>
+        </div>
+        <div class="footer-info">
+            <span class="footer-label">UPLINK</span>
+            <span class="footer-value" id="uplink-status">STABLE</span>
+        </div>
+    </footer>
+
+    <div class="viewport-frame-corner corner-tl"></div>
+    <div class="viewport-frame-corner corner-tr"></div>
+    <div class="viewport-frame-corner corner-bl"></div>
+    <div class="viewport-frame-corner corner-br"></div>
+
+    <script src="scripts.js"></script>
+</body>
+</html>

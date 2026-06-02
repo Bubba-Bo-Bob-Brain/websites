@@ -1,0 +1,384 @@
+/* --- Variables & Theme Engine --- */
+:root {
+    /* Base Palette - Golden Age (Default) */
+    --color-bg: #0d141a;
+    --color-parchment: #d9c5b2;
+    --color-parchment-dark: #bca38a;
+    --color-ink: #2b2622;
+    --color-gold: #c5a059;
+    --color-stone: #3e3e3e;
+    --color-accent: #8b4513;
+    
+    /* Era Transitions */
+    --map-land-fill: #4a5d4e;
+    --map-land-stroke: #2d3a2f;
+    --map-sea-fill: #1a2a3a;
+    --map-glow: rgba(197, 160, 89, 0.4);
+
+    /* Typography */
+    --font-display: 'Cinzel', serif;
+    --font-body: 'IM Fell English', serif;
+
+    /* Shadows & Depth */
+    --shadow-deep: 0 20px 50px rgba(0,0,0,0.8);
+    --shadow-soft: 0 5px 15px rgba(0,0,0,0.3);
+    --shadow-gold: 0 0 15px var(--color-gold);
+}
+
+/* Era: Dawn Age */
+.era-dawn {
+    --color-parchment: #e8dcc4;
+    --color-gold: #a68d5a;
+    --map-land-fill: #5d6d5e;
+    --map-sea-fill: #2a3a4a;
+}
+
+/* Era: Age of Ash */
+.era-ash-age {
+    --color-parchment: #8e8279;
+    --color-parchment-dark: #5e544d;
+    --color-gold: #7a6a53;
+    --color-ink: #1a1a1a;
+    --map-land-fill: #3d3d3d;
+    --map-sea-fill: #121212;
+    --map-glow: rgba(255, 255, 255, 0.1);
+}
+
+/* --- Reset & Base --- */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    cursor: none; /* Using custom cursor */
+}
+
+body {
+    background-color: var(--color-bg);
+    color: var(--color-ink);
+    font-family: var(--font-body);
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+}
+
+.display-font {
+    font-family: var(--font-display);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+/* --- Texture Overlays --- */
+.texture-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 100;
+}
+
+.grain {
+    background-image: url("https://www.transparenttextures.com/patterns/stardust.png"); /* Subtle noise */
+    opacity: 0.3;
+}
+
+.vignette {
+    background: radial-gradient(circle, transparent 40%, rgba(0,0,0,0.7) 100%);
+}
+
+/* --- Layout Containers --- */
+#atlas-viewport {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* --- Legend Panel (Stone) --- */
+.legend-panel {
+    position: absolute;
+    left: 20px;
+    top: 20px;
+    bottom: 100px;
+    width: 280px;
+    z-index: 50;
+}
+
+.stone-texture {
+    background: var(--color-stone);
+    background-image: linear-gradient(135deg, #4a4a4a 0%, #2a2a2a 100%);
+    height: 100%;
+    padding: 30px;
+    border: 4px solid #222;
+    box-shadow: var(--shadow-deep), inset 0 0 50px rgba(0,0,0,0.5);
+    position: relative;
+    clip-path: polygon(0% 2%, 100% 0%, 98% 98%, 2% 100%); /* Slightly irregular shape */
+}
+
+.legend-content h2 {
+    color: var(--color-gold);
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+    text-align: center;
+    border-bottom: 1px solid var(--color-gold);
+    padding-bottom: 10px;
+}
+
+.instruction {
+    font-style: italic;
+    font-size: 0.9rem;
+    opacity: 0.7;
+    margin-bottom: 20px;
+}
+
+.legend-list {
+    list-style: none;
+}
+
+.legend-item {
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    font-size: 1.1rem;
+}
+
+.icon {
+    display: inline-block;
+    width: 15px;
+    height: 15px;
+    margin-right: 10px;
+    border: 1px solid var(--color-gold);
+}
+
+.icon-territory { background: var(--map-land-fill); }
+.icon-route { border-radius: 50%; background: var(--color-gold); }
+.icon-myth { clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%); background: #fff; }
+
+.stone-footer {
+    position: absolute;
+    bottom: 15px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-size: 0.7rem;
+    color: var(--color-gold);
+    opacity: 0.5;
+}
+
+/* --- Map Styles --- */
+.map-container {
+    position: relative;
+    width: 85%;
+    height: 80%;
+    z-index: 10;
+}
+
+#world-map {
+    width: 100%;
+    height: 100%;
+    filter: drop-shadow(0 0 20px rgba(0,0,0,0.5));
+}
+
+.territory {
+    fill: var(--map-land-fill);
+    stroke: var(--map-land-stroke);
+    stroke-width: 2;
+    transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+    cursor: pointer;
+}
+
+.territory:hover {
+    fill: var(--color-parchment);
+    stroke: var(--color-gold);
+    filter: url(#ink-bleed);
+}
+
+.route-path {
+    fill: none;
+    stroke: var(--color-gold);
+    stroke-width: 1.5;
+    stroke-dasharray: 10 5;
+    opacity: 0.4;
+    animation: flow 20s linear infinite;
+}
+
+@keyframes flow {
+    from { stroke-dashoffset: 500; }
+    to { stroke-dashoffset: 0; }
+}
+
+.sigil {
+    fill: var(--color-gold);
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+
+.sigil:hover {
+    transform: scale(1.5);
+    filter: drop-shadow(0 0 8px var(--color-gold));
+}
+
+/* --- Lore Panel (The Scroll) --- */
+.lore-panel {
+    position: absolute;
+    right: -450px; /* Hidden by default */
+    top: 50px;
+    bottom: 120px;
+    width: 400px;
+    z-index: 60;
+    transition: right 0.8s cubic-bezier(0.77, 0, 0.175, 1);
+}
+
+.lore-panel.active {
+    right: 20px;
+}
+
+.scroll-container {
+    background: var(--color-parchment);
+    background-image: url("https://www.transparenttextures.com/patterns/paper-fibers.png");
+    height: 100%;
+    padding: 40px;
+    box-shadow: var(--shadow-deep);
+    position: relative;
+    border-left: 2px solid var(--color-parchment-dark);
+}
+
+/* Decorative Scroll Ends */
+.scroll-header, .scroll-footer {
+    position: absolute;
+    left: -10px;
+    right: -10px;
+    height: 30px;
+    background: var(--color-parchment-dark);
+    border-radius: 15px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+.scroll-header { top: -15px; }
+.scroll-footer { bottom: -15px; }
+
+#lore-title {
+    font-size: 2.2rem;
+    margin-bottom: 10px;
+    color: var(--color-accent);
+}
+
+.lore-divider {
+    height: 2px;
+    background: linear-gradient(to right, transparent, var(--color-accent), transparent);
+    margin: 20px 0;
+}
+
+.body-text {
+    line-height: 1.6;
+    font-size: 1.2rem;
+}
+
+.mythos-box {
+    margin-top: 30px;
+    padding: 15px;
+    border: 1px double var(--color-gold);
+    background: rgba(197, 160, 89, 0.1);
+}
+
+.mythos-box.hidden {
+    display: none;
+}
+
+/* --- Timeline (Chronos Slider) --- */
+.timeline-container {
+    position: absolute;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 600px;
+    z-index: 70;
+    text-align: center;
+}
+
+.timeline-track {
+    display: flex;
+    justify-content: space-between;
+    position: relative;
+    margin-bottom: 10px;
+    padding: 0 20px;
+}
+
+.timeline-track::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 20px;
+    right: 20px;
+    height: 2px;
+    background: var(--color-gold);
+    z-index: -1;
+}
+
+.era-marker {
+    background: var(--color-bg);
+    border: 2px solid var(--color-gold);
+    color: var(--color-gold);
+    padding: 5px 12px;
+    font-size: 0.8rem;
+    border-radius: 20px;
+    font-family: var(--font-display);
+}
+
+.era-marker.active {
+    background: var(--color-gold);
+    color: var(--color-bg);
+}
+
+.timeline-slider-input {
+    width: 100%;
+}
+
+#era-slider {
+    -webkit-appearance: none;
+    width: 100%;
+    background: transparent;
+}
+
+#era-slider::-webkit-slider-runnable-track {
+    width: 100%;
+    height: 6px;
+    background: var(--color-stone);
+    border-radius: 3px;
+}
+
+#era-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    height: 24px;
+    width: 24px;
+    border-radius: 50%;
+    background: var(--color-gold);
+    margin-top: -9px;
+    box-shadow: var(--shadow-soft);
+    cursor: pointer;
+}
+
+/* --- Custom Cursor --- */
+#custom-cursor {
+    width: 30px;
+    height: 30px;
+    border: 1px solid var(--color-gold);
+    border-radius: 50%;
+    position: fixed;
+    pointer-events: none;
+    z-index: 9999;
+    transition: transform 0.1s ease, width 0.3s ease, height 0.3s ease;
+}
+
+#custom-cursor.clicking {
+    transform: scale(0.8);
+    background: rgba(197, 160, 89, 0.2);
+}
+
+#custom-cursor.hovering {
+    width: 50px;
+    height: 50px;
+    background: rgba(197, 160, 89, 0.1);
+}

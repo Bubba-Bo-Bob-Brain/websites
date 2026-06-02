@@ -1,0 +1,589 @@
+/* ===== BASE STYLES & VARIABLES ===== */
+:root {
+  /* Depth-based colors (shift with slider) */
+  --depth-hue: 220;
+  --depth-saturation: 80%;
+  --depth-lightness: 10%;
+  --primary-color: hsl(var(--depth-hue), var(--depth-saturation), var(--depth-lightness));
+  --secondary-color: hsl(var(--depth-hue), 90%, 50%);
+  --accent-color: hsl(180, 100%, 70%);
+  --bioluminescent-glow: rgba(10, 255, 200, 0.7);
+  --warning-color: hsl(0, 100%, 60%);
+
+  /* Typography */
+  --font-primary: 'Rajdhani', sans-serif;
+  --font-mono: 'Share Tech Mono', monospace;
+
+  /* Spacing */
+  --panel-padding: 1.5rem;
+  --gauge-size: 120px;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-primary);
+  background-color: #0a0a1a;
+  color: white;
+  overflow: hidden;
+  height: 100vh;
+  position: relative;
+}
+
+/* ===== AMBIENT EFFECTS ===== */
+.ambient-effects {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+}
+
+#bioluminescent-particles {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  filter: brightness(0.8);
+}
+
+.current-flow {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><defs><linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:rgba(0,0,0,0);stop-opacity:0" /><stop offset="50%" style="stop-color:rgba(0,100,255,0.1)" /><stop offset="100%" style="stop-color:rgba(0,0,0,0);stop-opacity:0" /></linearGradient></defs><rect width="100" height="100" fill="url(%23grad)" opacity="0.3"/></svg>') repeat;
+  animation: currentFlow 20s linear infinite;
+  opacity: 0.5;
+}
+
+/* ===== VIEWPORT FRAME ===== */
+.viewport-container {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+}
+
+.viewport-frame {
+  width: 90%;
+  height: 90%;
+  background:
+    linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%),
+    url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 10 10"><circle cx="5" cy="5" r="1" fill="%233a3a5a"/></svg>') repeat;
+  border-radius: 20px;
+  box-shadow:
+    0 0 50px rgba(0, 0, 0, 0.7),
+    inset 0 0 20px rgba(0, 100, 255, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.viewport-frame::before {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background:
+    radial-gradient(circle at 10% 20%, rgba(0, 150, 255, 0.1) 0%, transparent 30%),
+    linear-gradient(45deg, transparent 40%, rgba(0, 50, 100, 0.3) 50%, transparent 60%);
+  border-radius: 20px;
+}
+
+.viewport-glass {
+  width: 100%;
+  height: 100%;
+  background: rgba(10, 20, 40, 0.6);
+  backdrop-filter: blur(5px) brightness(1.2);
+  border-radius: 15px;
+  padding: 1.5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+/* ===== DASHBOARD PANELS ===== */
+.dashboard {
+  display: grid;
+  grid-template-columns: 25% 50% 25%;
+  grid-template-rows: 80px 1fr;
+  gap: 1rem;
+  height: 100%;
+}
+
+.panel {
+  background: rgba(10, 20, 40, 0.5);
+  border-radius: 10px;
+  padding: var(--panel-padding);
+  border: 1px solid rgba(0, 150, 255, 0.2);
+  box-shadow: 0 0 15px rgba(0, 100, 255, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.panel::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background:
+    linear-gradient(135deg, transparent 30%, rgba(0, 150, 255, 0.05) 50%, transparent 70%);
+  pointer-events: none;
+}
+
+/* Top Bar */
+.top-bar {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 1.5rem;
+  background: rgba(10, 20, 40, 0.7);
+  border-bottom: 1px solid rgba(0, 150, 255, 0.3);
+}
+
+.top-bar > div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.label {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.7);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.value {
+  font-family: var(--font-mono);
+  font-size: 1.5rem;
+  font-weight: 700;
+  text-shadow: 0 0 5px var(--accent-color);
+}
+
+.unit {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.depth-gauge {
+  width: 20%;
+}
+
+#depth-slider {
+  width: 100%;
+  height: 4px;
+  margin-top: 0.5rem;
+  -webkit-appearance: none;
+  background: linear-gradient(90deg, #0066ff, #00ccff);
+  border-radius: 2px;
+  outline: none;
+}
+
+#depth-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 12px;
+  height: 12px;
+  background: white;
+  border-radius: 50%;
+  box-shadow: 0 0 5px var(--accent-color);
+}
+
+.hull-integrity {
+  width: 30%;
+}
+
+.integrity-bar {
+  width: 100%;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  margin-top: 0.5rem;
+  overflow: hidden;
+}
+
+.integrity-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #00ff88, #00cc66);
+  border-radius: 4px;
+  width: 100%;
+  transition: width 0.5s ease, background 0.3s ease;
+}
+
+.pressure-warning {
+  width: 20%;
+}
+
+.klaxon-bar {
+  width: 100%;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.2);
+  margin-top: 0.5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.klaxon-bar::before {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, var(--warning-color), transparent);
+  animation: klaxonPulse 2s infinite;
+}
+
+/* Left Panel: Pressure & Environment */
+.left-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.analog-gauge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+.gauge-face {
+  width: var(--gauge-size);
+  height: var(--gauge-size);
+  border-radius: 50%;
+  background:
+    conic-gradient(
+      from -90deg at 50% 50%,
+      #3a3a5a 0deg,
+      #0066ff 60deg,
+      #00ff88 120deg,
+      #ff0000 240deg,
+      #3a3a5a 300deg
+    );
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  box-shadow:
+    0 0 20px rgba(0, 100, 255, 0.3),
+    inset 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+.gauge-face::before {
+  content: '';
+  position: absolute;
+  width: 90%;
+  height: 90%;
+  background: radial-gradient(circle at center, rgba(10, 20, 40, 0.8) 0%, transparent 70%);
+  border-radius: 50%;
+}
+
+.gauge-needle {
+  width: 4px;
+  height: 45%;
+  background: white;
+  position: absolute;
+  bottom: 50%;
+  left: 50%;
+  transform-origin: bottom center;
+  transform: rotate(-90deg);
+  box-shadow: 0 0 5px var(--accent-color);
+  transition: transform 0.5s ease;
+}
+
+.gauge-center {
+  width: 12px;
+  height: 12px;
+  background: #ff0040;
+  border-radius: 50%;
+  position: absolute;
+  z-index: 2;
+  box-shadow: 0 0 10px var(--warning-color);
+}
+
+.gauge-labels {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 1rem;
+}
+
+.environment-readouts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-top: auto;
+}
+
+.readout {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: rgba(10, 20, 40, 0.5);
+  padding: 0.5rem;
+  border-radius: 5px;
+  border: 1px solid rgba(0, 150, 255, 0.2);
+}
+
+/* Center Panel: Sonar & Fauna */
+.center-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.sonar-container {
+  position: relative;
+  flex: 1;
+}
+
+.sonar-display {
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at center, rgba(0, 50, 100, 0.3) 0%, rgba(10, 20, 40, 0.8) 70%);
+  border-radius: 10px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 0 20px rgba(0, 100, 255, 0.2);
+}
+
+.sonar-grid {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background:
+    repeating-concentric-circles(center, 50px, 1px, rgba(0, 150, 255, 0.2)),
+    repeating-linear-gradient(0deg, transparent 0px, rgba(0, 150, 255, 0.1) 1px, transparent 2px);
+}
+
+.sonar-grid::before {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at center, transparent 0%, rgba(0, 100, 255, 0.05) 50%, transparent 100%);
+}
+
+.sonar-ping {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: radial-gradient(circle, rgba(0, 200, 255, 0.3) 0%, transparent 70%);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  animation: sonarPing 3s infinite;
+  pointer-events: none;
+}
+
+.sonar-fauna {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+
+.fauna-tracker {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.fauna-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.fauna-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-height: 120px;
+  overflow-y: auto;
+}
+
+.fauna-item {
+  background: rgba(0, 100, 200, 0.2);
+  padding: 0.5rem;
+  border-radius: 5px;
+  display: flex;
+  justify-content: space-between;
+  animation: fadeIn 0.5s ease;
+}
+
+.fauna-item::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  background: var(--accent-color);
+  border-radius: 50%;
+  margin-right: 0.5rem;
+  box-shadow: 0 0 5px var(--bioluminescent-glow);
+}
+
+/* Right Panel: Logs & Spectrograph */
+.right-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.system-logs {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.logs-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.log-filter {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.filter-btn {
+  padding: 0.3rem 0.8rem;
+  background: rgba(0, 100, 200, 0.2);
+  border: 1px solid rgba(0, 150, 255, 0.3);
+  border-radius: 5px;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.filter-btn.active {
+  background: var(--accent-color);
+  color: #0a0a1a;
+  border-color: var(--accent-color);
+}
+
+.logs-container {
+  flex: 1;
+  overflow-y: auto;
+  background: rgba(10, 20, 40, 0.3);
+  border-radius: 5px;
+  padding: 0.5rem;
+  border: 1px solid rgba(0, 150, 255, 0.2);
+}
+
+.log-entry {
+  padding: 0.3rem 0.5rem;
+  border-bottom: 1px solid rgba(0, 150, 255, 0.1);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  animation: fadeIn 0.3s ease;
+}
+
+.log-entry.warning {
+  color: var(--warning-color);
+  background: rgba(255, 0, 0, 0.1);
+}
+
+.bioluminescence-spectrograph {
+  height: 120px;
+  position: relative;
+}
+
+#spectrograph-canvas {
+  width: 100%;
+  height: 100%;
+  background: rgba(10, 20, 40, 0.3);
+  border-radius: 5px;
+  border: 1px solid rgba(0, 150, 255, 0.2);
+}
+
+/* Emergency Actions */
+.emergency-actions {
+  position: absolute;
+  bottom: 2rem;
+  right: 2rem;
+}
+
+.emergency-button {
+  background: #ff0040;
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 5px;
+  font-family: var(--font-primary);
+  font-weight: 700;
+  text-transform: uppercase;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 0 10px var(--warning-color);
+  transition: all 0.3s ease;
+}
+
+.emergency-button:hover {
+  background: #ff3366;
+  box-shadow: 0 0 20px var(--warning-color);
+}
+
+.emergency-button:active {
+  transform: scale(0.98);
+}
+
+.button-glow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at center, rgba(255, 0, 64, 0.4) 0%, transparent 70%);
+  animation: buttonGlow 2s infinite;
+}
+
+/* ===== ANIMATIONS ===== */
+@keyframes currentFlow {
+  0% { background-position: 0% 0%; }
+  100% { background-position: 100% 100%; }
+}
+
+@keyframes sonarPing {
+  0% {
+    width: 0;
+    height: 0;
+    opacity: 1;
+  }
+  100% {
+    width: 200%;
+    height: 200%;
+    opacity: 0;
+  }
+}
+
+@keyframes klaxonPulse {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+@keyframes buttonGlow {
+  0% { opacity: 0.5; }
+  50% { opacity: 1; }
+  100% { opacity: 0.5; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ===== DEPTH-BASED COLOR SHIFTS ===== */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --depth-lightness: 5%;
+  }
+}

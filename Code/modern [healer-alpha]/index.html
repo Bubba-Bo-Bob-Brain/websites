@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NexusForge - Advanced Source Code Collaboration</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Rajdhani:wght@300;400;500;600;700&family=JetBrains+Mono:wght@100;200;300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+    <!-- Ambient Background Effects -->
+    <div class="ambient-background">
+        <div class="grid-overlay"></div>
+        <div class="particle-field" id="particleField"></div>
+        <div class="glow-orb orb-1"></div>
+        <div class="glow-orb orb-2"></div>
+        <div class="glow-orb orb-3"></div>
+    </div>
+
+    <!-- Main Navigation -->
+    <nav class="main-nav">
+        <div class="nav-brand">
+            <div class="logo-container">
+                <div class="logo-hexagon">
+                    <div class="hexagon-inner"></div>
+                </div>
+                <div class="logo-pulse"></div>
+            </div>
+            <span class="brand-text">NexusForge</span>
+        </div>
+        
+        <div class="nav-search">
+            <div class="search-container">
+                <div class="search-icon">&#9672;</div>
+                <input type="text" placeholder="Search repositories, commits, users..." class="search-input">
+                <div class="search-glow"></div>
+            </div>
+        </div>
+        
+        <div class="nav-links">
+            <a href="#" class="nav-link active">
+                <span class="link-icon">&#9673;</span>
+                <span class="link-text">Dashboard</span>
+            </a>
+            <a href="#" class="nav-link">
+                <span class="link-icon">&#11044;</span>
+                <span class="link-text">Repositories</span>
+            </a>
+            <a href="#" class="nav-link">
+                <span class="link-icon">&#11045;</span>
+                <span class="link-text">Projects</span>
+            </a>
+            <a href="#" class="nav-link">
+                <span class="link-icon">&#9673;</span>
+                <span class="link-text">Merge Requests</span>
+                <span class="notification-badge">3</span>
+            </a>
+            <a href="#" class="nav-link">
+                <span class="link-icon">&#9673;</span>
+                <span class="link-text">CI/CD</span>
+            </a>
+        </div>
+        
+        <div class="nav-actions">
+            <button class="create-btn">
+                <span class="btn-icon">+</span>
+                <span class="btn-text">New</span>
+                <div class="btn-glow"></div>
+            </button>
+            
+            <div class="user-profile">
+                <div class="avatar-container">
+                    <div class="avatar-ring"></div>
+                    <div class="avatar">NF</div>
+                    <div class="status-indicator online"></div>
+                </div>
+                <div class="profile-dropdown">
+                    <div class="dropdown-arrow"></div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+        <!-- Dashboard Header -->
+        <header class="dashboard-header">
+            <div class="header-content">
+                <h1 class="page-title">
+                    <span class="title-decoration">&#9671;</span>
+                    Welcome back, <span class="highlight-text">Developer</span>
+                    <span class="title-decoration">&#9671;</span>
+                </h1>
+                <p class="page-subtitle">Your collaborative development dashboard</p>
+            </div>
+            
+            <div class="header-actions">
+                <div class="quick-stats">
+                    <div class="stat-item">
+                        <div class="stat-value">24</div>
+                        <div class="stat-label">Commits Today</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">12</div>
+                        <div class="stat-label">Open Issues</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">5</div>
+                        <div class="stat-label">Active MRs</div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Dashboard Grid Layout -->
+        <div class="dashboard-grid">
+            <!-- Live Commit Graph Visualization -->
+            <section class="dashboard-card commit-graph-card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <span class="card-icon">&#9673;</span>
+                        Live Commit Activity
+                    </h2>
+                    <div class="card-controls">
+                        <select class="time-range-select">
+                            <option>Last 24 hours</option>
+                            <option>Last week</option>
+                            <option>Last month</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="card-content">
+                    <div class="commit-graph-container" id="commitGraph">
+                        <canvas id="commitCanvas"></canvas>
+                        <div class="graph-overlay">
+                            <div class="graph-labels">
+                                <span>00:00</span>
+                                <span>06:00</span>
+                                <span>12:00</span>
+                                <span>18:00</span>
+                                <span>24:00</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="graph-legend">
+                        <div class="legend-item">
+                            <div class="legend-color commits"></div>
+                            <span>Commits</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color pushes"></div>
+                            <span>Pushes</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color merges"></div>
+                            <span>Merges</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Contribution Heatmap -->
+            <section class="dashboard-card heatmap-card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <span class="card-icon">&#11044;</span>
+                        Contribution Heatmap
+                    </h2>
+                    <div class="card-controls">
+                        <button class="heatmap-toggle active" data-view="year">Year</button>
+                        <button class="heatmap-toggle" data-view="month">Month</button>
+                    </div>
+                </div>
+                <div class="card-content">
+                    <div class="heatmap-container">
+                        <div class="heatmap-grid" id="heatmapGrid"></div>
+                        <div class="heatmap-legend">
+                            <span class="legend-label">Less</span>
+                            <div class="legend-gradient"></div>
+                            <span class="legend-label">More</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Repository File Explorer -->
+            <section class="dashboard-card file-explorer-card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <span class="card-icon">&#11045;</span>
+                        Repository Explorer
+                    </h2>
+                    <div class="card-controls">
+                        <div class="breadcrumb">
+                            <span class="breadcrumb-item">nexusforge</span>
+                            <span class="breadcrumb-separator">/</span>
+                            <span class="breadcrumb-item">core-engine</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-content">
+                    <div class="file-tree-container">
+                        <div class="file-tree" id="fileTree">
+                            <!-- Tree structure will be populated by JavaScript -->
+                        </div>
+                        <div class="file-preview">
+                            <div class="preview-header">
+                                <span class="file-name">main.rs</span>
+                                <div class="file-actions">
+                                    <button class="action-btn" title="Copy">&#128203;</button>
+                                    <button class="action-btn" title="Edit">&#9998;&#65039;</button>
+                                    <button class="action-btn" title="History">&#9201;&#65039;</button>
+                                </div>
+                            </div>
+                            <div class="code-preview">
+                                <pre><code class="language-rust" id="codePreview">// NexusForge Core Engine - Main Entry Point
+use nexusforge::prelude::*;
+
+#[tokio::main]
+async fn main() -&gt; Result&lt;(), Box&lt;dyn std::error::Error&gt;&gt; {
+    // Initialize the NexusForge runtime
+    let config = Config::load("nexusforge.toml")?;
+    let runtime = Runtime::initialize(config).await?;
+    
+    // Start the collaborative editing server
+    let server = CollaborationServer::new(runtime);
+    server.start().await?;
+    
+    println!("NexusForge engine initialized successfully");
+    Ok(())
+}</code></pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Merge Request Dashboard -->
+            <section class="dashboard-card merge-requests-card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <span class="card-icon">&#9673;</span>
+                        Active Merge Requests
+                    </h2>
+                    <div class="card-controls">
+                        <div class="filter-group">
+                            <button class="filter-btn active">All</button>
+                            <button class="filter-btn">Review</button>
+                            <button class="filter-btn">Approved</button>
+                            <button class="filter-btn">Draft</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-content">
+                    <div class="merge-requests-list" id="mergeRequestsList">
+                        <!-- Merge requests will be populated by JavaScript -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Interactive Code Diff Viewer -->
+            <section class="dashboard-card diff-viewer-card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <span class="card-icon">&#11045;</span>
+                        Code Diff Viewer
+                    </h2>
+                    <div class="card-controls">
+                        <div class="diff-controls">
+                            <button class="diff-btn active" data-view="split">Split</button>
+                            <button class="diff-btn" data-view="unified">Unified</button>
+                            <button class="diff-btn" data-view="inline">Inline</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-content">
+                    <div class="diff-container" id="diffViewer">
+                        <div class="diff-header">
+                            <div class="diff-file-info">
+                                <span class="file-icon">&#128196;</span>
+                                <span class="file-path">src/core/collaboration.rs</span>
+                                <span class="change-type added">+24</span>
+                                <span class="change-type removed">-12</span>
+                            </div>
+                            <div class="diff-navigation">
+                                <button class="nav-btn prev">&#8593;</button>
+                                <span class="nav-position">1/5</span>
+                                <button class="nav-btn next">&#8595;</button>
+                            </div>
+                        </div>
+                        <div class="diff-content">
+                            <!-- Diff content will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Activity Feed -->
+            <section class="dashboard-card activity-card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <span class="card-icon">&#9673;</span>
+                        Recent Activity
+                    </h2>
+                    <div class="card-controls">
+                        <button class="refresh-btn" title="Refresh">
+                            <span class="refresh-icon">&#8635;</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="card-content">
+                    <div class="activity-feed" id="activityFeed">
+                        <!-- Activity items will be populated by JavaScript -->
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Status Bar -->
+        <footer class="status-bar">
+            <div class="status-left">
+                <div class="connection-status">
+                    <div class="status-dot connected"></div>
+                    <span>Connected to NexusForge Network</span>
+                </div>
+                <div class="system-stats">
+                    <span class="stat">CPU: 24%</span>
+                    <span class="stat">Memory: 1.2GB</span>
+                    <span class="stat">Latency: 42ms</span>
+                </div>
+            </div>
+            <div class="status-right">
+                <div class="version-info">
+                    <span>NexusForge v3.2.1</span>
+                </div>
+                <div class="time-display" id="currentTime"></div>
+            </div>
+        </footer>
+    </main>
+
+    <!-- Modal Overlay -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3 class="modal-title">Create New Repository</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-content">
+                <!-- Modal content will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Command Palette -->
+    <div class="command-palette" id="commandPalette">
+        <div class="palette-search">
+            <input type="text" placeholder="Type a command or search..." class="palette-input">
+        </div>
+        <div class="palette-results">
+            <!-- Results will be populated by JavaScript -->
+        </div>
+        <div class="palette-footer">
+            <span>&#8593;&#8595; Navigate</span>
+            <span>&#8629; Select</span>
+            <span>ESC Close</span>
+        </div>
+    </div>
+
+    <script src="scripts.js"></script>
+</body>
+</html>

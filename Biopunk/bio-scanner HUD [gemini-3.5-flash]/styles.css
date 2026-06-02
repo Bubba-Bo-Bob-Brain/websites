@@ -1,0 +1,1136 @@
+@import url('https://fonts.googleapis.com/css2?family=Oxanium:wght@300;500;700;800&family=Share+Tech+Mono&display=swap');
+
+:root {
+    --bg-color: #050806;
+    --panel-bg: rgba(9, 15, 12, 0.85);
+    --panel-border: rgba(42, 255, 140, 0.15);
+    --panel-border-glow: rgba(42, 255, 140, 0.05);
+    
+    --neon-green: #2aff8c;
+    --neon-green-dim: #1a9e57;
+    --toxin-yellow: #d1ff2a;
+    --warning-red: #ff3344;
+    --warning-red-dim: #991a24;
+    --neural-cyan: #00ffd5;
+    --blood-dark: #200408;
+    
+    --font-header: 'Oxanium', sans-serif;
+    --font-data: 'Share Tech Mono', monospace;
+    
+    --heartbeat-duration: 0.8s;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    user-select: none;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--neon-green);
+    font-family: var(--font-data);
+    height: 100vh;
+    overflow: hidden;
+    position: relative;
+    font-size: 14px;
+}
+
+/* Background & Overlays */
+.vignette-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle, transparent 40%, rgba(5, 8, 6, 0.9) 100%),
+                radial-gradient(circle, rgba(255, 51, 68, 0.03) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 10;
+}
+
+.scanline-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        rgba(18, 16, 16, 0) 50%, 
+        rgba(0, 0, 0, 0.25) 50%
+    );
+    background-size: 100% 4px;
+    pointer-events: none;
+    z-index: 11;
+}
+
+.organic-noise {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0.04;
+    background-image: radial-gradient(circle, var(--neon-green) 1px, transparent 1px);
+    background-size: 24px 24px;
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* Layout Framework */
+.hud-frame {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    width: 100vw;
+    height: 100vh;
+    padding: 15px;
+    z-index: 5;
+}
+
+.hud-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid var(--panel-border);
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+    background: linear-gradient(to bottom, rgba(42, 255, 140, 0.05), transparent);
+}
+
+.header-left .system-tag {
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--neon-green-dim);
+}
+
+.header-left .patient-id {
+    font-family: var(--font-header);
+    font-weight: 800;
+    font-size: 24px;
+    color: #fff;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+}
+
+.header-center .warning-banner {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255, 51, 68, 0.15);
+    border: 1px solid var(--warning-red);
+    padding: 6px 15px;
+    border-radius: 3px;
+    animation: flash-border 1.5s infinite alternate;
+}
+
+.warning-icon {
+    color: var(--warning-red);
+    font-weight: bold;
+    animation: critical-flicker 0.5s infinite;
+}
+
+.warning-text {
+    font-family: var(--font-header);
+    font-size: 12px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: 1px;
+}
+
+.header-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+}
+
+.timestamp-container {
+    font-size: 12px;
+}
+
+.timestamp-container .label {
+    color: var(--neon-green-dim);
+}
+
+.timestamp-container .value {
+    color: var(--toxin-yellow);
+    font-weight: bold;
+}
+
+.connection-status {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 10px;
+}
+
+.pulse-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: var(--neon-green);
+    box-shadow: 0 0 8px var(--neon-green);
+    animation: pulse-glow 1s infinite alternate;
+}
+
+.pulse-dot.green { background-color: var(--neon-green); box-shadow: 0 0 8px var(--neon-green); }
+
+/* Main Grid Layout */
+.hud-grid {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 320px 1fr 320px;
+    gap: 15px;
+    min-height: 0; /* Ensures proper scroll overflow inside grid */
+}
+
+.hud-column {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    min-height: 0;
+}
+
+/* Panel Design */
+.hud-panel {
+    background-color: var(--panel-bg);
+    border: 1px solid var(--panel-border);
+    border-radius: 4px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+    box-shadow: inset 0 0 15px var(--panel-border-glow);
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.hud-panel:hover {
+    border-color: rgba(42, 255, 140, 0.3);
+    box-shadow: inset 0 0 20px rgba(42, 255, 140, 0.08);
+}
+
+.panel-header {
+    background: linear-gradient(to right, rgba(42, 255, 140, 0.08), transparent);
+    padding: 8px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--panel-border);
+}
+
+.panel-header h2 {
+    font-family: var(--font-header);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: #fff;
+}
+
+.panel-tag {
+    font-size: 9px;
+    color: var(--neon-green-dim);
+    border: 1px solid var(--panel-border);
+    padding: 1px 4px;
+    border-radius: 2px;
+}
+
+.panel-body {
+    padding: 12px;
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* Custom Scrollbar */
+.panel-body::-webkit-scrollbar {
+    width: 4px;
+}
+.panel-body::-webkit-scrollbar-track {
+    background: transparent;
+}
+.panel-body::-webkit-scrollbar-thumb {
+    background: var(--panel-border);
+    border-radius: 2px;
+}
+
+/* Reusable UI Components inside Panels */
+.metric-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.metric-row .label {
+    color: var(--neon-green-dim);
+}
+
+.metric-row .value {
+    font-weight: bold;
+}
+
+.metric-row .value.critical {
+    color: var(--warning-red);
+    text-shadow: 0 0 5px rgba(255, 51, 68, 0.5);
+}
+
+.bar-container {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.bar-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--neon-green-dim);
+}
+
+.bar-bg {
+    height: 6px;
+    background: rgba(42, 255, 140, 0.05);
+    border: 1px solid var(--panel-border);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.bar-fill {
+    height: 100%;
+    background-color: var(--neon-green);
+    box-shadow: 0 0 8px var(--neon-green);
+    transition: width 0.5s ease;
+}
+
+.bar-fill.neuro-fill {
+    background-color: var(--neural-cyan);
+    box-shadow: 0 0 8px var(--neural-cyan);
+}
+
+/* Column Specific Styles: LEFT */
+.neural-link .panel-body {
+    gap: 15px;
+}
+
+.neural-map-container {
+    position: relative;
+    height: 120px;
+    border: 1px solid rgba(0, 255, 213, 0.1);
+    background: rgba(0, 255, 213, 0.02);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.neural-connections {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    stroke: rgba(0, 255, 213, 0.2);
+    stroke-width: 1;
+}
+
+.neural-node {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.neural-node.active {
+    background-color: var(--neural-cyan);
+    box-shadow: 0 0 8px var(--neural-cyan);
+    animation: pulse-glow 1.2s infinite alternate;
+}
+
+.neural-node.warning {
+    background-color: var(--toxin-yellow);
+    box-shadow: 0 0 8px var(--toxin-yellow);
+    animation: pulse-glow 0.8s infinite alternate;
+}
+
+.neural-node.critical {
+    background-color: var(--warning-red);
+    box-shadow: 0 0 10px var(--warning-red);
+    animation: critical-flicker 0.4s infinite alternate;
+}
+
+.node-1 { top: 30%; left: 20%; }
+.node-2 { top: 20%; left: 70%; }
+.node-3 { top: 80%; left: 130px; }
+.node-4 { top: 50%; left: 180px; }
+.node-5 { top: 100px; left: 100px; }
+
+/* Blood Chemistry Radial charts */
+.radial-metrics {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+}
+
+.radial-widget {
+    position: relative;
+    width: 75px;
+    height: 75px;
+    text-align: center;
+}
+
+.circular-chart {
+    display: block;
+    max-width: 100%;
+    max-height: 100%;
+}
+
+.circle-bg {
+    fill: none;
+    stroke: rgba(255, 255, 255, 0.05);
+    stroke-width: 2.8;
+}
+
+.circle {
+    fill: none;
+    stroke-width: 2.8;
+    stroke-linecap: round;
+    transition: stroke-dasharray 0.5s ease;
+}
+
+.circular-chart.red .circle {
+    stroke: var(--warning-red);
+}
+
+.circular-chart.green .circle {
+    stroke: var(--neon-green);
+}
+
+.radial-widget .percentage {
+    position: absolute;
+    top: 45%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 13px;
+    font-weight: bold;
+}
+
+.radial-widget .widget-label {
+    font-size: 8px;
+    color: var(--neon-green-dim);
+    margin-top: 4px;
+    letter-spacing: 0.5px;
+}
+
+.stats-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    border-top: 1px solid var(--panel-border);
+    padding-top: 10px;
+}
+
+.stat-item {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+}
+
+.stat-item .label { color: var(--neon-green-dim); }
+.stat-item .value { font-weight: bold; }
+.stat-item .value.critical { color: var(--warning-red); }
+
+/* Gene Matrix Grid */
+.splice-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+}
+
+.splice-cell {
+    border: 1px solid rgba(42, 255, 140, 0.1);
+    background: rgba(42, 255, 140, 0.02);
+    padding: 8px;
+    text-align: center;
+    font-size: 11px;
+    font-weight: bold;
+    color: var(--neon-green-dim);
+    border-radius: 2px;
+    transition: all 0.2s ease;
+}
+
+.splice-cell.spliced {
+    background: rgba(42, 255, 140, 0.15);
+    border-color: var(--neon-green);
+    color: #fff;
+    text-shadow: 0 0 5px var(--neon-green);
+}
+
+.splice-cell.critical-flash {
+    background: rgba(255, 51, 68, 0.15);
+    border-color: var(--warning-red);
+    color: var(--warning-red);
+    animation: critical-flicker 0.6s infinite alternate;
+}
+
+.splice-status {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    border-top: 1px solid var(--panel-border);
+    padding-top: 8px;
+}
+
+.splice-status .value.warning {
+    color: var(--toxin-yellow);
+    font-weight: bold;
+}
+
+/* Column Specific Styles: CENTER (Anatomical Scanning Engine) */
+.center-hud-viewport {
+    flex: 1;
+    border: 1px solid var(--panel-border);
+    background: radial-gradient(circle, rgba(14, 28, 20, 0.6) 0%, rgba(5, 8, 6, 0.95) 100%);
+    position: relative;
+    border-radius: 4px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    overflow: hidden;
+    padding: 15px;
+}
+
+.grid-backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-size: 30px 30px;
+    background-image: linear-gradient(to right, rgba(42, 255, 140, 0.02) 1px, transparent 1px),
+                      linear-gradient(to bottom, rgba(42, 255, 140, 0.02) 1px, transparent 1px);
+    pointer-events: none;
+}
+
+/* Scanner Rings */
+.scanner-ring {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+}
+
+.scanner-ring.outer {
+    width: 380px;
+    height: 380px;
+    border: 1px dashed rgba(42, 255, 140, 0.08);
+    animation: rotate-clockwise 40s linear infinite;
+}
+
+.scanner-ring.inner {
+    width: 240px;
+    height: 240px;
+    border: 1px double rgba(42, 255, 140, 0.12);
+    animation: rotate-counter 25s linear infinite;
+}
+
+/* Anatomical Wireframe SVG styling */
+.anatomical-container {
+    position: relative;
+    width: 100%;
+    height: 60%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2;
+}
+
+.anatomical-wireframe {
+    height: 100%;
+    width: auto;
+}
+
+.wire-part {
+    fill: none;
+    stroke: rgba(42, 255, 140, 0.25);
+    stroke-width: 1.5;
+    transition: stroke 0.3s ease;
+}
+
+.wire-part:hover {
+    stroke: var(--neon-green);
+}
+
+.organ {
+    fill: none;
+    stroke-width: 2px;
+}
+
+.organ.brain {
+    stroke: var(--neural-cyan);
+    fill: rgba(0, 255, 213, 0.1);
+}
+
+.organ.lungs {
+    stroke: var(--neon-green);
+    fill: rgba(42, 255, 140, 0.08);
+    transform-origin: 200px 200px;
+    animation: organ-breath 4s ease-in-out infinite;
+}
+
+.organ.heart {
+    stroke: var(--warning-red);
+    fill: rgba(255, 51, 68, 0.2);
+    transform-origin: 188px 195px;
+    animation: organ-heartbeat var(--heartbeat-duration) infinite ease-out;
+}
+
+.organ.stomach {
+    stroke: var(--toxin-yellow);
+    fill: rgba(209, 255, 42, 0.1);
+}
+
+.organ.kidneys {
+    stroke: var(--toxin-yellow);
+    fill: rgba(209, 255, 42, 0.05);
+}
+
+/* Scanning line overlay */
+.laser-scan-line {
+    stroke: var(--warning-red);
+    stroke-width: 2px;
+    stroke-dasharray: 4, 4;
+    opacity: 0.7;
+    animation: laser-sweep 4s linear infinite;
+}
+
+/* Nanomachine swarm visualizer inside center */
+.nanomachine-visualizer {
+    position: absolute;
+    bottom: 110px;
+    right: 15px;
+    width: 180px;
+    height: 90px;
+    border: 1px solid rgba(42, 255, 140, 0.15);
+    background: rgba(5, 8, 6, 0.8);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+#nanite-canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+.nanite-overlay-data {
+    position: absolute;
+    top: 5px;
+    left: 8px;
+    display: flex;
+    flex-direction: column;
+}
+
+.nanite-overlay-data .label {
+    font-size: 8px;
+    color: var(--neon-green-dim);
+}
+
+.nanite-overlay-data .value {
+    font-size: 10px;
+    font-weight: bold;
+}
+
+/* Heartbeat telemetry box */
+.heartbeat-container {
+    height: 90px;
+    border-top: 1px solid var(--panel-border);
+    display: flex;
+    align-items: center;
+    background: rgba(42, 255, 140, 0.02);
+    margin-top: auto;
+    padding-top: 10px;
+}
+
+.heartbeat-graph {
+    flex: 1;
+    height: 100%;
+}
+
+.heartbeat-pulse {
+    fill: none;
+    stroke: var(--warning-red);
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.heartbeat-metrics {
+    width: 120px;
+    padding-left: 15px;
+    border-left: 1px solid var(--panel-border);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.bpm-counter {
+    display: flex;
+    flex-direction: column;
+}
+
+.bpm-counter .label {
+    font-size: 9px;
+    color: var(--neon-green-dim);
+}
+
+.bpm-counter .value {
+    font-family: var(--font-header);
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--warning-red);
+    line-height: 1;
+    margin: 2px 0;
+    text-shadow: 0 0 10px rgba(255, 51, 68, 0.4);
+}
+
+.bpm-counter .unit {
+    font-size: 10px;
+    color: var(--warning-red);
+    align-self: flex-end;
+}
+
+.system-sync {
+    font-size: 10px;
+    margin-top: 4px;
+}
+
+.system-sync .label { color: var(--neon-green-dim); }
+.system-sync .value { color: var(--neon-green); font-weight: bold; }
+
+/* Column Specific Styles: RIGHT */
+.organ-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.organ-card {
+    border: 1px solid rgba(42, 255, 140, 0.1);
+    background: rgba(42, 255, 140, 0.02);
+    padding: 8px;
+    border-radius: 3px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    transition: all 0.3s ease;
+}
+
+.organ-card-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+}
+
+.organ-name {
+    font-weight: bold;
+    color: #fff;
+}
+
+.organ-health-value {
+    color: var(--neon-green);
+}
+
+.organ-health-value.critical {
+    color: var(--warning-red);
+}
+
+.organ-bar-container {
+    height: 4px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.organ-bar-fill {
+    height: 100%;
+    background-color: var(--neon-green);
+    border-radius: 2px;
+}
+
+.organ-bar-fill.critical {
+    background-color: var(--warning-red);
+}
+
+.organ-details {
+    display: flex;
+    justify-content: space-between;
+    font-size: 9px;
+    color: var(--neon-green-dim);
+}
+
+/* Pulsing behaviors for organ card simulation */
+.critical-pulse {
+    animation: heartbeat-border var(--heartbeat-duration) infinite ease-out;
+}
+
+.breathe-pulse {
+    animation: breathing-card 4s ease-in-out infinite;
+}
+
+.decay-pulse {
+    animation: decay-flicker 5s infinite;
+}
+
+/* Mutation Tracker */
+.mutation-gauge {
+    display: flex;
+    justify-content: center;
+    position: relative;
+    height: 60px;
+    margin-bottom: 5px;
+}
+
+.half-circle-chart {
+    width: 120px;
+    height: 60px;
+}
+
+.half-circle-bg {
+    fill: none;
+    stroke: rgba(255, 255, 255, 0.05);
+    stroke-width: 8;
+    stroke-linecap: round;
+}
+
+.half-circle-fill {
+    fill: none;
+    stroke: var(--toxin-yellow);
+    stroke-width: 8;
+    stroke-linecap: round;
+    stroke-dasharray: 126; /* Circumference mapping */
+    stroke-dashoffset: 45; /* Adjusted dynamically by JS */
+    transition: stroke-dashoffset 0.5s ease;
+}
+
+.gauge-value {
+    position: absolute;
+    bottom: 0;
+    font-family: var(--font-header);
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--toxin-yellow);
+    text-shadow: 0 0 5px rgba(209, 255, 42, 0.4);
+}
+
+.mutation-logs {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    border-top: 1px solid var(--panel-border);
+    padding-top: 8px;
+    height: 90px;
+    overflow-y: auto;
+}
+
+.log-entry {
+    font-size: 10px;
+    line-height: 1.3;
+    color: var(--neon-green-dim);
+}
+
+.log-entry .time {
+    color: var(--toxin-yellow);
+    margin-right: 4px;
+}
+
+.log-entry.warning {
+    color: #fff;
+    background: rgba(255, 51, 68, 0.1);
+    border-left: 2px solid var(--warning-red);
+    padding-left: 4px;
+}
+
+/* Nanite Control panel */
+.nanite-grid-status {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+    margin-top: 4px;
+}
+
+.nanite-quadrant {
+    border: 1px solid rgba(42, 255, 140, 0.1);
+    background: rgba(42, 255, 140, 0.02);
+    padding: 6px;
+    font-size: 10px;
+    text-align: center;
+    color: var(--neon-green-dim);
+}
+
+.nanite-quadrant.warning {
+    border-color: var(--warning-red);
+    background: rgba(255, 51, 68, 0.05);
+    color: var(--warning-red);
+    animation: critical-flicker 0.8s infinite alternate;
+}
+
+/* Footer Section */
+.hud-footer {
+    border-top: 2px solid var(--panel-border);
+    padding-top: 12px;
+    margin-top: auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.footer-left {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    max-width: 60%;
+}
+
+.console-label {
+    font-size: 10px;
+    color: var(--neon-green-dim);
+    letter-spacing: 1px;
+}
+
+.console-scroller {
+    height: 48px;
+    background: rgba(5, 8, 6, 0.8);
+    border: 1px solid var(--panel-border);
+    border-radius: 3px;
+    padding: 6px 10px;
+    overflow-y: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.log-line {
+    font-size: 10px;
+    color: var(--neon-green-dim);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.log-line.error {
+    color: var(--warning-red);
+}
+
+.footer-right {
+    display: flex;
+    align-items: center;
+}
+
+.control-actions {
+    display: flex;
+    gap: 10px;
+}
+
+/* Buttons styling */
+.hud-btn {
+    font-family: var(--font-header);
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: 1px;
+    color: var(--neon-green);
+    background: rgba(42, 255, 140, 0.05);
+    border: 1px solid var(--neon-green);
+    padding: 10px 16px;
+    cursor: pointer;
+    border-radius: 3px;
+    transition: all 0.2s ease;
+    outline: none;
+}
+
+.hud-btn:hover {
+    background: rgba(42, 255, 140, 0.2);
+    box-shadow: 0 0 12px rgba(42, 255, 140, 0.3);
+    text-shadow: 0 0 5px #fff;
+}
+
+.hud-btn:active {
+    transform: scale(0.97);
+}
+
+.hud-btn.warning {
+    color: var(--toxin-yellow);
+    border-color: var(--toxin-yellow);
+    background: rgba(209, 255, 42, 0.05);
+}
+
+.hud-btn.warning:hover {
+    background: rgba(209, 255, 42, 0.2);
+    box-shadow: 0 0 12px rgba(209, 255, 42, 0.3);
+}
+
+.hud-btn.critical {
+    color: var(--warning-red);
+    border-color: var(--warning-red);
+    background: rgba(255, 51, 68, 0.05);
+}
+
+.hud-btn.critical:hover {
+    background: rgba(255, 51, 68, 0.2);
+    box-shadow: 0 0 12px rgba(255, 51, 68, 0.3);
+}
+
+/* KEYFRAMES / ANIMATIONS */
+
+@keyframes pulse-glow {
+    0% {
+        opacity: 0.6;
+        box-shadow: 0 0 4px currentColor;
+    }
+    100% {
+        opacity: 1;
+        box-shadow: 0 0 12px currentColor;
+    }
+}
+
+@keyframes flash-border {
+    0% {
+        border-color: var(--warning-red-dim);
+        box-shadow: 0 0 5px rgba(255, 51, 68, 0.1);
+    }
+    100% {
+        border-color: var(--warning-red);
+        box-shadow: 0 0 15px rgba(255, 51, 68, 0.3);
+    }
+}
+
+@keyframes critical-flicker {
+    0%, 100% { opacity: 1; }
+    23% { opacity: 1; }
+    25% { opacity: 0.3; }
+    26% { opacity: 1; }
+    42% { opacity: 1; }
+    44% { opacity: 0.2; }
+    45% { opacity: 1; }
+    75% { opacity: 1; }
+    76% { opacity: 0.4; }
+    77% { opacity: 0.4; }
+    78% { opacity: 1; }
+}
+
+@keyframes rotate-clockwise {
+    0% { transform: translate(-50%, -50%) rotate(0deg); }
+    100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+@keyframes rotate-counter {
+    0% { transform: translate(-50%, -50%) rotate(360deg); }
+    100% { transform: translate(-50%, -50%) rotate(0deg); }
+}
+
+@keyframes organ-breath {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 0.7;
+    }
+    50% {
+        transform: scale(1.06);
+        opacity: 0.9;
+    }
+}
+
+@keyframes organ-heartbeat {
+    0% {
+        transform: scale(1);
+    }
+    15% {
+        transform: scale(1.15);
+    }
+    30% {
+        transform: scale(1.05);
+    }
+    45% {
+        transform: scale(1.18);
+    }
+    70% {
+        transform: scale(1);
+    }
+}
+
+@keyframes heartbeat-border {
+    0% {
+        border-color: rgba(255, 51, 68, 0.15);
+        box-shadow: none;
+    }
+    15% {
+        border-color: var(--warning-red);
+        box-shadow: inset 0 0 10px rgba(255, 51, 68, 0.15), 0 0 5px rgba(255, 51, 68, 0.2);
+    }
+    30% {
+        border-color: rgba(255, 51, 68, 0.3);
+    }
+    45% {
+        border-color: var(--warning-red);
+        box-shadow: inset 0 0 12px rgba(255, 51, 68, 0.2), 0 0 6px rgba(255, 51, 68, 0.25);
+    }
+    70% {
+        border-color: rgba(255, 51, 68, 0.15);
+        box-shadow: none;
+    }
+}
+
+@keyframes breathing-card {
+    0%, 100% {
+        border-color: rgba(42, 255, 140, 0.1);
+        background: rgba(42, 255, 140, 0.02);
+    }
+    50% {
+        border-color: rgba(42, 255, 140, 0.3);
+        background: rgba(42, 255, 140, 0.05);
+    }
+}
+
+@keyframes decay-flicker {
+    0%, 100% {
+        border-color: rgba(255, 51, 68, 0.1);
+        background: rgba(255, 51, 68, 0.02);
+    }
+    5% {
+        border-color: rgba(255, 51, 68, 0.4);
+        background: rgba(255, 51, 68, 0.08);
+    }
+    7% {
+        border-color: rgba(255, 51, 68, 0.15);
+        background: rgba(255, 51, 68, 0.03);
+    }
+    50% {
+        border-color: rgba(209, 255, 42, 0.1);
+        background: rgba(209, 255, 42, 0.02);
+    }
+    55% {
+        border-color: rgba(209, 255, 42, 0.3);
+        background: rgba(209, 255, 42, 0.06);
+    }
+    57% {
+        border-color: rgba(209, 255, 42, 0.1);
+        background: rgba(209, 255, 42, 0.02);
+    }
+}
+
+@keyframes laser-sweep {
+    0% {
+        transform: translateY(110px);
+        opacity: 0;
+    }
+    10% {
+        opacity: 0.8;
+    }
+    90% {
+        opacity: 0.8;
+    }
+    100% {
+        transform: translateY(480px);
+        opacity: 0;
+    }
+}

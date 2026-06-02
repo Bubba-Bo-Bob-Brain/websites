@@ -1,0 +1,486 @@
+:root {
+    /* Color Palette */
+    --bg-deep: #050808;
+    --bg-panel: rgba(10, 20, 20, 0.7);
+    --accent-green: #00ffaa;
+    --accent-yellow: #ffcc00;
+    --accent-red: #ff0055;
+    --accent-purple: #bc00ff;
+    --text-main: #a0cbc5;
+    --text-dim: #4a7a74;
+    --glow-green: 0 0 15px rgba(0, 255, 170, 0.4);
+    --glow-red: 0 0 15px rgba(255, 0, 85, 0.4);
+    
+    /* Timing */
+    --heartbeat-speed: 1.2s;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    cursor: crosshair;
+}
+
+body {
+    background-color: var(--bg-deep);
+    color: var(--text-main);
+    font-family: 'JetBrains Mono', monospace;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-transform: uppercase;
+}
+
+/* --- Atmospheric Layers --- */
+.crt-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        rgba(18, 16, 16, 0) 50%, 
+        rgba(0, 0, 0, 0.25) 50%
+    ), linear-gradient(
+        90deg, 
+        rgba(255, 0, 0, 0.06), 
+        rgba(0, 255, 0, 0.02), 
+        rgba(0, 0, 255, 0.06)
+    );
+    background-size: 100% 4px, 3px 100%;
+    pointer-events: none;
+    z-index: 100;
+}
+
+.grain-texture {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('https://grainy-gradients.vercel.app/noise.svg');
+    opacity: 0.15;
+    pointer-events: none;
+    z-index: 99;
+    filter: contrast(150%) brightness(100%);
+}
+
+.vignette {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle, transparent 40%, rgba(0,0,0,0.8) 100%);
+    pointer-events: none;
+    z-index: 98;
+}
+
+/* --- HUD Layout --- */
+.hud-container {
+    position: relative;
+    width: 95vw;
+    height: 90vh;
+    display: grid;
+    grid-template-columns: 320px 1fr 320px;
+    grid-template-rows: 80px 1fr 40px;
+    gap: 20px;
+    z-index: 10;
+    animation: hud-entrance 1s ease-out;
+}
+
+@keyframes hud-entrance {
+    from { opacity: 0; transform: scale(1.05); filter: blur(10px); }
+    to { opacity: 1; transform: scale(1); filter: blur(0); }
+}
+
+/* --- Header --- */
+.hud-header {
+    grid-column: 1 / span 3;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid var(--text-dim);
+    padding-bottom: 10px;
+    border-left: 5px solid var(--accent-green);
+}
+
+.patient-id {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.5rem;
+    letter-spacing: -1px;
+}
+
+.patient-id .value {
+    color: #fff;
+    margin: 0 10px;
+    text-shadow: var(--glow-green);
+}
+
+.status-tag {
+    font-size: 0.7rem;
+    padding: 2px 8px;
+    border: 1px solid var(--accent-red);
+    color: var(--accent-red);
+    border-radius: 3px;
+}
+
+.blinking {
+    animation: blink 0.8s infinite;
+}
+
+@keyframes blink {
+    50% { opacity: 0.3; }
+}
+
+.system-clock {
+    text-align: right;
+}
+
+#current-time {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: #fff;
+}
+
+.label {
+    font-size: 0.6rem;
+    color: var(--text-dim);
+    display: block;
+}
+
+/* --- Modules (Common) --- */
+.module {
+    background: var(--bg-panel);
+    border: 1px solid var(--text-dim);
+    padding: 15px;
+    position: relative;
+    backdrop-filter: blur(5px);
+    margin-bottom: 20px;
+    transition: border-color 0.3s ease;
+    animation: module-breathe var(--heartbeat-speed) ease-in-out infinite;
+}
+
+.module:hover {
+    border-color: var(--accent-green);
+}
+
+.module-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.8rem;
+    margin-bottom: 15px;
+    color: var(--text-dim);
+    display: flex;
+    justify-content: space-between;
+}
+
+.module-title::after {
+    content: '⚡';
+    font-size: 0.6rem;
+}
+
+/* --- Organ Vitality --- */
+.organ-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.organ-item {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    font-size: 0.65rem;
+}
+
+.bar-container {
+    height: 6px;
+    background: rgba(0,0,0,0.5);
+    width: 100%;
+    border: 1px solid #222;
+    overflow: hidden;
+}
+
+.bar {
+    height: 100%;
+    transition: width 0.5s ease;
+}
+
+.fill-green { background: var(--accent-green); box-shadow: var(--glow-green); }
+.fill-yellow { background: var(--accent-yellow); box-shadow: 0 0 10px var(--accent-yellow); }
+.fill-red { background: var(--accent-red); box-shadow: var(--glow-red); }
+
+.organ-value {
+    text-align: right;
+    font-weight: 800;
+}
+
+.organ-value small {
+    color: var(--text-dim);
+    margin-left: 5px;
+}
+
+/* --- Mutation Matrix --- */
+.mutation-matrix {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.gene-cell {
+    aspect-ratio: 1;
+    border: 1px solid var(--text-dim);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.6rem;
+    color: var(--text-dim);
+    transition: all 0.3s ease;
+}
+
+.gene-cell.active {
+    background: rgba(0, 255, 170, 0.2);
+    border-color: var(--accent-green);
+    color: var(--accent-green);
+}
+
+.gene-cell.warning {
+    background: rgba(255, 204, 0, 0.2);
+    border-color: var(--accent-yellow);
+    color: var(--accent-yellow);
+}
+
+.gene-cell.critical {
+    background: rgba(255, 0, 85, 0.2);
+    border-color: var(--accent-red);
+    color: var(--accent-red);
+    animation: cell-pulse 0.5s infinite alternate;
+}
+
+@keyframes cell-pulse {
+    from { opacity: 0.6; }
+    to { opacity: 1; box-shadow: inset 0 0 10px var(--accent-red); }
+}
+
+/* --- Center Display & Wireframe --- */
+.center-display {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.body-wireframe-container {
+    position: relative;
+    width: 100%;
+    height: 70%;
+    display: flex;
+    justify-content: center;
+}
+
+#body-svg {
+    height: 100%;
+    filter: drop-shadow(0 0 10px rgba(0, 255, 170, 0.2));
+}
+
+.body-outline {
+    fill: none;
+    stroke: var(--text-dim);
+    stroke-width: 1.5;
+    stroke-dasharray: 5;
+    animation: dash-flow 20s linear infinite;
+}
+
+@keyframes dash-flow {
+    to { stroke-dashoffset: -100; }
+}
+
+.hotspot {
+    fill: var(--accent-green);
+    filter: url(#glow);
+    animation: pulse-node 2s infinite;
+}
+
+.heart-node { fill: var(--accent-red); animation-duration: 0.6s; }
+
+@keyframes pulse-node {
+    0% { r: 6; opacity: 0.8; }
+    50% { r: 10; opacity: 0.4; }
+    100% { r: 6; opacity: 0.8; }
+}
+
+.scan-line {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: var(--accent-green);
+    box-shadow: var(--glow-green);
+    opacity: 0.5;
+    animation: scan-move 4s linear infinite;
+}
+
+@keyframes scan-move {
+    0% { top: 0%; }
+    100% { top: 100%; }
+}
+
+/* --- EKG Monitor --- */
+.heartbeat-monitor {
+    width: 100%;
+    height: 120px;
+    border-top: 1px solid var(--text-dim);
+    position: relative;
+    padding: 10px;
+    background: linear-gradient(transparent, rgba(0, 255, 170, 0.05));
+}
+
+.bpm-label {
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    font-size: 1.2rem;
+    color: var(--accent-green);
+}
+
+/* --- Right Panel: Nano & Toxins --- */
+.nano-visualizer {
+    height: 150px;
+    background: #000;
+    border: 1px solid #222;
+    position: relative;
+    overflow: hidden;
+}
+
+#nano-canvas {
+    width: 100%;
+    height: 100%;
+}
+
+.nano-stats {
+    position: absolute;
+    bottom: 5px;
+    left: 5px;
+    font-size: 0.5rem;
+    color: var(--text-dim);
+}
+
+.stat-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.stat-row .val {
+    color: var(--accent-green);
+}
+
+.gauge-container {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.circular-gauge {
+    position: relative;
+    width: 80px;
+    height: 80px;
+}
+
+.gauge-bg {
+    fill: none;
+    stroke: #222;
+    stroke-width: 8;
+}
+
+.gauge-fill {
+    fill: none;
+    stroke: var(--accent-red);
+    stroke-width: 8;
+    stroke-linecap: round;
+    stroke-dasharray: 283;
+    stroke-dashoffset: 160;
+    transition: stroke-dashoffset 1s ease;
+    filter: drop-shadow(0 0 5px var(--accent-red));
+    transform: rotate(-90deg);
+    transform-origin: center;
+}
+
+.gauge-value {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-weight: 800;
+    font-size: 0.9rem;
+}
+
+.toxin-details {
+    flex: 1;
+    font-size: 0.6rem;
+}
+
+.detail-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 4px;
+}
+
+.high { color: var(--accent-red); }
+.med { color: var(--accent-yellow); }
+.low { color: var(--accent-green); }
+
+.link-bar {
+    height: 4px;
+    background: #222;
+    margin: 10px 0;
+}
+
+.link-fill {
+    height: 100%;
+    width: 98%;
+    background: var(--accent-purple);
+    box-shadow: 0 0 10px var(--accent-purple);
+}
+
+.link-metrics {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.5rem;
+    color: var(--text-dim);
+}
+
+/* --- Footer --- */
+.hud-footer {
+    grid-column: 1 / span 3;
+    background: rgba(255, 0, 85, 0.1);
+    border: 1px solid var(--accent-red);
+    display: flex;
+    align-items: center;
+    padding: 0 15px;
+}
+
+.alert-ticker {
+    display: flex;
+    width: 100%;
+    font-size: 0.7rem;
+    color: var(--accent-red);
+}
+
+.ticker-label {
+    font-weight: 800;
+    margin-right: 15px;
+    white-space: nowrap;
+}
+
+/* --- Global Animations --- */
+@keyframes module-breathe {
+    0%, 100% { transform: scale(1); opacity: 0.95; }
+    50% { transform: scale(1.01); opacity: 1; }
+}

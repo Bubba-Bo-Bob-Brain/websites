@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEXUS-7 Bridge Console | Interstellar Command</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Scanline Overlay -->
+    <div class="scanlines"></div>
+    
+    <!-- CRT Flicker Effect -->
+    <div class="crt-flicker"></div>
+    
+    <!-- Top Status Bar -->
+    <header class="bridge-header">
+        <div class="ship-identifier">
+            <div class="ship-logo">
+                <svg viewBox="0 0 100 60" class="logo-svg">
+                    <polygon points="50,5 95,55 5,55" fill="none" stroke="currentColor" stroke-width="2"/>
+                    <circle cx="50" cy="35" r="8" fill="none" stroke="currentColor" stroke-width="1.5"/>
+                    <line x1="50" y1="5" x2="50" y2="27" stroke="currentColor" stroke-width="1"/>
+                </svg>
+            </div>
+            <div class="ship-info">
+                <h1 class="ship-name">NEXUS-7</h1>
+                <div class="ship-class">INTERSTELLAR CRUISER</div>
+            </div>
+        </div>
+        
+        <div class="system-status">
+            <div class="status-item">
+                <span class="status-label">REACTOR</span>
+                <span class="status-value online">ONLINE</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">LIFE SUPPORT</span>
+                <span class="status-value online">NOMINAL</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">HULL INTEGRITY</span>
+                <span class="status-value" id="hull-integrity">98.7%</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">CREW STATUS</span>
+                <span class="status-value online">ALL PRESENT</span>
+            </div>
+        </div>
+        
+        <div class="time-display">
+            <div class="stardate" id="stardate">2847.156</div>
+            <div class="mission-time" id="mission-time">00:00:00</div>
+        </div>
+    </header>
+
+    <!-- Main Bridge Layout -->
+    <main class="bridge-main">
+        
+        <!-- Left Panel: Navigation -->
+        <section class="panel navigation-panel">
+            <div class="panel-header">
+                <h2 class="panel-title">NAVIGATION</h2>
+                <div class="panel-indicator active"></div>
+            </div>
+            
+            <div class="nav-display">
+                <div class="star-chart" id="star-chart">
+                    <canvas id="nav-canvas" width="280" height="200"></canvas>
+                </div>
+                
+                <div class="nav-data">
+                    <div class="nav-row">
+                        <span class="nav-label">COORDINATES</span>
+                        <span class="nav-value" id="coordinates">X: 847.2 Y: -129.4 Z: 4921.8</span>
+                    </div>
+                    <div class="nav-row">
+                        <span class="nav-label">VELOCITY</span>
+                        <span class="nav-value" id="velocity">WARP 4.2</span>
+                    </div>
+                    <div class="nav-row">
+                        <span class="nav-label">HEADING</span>
+                        <span class="nav-value" id="heading">127.8°</span>
+                    </div>
+                    <div class="nav-row">
+                        <span class="nav-label">DESTINATION</span>
+                        <span class="nav-value highlight">PROXIMA CENTAURI B</span>
+                    </div>
+                    <div class="nav-row">
+                        <span class="nav-label">ETA</span>
+                        <span class="nav-value" id="eta">4y 127d 14h</span>
+                    </div>
+                </div>
+                
+                <div class="nav-controls">
+                    <button class="nav-btn" data-action="plot">
+                        <span class="btn-icon">◈</span>
+                        PLOT COURSE
+                    </button>
+                    <button class="nav-btn" data-action="scan">
+                        <span class="btn-icon">◎</span>
+                        DEEP SCAN
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Center: Main Viewport -->
+        <section class="viewport-container">
+            <div class="viewport-frame">
+                <div class="viewport-corner top-left"></div>
+                <div class="viewport-corner top-right"></div>
+                <div class="viewport-corner bottom-left"></div>
+                <div class="viewport-corner bottom-right"></div>
+                
+                <div class="hud-overlay">
+                    <div class="hud-top">
+                        <div class="hud-element left">
+                            <span class="hud-label">SECTOR</span>
+                            <span class="hud-value">ALPHA-7</span>
+                        </div>
+                        <div class="hud-element center">
+                            <span class="hud-label">RANGE</span>
+                            <span class="hud-value" id="range">2.4 LY</span>
+                        </div>
+                        <div class="hud-element right">
+                            <span class="hud-label">SIGNAL</span>
+                            <span class="hud-value signal-strength">STRONG</span>
+                        </div>
+                    </div>
+                    
+                    <div class="hud-bottom">
+                        <div class="hud-element left">
+                            <span class="hud-label">SHIELDS</span>
+                            <span class="hud-value" id="shield-status">ACTIVE</span>
+                        </div>
+                        <div class="hud-element center">
+                            <div class="target-reticle" id="target-reticle">
+                                <div class="reticle-ring"></div>
+                                <div class="reticle-crosshair"></div>
+                                <div class="reticle-dot"></div>
+                            </div>
+                        </div>
+                        <div class="hud-element right">
+                            <span class="hud-label">WEAPONS</span>
+                            <span class="hud-value" id="weapons-status">STANDBY</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <canvas id="viewport-canvas" class="viewport-canvas"></canvas>
+            </div>
+        </section>
+
+        <!-- Right Panel: Systems -->
+        <section class="panel systems-panel">
+            <!-- Shields Panel -->
+            <div class="system-module shields-module">
+                <div class="panel-header">
+                    <h2 class="panel-title">SHIELDS</h2>
+                    <div class="panel-indicator active"></div>
+                </div>
+                
+                <div class="shield-display">
+                    <div class="shield-ring-container">
+                        <svg class="shield-ring-svg" viewBox="0 0 200 200">
+                            <circle class="shield-ring-bg" cx="100" cy="100" r="90" fill="none" stroke="rgba(0,255,255,0.1)" stroke-width="2"/>
+                            <circle class="shield-ring" cx="100" cy="100" r="90" fill="none" stroke="url(#shieldGradient)" stroke-width="3" stroke-dasharray="565" stroke-dashoffset="565" id="shield-circle"/>
+                            <defs>
+                                <linearGradient id="shieldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" stop-color="#00ffff"/>
+                                    <stop offset="100%" stop-color="#ff00ff"/>
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                        <div class="shield-percentage" id="shield-percent">87%</div>
+                    </div>
+                    
+                    <div class="shield-bars">
+                        <div class="shield-sector">
+                            <span class="sector-label">PORT</span>
+                            <div class="bar-container">
+                                <div class="bar-fill" id="shield-port" style="width: 92%"></div>
+                            </div>
+                        </div>
+                        <div class="shield-sector">
+                            <span class="sector-label">STARBOARD</span>
+                            <div class="bar-container">
+                                <div class="bar-fill" id="shield-starboard" style="width: 85%"></div>
+                            </div>
+                        </div>
+                        <div class="shield-sector">
+                            <span class="sector-label">FORE</span>
+                            <div class="bar-container">
+                                <div class="bar-fill" id="shield-fore" style="width: 78%"></div>
+                            </div>
+                        </div>
+                        <div class="shield-sector">
+                            <span class="sector-label">AFT</span>
+                            <div class="bar-container">
+                                <div class="bar-fill" id="shield-aft" style="width: 95%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="shield-controls">
+                        <button class="sys-btn" data-system="shields" data-action="boost">
+                            <span class="btn-glow"></span>
+                            BOOST
+                        </button>
+                        <button class="sys-btn" data-system="shields" data-action="redistribute">
+                            REDISTRIBUTE
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Weapons Panel -->
+            <div class="system-module weapons-module">
+                <div class="panel-header">
+                    <h2 class="panel-title">WEAPONS</h2>
+                    <div class="panel-indicator active"></div>
+                </div>
+                
+                <div class="weapons-display">
+                    <div class="weapon-status">
+                        <div class="weapon-bank">
+                            <div class="weapon-icon">◈</div>
+                            <div class="weapon-info">
+                                <span class="weapon-name">PHASER ARRAY</span>
+                                <span class="weapon-state ready">READY</span>
+                            </div>
+                            <div class="weapon-charge">
+                                <div class="charge-bar" id="phaser-charge"></div>
+                            </div>
+                        </div>
+                        <div class="weapon-bank">
+                            <div class="weapon-icon">◆</div>
+                            <div class="weapon-info">
+                                <span class="weapon-name">TORPEDO BAY</span>
+                                <span class="weapon-state loaded">LOADED</span>
+                            </div>
+                            <div class="weapon-count">
+                                <span class="count" id="torpedo-count">24</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="target-display">
+                        <div class="target-lock" id="weapon-target">
+                            <div class="lock-animation">
+                                <div class="lock-ring"></div>
+                                <div class="lock-crosshair"></div>
+                            </div>
+                            <div class="target-data">
+                                <span class="target-id">NO TARGET</span>
+                                <span class="target-range">---</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="weapon-controls">
+                        <button class="sys-btn danger" data-system="weapons" data-action="fire">
+                            FIRE
+                        </button>
+                        <button class="sys-btn" data-system="weapons" data-action="lock">
+                            LOCK TARGET
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Communications Panel -->
+            <div class="system-module comms-module">
+                <div class="panel-header">
+                    <h2 class="panel-title">COMMS</h2>
+                    <div class="panel-indicator active"></div>
+                </div>
+                
+                <div class="comms-display">
+                    <div class="frequency-display">
+                        <canvas id="comms-canvas" width="260" height="60"></canvas>
+                        <div class="freq-value">
+                            <span class="freq-label">FREQ</span>
+                            <span class="freq-number" id="freq-display">147.3 MHz</span>
+                        </div>
+                    </div>
+                    
+                    <div class="comms-log">
+                        <div class="log-entry incoming">
+                            <span class="log-time">14:32</span>
+                            <span class="log-source">DEEP SPACE NET</span>
+                            <span class="log-message">URGENT: ANOMALY DETECTED IN SECTOR 7G</span>
+                        </div>
+                        <div class="log-entry outgoing">
+                            <span class="log-time">14:28</span>
+                            <span class="log-source">NEXUS-7</span>
+                            <span class="log-message">ACKNOWLEDGED. INVESTIGATING.</span>
+                        </div>
+                        <div class="log-entry incoming">
+                            <span class="log-time">14:15</span>
+                            <span class="log-source">STARBASE ALPHA</span>
+                            <span class="log-message">PROCEED TO WAYPOINT DELTA</span>
+                        </div>
+                    </div>
+                    
+                    <div class="comms-controls">
+                        <button class="sys-btn" data-system="comms" data-action="hail">
+                            OPEN CHANNEL
+                        </button>
+                        <button class="sys-btn" data-system="comms" data-action="scan">
+                            SCAN FREQ
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Bottom Control Bar -->
+    <footer class="bridge-footer">
+        <div class="control-group">
+            <button class="control-btn primary" data-action="warp">
+                <span class="btn-icon">▶</span>
+                ENGAGE WARP
+            </button>
+            <button class="control-btn" data-action="impulse">
+                IMPULSE
+            </button>
+            <button class="control-btn" data-action="stop">
+                <span class="btn-icon">◼</span>
+                ALL STOP
+            </button>
+        </div>
+        
+        <div class="control-group">
+            <button class="control-btn" data-action="red-alert">
+                <span class="alert-indicator"></span>
+                RED ALERT
+            </button>
+            <button class="control-btn" data-action="yellow-alert">
+                YELLOW ALERT
+            </button>
+            <button class="control-btn" data-action="green-alert">
+                GREEN ALERT
+            </button>
+        </div>
+        
+        <div class="power-distribution">
+            <div class="power-bar">
+                <span class="power-label">ENGINES</span>
+                <div class="power-slider">
+                    <input type="range" min="0" max="100" value="75" class="power-input" data-system="engines">
+                </div>
+                <span class="power-value" id="engines-power">75%</span>
+            </div>
+            <div class="power-bar">
+                <span class="power-label">WEAPONS</span>
+                <div class="power-slider">
+                    <input type="range" min="0" max="100" value="60" class="power-input" data-system="weapons">
+                </div>
+                <span class="power-value" id="weapons-power">60%</span>
+            </div>
+            <div class="power-bar">
+                <span class="power-label">SHIELDS</span>
+                <div class="power-slider">
+                    <input type="range" min="0" max="100" value="90" class="power-input" data-system="shields">
+                </div>
+                <span class="power-value" id="shields-power">90%</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Alert Overlay -->
+    <div class="alert-overlay" id="alert-overlay">
+        <div class="alert-content">
+            <div class="alert-icon">⚠</div>
+            <div class="alert-message">RED ALERT</div>
+            <div class="alert-sub">BATTLE STATIONS</div>
+        </div>
+    </div>
+
+    <!-- Audio Context for Synth Sounds -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+    <script src="scripts.js"></script>
+</body>
+</html>

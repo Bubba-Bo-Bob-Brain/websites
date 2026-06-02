@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chloris — The Living Encyclopedia</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,600;0,700;0,800;1,400;1,600&family=Vollkorn:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Photosynthesis Loading Screen -->
+    <div id="loading-screen" class="loading-screen">
+        <div class="loading-container">
+            <svg class="loading-leaf" viewBox="0 0 120 160" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <linearGradient id="leafGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" class="leaf-gradient-start" style="stop-color: #7cb342" />
+                        <stop offset="100%" class="leaf-gradient-end" style="stop-color: #2e7d32" />
+                    </linearGradient>
+                </defs>
+                <path class="leaf-shape" d="M60 140 C60 140, 10 100, 15 50 C20 10, 60 5, 60 5 C60 5, 100 10, 105 50 C110 100, 60 140, 60 140Z" fill="url(#leafGrad)" />
+                <path class="leaf-vein leaf-vein-center" d="M60 135 L60 15" stroke="#1b5e20" stroke-width="1.5" fill="none" />
+                <path class="leaf-vein leaf-vein-left-1" d="M60 110 L35 80" stroke="#1b5e20" stroke-width="1" fill="none" />
+                <path class="leaf-vein leaf-vein-left-2" d="M60 90 L28 55" stroke="#1b5e20" stroke-width="1" fill="none" />
+                <path class="leaf-vein leaf-vein-left-3" d="M60 70 L30 35" stroke="#1b5e20" stroke-width="1" fill="none" />
+                <path class="leaf-vein leaf-vein-right-1" d="M60 110 L85 80" stroke="#1b5e20" stroke-width="1" fill="none" />
+                <path class="leaf-vein leaf-vein-right-2" d="M60 90 L92 55" stroke="#1b5e20" stroke-width="1" fill="none" />
+                <path class="leaf-vein leaf-vein-right-3" d="M60 70 L90 35" stroke="#1b5e20" stroke-width="1" fill="none" />
+            </svg>
+            <div class="loading-text">
+                <span class="loading-word loading-word-1">Absorbing</span>
+                <span class="loading-word loading-word-2">Light</span>
+                <span class="loading-divider"></span>
+                <span class="loading-word loading-word-3">Growing</span>
+                <span class="loading-word loading-word-4">Knowledge</span>
+            </div>
+            <div class="loading-progress">
+                <div class="loading-progress-bar"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ambient Particle Canvas -->
+    <canvas id="particle-canvas" class="particle-canvas"></canvas>
+
+    <!-- Main Application -->
+    <div id="app" class="app-container">
+        
+        <!-- Header -->
+        <header class="site-header">
+            <div class="header-left">
+                <button class="menu-toggle" aria-label="Toggle navigation">
+                    <span class="menu-line"></span>
+                    <span class="menu-line"></span>
+                    <span class="menu-line"></span>
+                </button>
+                <a href="#" class="site-logo">
+                    <svg class="logo-leaf" viewBox="0 0 40 50" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M20 45 C20 45, 5 35, 8 20 C10 8, 20 5, 20 5 C20 5, 30 8, 32 20 C35 35, 20 45, 20 45Z" fill="currentColor" />
+                    </svg>
+                    <span class="logo-text">Chloris</span>
+                </a>
+            </div>
+            
+            <div class="header-center">
+                <div class="search-container">
+                    <svg class="search-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2" fill="none" />
+                        <line x1="16.5" y1="16.5" x2="21" y2="21" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                    </svg>
+                    <input type="text" class="search-input" placeholder="Search the living archive..." id="search-input" />
+                    <div class="search-suggestions" id="search-suggestions"></div>
+                </div>
+            </div>
+            
+            <div class="header-right">
+                <div class="sunlight-control" title="Adjust the light">
+                    <label class="sunlight-label" for="sunlight-slider">
+                        <svg class="sun-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="12" cy="12" r="5" fill="currentColor" />
+                            <g class="sun-rays">
+                                <line x1="12" y1="1" x2="12" y2="4" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                                <line x1="12" y1="20" x2="12" y2="23" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                                <line x1="1" y1="12" x2="4" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                                <line x1="20" y1="12" x2="23" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                                <line x1="4.22" y1="4.22" x2="6.34" y2="6.34" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                                <line x1="17.66" y1="17.66" x2="19.78" y2="19.78" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                                <line x1="4.22" y1="19.78" x2="6.34" y2="17.66" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                                <line x1="17.66" y1="6.34" x2="19.78" y2="4.22" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                            </g>
+                        </svg>
+                    </label>
+                    <input type="range" class="sunlight-slider" id="sunlight-slider" min="0" max="100" value="65" />
+                    <span class="sunlight-value" id="sunlight-value">65%</span>
+                </div>
+                
+                <button class="contribute-btn" aria-label="Contribute">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 4 L12 14 M7 9 L17 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                    </svg>
+                    <span>Contribute</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-inner">
+                <div class="sidebar-header">
+                    <h3 class="sidebar-title">The Canopy</h3>
+                    <span class="sidebar-subtitle">Navigate by branch</span>
+                </div>
+                
+                <nav class="sidebar-nav">
+                    <!-- Vine Navigation Structure -->
+                    <ul class="vine-nav">
+                        <li class="vine-branch vine-branch--main vine-branch--active" data-category="featured">
+                            <a href="#featured" class="vine-link">
+                                <span class="vine-leaf vine-leaf--active"></span>
+                                <span class="vine-label">Featured Article</span>
+                            </a>
+                        </li>
+                        <li class="vine-branch" data-category="technologies">
+                            <a href="#technologies" class="vine-link">
+                                <span class="vine-leaf"></span>
+                                <span class="vine-label">Sustainable Technologies</span>
+                            </a>
+                            <ul class="vine-sub-branch">
+                                <li><a href="#bio-solar" class="vine-sub-link">Bio-Solar Integration</a></li>
+                                <li><a href="#mycelium-networks" class="vine-sub-link">Mycelium Networks</a></li>
+                                <li><a href="#water-harvesting" class="vine-sub-link">Atmospheric Water Harvesting</a></li>
+                                <li><a href="#kinetic-paths" class="vine-sub-link">Kinetic Pathways</a></li>
+                            </ul>
+                        </li>
+                        <li class="vine-branch" data-category="communities">
+                            <a href="#communities" class="vine-link">
+                                <span class="vine-leaf"></span>
+                                <span class="vine-label">Cooperative Communities</span>
+                            </a>
+                            <ul class="vine-sub-branch">
+                                <li><a href="#the-mycorrhizal" class="vine-sub-link">The Mycorrhizal Collective</a></li>
+                                <li><a href="#canopy-villages" class="vine-sub-link">Canopy Villages</a></li>
+                                <li><a href="#river-councils" class="vine-sub-link">River Basin Councils</a></li>
+                            </ul>
+                        </li>
+                        <li class="vine-branch" data-category="ecosystems">
+                            <a href="#ecosystems" class="vine-link">
+                                <span class="vine-leaf"></span>
+                                <span class="vine-label">Rewilded Ecosystems</span>
+                            </a>
+                            <ul class="vine-sub-branch">
+                                <li><a href="#the-great-rewilding" class="vine-sub-link">The Great Rewilding</a></li>
+                                <li><a href="#coral-resurgence" class="vine-sub-link">Coral Resurgence</a></li>
+                                <li><a href="#urban-forests" class="vine-sub-link">Urban Forest Corridors</a></li>
+                            </ul>
+                        </li>
+                        <li class="vine-branch" data-category="seedbank">
+                            <a href="#seedbank" class="vine-link">
+                                <span class="vine-leaf"></span>
+                                <span class="vine-label">Seed Bank Index</span>
+                            </a>
+                        </li>
+                        <li class="vine-branch" data-category="calendar">
+                            <a href="#calendar" class="vine-link">
+                                <span class="vine-leaf"></span>
+                                <span class="vine-label">Seasonal Almanac</span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+                
+                <div class="sidebar-footer">
+                    <div class="growth-stat">
+                        <span class="growth-stat-label">Articles grown</span>
+                        <span class="growth-stat-value" id="article-count">2,847</span>
+                    </div>
+                    <div class="growth-stat">
+                        <span class="growth-stat-label">Contributors</span>
+                        <span class="growth-stat-value">14,203</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Decorative vine elements -->
+            <div class="sidebar-vine sidebar-vine--left"></div>
+            <div class="sidebar-vine sidebar-vine--right"></div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content" id="main-content">
+            
+            <!-- Featured Article Hero -->
+            <section class="featured-article" id="featured">
+                <div class="featured-hero">
+                    <div class="featured-hero-bg">
+                        <div class="hero-texture"></div>
+                        <div class="hero-gradient"></div>
+                    </div>
+                    <div class="featured-hero-content">
+                        <span class="featured-badge">
+                            <span class="badge-leaf"></span>
+                            Featured Entry
+                        </span>
+                        <h1 class="featured-title">Bio-Solar Integration</h1>
+                        <p class="featured-subtitle">How photosynthetic organisms and photovoltaic systems were harmonized to create the first truly symbiotic energy infrastructure</p>
+                        <div class="featured-meta">
+                            <span class="meta-item">
+                                <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" fill="currentColor"/></svg>
+                                Verified by Council
+                            </span>
+                            <span class="meta-item">
+                                <svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z" fill="currentColor"/></svg>
+                                Updated 3 cycles ago
+                            </span>
+                            <span class="meta-item">
+                                <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" fill="currentColor"/></svg>
+                                47 contributors
+                            </span>
+                        </div>
+                        <a href="#article-bio-solar" class="read-more-btn">
+                            <span>Read full entry</span>
+                            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z" fill="currentColor" />
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Article Grid -->
+            <section class="article-grid-section" id="technologies">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        <span class="section-icon">
+                            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </span>
+                        Sustainable Technologies
+                    </h2>
+                    <p class="section-description">Documented systems and innovations that work with nature, not against it.</p>
+                </div>
+                
+                <div class="article-grid">
+                    <!-- Article Card 1 -->
+                    <article class="article-card" data-article="bio-solar">
+                        <div class="card-image">
+                            <div class="card-image-placeholder card-image--green"></div>
+                            <span class="card-category-tag">Energy</span>
+                        </div>
+                        <div class="card-content">
+                            <h3 class="card-title">Bio-Solar Integration</h3>
+                            <p class="card-excerpt">The harmonization of photosynthetic organisms with photovoltaic systems, creating living energy infrastructure that grows and repairs itself.</p>
+                            <div class="card-footer">
+                                <span class="card-read-time">12 min read</span>
+                                <span class="card-updates">3 updates this cycle</span>
+                            </div>
+                        </div>
+                    </article>
+
+                    <!-- Article Card 2 -->
+                    <article class="article-card" data-article="mycelium-networks">
+                        <div class="card-image">
+                            <div class="card-image-placeholder card-image--brown"></div>
+                            <span class="card-category-tag">Networks</span>
+                        </div>
+                        <div class="card-content">
+                            <h3 class="card-title">Mycelium Communication Networks</h3>
+                            <p class="card-excerpt">How fungal networks were mapped and integrated into human communication systems, creating the Wood Wide Web Protocol.</p>
+                            <div class="card-footer">
+                                <span class="card-read-time">18 min read</span>
+                                <span class="card-updates">7 updates this cycle</span>
+                            </div>
+                        </div>
+                    </article>
+
+                    <!-- Article Card 3 -->
+                    <article class="article-card" data-article="water-harvesting">
+                        <div class="card-image">
+                            <div class="card-image-placeholder card-image--blue"></div>
+                            <span class="card-category-tag">Water</span>
+                        </div>
+                        <div class="card-content">
+                            <h3 class="card-title">Atmospheric Water Harvesting</h3>
+                            <p class="card-excerpt">Biomimetic structures inspired by desert beetles and bromeliads that passively collect and purify atmospheric moisture.</p>
+                            <div class="card-footer">
+                                <span class="card-read-time">9 min read</span>
+                                <span class="card-updates">1 update this cycle</span>
+                            </div>
+                        </div>
+                    </article>
+
+                    <!-- Article Card 4 -->
+                    <article class="article-card" data-article="kinetic-paths">
+                        <div class="card-image">
+                            <div class="card-image-placeholder card-image--amber"></div>
+                            <span class="card-category-tag">Infrastructure</span>
+                        </div>
+                        <div class="card-content">
+                            <h3 class="card-title">Kinetic Pathway Systems</h3>
+                            <p class="card-excerpt">Piezoelectric walkways and roads that convert foot traffic and vehicle movement into distributed community power.</p>
+                            <div class="card-footer">
+                                <span class="card-read-time">14 min read</span>
+                                <span class="card-updates">5 updates this cycle</span>
+                            </div>
+                        </div>
+                    </article>
+
+                    <!-- Article Card 5 -->
+                    <article class="article-card" data-article="bio-luminescence">
+                        <div class="card-image">
+                            <div class="card-image-placeholder card-image--teal"></div>
+                            <span class="card-category-tag">Lighting</span>
+                        </div>
+                        <div class="card-content">
+                            <h3 class="card-title">Bioluminescent Urban Lighting</h3>
+                            <p class="card-excerpt">Genetically enhanced organisms providing natural, energy-free illumination for pathways, buildings, and public spaces.</p>
+                            <div class="card-footer">
+                                <span class="card-read-time">11 min read</span>
+                                <span class="card-updates">2 updates this cycle</span>
+                            </div>
+                        </div>
+                    </article>
+
+                    <!-- Article Card 6 -->
+                    <article class="article-card" data-article="living-materials">
+                        <div class="card-image">
+                            <div class="card-image-placeholder card-image--gold"></div>
+                            <span class="card-category-tag">Materials</span>
+                        </div>
+                        <div class="card-content">
+                            <h3 class="card-title">Living Building Materials</h3>
+                            <p class="card-excerpt">Self-healing concrete infused with bacteria, mycelium insulation, and bamboo-steel composites reshaping architecture.</p>
+                            <div class="card-footer">
+                                <span class="card-read-time">16 min read</span>
+                                <span class="card-updates">4 updates this cycle</span>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+            </section>
+
+            <!-- Detailed Article View (Hidden by default, shown via JS) -->
+            <section class="article-detail" id="article-detail">
+                <div class="article-detail-inner">
+                    <button class="article-back-btn" id="article-back-btn">
+                        <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" fill="currentColor"/></svg>
+                        <span>Back to articles</span>
+                    </button>
+                    
+                    <div class="article-detail-header">
+                        <span class="article-detail-category">Sustainable Technologies</span>
+                        <h1 class="article-detail-title">Bio-Solar Integration</h1>
+                        <p class="article-detail-intro">The harmonization of photosynthetic organisms with photovoltaic systems represents one of the most significant breakthroughs in the transition to truly sustainable energy infrastructure.</p>
+                    </div>
+
+                    <div class="article-detail-body">
+                        <div class="article-main-text">
+                            <h2>Origins and Development</h2>
+                            <p>The concept of bio-solar integration emerged from the observation that natural photosynthetic systems operate at remarkable efficiencies when working in symbiotic relationships. Early researchers at the <strong>Neo-Kew Gardens Institute</strong> discovered that certain algae species, when cultivated in transparent layers over traditional silicon panels, could filter harmful UV radiation while allowing optimal wavelengths through—actually <em>increasing</em> panel efficiency by 23% while simultaneously producing biomass for biogas generation.</p>
+                            
+                            <h2>The Symbiosis Protocol</h2>
+                            <p>By the 2040s, the <strong>Symbiosis Protocol</strong> had been established—a set of standards governing the cultivation, integration, and maintenance of living energy systems. Key principles include:</p>
+                            
+                            <ul class="principle-list">
+                                <li>
+                                    <span class="principle-icon">🌱</span>
+                                    <div class="principle-content">
+                                        <strong>Reciprocal Benefit</strong>
+                                        <span>Both biological and technological components must demonstrably benefit from the integration.</span>
+                                    </div>
+                                </li>
+                                <li>
+                                    <span class="principle-icon">♻️</span>
+                                    <div class="principle-content">
+                                        <strong>Closed-Loop Systems</strong>
+                                        <span>Waste products from one component become inputs for another, eliminating external dependencies.</span>
+                                    </div>
+                                </li>
+                                <li>
+                                    <span class="principle-icon">🧬</span>
+                                    <div class="principle-content">
+                                        <strong>Genetic Stewardship</strong>
+                                        <span>All modified organisms must be maintained with open-source genetic libraries and community oversight.</span>
+                                    </div>
+                                </li>
+                            </ul>
+
+                            <h2>Implementation Patterns</h2>
+                            <p>Today, bio-solar installations take several forms, each adapted to local conditions and community needs. The most common patterns include <strong>Canopy Arrays</strong> (elevated installations over agricultural land providing partial shade), <strong>Façade Gardens</strong> (vertical installations on building exteriors), and <strong>Aquatic Mats</strong> (floating installations on reservoirs that reduce evaporation while generating power).</p>
+
+                            <blockquote class="article-quote">
+                                "We stopped asking how to extract energy from nature, and started asking how to grow it together. That shift in perspective changed everything."
+                                <cite>— Dr. Amara Osei, Neo-Kew Gardens Institute, 2041</cite>
+                            </blockquote>
+
+                            <h2>Global Impact</h2>
+                            <p>As of the current cycle, bio-solar systems provide approximately 34% of global electricity needs, with the highest concentrations in the Equatorial Belt communities where year-round sunlight and humidity create optimal growing conditions. The technology has proven particularly transformative in regions previously dependent on imported fossil fuels.</p>
+                        </div>
+
+                        <!-- Wiki Infobox -->
+                        <aside class="wiki-infobox">
+                            <div class="infobox-texture"></div>
+                            <div class="infobox-header">
+                                <h3 class="infobox-title">Bio-Solar Integration</h3>
+                                <span class="infobox-type">Technology Profile</span>
+                            </div>
+                            <div class="infobox-image">
+                                <div class="infobox-image-placeholder"></div>
+                                <span class="infobox-caption">Typical Canopy Array installation, Equatorial Belt Region 7</span>
+                            </div>
+                            <table class="infobox-table">
+                                <tr>
+                                    <th>Classification</th>
+                                    <td>Hybrid Bio-Photovoltaic System</td>
+                                </tr>
+                                <tr>
+                                    <th>Efficiency Range</th>
+                                    <td>28–42% (combined)</td>
+                                </tr>
+                                <tr>
+                                    <th>Primary Organisms</th>
+                                    <td><em>Chlorella symbiotica</em>, <em>Spirulina panelensis</em></td>
+                                </tr>
+                                <tr>
+                                    <th>First Deployment</th>
+                                    <td>2034, Neo-Kew Gardens</td>
+                                </tr>
+                                <tr>
+                                    <th>Global Coverage</th>
+                                    <td>~2.4 million km²</td>
+                                </tr>
+                                <tr>
+                                    <th>Energy Contribution</th>
+                                    <td>34% of global electricity</td>
+                                </tr>
+                                <tr>
+                                    <th>Maintenance Cycle</th>
+                                    <td>Biological: continuous<br>Technical: quarterly</td>
+                                </tr>
+                                <tr>
+                                    <th>Associated Protocols</th>
+                                    <td><a href="#symbiosis">Symbiosis Protocol v4.2</a></td>
+                                </tr>
+                                <tr>
+                                    <th>Open Source</th>
+                                    <td>
+                                        <span class="open-source-yes">
+                                            <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" fill="currentColor"/></svg>
+                                            Fully open
+                                        </span>
+                                    </td>
+                                </tr>
+                            </table>
+                            <div class="infobox-cross-ref">
+                                <h4>See Also</h4>
+                                <ul>
+                                    <li><a href="#mycelium-networks">Mycelium Communication Networks</a></li>
+                                    <li><a href="#bio-luminescence">Bioluminescent Urban Lighting</a></li>
+                                    <li><a href="#canopy-villages">Canopy Villages</a></li>
+                                </ul>
+                            </div>
+                        </aside>
+                    </div>
+
+                    <!-- Contribution Section -->
+                    <div class="article-contribution">
+                        <h3>Help this article grow</h3>
+                        <p>This entry has been cultivated by 47 contributors. Your knowledge can help it thrive.</p>
+                        <div class="contribution-actions">
+                            <button class="contribute-action-btn">
+                                <svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" fill="currentColor"/></svg>
+                                Suggest an Edit
+                            </button>
+                            <button class="contribute-action-btn">
+                                <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" fill="currentColor"/></svg>
+                                Add a Section
+                            </button>
+                            <button class="contribute-action-btn">
+                                <svg viewBox="0 0 24 24"><path d="M21.99 4c0-1.1-.89-2-1.99-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14l4 4-.01-18z" fill="currentColor"/></svg>
+                                Start Discussion
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Communities Section -->
+            <section class="communities-section" id="communities">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        <span class="section-icon">
+                            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" fill="currentColor"/>
+                            </svg>
+                        </span>
+                        Cooperative Communities
+                    </h2>
+                    <p class="section-description">Living models of human organization in harmony with ecological systems.</p>
+                </div>
+
+                <div class="community-cards">
+                    <article class="community-card">
+                        <div class="community-card-header">
+                            <span class="community-card-icon">🍄</span>
+                            <h3 class="community-card-title">The Mycorrhizal Collective</h3>
+                        </div>
+                        <p class="community-card-desc">A networked community of 12,000 residents organized using mycelial network principles—decentralized, resilient, and nutrient-sharing.</p>
+                        <div class="community-card-stats">
+                            <span class="stat"><strong>12,000</strong> residents</span>
+                            <span class="stat"><strong>94%</strong> self-sufficient</span>
+                            <span class="stat"><strong>Est.</strong> 2038</span>
+                        </div>
+                        <a href="#the-mycorrhizal" class="community-card-link">Read full profile →</a>
+                    </article>
+
+                    <article class="community-card">
+                        <div class="community-card-header">
+                            <span class="community-card-icon">🌳</span>
+                            <h3 class="community-card-title">Canopy Villages</h3>
+                        </div>
+                        <p class="community-card-desc">Elevated living structures integrated into restored forest canopies, minimizing ground disturbance while maximizing community connection.</p>
+                        <div class="community-card-stats">
+                            <span class="stat"><strong>47</strong> villages</span>
+                            <span class="stat"><strong>8,200</strong> residents</span>
+                            <span class="stat"><strong>Est.</strong> 2041</span>
+                        </div>
+                        <a href="#canopy-villages" class="community-card-link">Read full profile →</a>
+                    </article>
+
+                    <article class="community-card">
+                        <div class="community-card-header">
+                            <span class="community-card-icon">🌊</span>
+                            <h3 class="community-card-title">River Basin Councils</h3>
+                        </div>
+                        <p class="community-card-desc">Watershed-based governance bodies managing water resources, riparian restoration, and floodplain agriculture across entire river systems.</p>
+                        <div class="community-card-stats">
+                            <span class="stat"><strong>23</strong> councils</span>
+                            <span class="stat"><strong>156</strong> watersheds</span>
+                            <span class="stat"><strong>Est.</strong> 2036</span>
+                        </div>
+                        <a href="#river-councils" class="community-card-link">Read full profile →</a>
+                    </article>
+                </div>
+            </section>
+
+            <!-- Rewilded Ecosystems -->
+            <section class="ecosystems-section" id="ecosystems">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        <span class="section-icon">
+                            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M17 8C8 10 5.9 16.17 3.82 21.34l1.89.66L7 18h4l-1 3h2l2-5 3 2 2-4c-1-1-2-2-2-6z" fill="currentColor"/>
+                            </svg>
+                        </span>
+                        Rewilded Ecosystems
+                    </h2>
+                    <p class="section-description">Documenting the return of wild nature to landscapes once dominated by extraction.</p>
+                </div>
+
+                <div class="ecosystem-timeline">
+                    <div class="timeline-entry">
+                        <div class="timeline-marker"></div>
+                        <div class="timeline-content">
+                            <span class="timeline-date">Cycle 2032</span>
+                            <h3 class="timeline-title">The Great Rewilding Begins</h3>
+                            <p class="timeline-desc">The coordinated removal of 400+ dams across former industrial nations, allowing rivers to reclaim their natural courses and spawning grounds.</p>
+                        </div>
+                    </div>
+                    <div class="timeline-entry">
+                        <div class="timeline-marker"></div>
+                        <div class="timeline-content">
+                            <span class="timeline-date">Cycle 2035</span>
+                            <h3 class="timeline-title">Coral Resurgence</h3>
+                            <p class="timeline-desc">Heat-resistant coral strains, developed through assisted evolution, begin recolonizing bleached reef systems across the Indo-Pacific.</p>
+                        </div>
+                    </div>
+                    <div class="timeline-entry">
+                        <div class="timeline-marker"></div>
+                        <div class="timeline-content">
+                            <span class="timeline-date">Cycle 2039</span>
+                            <h3 class="timeline-title">Urban Forest Corridors</h3>
+                            <p class="timeline-desc">Connected green corridors link previously isolated urban parks, allowing wildlife migration through major metropolitan areas for the first time in centuries.</p>
+                        </div>
+                    </div>
+                    <div class="timeline-entry">
+                        <div class="timeline-marker"></div>
+                        <div class="timeline-content">
+                            <span class="timeline-date">Cycle 2044</span>
+                            <h3 class="timeline-title">The Return of the Megafauna</h3>
+                            <p class="timeline-desc">Pleistocene Park-style rewilding projects report stable populations of restored megafauna across three continents.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Seed Bank Cross-Reference Index -->
+            <section class="seedbank-section" id="seedbank">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        <span class="section-icon">
+                            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M6 2c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2H6zm0 2h12v16H6V4zm2 2v2h8V6H8zm0 4v2h8v-2H8zm0 4v2h5v-2H8z" fill="currentColor"/>
+                            </svg>
+                        </span>
+                        Seed Bank Cross-Reference Index
+                    </h2>
+                    <p class="section-description">Interconnected catalog of preserved species, their relationships, and cultivation knowledge.</p>
+                </div>
+
+                <div class="seedbank-index">
+                    <div class="seedbank-filter">
+                        <button class="filter-btn filter-btn--active" data-filter="all">All Species</button>
+                        <button class="filter-btn" data-filter="energy">Energy Crops</button>
+                        <button class="filter-btn" data-filter="food">Food Systems</button>
+                        <button class="filter-btn" data-filter="medicine">Medicinal</button>
+                        <button class="filter-btn" data-filter="structural">Structural</button>
+                        <button class="filter-btn" data-filter="remediation">Remediation</button>
+                    </div>
+
+                    <div class="seedbank-grid" id="seedbank-grid">
+                        <div class="seed-card" data-category="energy">
+                            <div class="seed-card-icon">🌾</div>
+                            <h4 class="seed-card-name"><em>Helianthus solaris</em></h4>
+                            <span class="seed-card-common">Solar Sunflower</span>
+                            <p class="seed-card-desc">Engineered sunflower variant with enhanced light-tracking and oil production. Primary feedstock for biofuel refineries.</p>
+                            <div class="seed-card-tags">
+                                <span class="seed-tag seed-tag--energy">Energy</span>
+                                <span class="seed-tag seed-tag--open">Open Source</span>
+                            </div>
+                            <div class="seed-card-refs">
+                                <span>Related: <a href="#bio-solar">Bio-Solar</a></span>
+                            </div>
+                        </div>
+
+                        <div class="seed-card" data-category="structural">
+                            <div class="seed-card-icon">🎋</div>
+                            <h4 class="seed-card-name"><em>Bambusa architecta</em></h4>
+                            <span class="seed-card-common">Architect's Bamboo</span>
+                            <p class="seed-card-desc">Rapidly growing bamboo with steel-comparable tensile strength. Foundation of living building materials industry.</p>
+                            <div class="seed-card-tags">
+                                <span class="seed-tag seed-tag--structural">Structural</span>
+                                <span class="seed-tag seed-tag--open">Open Source</span>
+                            </div>
+                            <div class="seed-card-refs">
+                                <span>Related: <a href="#living-materials">Living Materials</a></span>
+                            </div>
+                        </div>
+
+                        <div class="seed-card" data-category="remediation">
+                            <div class="seed-card-icon">🌿</div>
+                            <h4 class="seed-card-name"><em>Brassica purifica</em></h4>
+                            <span class="seed-card-common">Purification Mustard</span>
+                            <p class="seed-card-desc">Hyperaccumulator plant that extracts heavy metals from contaminated soils. Used in post-industrial site remediation.</p>
+                            <div class="seed-card-tags">
+                                <span class="seed-tag seed-tag--remediation">Remediation</span>
+                                <span class="seed-tag seed-tag--open">Open Source</span>
+                            </div>
+                            <div class="seed-card-refs">
+                                <span>Related: <a href="#great-rewilding">Great Rewilding</a></span>
+                            </div>
+                        </div>
+
+                        <div class="seed-card" data-category="medicine">
+                            <div class="seed-card-icon">🌸</div>
+                            <h4 class="seed-card-name"><em>Digitalis symbiotica</em></h4>
+                            <span class="seed-card-common">Symbiotic Foxglove</span>
+                            <p class="seed-card-desc">Modified foxglove producing stabilized cardiac compounds. Cultivated in community medicine gardens worldwide.</p>
+                            <div class="seed-card-tags">
+                                <span class="seed-tag seed-tag--medicine">Medicinal</span>
+                                <span class="seed-tag seed-tag--regulated">Community Regulated</span>
+                            </div>
+                            <div class="seed-card-refs">
+                                <span>Related: <a href="#mycorrhizal">Mycorrhizal Collective</a></span>
+                            </div>
+                        </div>
+
+                        <div class="seed-card" data-category="food">
+                            <div class="seed-card-icon">🌽</div>
+                            <h4 class="seed-card-name"><em>Zea perennis</em></h4>
+                            <span class="seed-card-common">Perennial Maize</span>
+                            <p class="seed-card-desc">Perennial grain crop eliminating the need for annual replanting. Deep root systems prevent erosion and sequester carbon.</p>
+                            <div class="seed-card-tags">
+                                <span class="seed-tag seed-tag--food">Food</span>
+                                <span class="seed-tag seed-tag--open">Open Source</span>
+                            </div>
+                            <div class="seed-card-refs">
+                                <span>Related: <a href="#river-councils">River Councils</a></span>
+                            </div>
+                        </div>
+
+                        <div class="seed-card" data-category="energy">
+                            <div class="seed-card-icon">🍃</div>
+                            <h4 class="seed-card-name"><em>Chlorella symbiotica</em></h4>
+                            <span class="seed-card-common">Symbiotic Chlorella</span>
+                            <p class="seed-card-desc">Algal strain optimized for bio-solar integration. Filters UV while producing harvestable biomass.</p>
+                            <div class="seed-card-tags">
+                                <span class="seed-tag seed-tag--energy">Energy</span>
+                                <span class="seed-tag seed-tag--open">Open Source</span>
+                            </div>
+                            <div class="seed-card-refs">
+                                <span>Related: <a href="#bio-solar">Bio-Solar</a></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Seasonal Almanac Teaser -->
+            <section class="almanac-section" id="calendar">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        <span class="section-icon">
+                            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM9 10H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2z" fill="currentColor"/>
+                            </svg>
+                        </span>
+                        Seasonal Almanac
+                    </h2>
+                    <p class="section-description">Living calendar of planting, harvesting, and community events aligned with ecological rhythms.</p>
+                </div>
+
+                <div class="almanac-grid">
+                    <div class="almanac-card almanac-card--spring">
+                        <div class="almanac-season-icon">🌱</div>
+                        <h3 class="almanac-season">Awakening</h3>
+                        <span class="almanac-period">Cycles 1–13</span>
+                        <ul class="almanac-events">
+                            <li>Seed exchange festivals</li>
+                            <li>Soil preparation ceremonies</li>
+                            <li>Spring mycelium inoculation</li>
+                            <li>Waterway clearing</li>
+                        </ul>
+                    </div>
+                    <div class="almanac-card almanac-card--summer">
+                        <div class="almanac-season-icon">☀️</div>
+                        <h3 class="almanac-season">Flourishing</h3>
+                        <span class="almanac-period">Cycles 14–26</span>
+                        <ul class="almanac-events">
+                            <li>Canopy maintenance</li>
+                            <li>Bio-solar peak output</li>
+                            <li>Community harvest rotations</li>
+                            <li>River spawning monitoring</li>
+                        </ul>
+                    </div>
+                    <div class="almanac-card almanac-card--autumn">
+                        <div class="almanac-season-icon">🍂</div>
+                        <h3 class="almanac-season">Gathering</h3>
+                        <span class="almanac-period">Cycles 27–39</span>
+                        <ul class="almanac-events">
+                            <li>Seed banking and storage</li>
+                            <li>Compost system renewal</li>
+                            <li>Knowledge sharing gatherings</li>
+                            <li>Infrastructure assessment</li>
+                        </ul>
+                    </div>
+                    <div class="almanac-card almanac-card--winter">
+                        <div class="almanac-season-icon">❄️</div>
+                        <h3 class="almanac-season">Resting</h3>
+                        <span class="almanac-period">Cycles 40–52</span>
+                        <ul class="almanac-events">
+                            <li>Tool making and repair</li>
+                            <li>Research and documentation</li>
+                            <li>Community planning councils</li>
+                            <li>Indoor cultivation cycles</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Footer -->
+            <footer class="site-footer">
+                <div class="footer-content">
+                    <div class="footer-brand">
+                        <a href="#" class="footer-logo">
+                            <svg class="footer-logo-leaf" viewBox="0 0 40 50" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M20 45 C20 45, 5 35, 8 20 C10 8, 20 5, 20 5 C20 5, 30 8, 32 20 C35 35, 20 45, 20 45Z" fill="currentColor" />
+                            </svg>
+                            <span>Chloris</span>
+                        </a>
+                        <p class="footer-tagline">A living encyclopedia, grown by many hands, rooted in shared knowledge.</p>
+                    </div>
+                    
+                    <div class="footer-links">
+                        <div class="footer-column">
+                            <h4>Explore</h4>
+                            <ul>
+                                <li><a href="#technologies">Technologies</a></li>
+                                <li><a href="#communities">Communities</a></li>
+                                <li><a href="#ecosystems">Ecosystems</a></li>
+                                <li><a href="#seedbank">Seed Bank</a></li>
+                            </ul>
+                        </div>
+                        <div class="footer-column">
+                            <h4>Participate</h4>
+                            <ul>
+                                <li><a href="#">Write an Entry</a></li>
+                                <li><a href="#">Review Submissions</a></li>
+                                <li><a href="#">Translation Corps</a></li>
+                                <li><a href="#">Community Guidelines</a></li>
+                            </ul>
+                        </div>
+                        <div class="footer-column">
+                            <h4>About</h4>
+                            <ul>
+                                <li><a href="#">Our Principles</a></li>
+                                <li><a href="#">Governance Model</a></li>
+                                <li><a href="#">Open License</a></li>
+                                <li><a href="#">Contact the Council</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="footer-bottom">
+                    <p>All content shared under the <a href="#">Commons Knowledge License v3.0</a></p>
+                    <p class="footer-living-note">This page was last cultivated <span id="last-updated">3 cycles ago</span></p>
+                </div>
+            </footer>
+        </main>
+    </div>
+
+    <script src="scripts.js"></script>
+</body>
+</html>

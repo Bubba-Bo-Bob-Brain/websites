@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ForgeCode — Source Code Management</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&family=IBM+Plex+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Ambient Background -->
+    <div class="ambient-bg" aria-hidden="true">
+        <div class="ambient-orb orb-1"></div>
+        <div class="ambient-orb orb-2"></div>
+        <div class="ambient-orb orb-3"></div>
+        <div class="noise-overlay"></div>
+    </div>
+
+    <!-- Custom Cursor -->
+    <div class="cursor-dot" aria-hidden="true"></div>
+    <div class="cursor-ring" aria-hidden="true"></div>
+
+    <!-- Top Navigation -->
+    <nav class="top-nav" id="topNav">
+        <div class="nav-inner">
+            <div class="nav-brand">
+                <svg class="brand-icon" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M16 2L4 8v16l12 6 12-6V8L16 2z" stroke="currentColor" stroke-width="1.5" fill="none"/>
+                    <path d="M16 14l-8-4v8l8 4 8-4v-8l-8 4z" fill="currentColor" opacity="0.8"/>
+                    <circle cx="16" cy="14" r="3" fill="currentColor"/>
+                </svg>
+                <span class="brand-name">ForgeCode</span>
+                <span class="brand-tag">Beta</span>
+            </div>
+
+            <div class="nav-search">
+                <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"/>
+                    <path d="m21 21-4.35-4.35"/>
+                </svg>
+                <input type="text" class="search-input" placeholder="Search repositories, files, or commands..." id="globalSearch">
+                <div class="search-shortcut">⌘K</div>
+            </div>
+
+            <div class="nav-actions">
+                <button class="nav-btn" aria-label="Create new" title="Create new">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="1"/>
+                        <circle cx="19" cy="12" r="1"/>
+                        <circle cx="5" cy="12" r="1"/>
+                    </svg>
+                </button>
+                <button class="nav-btn notification-btn" aria-label="Notifications" title="Notifications">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                    </svg>
+                    <span class="notification-badge">3</span>
+                </button>
+                <div class="nav-avatar" tabindex="0" role="button" aria-label="User menu">
+                    <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect fill='%233b82f6' width='100' height='100'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='45' fill='white'%3EAK%3C/text%3E%3C/svg%3E" alt="User avatar">
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Command Palette Modal -->
+    <div class="command-palette" id="commandPalette" hidden>
+        <div class="palette-backdrop"></div>
+        <div class="palette-content">
+            <div class="palette-header">
+                <svg class="palette-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"/>
+                    <path d="m21 21-4.35-4.35"/>
+                </svg>
+                <input type="text" class="palette-input" placeholder="Type a command or search..." id="paletteInput">
+                <button class="palette-close" aria-label="Close command palette">✕</button>
+            </div>
+            <div class="palette-results" id="paletteResults">
+                <div class="palette-section-title">Suggested</div>
+                <div class="palette-item" data-command="new-repo">
+                    <span class="palette-item-icon">📦</span>
+                    <span class="palette-item-text">Create new repository</span>
+                    <span class="palette-item-hint">Ctrl+N</span>
+                </div>
+                <div class="palette-item" data-command="clone">
+                    <span class="palette-item-icon">📋</span>
+                    <span class="palette-item-text">Clone repository...</span>
+                    <span class="palette-item-hint">Ctrl+Shift+C</span>
+                </div>
+                <div class="palette-item" data-command="theme">
+                    <span class="palette-item-icon">🎨</span>
+                    <span class="palette-item-text">Toggle theme</span>
+                    <span class="palette-item-hint">Ctrl+T</span>
+                </div>
+                <div class="palette-item" data-command="settings">
+                    <span class="palette-item-icon">⚙️</span>
+                    <span class="palette-item-text">Open settings</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Layout -->
+    <div class="app-layout">
+        <!-- Left Sidebar - Repository Navigation -->
+        <aside class="sidebar-left" id="sidebarLeft">
+            <div class="sidebar-header">
+                <div class="repo-identity">
+                    <svg class="repo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 3L2 12h3v8h6v-6h2v6h6v-8h3L12 3z"/>
+                    </svg>
+                    <div class="repo-info">
+                        <span class="repo-owner">acme-corp</span>
+                        <span class="repo-separator">/</span>
+                        <span class="repo-name">aurora-design-system</span>
+                    </div>
+                </div>
+                <button class="repo-btn public" title="Public repository">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <path d="M2 12h20"/>
+                        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                    </svg>
+                    Public
+                </button>
+            </div>
+
+            <nav class="sidebar-nav">
+                <ul class="nav-list">
+                    <li class="nav-item active">
+                        <a href="#" class="nav-link">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 3L2 12h3v8h6v-6h2v6h6v-8h3L12 3z"/>
+                            </svg>
+                            <span>Code</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                            </svg>
+                            <span>Discussions</span>
+                            <span class="nav-count">12</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                            </svg>
+                            <span>Security</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="3"/>
+                                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                            </svg>
+                            <span>Settings</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+
+            <div class="sidebar-stats">
+                <div class="stat-row">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                        <path d="M2 17l10 5 10-5"/>
+                        <path d="M2 12l10 5 10-5"/>
+                    </svg>
+                    <span>32 branches</span>
+                </div>
+                <div class="stat-row">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                        <line x1="3" y1="9" x2="21" y2="9"/>
+                        <line x1="9" y1="21" x2="9" y2="9"/>
+                    </svg>
+                    <span>8 tags</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Repository Header Tabs -->
+            <div class="repo-header-tabs">
+                <div class="tab-list" role="tablist">
+                    <button class="tab-btn active" role="tab" aria-selected="true" data-tab="code">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 3L2 12h3v8h6v-6h2v6h6v-8h3L12 3z"/>
+                        </svg>
+                        Code
+                    </button>
+                    <button class="tab-btn" role="tab" aria-selected="false" data-tab="issues">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <line x1="12" y1="8" x2="12" y2="12"/>
+                            <line x1="12" y1="16" x2="12.01" y2="16"/>
+                        </svg>
+                        Issues
+                        <span class="tab-badge">24</span>
+                    </button>
+                    <button class="tab-btn" role="tab" aria-selected="false" data-tab="pull-requests">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="18" cy="18" r="3"/>
+                            <circle cx="6" cy="6" r="3"/>
+                            <path d="M6 21V9a9 9 0 0 0 9 9"/>
+                        </svg>
+                        Pull requests
+                        <span class="tab-badge warning">5</span>
+                    </button>
+                    <button class="tab-btn" role="tab" aria-selected="false" data-tab="actions">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                        </svg>
+                        Actions
+                    </button>
+                    <button class="tab-btn" role="tab" aria-selected="false" data-tab="projects">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="3" width="7" height="7"/>
+                            <rect x="14" y="3" width="7" height="7"/>
+                            <rect x="14" y="14" width="7" height="7"/>
+                            <rect x="3" y="14" width="7" height="7"/>
+                        </svg>
+                        Projects
+                    </button>
+                    <button class="tab-btn" role="tab" aria-selected="false" data-tab="wiki">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+                            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+                        </svg>
+                        Wiki
+                    </button>
+                </div>
+                <div class="branch-selector">
+                    <button class="branch-btn" id="branchBtn">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="6" y1="3" x2="6" y2="15"/>
+                            <circle cx="18" cy="6" r="3"/>
+                            <circle cx="6" cy="18" r="3"/>
+                            <path d="M18 9a9 9 0 0 1-9 9"/>
+                        </svg>
+                        <span>main</span>
+                        <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6 9 12 15 18 9"/>
+                        </svg>
+                    </button>
+                    <div class="branch-dropdown" id="branchDropdown" hidden>
+                        <input type="text" class="branch-search" placeholder="Find or create a branch">
+                        <div class="branch-list">
+                            <div class="branch-item active">
+                                <span class="branch-indicator"></span>
+                                <span class="branch-name">main</span>
+                                <span class="branch-latest">Latest commit</span>
+                            </div>
+                            <div class="branch-item">
+                                <span class="branch-indicator inactive"></span>
+                                <span class="branch-name">develop</span>
+                            </div>
+                            <div class="branch-item">
+                                <span class="branch-indicator inactive"></span>
+                                <span class="branch-name">feature/dark-mode</span>
+                            </div>
+                            <div class="branch-item">
+                                <span class="branch-indicator inactive"></span>
+                                <span class="branch-name">bugfix/header-overflow</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Repository Overview Grid -->
+            <div class="repo-grid">
+                <!-- File Explorer Panel -->
+                <section class="panel file-explorer" aria-label="File explorer">
+                    <div class="panel-header">
+                        <h2 class="panel-title">Files</h2>
+                        <div class="panel-actions">
+                            <button class="action-btn" title="Add file">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="12" y1="5" x2="12" y2="19"/>
+                                    <line x1="5" y1="12" x2="19" y2="12"/>
+                                </svg>
+                                Add file
+                            </button>
+                            <button class="action-btn primary" title="Clone repository">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M16 17l5-5-5-5"/>
+                                    <path d="M21 12H9"/>
+                                    <path d="M3 5v14a2 2 0 0 0 2 2h5"/>
+                                </svg>
+                                Code
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="file-tree" id="fileTree">
+                        <div class="tree-item folder expanded" data-path="/">
+                            <button class="tree-toggle" aria-expanded="true">
+                                <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="6 9 12 15 18 9"/>
+                                </svg>
+                            </button>
+                            <svg class="folder-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                            </svg>
+                            <span class="tree-name">aurora-design-system</span>
+                        </div>
+                        
+                        <div class="tree-children level-1">
+                            <div class="tree-item folder" data-path="/src">
+                                <button class="tree-toggle" aria-expanded="false">
+                                    <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <polyline points="6 9 12 15 18 9"/>
+                                    </svg>
+                                </button>
+                                <svg class="folder-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                                </svg>
+                                <span class="tree-name">src</span>
+                                <span class="tree-meta">12 files</span>
+                            </div>
+
+                            <div class="tree-item folder" data-path="/packages">
+                                <button class="tree-toggle" aria-expanded="false">
+                                    <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <polyline points="6 9 12 15 18 9"/>
+                                    </svg>
+                                </button>
+                                <svg class="folder-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                                </svg>
+                                <span class="tree-name">packages</span>
+                                <span class="tree-meta">8 files</span>
+                            </div>
+
+                            <div class="tree-item file" data-path="/package.json" data-type="json">
+                                <svg class="file-icon json" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                    <polyline points="14 2 14 8 20 8"/>
+                                </svg>
+                                <span class="tree-name">package.json</span>
+                                <span class="tree-meta">2 days ago</span>
+                            </div>
+
+                            <div class="tree-item file" data-path="/README.md" data-type="markdown">
+                                <svg class="file-icon markdown" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                    <polyline points="14 2 14 8 20 8"/>
+                                </svg>
+                                <span class="tree-name">README.md</span>
+                                <span class="tree-meta">5 days ago</span>
+                            </div>
+
+                            <div class="tree-item file" data-path="/tsconfig.json" data-type="json">
+                                <svg class="file-icon json" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                    <polyline points="14 2 14 8 20 8"/>
+                                </svg>
+                                <span class="tree-name">tsconfig.json</span>
+                                <span class="tree-meta">1 week ago</span>
+                            </div>
+
+                            <div class="tree-item file" data-path="/.gitignore" data-type="gitignore">
+                                <svg class="file-icon config" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                    <polyline points="14 2 14 8 20 8"/>
+                                </svg>
+                                <span class="tree-name">.gitignore</span>
+                                <span class="tree-meta">2 weeks ago</span>
+                            </div>
+
+                            <div class="tree-item file" data-path="/LICENSE" data-type="text">
+                                <svg class="file-icon text" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                    <polyline points="14 2 14 8 20 8"/>
+                                </svg>
+                                <span class="tree-name">LICENSE</span>
+                                <span class="tree-meta">3 months ago</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Code Diff Viewer -->
+                <section class="panel code-diff" aria-label="Code diff viewer">
+                    <div class="panel-header">
+                        <div class="diff-info">
+                            <h2 class="panel-title">Latest Changes</h2>
+                            <span class="diff-meta">Commit <code class="commit-hash">a3f8c2d</code> · 2 hours ago</span>
+                        </div>
+                        <div class="diff-actions">
+                            <button class="diff-view-toggle" title="Toggle split/inline view">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="3" width="18" height="18" rx="2"/>
+                                    <line x1="12" y1="3" x2="12" y2="21"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="diff-container" id="diffViewer">
+                        <div class="diff-header-row">
+                            <span class="diff-filename">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                    <polyline points="14 2 14 8 20 8"/>
+                                </svg>
+                                src/components/Button.tsx
+                            </span>
+                            <span class="diff-stats">
+                                <span class="additions">+12</span>
+                                <span class="deletions">-4</span>
+                            </span>
+                        </div>
+                        
+                        <div class="diff-content" id="diffContent">
+                            <!-- Lines will be populated by JS -->
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Commit Graph -->
+                <section class="panel commit-graph-panel" aria-label="Commit graph">
+                    <div class="panel-header">
+                        <h2 class="panel-title">Commit Graph</h2>
+                        <select class="graph-filter">
+                            <option value="30">Last 30 days</option>
+                            <option value="90">Last 90 days</option>
+                            <option value="180">Last 6 months</option>
+                        </select>
+                    </div>
+                    <div class="graph-container">
+                        <canvas id="commitCanvas" width="600" height="300"></canvas>
+                    </div>
+                    <div class="graph-legend">
+                        <span class="legend-item"><span class="legend-dot dot-additions"></span> Additions</span>
+                        <span class="legend-item"><span class="legend-dot dot-deletions"></span> Deletions</span>
+                        <span class="legend-item"><span class="legend-dot dot-commits"></span> Commits</span>
+                    </div>
+                </section>
+
+                <!-- Contribution Heatmap -->
+                <section class="panel contribution-panel" aria-label="Contribution activity">
+                    <div class="panel-header">
+                        <h2 class="panel-title">Contribution Activity</h2>
+                        <span class="contribution-count">847 contributions in the last year</span>
+                    </div>
+                    <div class="heatmap-wrapper">
+                        <div class="heatmap-months" id="heatmapMonths"></div>
+                        <div class="heatmap-days">
+                            <span class="day-label">Mon</span>
+                            <span class="day-label">Wed</span>
+                            <span class="day-label">Fri</span>
+                        </div>
+                        <div class="heatmap-grid" id="heatmapGrid"></div>
+                    </div>
+                    <div class="heatmap-legend">
+                        <span>Less</span>
+                        <div class="legend-levels">
+                            <span class="level level-0"></span>
+                            <span class="level level-1"></span>
+                            <span class="level level-2"></span>
+                            <span class="level level-3"></span>
+                            <span class="level level-4"></span>
+                        </div>
+                        <span>More</span>
+                    </div>
+                </section>
+
+                <!-- Merge Requests -->
+                <section class="panel merge-requests" aria-label="Merge requests">
+                    <div class="panel-header">
+                        <h2 class="panel-title">Merge Requests</h2>
+                        <div class="mr-filters">
+                            <button class="filter-btn active" data-filter="open">Open</button>
+                            <button class="filter-btn" data-filter="closed">Closed</button>
+                            <button class="filter-btn" data-filter="merged">Merged</button>
+                        </div>
+                    </div>
+                    <div class="mr-list" id="mrList">
+                        <div class="mr-item status-open">
+                            <div class="mr-status-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="18" cy="18" r="3"/>
+                                    <circle cx="6" cy="6" r="3"/>
+                                    <path d="M6 21V9a9 9 0 0 0 9 9"/>
+                                </svg>
+                            </div>
+                            <div class="mr-content">
+                                <a href="#" class="mr-title">feat: Add dark mode theme support</a>
+                                <span class="mr-meta">#142 · opened 2 days ago by <span class="author">sarah.chen</span></span>
+                                <div class="mr-labels">
+                                    <span class="mr-label enhancement">enhancement</span>
+                                    <span class="mr-label ui">ui</span>
+                                </div>
+                            </div>
+                            <div class="mr-stats">
+                                <span class="mr-stat">+48 -12</span>
+                                <span class="mr-stat comments">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                                    </svg>
+                                    8
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="mr-item status-merged">
+                            <div class="mr-status-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                                    <path d="M2 17l10 5 10-5"/>
+                                    <path d="M2 12l10 5 10-5"/>
+                                </svg>
+                            </div>
+                            <div class="mr-content">
+                                <a href="#" class="mr-title">fix: Resolve header overflow on mobile</a>
+                                <span class="mr-meta">#138 · merged 5 days ago by <span class="author">alex.dev</span></span>
+                                <div class="mr-labels">
+                                    <span class="mr-label bug">bug</span>
+                                </div>
+                            </div>
+                            <div class="mr-stats">
+                                <span class="mr-stat">+8 -3</span>
+                                <span class="mr-stat comments">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                                    </svg>
+                                    3
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="mr-item status-open">
+                            <div class="mr-status-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="18" cy="18" r="3"/>
+                                    <circle cx="6" cy="6" r="3"/>
+                                    <path d="M6 21V9a9 9 0 0 0 9 9"/>
+                                </svg>
+                            </div>
+                            <div class="mr-content">
+                                <a href="#" class="mr-title">refactor: Migrate to TypeScript strict mode</a>
+                                <span class="mr-meta">#135 · opened 1 week ago by <span class="author">mike.ops</span></span>
+                                <div class="mr-labels">
+                                    <span class="mr-label refactor">refactor</span>
+                                    <span class="mr-label typescript">typescript</span>
+                                </div>
+                            </div>
+                            <div class="mr-stats">
+                                <span class="mr-stat">+234 -189</span>
+                                <span class="mr-stat comments">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                                    </svg>
+                                    15
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="mr-item status-closed">
+                            <div class="mr-status-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"/>
+                                    <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
+                                </svg>
+                            </div>
+                            <div class="mr-content">
+                                <a href="#" class="mr-title">chore: Update dependency versions</a>
+                                <span class="mr-meta">#129 · closed 2 weeks ago by <span class="author">sarah.chen</span></span>
+                                <div class="mr-labels">
+                                    <span class="mr-label dependencies">dependencies</span>
+                                </div>
+                            </div>
+                            <div class="mr-stats">
+                                <span class="mr-stat">+42 -42</span>
+                                <span class="mr-stat comments">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                                    </svg>
+                                    2
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+
+        <!-- Right Sidebar - Activity Feed -->
+        <aside class="sidebar-right" aria-label="Activity feed">
+            <div class="activity-feed">
+                <div class="activity-header">
+                    <h3>Recent Activity</h3>
+                    <button class="activity-filter-btn">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="4" y1="6" x2="20" y2="6"/>
+                            <line x1="8" y1="12" x2="20" y2="12"/>
+                            <line x1="12" y1="18" x2="20" y2="18"/>
+                        </svg>
+                        Filter
+                    </button>
+                </div>
+                
+                <div class="activity-list" id="activityList">
+                    <div class="activity-item">
+                        <div class="activity-avatar">
+                            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect fill='%238b5cf6' width='100' height='100'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='45' fill='white'%3ESC%3C/text%3E%3C/svg%3E" alt="Sarah Chen">
+                        </div>
+                        <div class="activity-content">
+                            <span class="activity-user">sarah.chen</span>
+                            <span class="activity-action">merged</span>
+                            <a href="#" class="activity-target">PR #138</a>
+                            <span class="activity-time">2h ago</span>
+                        </div>
+                    </div>
+
+                    <div class="activity-item">
+                        <div class="activity-avatar">
+                            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect fill='%2310b981' width='100' height='100'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='45' fill='white'%3EAD%3C/text%3E%3C/svg%3E" alt="Alex Dev">
+                        </div>
+                        <div class="activity-content">
+                            <span class="activity-user">alex.dev</span>
+                            <span class="activity-action">pushed to</span>
+                            <a href="#" class="activity-target">main</a>
+                            <span class="activity-time">4h ago</span>
+                        </div>
+                        <div class="activity-commit">
+                            <code>fix: button alignment</code>
+                            <span class="commit-hash">a3f8c2d</span>
+                        </div>
+                    </div>
+
+                    <div class="activity-item">
+                        <div class="activity-avatar">
+                            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect fill='%23f59e0b' width='100' height='100'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='45' fill='white'%3EMO%3C/text%3E%3C/svg%3E" alt="Mike Ops">
+                        </div>
+                        <div class="activity-content">
+                            <span class="activity-user">mike.ops</span>
+                            <span class="activity-action">opened</span>
+                            <a href="#" class="activity-target">issue #247</a>
+                            <span class="activity-time">6h ago</span>
+                        </div>
+                    </div>
+
+                    <div class="activity-item">
+                        <div class="activity-avatar">
+                            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect fill='%23ec4899' width='100' height='100'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='45' fill='white'%3EJK%3C/text%3E%3C/svg%3E" alt="Jane Kim">
+                        </div>
+                        <div class="activity-content">
+                            <span class="activity-user">jane.kim</span>
+                            <span class="activity-action">commented on</span>
+                            <a href="#" class="activity-target">PR #142</a>
+                            <span class="activity-time">8h ago</span>
+                        </div>
+                    </div>
+
+                    <div class="activity-item">
+                        <div class="activity-avatar">
+                            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect fill='%2306b6d4' width='100' height='100'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='45' fill='white'%3ERP%3C/text%3E%3C/svg%3E" alt="Ryan Park">
+                        </div>
+                        <div class="activity-content">
+                            <span class="activity-user">ryan.park</span>
+                            <span class="activity-action">created tag</span>
+                            <a href="#" class="activity-target">v2.4.1</a>
+                            <span class="activity-time">1d ago</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="online-collaborators">
+                    <h4>Active Contributors</h4>
+                    <div class="collaborators-list">
+                        <div class="collaborator" title="Sarah Chen">
+                            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect fill='%238b5cf6' width='100' height='100'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='45' fill='white'%3ESC%3C/text%3E%3C/svg%3E" alt="Sarah Chen">
+                            <span class="status-dot online"></span>
+                        </div>
+                        <div class="collaborator" title="Alex Dev">
+                            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect fill='%2310b981' width='100' height='100'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='45' fill='white'%3EAD%3C/text%3E%3C/svg%3E" alt="Alex Dev">
+                            <span class="status-dot online"></span>
+                        </div>
+                        <div class="collaborator" title="Mike Ops">
+                            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect fill='%23f59e0b' width='100' height='100'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='45' fill='white'%3EMO%3C/text%3E%3C/svg%3E" alt="Mike Ops">
+                            <span class="status-dot idle"></span>
+                        </div>
+                        <div class="collaborator" title="Jane Kim">
+                            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect fill='%23ec4899' width='100' height='100'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='45' fill='white'%3EJK%3C/text%3E%3C/svg%3E" alt="Jane Kim">
+                            <span class="status-dot online"></span>
+                        </div>
+                        <div class="collaborator more" title="3 more online">
+                            <span class="more-text">+3</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+        <div class="footer-inner">
+            <div class="footer-left">
+                <span>© 2025 ForgeCode, Inc.</span>
+                <a href="#">Terms</a>
+                <a href="#">Privacy</a>
+                <a href="#">Status</a>
+                <a href="#">Docs</a>
+                <a href="#">Contact</a>
+            </div>
+            <div class="footer-right">
+                <a href="#">Manage cookies</a>
+                <a href="#">Do not share my personal information</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Loading Skeleton -->
+    <div class="page-loader" id="pageLoader">
+        <div class="loader-content">
+            <svg class="loader-icon" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M16 2L4 8v16l12 6 12-6V8L16 2z" stroke="currentColor" stroke-width="1.5" fill="none"/>
+                <path d="M16 14l-8-4v8l8 4 8-4v-8l-8 4z" fill="currentColor" opacity="0.8"/>
+                <circle cx="16" cy="14" r="3" fill="currentColor"/>
+            </svg>
+            <div class="loader-bar">
+                <div class="loader-progress"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="scripts.js"></script>
+</body>
+</html>

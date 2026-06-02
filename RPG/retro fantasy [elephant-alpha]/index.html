@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arcane Realms - Retro Fantasy RPG</title>
+    <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&family=Cinzel:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --gold: #d4a843;
+            --gold-dark: #b8942f;
+            --gold-light: #f0d57a;
+            --blood-red: #8a0000;
+            --dark-bg: #0a0a0f;
+            --darker-bg: #050508;
+            --parchment: #f5e6c8;
+            --parchment-dark: #d4c4a0;
+            --glow-gold: 0 0 10px rgba(212, 168, 67, 0.5);
+            --glow-red: 0 0 10px rgba(138, 0, 0, 0.5);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'MedievalSharp', cursive;
+            background: var(--darker-bg);
+            color: var(--parchment);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Animated background texture */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(ellipse at 20% 50%, rgba(138, 0, 0, 0.1) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 20%, rgba(212, 168, 67, 0.05) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 80%, rgba(184, 148, 47, 0.08) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        /* Floating runes */
+        .floating-runes {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .rune {
+            position: absolute;
+            font-size: 24px;
+            color: rgba(212, 168, 67, 0.15);
+            animation: floatRune linear infinite;
+        }
+
+        @keyframes floatRune {
+            0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-10vh) rotate(360deg); opacity: 0; }
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            padding: 40px 20px;
+            position: relative;
+            background: linear-gradient(180deg, rgba(10, 10, 15, 0.95) 0%, rgba(10, 10, 15, 0.7) 100%);
+            border-bottom: 2px solid var(--gold);
+            box-shadow: var(--glow-gold);
+        }
+
+        .title {
+            font-family: 'Cinzel', serif;
+            font-size: 4rem;
+            color: var(--gold);
+            text-shadow: 
+                0 0 20px var(--gold),
+                0 0 40px rgba(212, 168, 67, 0.3),
+                2px 2px 4px rgba(0, 0, 0, 0.8);
+            margin-bottom: 10px;
+            letter-spacing: 3px;
+            animation: titleGlow 3s ease-in-out infinite;
+        }
+
+        @keyframes titleGlow {
+            0%, 100% { text-shadow: 0 0 20px var(--gold), 0 0 40px rgba(212, 168, 67, 0.3); }
+            50% { text-shadow: 0 0 30px var(--gold-light), 0 0 60px rgba(240, 213, 122, 0.5); }
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: var(--gold-dark);
+            letter-spacing: 5px;
+            text-transform: uppercase;
+        }
+
+        /* Main container */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        /* Character sheet section */
+        .character-sheet {
+            background: linear-gradient(135deg, rgba(245, 230, 200, 0.05) 0%, rgba(212, 168, 67, 0.03) 100%);
+            border: 1px solid var(--gold-dark);
+            border-radius: 8px;
+            padding: 30px;
+            margin-bottom: 40px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .character-sheet::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, var(--gold), transparent);
+        }
+
+        .sheet-title {
+            font-family: 'Cinzel', serif;
+            color: var(--gold);
+            font-size: 1.8rem;
+            margin-bottom: 25px;
+            text-align: center;
+            text-shadow: 0 0 10px rgba(212, 168, 67, 0.3);
+            position: relative;
+        }
+
+        .sheet-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 2px;
+            background: var(--blood-red);
+        }
+
+        .character-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+        }
+
+        .stat-block {
+            background: rgba(26, 26, 35, 0.8);
+            border: 1px solid var(--gold-dark);
+            border-radius: 5px;
+            padding: 20px;
+            position: relative;
+            transition: transform 0.3s ease;
+        }
+
+        .stat-block:hover {
+            transform: translateY(-5px);
+            border-color: var(--gold);
+            box-shadow: var(--glow-gold);
+        }
+
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--gold-dark);
+        }
+
+        .stat-name {
+            font-family: 'Cinzel', serif;
+            color: var(--gold);
+            font-size: 1.1rem;
+        }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--gold-light);
+            text-shadow: 0 0 10px rgba(212, 168, 67, 0.5);
+        }
+
+        .health-bar {
+            width: 100%;
+            height: 20px;
+            background: #1a1a2e;
+            border: 1px solid var(--gold-dark);
+            border-radius: 3px;
+            margin-top: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .health-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--blood-red), #ff3333);
+            border-radius: 3px;
+            transition: width 1s ease;
+            position: relative;
+        }
+
+        .health-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+        }
+
+        /* Quest board section */
+        .quest-board {
+            background: linear-gradient(135deg, rgba(138, 0, 0, 0.05) 0%, rgba(0, 0, 0, 0.3) 100%);
+            border: 2px solid var(--blood-red);
+            border-radius: 8px;
+            padding: 30px;
+            position: relative;
+        }
+
+        .quest-board::before {
+            content: '';
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            right: 10px;
+            bottom: 10px;
+            border: 1px solid rgba(138, 0, 0, 0.3);
+            border-radius: 5px;
+            pointer-events: none;
+        }
+
+        .quest-title {
+            font-family: 'Cinzel', serif;
+            color: var(--blood-red);
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .quest-pins {
+            position: relative;
+            min-height: 300px;
+        }
+
+        .quest-pin {
+            position: absolute;
+            background: var(--blood-red);
+            width: 15px;
+            height: 15px;
+            border-radius: 50% 50% 50% 0;
+            transform: rotate(45deg);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 2;
+        }
+
+        .quest-pin:hover {
+            transform: rotate(45deg) scale(1.3);
+            box-shadow: 0 0 15px var(--glow-red);
+        }
+
+        .quest-tooltip {
+            position: absolute;
+            background: rgba(10, 10, 15, 0.95);
+            border: 1px solid var(--gold);
+            border-radius: 5px;
+            padding: 15px;
+            width: 250px;
+            z-index: 10;
+            display: none;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        .quest-tooltip h4 {
+            color: var(--gold);
+            margin-bottom: 8px;
+            font-size: 1rem;
+        }
+
+        .quest-tooltip::after {
+            content: '';
+            position: absolute;
+            top: -8px;
+            left: 20px;
+            width: 0;
+            height: 0;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-bottom: 8px solid var(--gold);
+        }
+
+        /* Inventory grid */
+        .inventory-section {
+            margin-top: 40px;
+        }
+
+        .inventory-title {
+            font-family: 'Cinzel', serif;
+            color: var(--gold);
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .inventory-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+            gap: 15px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .inventory-slot {
+            aspect-ratio: 1;
+            background: linear-gradient(135deg, rgba(212, 168, 67, 0.1) 0%, rgba(10, 10, 15, 0.8) 100%);
+            border: 1px solid var(--gold-dark);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            position: relative;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .inventory-slot:hover {
+            border-color: var(--gold);
+            box-shadow: 0 0 15px rgba(212, 168, 67, 0.3);
+            transform: scale(1.05);
+        }
+
+        .inventory-slot::before {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            right: 2px;
+            bottom: 2px;
+            border: 1px solid rgba(212, 168, 67, 0.2);
+            border-radius: 2px;
+            pointer-events: none;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 30px;
+            margin-top: 40px;
+            border-top: 1px solid var(--gold-dark);
+            position: relative;
+        }
+
+        .footer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 20%;
+            right: 20%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--gold-dark), transparent);
+        }
+
+        .footer-text {
+            color: var(--gold-dark);
+            font-size: 0.9rem;
+            letter-spacing: 2px;
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--darker-bg);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--gold-dark);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--gold);
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .title {
+                font-size: 2.5rem;
+            }
+            .character-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Floating runes background -->
+    <div class="floating-runes" id="floatingRunes"></div>
+
+    <!-- Header -->
+    <header class="header">
+        <h1 class="title">ARCANE REALMS</h1>
+        <p class="subtitle">LEGENDS OF OLD</p>
+    </header>
+
+    <!-- Main content -->
+    <div class="container">
+        <!-- Character Sheet Section -->
+        <section class="character-sheet">
+            <h2 class="sheet-title">HEROES OF THE REALM</h2>
+            <div class="character-grid">
+                <div class="stat-block">
+                    <div class="stat-header">
+                        <span class="stat-name">⚔️ WARRIOR</span>
+                        <span class="stat-value">95</span>
+                    </div>
+                    <p style="font-size: 0.9rem; line-height: 1.5; margin-bottom: 10px;">The bravest of knights, wielding enchanted blades and bearing the scars of countless battles.</p>
+                    <div class="health-bar">
+                        <div class="health-fill" style="width: 95%;"></div>
+                    </div>
+                </div>
+                <div class="stat-block">
+                    <div class="stat-header">
+                        <span class="stat-name">🔮 MAGE</span>
+                        <span class="stat-value">87</span>
+                    </div>
+                    <p style="font-size: 0.9rem; line-height: 1.5; margin-bottom: 10px;">Masters of arcane energies, capable of summoning storms and bending reality to their will.</p>
+                    <div class="health-bar">
+                        <div class="health-fill" style="width: 87%; background: linear-gradient(90deg, #6a5acd, #9370db);"></div>
+                    </div>
+                </div>
+                <div class="stat-block">
+                    <div class="stat-header">
+                        <span class="stat-name">🏹 ARCHER</span>
+                        <span class="stat-value">82</span>
+                    </div>
+                    <p style="font-size: 0.9rem; line-height: 1.5; margin-bottom: 10px;">Deadly marksmen with unparalleled precision, striking from the shadows with poisoned arrows.</p>
+                    <div class="health-bar">
+                        <div class="health-fill" style="width: 82%; background: linear-gradient(90deg, #228b22, #32cd32);"></div>
+                    </div>
+                </div>
+                <div class="stat-block">
+                    <div class="stat-header">
+                        <span class="stat-name">🛡️ PALADIN</span>
+                        <span class="stat-value">90</span>
+                    </div>
+                    <p style="font-size: 0.9rem; line-height: 1.5; margin-bottom: 10px;">Holy champions imbued with divine power, their presence inspires allies and terrifies foes.</p>
+                    <div class="health-bar">
+                        <div class="health-fill" style="width: 90%; background: linear-gradient(90deg, #ffd700, #ffed4e);"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Quest Board Section -->
+        <section class="quest-board">
+            <h2 class="quest-title">📜 QUEST BOARD</h2>
+            <div class="quest-pins" id="questPins">
+                <!-- Quest pins will be dynamically placed -->
+            </div>
+            <div class="quest-tooltip" id="questTooltip">
+                <h4 id="questTitle"></h4>
+                <p id="questDesc"></p>
+            </div>
+        </section>
+
+        <!-- Inventory Section -->
+        <section class="inventory-section">
+            <h2 class="inventory-title">💎 TREASURE VAULT</h2>
+            <div class="inventory-grid" id="inventoryGrid">
+                <!-- Inventory items will be dynamically placed -->
+            </div>
+        </section>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p class="footer-text">⚔️ LEGENDS NEVER DIE ⚔️</p>
+    </footer>
+
+    <script>
+        // Create floating runes
+        function createFloatingRunes() {
+            const runesContainer = document.getElementById('floatingRunes');
+            const runeTexts = ['ᚠ', 'ᚢ', 'ᚦ', 'ᚨ', 'ᚱ', 'ᚲ', 'ᚷ', 'ᚹ', 'ᚺ', 'ᚾ', 'ᛁ', 'ᛃ', 'ᛈ', 'ᛉ', 'ᛊ', 'ᛏ', 'ᛒ', 'ᛖ', 'ᛗ', 'ᛚ', 'ᛝ', 'ᛞ', 'ᛟ', 'ᛞᛟᚱ', 'ᚠᛖᚩ', 'ᛒᛖᚩᚲ', 'ᛗᛁᚳᛚᛖ', 'ᛚᚩᚱᛖ', 'ᛑᚨᚷᛁᚱ', 'ᛞᚱᚨᚷᛟᚾ', 'ᛗᛟᚾᛥ', '᛫'];
+            
+            runeTexts.forEach((rune, index) => {
+                const runeElement = document.createElement('div');
+                runeElement.className = 'rune';
+                runeElement.textContent = rune;
+                runeElement.style.left = Math.random() * 100 + '%';
+                runeElement.style.animationDuration = (8 + Math.random() * 12) + 's';
+                runeElement.style.animationDelay = Math.random() * 5 + 's';
+                runeElement.style.fontSize = (16 + Math.random() * 20) + 'px';
+                runesContainer.appendChild(runeElement);
+            });
+        }
+
+        // Quest data
+        const quests = [
+            { x: 15, y: 30, title: "Dragon's Lair", desc: "Slay the ancient dragon terrorizing the northern village. Reward: Ancient Relic", color: "#ff4444" },
+            { x: 45, y: 20, title: "Lost Heirloom", desc: "Retrieve the stolen family heirloom from the bandit camp west of town.", color: "#44aaff" },
+            { x: 75, y: 40, title: "Cursed Forest", desc: "Investigate the mysterious disappearances in the haunted forest.", color: "#44ff44" },
+            { x: 25, y: 65, title: "Forgotten Temple", desc: "Explore the ancient temple and recover the sacred artifact.", color: "#ffaa44" },
+            { x: 65, y: 70, title: "Assassin's Guild", desc: "Eliminate the rogue assassin threatening the kingdom.", color: "#ff44aa" },
+            { x: 85, y: 15, title: "Merchant's Protection", desc: "Escort the merchant caravan through dangerous territory.", color: "#44ffaa" },
+            { x: 35, y: 80, title: "Necromancer's Tower", desc: "Destroy the necromancer's tower before he raises an undead army.", color: "#aa44ff" },
+            { x: 55, y: 50, title: "Stolen Crown", desc: "Recover the stolen royal crown from the traitorous lord.", color: "#44aaff" }
+        ];
+
+        // Create quest pins
+        function createQuestPins() {
+            const questPinsContainer = document.getElementById('questPins');
+            const tooltip = document.getElementById('questTooltip');
+            
+            quests.forEach(quest => {
+                const pin = document.createElement('div');
+                pin.className = 'quest-pin';
+                pin.style.left = quest.x + '%';
+                pin.style.top = quest.y + '%';
+                pin.style.background = quest.color;
+                pin.style.boxShadow = `0 0 10px ${quest.color}80`;
+                
+                pin.addEventListener('mouseenter', (e) => {
+                    tooltip.style.display = 'block';
+                    tooltip.style.left = (e.pageX + 15) + 'px';
+                    tooltip.style.top = (e.pageY - 10) + 'px';
+                    document.getElementById('questTitle').textContent = quest.title;
+                    document.getElementById('questDesc').textContent = quest.desc;
+                });
+                
+                pin.addEventListener('mousemove', (e) => {
+                    tooltip.style.left = (e.pageX + 15) + 'px';
+                    tooltip.style.top = (e.pageY - 10) + 'px';
+                });
+                
+                pin.addEventListener('mouseleave', () => {
+                    tooltip.style.display = 'none';
+                });
+                
+                questPinsContainer.appendChild(pin);
+            });
+        }
+
+        // Inventory items
+        const inventoryItems = [
+            '⚔️', '🔮', '🏹', '🛡️', '💎', '📜', '🧙', '⚡',
+            '🏆', '👑', '💀', '🦇', '🌑', '⭐', '🔥', '❄️',
+            '💊', '🍃', '🎵', '📖', '🎨', '🔧', '🍖', '🍺',
+            '🎭', '🦄', '🐉', '⚪', '🗝️', '🪙', '🖼️', '🎪'
+        ];
+
+        // Create inventory grid
+        function createInventoryGrid() {
+            const inventoryGrid = document.getElementById('inventoryGrid');
+            
+            inventoryItems.forEach((item, index) => {
+                const slot = document.createElement('div');
+                slot.className = 'inventory-slot';
+                slot.textContent = item;
+                slot.style.animationDelay = (index * 0.05) + 's';
+                slot.addEventListener('click', function() {
+                    this.style.borderColor = '#ffd700';
+                    this.style.boxShadow = '0 0 20px rgba(255, 215, 0, 0.5)';
+                    setTimeout(() => {
+                        this.style.borderColor = '';
+                        this.style.boxShadow = '';
+                    }, 1000);
+                });
+                inventoryGrid.appendChild(slot);
+            });
+        }
+
+        // Initialize everything when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            createFloatingRunes();
+            createQuestPins();
+            createInventoryGrid();
+        });
+
+        // Add some interactive background effects
+        document.addEventListener('mousemove', (e) => {
+            const x = e.clientX / window.innerWidth;
+            const y = e.clientY / window.innerHeight;
+            
+            document.body.style.background = `
+                radial-gradient(ellipse at ${x * 40 + 20}% ${y * 40 + 20}%, 
+                    rgba(138, 0, 0, ${0.1 + x * 0.1}) 0%, 
+                    transparent 50%),
+                radial-gradient(ellipse at ${x * 60 + 40}% ${y * 60 + 40}%, 
+                    rgba(212, 168, 67, ${0.05 + y * 0.05}) 0%, 
+                    transparent 50%),
+                ${getComputedStyle(document.documentElement).getPropertyValue('--darker-bg').trim()}
+            `;
+        });
+    </script>
+</body>
+</html>

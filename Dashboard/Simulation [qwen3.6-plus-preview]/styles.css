@@ -1,0 +1,704 @@
+/* =========================================
+   GAIA PRIME — PLANETARY COMMAND DASHBOARD
+   STYLESHEET v4.7.2
+   ========================================= */
+
+/* --- VARIABLES --- */
+:root {
+  /* Colors */
+  --bg-deep: #03060a;
+  --bg-panel: rgba(8, 16, 28, 0.88);
+  --bg-panel-header: rgba(12, 24, 42, 0.95);
+  --border-base: #1a3352;
+  --border-accent: #00f0ff;
+  --border-glow: rgba(0, 240, 255, 0.3);
+  
+  --text-primary: #e8f0f8;
+  --text-secondary: #8b9bb4;
+  --text-muted: #4a5a70;
+  --text-highlight: #ffffff;
+  
+  --color-cyan: #00f0ff;
+  --color-amber: #ffb700;
+  --color-red: #ff3b3b;
+  --color-green: #00ff9d;
+  --color-purple: #b866ff;
+  --color-blue: #0077ff;
+  --color-orange: #ff7b00;
+  --color-teal: #00d2be;
+
+  /* Typography */
+  --font-display: 'Orbitron', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --font-ui: 'Rajdhani', sans-serif;
+
+  /* Spacing & Layout */
+  --gap-panel: 6px;
+  --pad-panel: 8px;
+  --pad-inner: 4px;
+  --border-radius: 2px;
+  --header-height: 70px;
+  --footer-height: 32px;
+}
+
+/* --- RESET & BASE --- */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 14px; /* Base size for density */
+  background-color: var(--bg-deep);
+  color: var(--text-primary);
+  overflow: hidden; /* Prevent body scroll, dashboard handles scrolling */
+}
+
+body {
+  font-family: var(--font-ui);
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  flex-direction: column;
+  background: radial-gradient(circle at 50% 50%, #0a1526 0%, #03060a 80%);
+  position: relative;
+}
+
+/* --- OVERLAYS & EFFECTS --- */
+.scanlines {
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.15),
+    rgba(0, 0, 0, 0.15) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.6;
+}
+
+.vignette {
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: radial-gradient(circle, transparent 60%, rgba(0,0,0,0.8) 100%);
+  pointer-events: none;
+  z-index: 9998;
+}
+
+.grid-overlay {
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background-image: 
+    linear-gradient(rgba(0, 240, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 240, 255, 0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* --- HEADER --- */
+.main-header {
+  height: var(--header-height);
+  background: var(--bg-panel-header);
+  border-bottom: 1px solid var(--border-base);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  position: relative;
+  z-index: 10;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.5);
+}
+
+.header-left, .header-right {
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+.header-left { gap: 12px; }
+.header-right { justify-content: flex-end; gap: 16px; }
+
+.logo-mark {
+  font-size: 32px;
+  filter: drop-shadow(0 0 8px var(--color-cyan));
+  animation: pulse-glow 3s infinite;
+}
+
+.main-title {
+  font-family: var(--font-display);
+  font-size: 18px;
+  letter-spacing: 2px;
+  color: var(--color-cyan);
+  text-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
+  line-height: 1;
+}
+
+.subtitle {
+  font-size: 11px;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  margin-left: 8px;
+  letter-spacing: 1px;
+}
+
+.status-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.status-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--color-green);
+  box-shadow: 0 0 6px var(--color-green);
+}
+
+.status-dot.online { animation: blink 2s infinite; }
+
+.separator { color: var(--border-base); margin: 0 4px; }
+
+#globe-canvas {
+  border: 1px solid var(--border-base);
+  border-radius: 50%;
+  box-shadow: 0 0 15px rgba(0, 240, 255, 0.2);
+}
+
+.time-block {
+  text-align: right;
+}
+
+.gmt-time {
+  font-family: var(--font-mono);
+  font-size: 16px;
+  color: var(--text-highlight);
+  letter-spacing: 1px;
+}
+
+.planetary-time {
+  font-size: 10px;
+  color: var(--color-amber);
+  font-family: var(--font-mono);
+}
+
+.alert-badge {
+  background: rgba(255, 59, 59, 0.15);
+  border: 1px solid var(--color-red);
+  color: var(--color-red);
+  padding: 4px 10px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 2px;
+  animation: alert-flash 2s infinite;
+}
+
+/* --- DASHBOARD GRID --- */
+.dashboard-grid {
+  flex: 1;
+  display: grid;
+  /* Dense packing with auto-fit columns optimized for 4K */
+  grid-template-columns: repeat(5, 1fr);
+  grid-auto-rows: minmax(100px, auto);
+  gap: var(--gap-panel);
+  padding: var(--gap-panel);
+  overflow-y: auto;
+  overflow-x: hidden;
+  position: relative;
+  z-index: 1;
+}
+
+/* Panel Spanning for Layout Balance */
+.panel.planet-stats { grid-column: span 1; grid-row: span 2; }
+.panel.population-ticker { grid-column: span 2; grid-row: span 2; }
+.panel.tectonic-activity { grid-column: span 2; grid-row: span 3; }
+.panel.climate-zones { grid-column: span 1; grid-row: span 3; }
+.panel.ocean-status { grid-column: span 1; grid-row: span 3; }
+.panel.resources-energy { grid-column: span 1; grid-row: span 3; }
+.panel.trade-routes { grid-column: span 2; grid-row: span 2; }
+.panel.biodiversity { grid-column: span 2; grid-row: span 2; }
+.panel.satellite-network { grid-column: span 1; grid-row: span 3; }
+.panel.atmospheric { grid-column: span 1; grid-row: span 3; }
+.panel.communications { grid-column: span 1; grid-row: span 3; }
+.panel.economic { grid-column: span 1; grid-row: span 3; }
+.panel.active-alerts { grid-column: span 2; grid-row: span 1; }
+.panel.water-resources { grid-column: span 1; grid-row: span 2; }
+.panel.industrial { grid-column: span 2; grid-row: span 2; }
+.panel.world-map { grid-column: span 3; grid-row: span 2; }
+.panel.scientific { grid-column: span 2; grid-row: span 2; }
+
+/* Scrollbar Styling */
+.dashboard-grid::-webkit-scrollbar {
+  width: 6px;
+}
+.dashboard-grid::-webkit-scrollbar-track {
+  background: var(--bg-deep);
+}
+.dashboard-grid::-webkit-scrollbar-thumb {
+  background: var(--border-base);
+  border-radius: 3px;
+}
+.dashboard-grid::-webkit-scrollbar-thumb:hover {
+  background: var(--color-cyan);
+}
+
+/* --- PANELS --- */
+.panel {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-base);
+  border-radius: var(--border-radius);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+  transition: border-color 0.3s;
+}
+
+.panel:hover {
+  border-color: var(--border-accent);
+  box-shadow: 0 0 10px var(--border-glow);
+}
+
+.panel-header {
+  background: var(--bg-panel-header);
+  padding: 6px 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid var(--border-base);
+  flex-shrink: 0;
+}
+
+.panel-icon { font-size: 14px; }
+
+.panel-title {
+  font-family: var(--font-display);
+  font-size: 11px;
+  color: var(--color-cyan);
+  letter-spacing: 1px;
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.panel-tag {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  padding: 2px 5px;
+  background: rgba(0, 240, 255, 0.1);
+  color: var(--color-cyan);
+  border: 1px solid rgba(0, 240, 255, 0.3);
+  border-radius: 2px;
+}
+
+.panel-tag.live {
+  background: rgba(255, 59, 59, 0.1);
+  color: var(--color-red);
+  border-color: rgba(255, 59, 59, 0.3);
+  animation: blink 1s infinite;
+}
+
+.panel-tag.critical {
+  background: rgba(255, 59, 59, 0.2);
+  color: var(--color-red);
+  border-color: var(--color-red);
+  animation: alert-flash 0.8s infinite;
+}
+
+.panel-content {
+  padding: var(--pad-panel);
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 11px;
+}
+
+.panel-content::-webkit-scrollbar { width: 3px; }
+.panel-content::-webkit-scrollbar-thumb { background: var(--border-base); }
+
+/* --- TYPOGRAPHY UTILITIES --- */
+.subsection-title {
+  font-family: var(--font-display);
+  font-size: 10px;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+  padding-bottom: 2px;
+  border-bottom: 1px solid var(--border-base);
+  display: block;
+}
+
+.value { color: var(--text-highlight); font-family: var(--font-mono); font-weight: 600; }
+.positive { color: var(--color-green); }
+.negative { color: var(--color-red); }
+.warm { color: var(--color-orange); }
+.hot { color: var(--color-red); font-weight: bold; }
+.highlight { color: var(--color-amber); }
+.critical-text { color: var(--color-red); font-weight: bold; }
+
+/* --- SPECIFIC COMPONENTS --- */
+
+/* Planet Stats */
+.stat-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 3px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+}
+.stat-label { color: var(--text-secondary); }
+.stat-value { font-family: var(--font-mono); color: var(--text-primary); }
+
+/* Population */
+.big-number { text-align: center; margin-bottom: 6px; }
+.number-label { font-size: 9px; color: var(--text-muted); display: block; letter-spacing: 1px; }
+.number-value { font-family: var(--font-mono); font-size: 20px; color: var(--color-cyan); display: block; letter-spacing: -0.5px; }
+.number-change { font-size: 9px; font-family: var(--font-mono); }
+
+.demographic-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 4px;
+}
+.demo-item {
+  background: rgba(255,255,255,0.02);
+  padding: 3px 5px;
+  display: flex;
+  flex-direction: column;
+  font-size: 9px;
+  border-left: 2px solid var(--border-base);
+}
+.demo-item:hover { border-left-color: var(--color-cyan); }
+.demo-flag { font-size: 12px; }
+.demo-region { color: var(--text-secondary); }
+.demo-value { font-family: var(--font-mono); color: var(--text-highlight); }
+
+.age-pyramid, .urban-rural { margin-top: auto; }
+.urban-stat, .rural-stat { display: flex; justify-content: space-between; font-size: 10px; padding: 2px 0; }
+
+/* Tectonic */
+.activity-feed { display: flex; flex-direction: column; gap: 2px; }
+.feed-item {
+  display: grid;
+  grid-template-columns: 50px 50px 1fr auto;
+  gap: 4px;
+  padding: 3px 5px;
+  background: rgba(0,0,0,0.2);
+  font-size: 10px;
+  font-family: var(--font-mono);
+  border-left: 2px solid transparent;
+}
+.feed-item.critical { border-left-color: var(--color-red); background: rgba(255, 59, 59, 0.1); }
+.feed-item.warning { border-left-color: var(--color-amber); background: rgba(255, 183, 0, 0.05); }
+.feed-mag { font-weight: bold; }
+.feed-mag::before { content: ''; } /* spacing handled by grid */
+
+.volcano-status { display: flex; flex-direction: column; gap: 2px; margin-top: 4px; }
+.volcano-item { font-size: 10px; padding: 2px 5px; border-left: 2px solid var(--border-base); }
+.volcano-item.erupting { border-left-color: var(--color-red); background: rgba(255, 59, 59, 0.15); }
+.volcano-item.warning { border-left-color: var(--color-amber); }
+
+/* Climate */
+.climate-bar { display: flex; height: 18px; margin-bottom: 4px; overflow: hidden; font-size: 9px; font-weight: bold; color: rgba(0,0,0,0.7); }
+.bar-segment { display: flex; align-items: center; justify-content: center; overflow: hidden; white-space: nowrap; }
+.bar-segment.tropical { background: var(--color-green); }
+.bar-segment.arid { background: var(--color-amber); }
+.bar-segment.temperate { background: var(--color-cyan); }
+.bar-segment.continental { background: var(--color-orange); }
+.bar-segment.polar { background: var(--color-blue); }
+
+.extreme-weather { display: flex; flex-direction: column; gap: 2px; }
+.weather-item { font-size: 10px; padding: 2px 0; border-bottom: 1px dashed rgba(255,255,255,0.05); }
+
+/* Ocean */
+.ocean-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; text-align: center; }
+.ocean-basin { background: rgba(0,0,0,0.2); padding: 4px; border-radius: 2px; font-size: 9px; }
+.basin-icon { display: block; font-size: 14px; }
+.basin-name { display: block; color: var(--text-secondary); margin: 2px 0; }
+.basin-temp { display: block; font-family: var(--font-mono); color: var(--color-cyan); }
+.basin-level { display: block; font-family: var(--font-mono); color: var(--color-red); font-size: 8px; }
+
+.ice-status { display: flex; flex-direction: column; gap: 3px; }
+.ice-metric { display: flex; justify-content: space-between; align-items: center; font-size: 10px; padding: 2px 0; border-bottom: 1px solid rgba(255,255,255,0.03); }
+.trend { font-family: var(--font-mono); font-size: 8px; }
+.trend.down { color: var(--color-red); }
+
+/* Resources */
+.energy-chart { margin: 0 auto; }
+.energy-legend { display: grid; grid-template-columns: repeat(2, 1fr); gap: 2px; font-size: 9px; margin-top: 4px; }
+.energy-item { display: flex; align-items: center; gap: 4px; }
+.dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; }
+.dot.fossil { background: #4a4a4a; }
+.dot.nuclear { background: var(--color-amber); }
+.dot.hydro { background: var(--color-blue); }
+.dot.wind { background: var(--color-green); }
+.dot.solar { background: var(--color-orange); }
+.dot.bio { background: var(--color-purple); }
+
+.resource-row { display: grid; grid-template-columns: 80px 1fr 60px 40px; gap: 4px; align-items: center; font-size: 9px; padding: 2px 0; }
+.reserve-bar { height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden; }
+.reserve-bar .fill { height: 100%; background: var(--color-cyan); }
+.reserve-val { font-family: var(--font-mono); text-align: right; }
+.reserve-years { font-family: var(--font-mono); color: var(--text-muted); text-align: right; font-size: 8px; }
+
+/* Trade */
+.trade-map { position: relative; margin-bottom: 6px; }
+.shipping-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; font-size: 10px; margin-bottom: 6px; }
+.shipping-item { display: flex; justify-content: space-between; }
+.top-routes { display: flex; flex-direction: column; gap: 2px; margin-bottom: 6px; }
+.route-item { display: flex; justify-content: space-between; font-size: 9px; padding: 2px 0; border-bottom: 1px solid rgba(255,255,255,0.03); }
+.route-vol { font-family: var(--font-mono); color: var(--color-amber); }
+.chokepoints { display: flex; flex-direction: column; gap: 2px; }
+.chokepoint { font-size: 9px; padding: 2px 5px; background: rgba(0,0,0,0.2); }
+.chokepoint.warning { border-left: 2px solid var(--color-amber); }
+.chokepoint.clear { border-left: 2px solid var(--color-green); }
+
+/* Biodiversity */
+.species-counter { text-align: center; margin-bottom: 6px; }
+.species-label { font-size: 9px; color: var(--text-muted); display: block; }
+.species-value { font-family: var(--font-mono); font-size: 16px; color: var(--color-green); display: block; }
+.species-est { font-size: 8px; color: var(--text-secondary); }
+
+.biome-health { display: flex; flex-direction: column; gap: 3px; margin-bottom: 6px; }
+.biome-row { display: grid; grid-template-columns: 1fr 60px 30px; gap: 4px; align-items: center; font-size: 9px; }
+.biome-bar { height: 3px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden; }
+.biome-fill { height: 100%; background: var(--color-green); }
+.biome-fill.danger { background: var(--color-red); }
+.biome-val { font-family: var(--font-mono); text-align: right; }
+.biome-val.danger { color: var(--color-red); }
+
+.endangered-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 2px; }
+.endangered-item { font-size: 9px; display: flex; align-items: center; gap: 4px; padding: 2px; background: rgba(0,0,0,0.2); }
+.status-dot { width: 5px; height: 5px; border-radius: 50%; }
+.status-dot.critical { background: var(--color-red); box-shadow: 0 0 4px var(--color-red); }
+.status-dot.warning { background: var(--color-amber); }
+
+.deforestation-ticker { display: flex; justify-content: space-between; font-size: 10px; padding: 4px; background: rgba(255, 59, 59, 0.05); border: 1px solid rgba(255, 59, 59, 0.2); }
+.def-trend { color: var(--color-green); font-size: 9px; }
+
+/* Satellite */
+.orbital-display { margin-bottom: 6px; }
+.satellite-stats { display: flex; flex-direction: column; gap: 2px; font-size: 10px; margin-bottom: 6px; }
+.sat-stat { display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.03); padding: 2px 0; }
+.status-ok { color: var(--color-green); font-size: 10px; }
+
+.orbit-layers { display: flex; flex-direction: column; gap: 2px; }
+.orbit-item { display: grid; grid-template-columns: 1fr 40px 50px; gap: 4px; font-size: 9px; padding: 2px 0; align-items: center; }
+.density { font-family: var(--font-mono); text-align: right; font-size: 8px; }
+.density.high { color: var(--color-red); }
+.density.med { color: var(--color-amber); }
+.density.low { color: var(--color-green); }
+
+/* Atmosphere */
+.atmo-chart { margin: 0 auto 6px; }
+.atmo-breakdown { display: flex; flex-direction: column; gap: 1px; margin-bottom: 6px; }
+.gas-row { display: flex; justify-content: space-between; font-size: 9px; padding: 2px 0; border-bottom: 1px solid rgba(255,255,255,0.02); }
+.gas-val { font-family: var(--font-mono); }
+.gas-val.highlight { color: var(--color-red); font-weight: bold; }
+
+.co2-curve { margin-bottom: 6px; }
+.air-quality { display: flex; flex-direction: column; gap: 2px; }
+.aqi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; }
+.aqi-item { text-align: center; padding: 2px; font-size: 8px; background: rgba(0,0,0,0.2); }
+.aqi-item span { display: block; font-family: var(--font-mono); font-size: 10px; margin-top: 2px; }
+.aqi-item.good span { color: var(--color-green); }
+.aqi-item.moderate span { color: var(--color-amber); }
+.aqi-item.poor span { color: var(--color-orange); }
+.aqi-item.hazardous span { color: var(--color-red); }
+
+/* Communications */
+.data-flow-viz { margin-bottom: 6px; }
+.internet-stats { display: flex; flex-direction: column; gap: 2px; margin-bottom: 6px; }
+.net-stat { display: flex; justify-content: space-between; font-size: 10px; padding: 2px 0; border-bottom: 1px solid rgba(255,255,255,0.03); }
+.net-stat .percent { color: var(--text-muted); font-size: 8px; }
+.network-map { margin-bottom: 6px; }
+.cyber-threats { display: flex; flex-direction: column; gap: 2px; }
+.threat-level { text-align: center; padding: 4px; background: rgba(255, 183, 0, 0.1); border: 1px solid var(--color-amber); font-weight: bold; font-size: 10px; margin-bottom: 4px; }
+.threat-stat { display: flex; justify-content: space-between; font-size: 9px; }
+
+/* Economic */
+.gdp-display { text-align: center; margin-bottom: 8px; padding: 6px; background: rgba(0, 240, 255, 0.03); border: 1px solid rgba(0, 240, 255, 0.1); }
+.gdp-label { font-size: 9px; color: var(--text-muted); display: block; }
+.gdp-value { font-family: var(--font-display); font-size: 22px; color: var(--color-cyan); display: block; text-shadow: 0 0 10px rgba(0, 240, 255, 0.4); }
+.gdp-growth { font-size: 10px; font-family: var(--font-mono); }
+
+.market-tickers { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; margin-bottom: 8px; }
+.ticker-item { background: rgba(0,0,0,0.2); padding: 3px 5px; font-size: 9px; display: flex; justify-content: space-between; border-left: 2px solid var(--border-base); }
+.ticker-item.up { border-left-color: var(--color-green); }
+.ticker-item.down { border-left-color: var(--color-red); }
+.ticker-val { font-family: var(--font-mono); font-weight: bold; }
+.ticker-chg { font-family: var(--font-mono); }
+.ticker-chg.up { color: var(--color-green); }
+.ticker-chg.down { color: var(--color-red); }
+
+.commodity-prices, .currency-rates { display: flex; flex-direction: column; gap: 2px; margin-bottom: 4px; }
+.commodity-row, .fx-row { display: flex; justify-content: space-between; font-size: 9px; padding: 2px 0; border-bottom: 1px solid rgba(255,255,255,0.03); }
+.commodity-row span, .fx-row span { font-family: var(--font-mono); }
+.commodity-row .chg, .fx-row span { color: var(--text-primary); }
+.commodity-row .chg.up { color: var(--color-green); }
+.commodity-row .chg.down { color: var(--color-red); }
+
+/* Alerts */
+.alerts-feed { display: flex; flex-direction: column; gap: 4px; }
+.alert { display: flex; gap: 6px; padding: 6px 8px; background: rgba(0,0,0,0.3); border-radius: 2px; font-size: 10px; align-items: center; border-left: 3px solid transparent; }
+.alert.critical { border-left-color: var(--color-red); background: rgba(255, 59, 59, 0.08); }
+.alert.warning { border-left-color: var(--color-amber); background: rgba(255, 183, 0, 0.05); }
+.alert.info { border-left-color: var(--color-cyan); background: rgba(0, 240, 255, 0.05); }
+.alert-icon { font-size: 14px; flex-shrink: 0; }
+.alert-text { flex: 1; line-height: 1.3; }
+.alert-time { color: var(--text-muted); font-family: var(--font-mono); font-size: 8px; white-space: nowrap; }
+
+/* Water */
+.water-bar-chart { display: flex; flex-direction: column; gap: 4px; margin-bottom: 6px; }
+.water-bar { display: flex; align-items: center; gap: 4px; font-size: 9px; }
+.water-bar .bar-label { width: 80px; }
+.water-bar .bar-fill { height: 6px; background: var(--color-cyan); border-radius: 3px; flex: 1; }
+.water-bar .bar-val { width: 35px; text-align: right; font-family: var(--font-mono); }
+
+.aquifer-status { display: flex; flex-direction: column; gap: 2px; margin-bottom: 6px; }
+.aquifer-item { display: grid; grid-template-columns: 1fr 60px 60px; gap: 4px; align-items: center; font-size: 9px; padding: 2px 0; }
+.depletion-bar { height: 3px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden; }
+.depletion-fill { height: 100%; background: var(--color-blue); }
+.depletion-fill.critical { background: var(--color-red); }
+.depletion-val { font-family: var(--font-mono); text-align: right; font-size: 8px; }
+.depletion-val.critical { color: var(--color-red); }
+
+.water-stress { display: flex; justify-content: space-between; padding: 4px; background: rgba(0, 119, 255, 0.1); border: 1px solid rgba(0, 119, 255, 0.3); font-size: 10px; }
+.stress-value { font-weight: bold; color: var(--color-amber); }
+
+/* Industrial */
+.production-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-bottom: 8px; }
+.prod-item { background: rgba(0,0,0,0.2); padding: 4px; text-align: center; border: 1px solid var(--border-base); border-radius: 2px; }
+.prod-icon { display: block; font-size: 16px; margin-bottom: 2px; }
+.prod-name { display: block; font-size: 8px; color: var(--text-secondary); margin-bottom: 2px; }
+.prod-value { display: block; font-family: var(--font-mono); font-size: 10px; color: var(--text-highlight); }
+
+.supply-chain { display: flex; flex-direction: column; gap: 2px; }
+.chain-item { display: flex; justify-content: space-between; font-size: 10px; padding: 3px 0; border-bottom: 1px solid rgba(255,255,255,0.03); }
+.chain-val { font-family: var(--font-mono); font-weight: bold; }
+.chain-val.normal { color: var(--color-green); }
+.chain-val.low { color: var(--color-green); }
+.chain-val.tight { color: var(--color-amber); }
+
+/* World Map */
+.world-map .panel-content { padding: 0; }
+.world-map canvas { width: 100%; height: 100%; object-fit: contain; }
+.map-legend { display: flex; justify-content: center; gap: 12px; padding: 6px; font-size: 9px; color: var(--text-secondary); background: var(--bg-panel-header); border-top: 1px solid var(--border-base); }
+.legend-item { display: flex; align-items: center; gap: 4px; }
+.legend-dot { width: 6px; height: 6px; border-radius: 50%; }
+.legend-dot.red { background: var(--color-red); }
+.legend-dot.orange { background: var(--color-orange); }
+.legend-dot.yellow { background: var(--color-amber); }
+.legend-dot.blue { background: var(--color-blue); }
+.legend-dot.green { background: var(--color-green); }
+.legend-dot.purple { background: var(--color-purple); }
+
+/* Scientific */
+.research-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; margin-bottom: 6px; }
+.research-item { font-size: 9px; padding: 3px 0; border-bottom: 1px solid rgba(255,255,255,0.03); display: flex; justify-content: space-between; }
+.recent-discoveries { display: flex; flex-direction: column; gap: 2px; margin-bottom: 6px; }
+.discovery { font-size: 9px; padding: 2px 0; border-left: 2px solid var(--color-purple); padding-left: 4px; }
+.field-distribution { margin: 0 auto; }
+
+/* --- FOOTER --- */
+.main-footer {
+  height: var(--footer-height);
+  background: var(--bg-panel-header);
+  border-top: 1px solid var(--border-base);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  font-size: 10px;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+  position: relative;
+  z-index: 10;
+}
+
+.footer-left, .footer-center, .footer-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.footer-status.ok { color: var(--color-green); font-weight: bold; }
+.footer-separator { color: var(--border-base); }
+.footer-label { opacity: 0.7; }
+
+/* --- ANIMATIONS --- */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+@keyframes alert-flash {
+  0%, 100% { opacity: 1; background-color: rgba(255, 59, 59, 0.15); }
+  50% { opacity: 0.6; background-color: rgba(255, 59, 59, 0.3); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { filter: drop-shadow(0 0 8px var(--color-cyan)); }
+  50% { filter: drop-shadow(0 0 16px var(--color-cyan)); }
+}
+
+@keyframes scanline {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100vh); }
+}
+
+/* --- RESPONSIVE TWEAKS --- */
+/* Although optimized for 4K, ensure readability on smaller screens */
+@media (max-width: 2560px) {
+  html { font-size: 13px; }
+  .dashboard-grid { grid-template-columns: repeat(4, 1fr); }
+  /* Adjust spans for 4 columns */
+  .panel.world-map { grid-column: span 2; }
+  .panel.population-ticker { grid-column: span 2; }
+  .panel.tectonic-activity { grid-column: span 2; }
+  .panel.trade-routes { grid-column: span 2; }
+  .panel.biodiversity { grid-column: span 2; }
+  .panel.active-alerts { grid-column: span 2; }
+  .panel.industrial { grid-column: span 2; }
+  .panel.scientific { grid-column: span 2; }
+}
+
+@media (max-width: 1920px) {
+  html { font-size: 12px; }
+  .dashboard-grid { grid-template-columns: repeat(3, 1fr); }
+  .panel.planet-stats { grid-column: span 1; grid-row: auto; }
+  .panel.population-ticker { grid-column: span 2; grid-row: auto; }
+  .panel.tectonic-activity { grid-column: span 1; grid-row: auto; }
+  .panel.climate-zones { grid-column: span 1; grid-row: auto; }
+  .panel.ocean-status { grid-column: span 1; grid-row: auto; }
+  .panel.resources-energy { grid-column: span 1; grid-row: auto; }
+  .panel.trade-routes { grid-column: span 2; grid-row: auto; }
+  .panel.biodiversity { grid-column: span 1; grid-row: auto; }
+  .panel.satellite-network { grid-column: span 1; grid-row: auto; }
+  .panel.atmospheric { grid-column: span 1; grid-row: auto; }
+  .panel.communications { grid-column: span 1; grid-row: auto; }
+  .panel.economic { grid-column: span 1; grid-row: auto; }
+  .panel.active-alerts { grid-column: span 3; grid-row: auto; }
+  .panel.water-resources { grid-column: span 1; grid-row: auto; }
+  .panel.industrial { grid-column: span 2; grid-row: auto; }
+  .panel.world-map { grid-column: span 2; grid-row: auto; }
+  .panel.scientific { grid-column: span 1; grid-row: auto; }
+}
+
+@media (max-width: 1366px) {
+  html { font-size: 11px; }
+  .dashboard-grid { grid-template-columns: repeat(2, 1fr); }
+  .panel { grid-column: span 1 !important; grid-row: auto !important; }
+  .main-header { height: auto; flex-wrap: wrap; padding: 8px; }
+  .header-center { display: none; }
+}

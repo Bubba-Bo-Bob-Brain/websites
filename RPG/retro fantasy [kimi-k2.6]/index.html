@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Arcane Codex | Retro Fantasy RPG</title>
+    
+    <!-- External Libraries -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Quattrocento+Sans:wght@400;700&family=VT323&display=swap" rel="stylesheet">
+
+    <!-- Tailwind Config for Custom Colors -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'void-black': '#050208',
+                        'deep-purple': '#1a1025',
+                        'royal-purple': '#2d1b4e',
+                        'accent-gold': '#ffd700',
+                        'muted-gold': '#b8860b',
+                        'arcane-cyan': '#00f3ff',
+                        'crt-green': '#33ff00',
+                    },
+                    fontFamily: {
+                        'display': ['Cinzel', 'serif'],
+                        'body': ['Quattrocento Sans', 'sans-serif'],
+                        'mono': ['VT323', 'monospace'],
+                    },
+                    backgroundImage: {
+                        'noise': "url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIj48ZmlsdGVyIGlkPSJnoiPjxmZVR1cmdlbmNlIHR5cGU9ImZyYWN0YWxOb2lzZSIgYmFzZUZyZXF1ZW5jeT0iMC42NSIgbnVtT2N0YXZlcz0iMyIgc3RpdGNoVGlsZXM9InN0aXRjaCIvPjwvZmlsdGVyPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbHRlcj0idXJsKCNnKSIgb3BhY2l0eT0iMC4wNSIvPjwvc3ZnPg==')",
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* === GLOBAL RESET & VARIABLES === */
+        :root {
+            --cursor-color: #ffd700;
+            --glow-spread: 8px;
+        }
+
+        body {
+            background-color: #050208;
+            color: #e2d5f5;
+            font-family: 'Quattrocento Sans', sans-serif;
+            overflow-x: hidden;
+            cursor: none; /* Custom cursor */
+        }
+
+        /* === CUSTOM CURSOR === */
+        #cursor-dot,
+        #cursor-outline {
+            position: fixed;
+            top: 0;
+            left: 0;
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+            z-index: 9999;
+            pointer-events: none;
+        }
+        #cursor-dot { width: 8px; height: 8px; background-color: var(--cursor-color); }
+        #cursor-outline {
+            width: 40px; height: 40px;
+            border: 1px solid rgba(255, 215, 0, 0.5);
+            transition: width 0.2s, height NSObjectvoutline-style: 0.2s;
+        }
+        body:hover #cursor-outline { width: 50px; height: 50px; border-color: rgba(255, 215, 0, 0.8); }
+
+        /* === CRT SCANLINE OVERLAY === */
+        .scanlines {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0) 50%, rgba(0,0,0,0.1) 50%, rgba(0,0,0,0.1));
+            background-size: 100% 4px;
+            pointer-events: none;
+            z-index: 50;
+            opacity: 0.3;
+        }
+        
+        /* === NOISE TEXTURE === */
+        .noise-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            opacity: 0.***************************+vnoise*/;
+            z-index: 49;
+            pointer-events: none;
+            mix-blend-mode: overlay;
+        }
+
+        /* === SCROLLBAR === */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #1a1025; }
+        ::-webkit-scrollbar-thumb { background: #b8860b; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #ffd700; }
+
+        /* === GLITCH TEXT EFFECT === */
+        .glitch-wrapper { position: relative; display: inline-block; }
+        .glitch-wrapper::before,
+        .glitch-wrapper::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #050208;
+        }
+        .glitch-wrapper::before {
+            left: 2px; text-shadow: -1px 0 #ff00c1; clip: rect(44px, 450px, 56px, 0);
+            animation: glitch-anim 5s infinite linear alternate-reverse;
+        }
+        .glitch-wrapper::after {
+            left: -2px; text-shadow: -1px 0 #00fff9; clip: rect(44px, 450px, 56px, 0);
+            animation: glitch-anim2 5s infinite linear alternate-reverse;
+        }
+        @keyframes glitch-anim {
+            0% { clip: rect(12px, 9999px, 52px, 0); }
+            5% { clip: rect(65px, 9999px, 100px, 0); }
+            100% { clip: rect(2px, 9999px, 82px, 0); }
+        }
+        @keyframes glitch-anim2 {
+            0% { clip: rect(65px, 9999px, 100px, 0); }
+            5% { clip: rect(12px, 9999px, 52px, 0); }
+            100% { clip: rect(34px, 9999px, 12px, 0); }
+        }
+
+        /* === ORNATE BORDERS === */
+        .ornate-border {
+            position: relative;
+            background: rgba(26, 16, 37, 0.8);
+            border: 2px solid #b8860b;
+            box-shadow: 0 0 15px rgba(184, 134, 11, 0.3);
+        }
+        .ornate-border::before {
+            content: ''; position: absolute; top: -6px; left: -6px; right: -6px; bottom: -6px;
+            border: 1px solid rgba(255, 215, 0, 0.3); pointer-events: none;
+        }
+        .ornate-corner { position: absolute; width: 20px; height: 20px; border: 2px solid #ffd700; transition: all 0.3s ease; }
+        .corner-tl { top: -6px; left: -6px; border-right: 0; border-bottom: 0; }
+        .corner-tr { top: -6px; right: -6px; border-left: 0; border-bottom: 0; }
+        .corner-bl { bottom: -6px; left: -6px; border-right: 0; border-top: 0; }
+        .corner-br { bottom: -6px; right: -6px; border-left: 0; border-top: 0; }
+
+        /* === CARD STACKING (Inventory) === */
+        .inventory-card {
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.4s ease;
+        }
+        .inventory-card:hover {
+            transform: translateY(-10px) rotate(1deg);
+            box-shadow: 0 20px 30px -10px rgba(0, 0, 0, 0.5);
+            z-index: 10;
+        }
+
+        /* === NAV LINK HOVER === */
+        .nav-link { position: relative; }
+        .nav-link::after {
+            content: ''; position: absolute; width: 0; height: 2px; bottom: -4px; left: 0;
+            background-color: #ffd700; transition: width 0.3s ease;
+        }
+        .nav-link:hover::after { width: 100%; }
+
+        /* === UTILITIES === */
+        .text-shadow-gold { text-shadow: 0 0 10px rgba(255, 215, 0, 0.5); }
+        .text-shadow-cyan { text-shadow: 0 0 10px rgba(0, 243, 255, 0.5); }
+        .bg-gradient-purple { background: linear-gradient(135deg, #1a1025 0%, #0f0518 100%); }
+        .bg-gradient-gold { background: linear-gradient(45deg, #ffd700, #b8860b); }
+        
+        /* === LOADING SCREEN === */
+        #loader {
+            position: fixed; inset: 0; background: #050208; z-index: 10000;
+            display: flex; justify-content: center; align-items: center; flex-direction: column;
+        }
+    </style>
+</head>
+<body class="antialiased selection:bg-accent-gold selection:text-void-black">
+
+    <!-- CRT & Noise Overlays -->
+    <div class="scanlines"></div>
+    <div class="noise-overlay"></div>
+
+    <!-- Custom Cursor -->
+    <div id="cursor-dot"></div>
+    <div id="cursor-outline"></div>
+
+    <!-- Loading Screen -->
+    <div id="loader">
+        <div class="font-mono text-accent-gold text-2xl tracking-widest animate-pulse">INITIALIZING CODEX...</div>
+        <div class="w-64 h-1 bg-gray-800 mt-4 rounded overflow-hidden">
+            <div id="loader-bar" class="h-full bg-gradient-gold w-0 transition-all duration-1000"></div>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav id="main-nav" class="fixed top-0 w-full z-40 transition-all duration-500 opacity-0 -translate-y-full">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center backdrop-blur-md bg-void-black/70 border-b border-white/10">
+            <div class="text-2xl font-display font-bold text-accent-gold tracking-wider">ARCANE</div>
+            <div class="hidden md:flex space-x-8 font-mono text-lg tracking-widest">
+                <a href="#lore" class="nav-link text-gray-300 hover:text-accent-gold transition-colors">LORE</a>
+                <a href="#chars" class="nav-link text-gray-300 hover:text-accent-gold transition-colors">HEROES</a>
+                <a href="#inv" class="nav-link text-gray-300 hover:text-accent-gold transition-colors">INVENTORY</a>
+                <a href="#spells" class="nav-link text-gray-300 hover:text-accent-gold transition-colors">GRIMOIRE</a>
+            </div>
+            <button class="ornate-border px-6 py-2 font-mono text-accent-gold hover:bg-accent-gold hover:text-void-black transition-all duration-300">
+                ENTER REALM
+            </button>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="relative min-h-screen flex items-center justify-center overflow-hidden">
+        <!-- Background Elements -->
+        <div class="absolute inset-0 bg-gradient-purple"></div>
+        <div class="absolute inset-0 opacity-30 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"></div>
+        
+        <!-- Canvas for Particles -->
+        <canvas id="hero-canvas" class="absolute inset-0 w-full h-full"></canvas>
+
+        <div class="relative z-10 text-center px-4 max-w-5xl mx-auto">
+            <h2 class="font-mono text-accent-gold text-lg md:text-xl tracking-[0.5em] mb-4 opacity-0 translate-y-10" id="hero-subtitle">SYSTEM READY // V.1.0.4</h2>
+            <h1 class="font-display text-6xl md:text-8xl lg:text-9xl font-black text-transparent bg-clip-text bg-gradient-to-b from-white via-gray-200 to-gray-500 mb-6 leading-tight opacity-0 translate-y-10" id="hero-title">
+                THE ARCANE<br>CODEX
+            </h1>
+            <div class="flex justify-center mb-8 opacity-0 scale-0" id="hero-divider">
+                <div class="h-1 w-24 bg-gradient-gold"></div>
+            </div>
+            <p class="font-body text-lg md:text-2xl text-gray-300 max-w-2xl mx-auto leading-relaxed mb-10 opacity-0 translate-y-10" id="hero-desc">
+                Decipher the runes. Reclaim the forgotten grid. A retro-fantasy interface forged in obsidian and gold.
+            </p>
+            <div class="opacity-0 translate-y-10" id="hero-cta">
+                <a href="#lore" class="group relative inline-block px-8 py-4 font-mono text-xl text-accent-gold overflow-hidden transition-all hover:text-void-black">
+                    <span class="absolute inset-0 w-full h-full bg-accent-gold transform -translate-x-full group-hover:translate-x-0 transition-transform duration-300 ease-out"></span>
+                    <span class="relative z-10 flex items-center gap-2">
+                        INITIATE QUEST <span class="group-hover:translate-x-1 transition-transform">→</span>
+                    </span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Scroll Indicator -->
+        <div class="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-0" id="scroll-indicator">
+            <span class="font-mono text-xs text-gray-500 tracking-widest">SCROLL</span>
+            <div class="w-[1px] h-12 bg-gradient-to-b from-accent-gold to-transparent"></div>
+        </div>
+    </header>
+
+    <!-- Lore Section (Diagonal Layout) -->
+    <section id="lore" class="relative py-32 px-6 overflow-hidden">
+        <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+            <div class="order-2 lg:order-1 relative gs-reveal">
+                <div class="absolute -inset-4 bg-gradient-to-r from-royal-purple to-transparent opacity-50 blur-xl"></div>
+                <div class="relative ornate-border p-8 rotate-2 hover:rotate-0 transition-transform duration-500">
+                    <div class="ornate-corner corner-tl"></div><div class="ornate-corner corner-tr"></div>
+                    <div class="ornate-corner corner-bl"></div><div class="ornate-corner corner-br"></div>
+                    
+                    <h3 class="font-display text-3xl text-accent-gold mb-4">The Great Fracture</h3>
+                    <p class="font-body text-gray-300 leading-relaxed mb-4">
+                        In the year 204X, the digital veil shattered. What was once binary code bled into the arcane. Programmers became Warlocks, scripting spells in archaic tongues.
+                    </p>
+                    <div class="font-mono text-sm text-arcane-cyan bg-void-black/50 p-4 border-l-2 border-arcane-cyan">
+                        > RUNE_DETECTED: ETHER_STREAM<br>
+                        > STATUS: UNSTABLE
+                    </div>
+                </div>
+            </div>
+            <div class="order-1 lg:order-2 gs-reveal">
+                <h2 class="font-display text-5xl md:text-7xl font-bold text-white mb-6 glitch-wrapper" data-text="REALM LORE">REALM LORE</h2>
+                <p class="font-body text-xl text-gray-400 mb-8 border-l-4 border-muted-gold pl-6">
+                    Navigate the history of a world where CSS properties dictate the laws of physics and JavaScript errors summon digital demons.
+                </p>
+                <ul class="space-y-4 font-mono text-gray-300">
+                    <li class="flex items-center gap-4"><span class="text-accent-gold">01.</span> The Syntax Wars</li>
+                    <li class="flex items-center gap-4"><span class="text-accent-gold">02.</span> The Fallback Peaks</li>
+                    <li class="flex items-center gap-4"><span class="text-accent-gold">03.</span> The Minification Abyss</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- Character Selection (The Heroes) -->
+    <section id="chars" class="py-32 bg-void-black relative">
+        <div class="absolute top-0 left-oo[vertex] w-full h-px bg-gradient-to-r from-transparent via-accent-gold to-transparent opacity-50"></div>
+        
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center mb-20 gs-reveal">
+                <span class="font-mono text-accent-gold tracking-[0.3em] text-sm block mb-2">CHOOSE YOUR DESTINY</span>
+                <h2 class="font-display text-5xl md:text-6xl text-white font-bold">The Vanguard</h2>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 perspective-1000">
+                <!-- Card 1: The Paladin -->
+                <div class="group relative h-[500px] w-full gs-reveal">
+                    <div class="absolute inset-0 bg-gradient-to-b from-transparent to-void-black/90 z-10 transition-opacity duration-300 group-hover:opacity-0"></div>
+                    <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1535295977205-1c73837df32d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80')] bg-cover bg-center transition-transform duration-700 group-hover:scale-110 grayscale group-hover:grayscale-0"></div>
+                    <div class="absolute bottom-0 left- _elemental-state: 0 w-full p-6 z-20 translate-y-4 group-hover:translate-y-QQ transition-transform">
+                        <h3 class="font-display text-3xl text-accent-gold mb-1">The Paladin</h3>
+                        <p class="font-mono text-arcane-cyan text-sm mb-4">ROLE: TANK // FRONTEND</p>
+                        <div class="h-0 overflow-hidden group-hover:h-auto group-hover:mt-4 transition-all duration-500">
+                            <p class="font-body text-gray-300 text-sm">Specializes in robust layout structures and impenetrable accessibility shields. Wields the Sword of Semantic HTML.</p>
+                        </div>
+                    </div>
+                    <!-- Decorative Border -->
+                    <div class="absolute inset-0 border-2 border-white/10 group-hover:border-accent-gold/50 transition-colors duration-300 m-4 pointer-events-none"></div>
+                </div>
+
+                <!-- Card 2: The Sorcerer -->
+                <div class="group relative h-[500px] w-full gs-reveal" style="transition-delay: 100ms;">
+                    <div class="absolute inset-0 bg-gradient-to-b from-transparent to-void-black/90 z-10 transition-opacity duration-300 group-hover:opacity-0"></div>
+                    <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1519074069444-1ba4fff66d4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80')] bg-cover bg-center transition-transform duration-700 group-hover:scale-110 grayscale group-hover:grayscale-0"></div>
+                    <div class="absolute bottom-0 left-0 w-full p-6 z-20 translate-y-4 group-hover:translate-y-0 transition-transform">
+                        <h3 class="font-display text-3xl text-accent-gold mb-1">The Sorcerer</h3>
+                        <p class="font-mono text-arcane-cyan text-sm mb-4">ROLE: DPS // ANIMATION</p>
+                        <div class="h-0 overflow-hidden group-hover:h-auto group-hover:mt-eh transition-all duration-500">
+                            <p class="font-body text-gray-300 text-sm">Channels raw GSAP energy to bend time and space. Masters of the Canvas API and WebGL illusions.</p>
+                        </div>
+                    </div>
+                    <div class="absolute inset-0 border-2 border-white/10 group-hover:border-accent-gold/50 transition-colors duration-300 m-4 pointer-events-none"></div>
+                </div>
+
+                <!-- Card 3: The Rogue -->
+                <div class="group relative h-[500px] w-full gs-reveal" style="transition-delay: 200ms;">
+                    <div class="absolute inset-挡0 bg-gradient-to-b from-transparent to-void-black/90 z-10 transition-opacity duration-300 group-hover:opacity-0"></div>
+                    <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1605806616940-0a21fa094336?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80')] bg-cover bg-center transition-transform duration-700 group-hover:scale-110 grayscale group-hover:grayscale-0"></div>
+                    <div class="absolute bottom-0 left-0 w-full p-6 z-20 translate-y-4 group-hover:translate-y-愚人节 transition-transform">
+                        <h3 class="font-display text-3xl text-accent-gold mb-1">The Rogue</h3>
+                        <p class="font-mono text-arcane-cyan text-sm mb-4">ROLE: SUPPORT // UX</p>
+                        <div class="h-0 overflow-hidden group-hover:h-auto group-hover:mt-5 transition-all duration-500">
+                            <p class="font-body text-gray-300 text-sm">Strikes from the shadows with unseen micro-interactions. Optimizes performance and steals user attention with flawless flows.</p>
+                        </div>
+                    </div>
+                    <div class="absolute inset-0 border-2 border-white/10 group-hover:border-accent-gold/50 transition-colors duration-300 m-4 pointer-events-none"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Inventory Grid -->
+    <section id="inv" class="py-32 px-6 bg-deep-purple relative overflow-hidden">
+        <!-- Background Grid -->
+        <div class="absolute inset-0 opacity-20" style="background-image: radial-gradient(#b8860b 1px, transparent 1px); background-size: 30px 30px;"></div>
+        
+        <div class="max-w-6xl mx-auto relative z-10">
+            <div class="flex justify-between items-end mb-16 gs-reveal">
+                <div>
+                    <h2 class="font-display text-5xl text-white font-bold mb-2">Inventory</h2>
+                    <p class="font-mono text-accent-gold">ITEMSCollected: 4/20</p>
+                </div>
+                <div class="hidden md:block font-mono text-xs text-gray-500 border border-gray-700 p-2">
+                    GRID_VIEW: ACTIVE
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-c-ols-2 lg:grid-cols-4 gap-6">
+                <!-- Item 1 -->
+                <div class="inventory-card ornate-border p-6 bg-void-black/80 backdrop-blur-sm relative group">
+                    <div class="absolute top-2 right-2 text-xs font-mono text-gray-500 group-hover:text-accent-gold transition-colors">LEGENDARY</div>
+                    <div class="h-32 w-full bg-gray-800/50 mb-4 rounded flex items-center justify-center border border-gray-700 group-hover:border-accent-gold transition-colors">
+                        <span class="text-4xl">⚔️</span>
+                    </div>
+                    <h4 class="font-display text-xl text-white mb-1">The Refactor Blade</h4>
+                    <p class="font-mono text-xs text-gray-400 mb-4">DMG: 999 // SPD: Instant</p>
+                    <div class="w-full bg-gray-800 h-1 rounded-full overflow-hidden">
+                        <div class="bg-accent-gold h-full w-[90%]"></div>
+                    </div>
+                </div>
+
+                <!-- Item 2 -->
+                <div class="inventory-card ornate-border p-6 bg-void-black/80 backdrop-blur-sm relative group">
+                    <div class="absolute top-2 right-2 text-xs font-mono text-gray-500 group-hover:text-arcane-cyan transition-colors">EPIC</div>
+                    <div classNSObjectvclass="h-32 w-full bg-gray-800/50 mb-4 rounded flex items-center justify-center border border-gray-700 group-hover:border-arcane-cyan transition-colors">
+                        <span class="text-4xl">🛡️</span>
+                    </div>
+                    <h4 class="font-display text-xl text-white mb-1">Aegis of Typescript</h4>
+                    <p class="font-mono text-xs text-gray-400 mb-4">DEF: 500 // TYPE: STRICT</p>
+                    <div class="w-full bg-gray-800 h-1 rounded-full overflow-hidden">
+                        <div class="bg-arcane-cyan h-full w-[75%]"></div>
+                    </div>
+                </div>
+
+                <!-- Item 3 -->
+                <div class="inventory-card ornate-border p-6 bg-void-black/80 backdrop-blur-sm relative group">
+                    <div class="absolute top-2 right-2 text-xs font-mono text-gray-500 group-hover:text-purple-400 transition-colors">RARE</div>
+                    <div class="h-32 w-full bg-gray-800/50 mb-4 rounded flex items-center justify-center border border-gray-700 group-hover:border-purple-400 transition-colors">
+                        <span class="text-4xl">📜</span>
+                    </div>
+                    <h4 class="font-display text-xl text-white mb-1">Scroll of Flexbox</h4>
+                    <p class="font-mono text-xs text-gray-400 mb-4">ALIGN: Center // JUSTIFY: Space</p>
+                    <div class="w-full bg-gray-800 h-1 rounded-full overflow-hidden">
+                        <div class="bg-purple-400 h-full w-[60%]"></div>
+                    </div>
+                </div>
+
+                <!-- Item 4 -->
+                <div class="inventory-card ornate-border p-6 bg-void-black/80 backdrop-blur-sm relative group">
+                    <div class="absolute top-2 right-2 text-xs font-mono text-gray-500 group-hover:text-red-500 transition-colors">CURSED</div>
+                    <div class="h-32 w-full bg-gray-800/50 mb-4 rounded flex items-center justify-center border border-gray-700 group-hover:border-red-500 transition-colors">
+                        <span class="text-4xl">☕</span>
+                    </div>
+                    <h4 class="font-display text-xl text-white mb-1">Infinite Coffee</h4>
+                    <p class="font-mono text-xs text-gray-400 mb-4">MP REGEN: +50/s</p>
+                    <div class="w-full bg-gray-800 h-1 rounded-full overflow-hidden">
+                        <div class="bg-red-500 h-full w-[100%] animate-pulse"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Spellbook / Terminal -->
+    <section id="spells" class="py-32 px-6 bg-void-black relative">
+        <div class="max-w-4xl mx-auto">
+            <div class="text-center mb-12 gs-reveal">
+                <h2 class="font-display text-4xl md:text-5xl text-white font-bold mb-4">The Grimoire</h2>
+                <p class="font-body text-gray-400">Terminal access granted. Input commands to reveal hidden spells.</p>
+            </div>
+
+            <div class="bg-[#0c0c0c] border-2 border-gray-700 rounded-lg overflow-hidden shadow-2xl shadow-arcane-cyan/20 gs-reveal">
+                <!-- Terminal Header -->
+                <div class="bg-gray-800 px-4 py-2 flex items-center gap-2 border-b border-gray-700">
+                    <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                    <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                    <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                    <span class="ml-4 font-mono text-xs text-gray-400">root@arcane-codex:~</span>
+                </div>
+                <!-- Terminal Body -->
+                <div class="p-6 font-mono text-sm md:text-base h-[400px] overflow-y-auto" id="terminal-body">
+                    <div class="text-gray-500 mb-2">// Type 'help' to list available commands</div>
+                    <div id="terminal-output"></div>
+                    <div class="flex items-center mt-2">
+                        <span class="text-accent-gold mr-2">></span>
+                        <input type="text" id="terminal-input" class="bg-transparent border-none outline-none text-white w-full font-mono caret-accent-gold" autocomplete="off" spellcheck="false">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-20 border-t border-white/10 bg-void-black text-center relative overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-t from-royal-purple to-transparent opacity-20"></div>
+        <div class="relative z-10">
+            <h2 class="font-display text-3xl text-accent-gold mb-4">The Journey Ends</h2>
+            <p class="font-body text-gray-400 mb-8">But the grid is infinite.</p>
+            <div class="flex justify-center gap-6 font-mono text-sm text-gray-500">
+                <a href="#" class="hover:text-white transition-colors">GITHUB</a>
+                <a href="#" class="hover:text-white transition-colors">TWITTER</a>
+                <a href="#" class="hover:text-white transition-colors">DISCORD</a>
+            </div>
+            <p class="mt-12 font-mono text-xs text-gray-600">DESIGNED & FORGED BY AI // 2024</p>
+        </div>
+    </footer>
+
+    <script>
+        // === LOADER LOGIC ===
+        window.addEventListener('load', () => {
+            const loaderBar = document.getElementById('loader-bar');
+            const loader = document.getElementById('loader');
+            
+            // Simulate loading
+            setTimeout(() => { loaderBar.style.width = '100%'; }, 100);
+            
+            setTimeout(() => {
+                gsap.to(loader, { opacity: 0, duration: 1, onComplete: () => {
+                    loader.style.display = 'none';
+                    initHeroAnimations();
+                }});
+            }, 1200);
+        });
+
+        // === CUSTOM CURSOR ===
+        const cursorDot = document.getElementById('cursor-dot');
+        const cursorOutline = document.getElementById('cursor-outline');
+
+        window.addEventListener('mousemove', (e) => {
+            const posX = e.clientX;
+            const posY = e.clientY;
+
+            // Dot follows instantly
+            cursorDot.style.left = `${posX}px`;
+            cursorDot.style.top = `${posY}px`;
+
+            // Outline follows with delay
+            cursorOutline.animate({
+                left: `${posX}px`,
+                top: `${posY}px`
+            }, { duration: 500, fill: "forwards" });
+        });
+
+        // === GSAP ANIMATIONS ===
+        gsap.registerPlugin(ScrollTrigger);
+
+        // Hero Sequence
+        function initHeroAnimations() {
+            const tl = gsap.timeline();
+            
+            tl.to("#hero-subtitle", { opacity: 1, y: 0, duration: 0.8, ease: "power3.out" })
+              .to("#hero-title", { opacity: 1, y: 0, duration: 1, ease: "power3.out" }, "-=0.4")
+              .to("#hero-divider", { opacity: 1, scale: 1, duration: 0.5, ease: "back.out(1.7)" }, "-=0.2")
+              .to("#hero-desc", { opacity: 1, y: 0, duration: 0.8, ease: "power3.out" }, "-=0.2")
+              .to("#hero-cta", { opacity: 1, y: 0, duration: 0.8, ease: "power3.out" }, "-=0.4")
+              .to("#scroll-indicator", { opacity: 1, duration: 1 }, "-=0.2");
+
+            // Nav reveal
+            gsap.to("#main-nav", { opacity: 1, y: 0, duration: 0.8, delay: 1 });
+        }
+
+        // Scroll Reveals
+        gsap.utils.toArray('.gs-reveal').forEach(element => {
+            gsap.fromTo(element, 
+                { opacity: 0, y: 50 },
+                {
+                    opacity: 1,
+                    y: 0,
+                    duration: 1,
+                    ease: "power3.out",
+                    scrollTrigger: {
+                        trigger: element,
+                        start: "top 85%",
+                        toggleActions: "play none none reverse"
+                    }
+                }
+            );
+        });
+
+        // === HERO PARTICLE CANVAS ===
+        const canvas = document.getElementById('hero-canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 2;
+                this.speedX = (Math.random() - 0.5) * 0.5;
+                this.speedY = (Math.random() - 0.5) * 0.5;
+                this.color = Math.random() > 0.9 ? '#ffd700' : '#2d1b4e'; // Gold or Purple
+            }
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                if (this.x > canvas.width) this.x = 0;
+                if (this.x < 0) this.x = canvas.width;
+                if (this.y > canvas.height) this.y = 0;
+                if (this.y < 0) this.y = canvas.height;
+            }
+            draw() {
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        function initParticles() {
+            particles = [];
+            for (let i = 0; i < 100; i++) {
+                particles.push(new Particle());
+            }
+        }
+
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+            requestAnimationFrame(animateParticles);
+        }
+        initParticles();
+        animateParticles();
+
+        // === INTERACTIVE TERMINAL ===
+        const terminalOutput = document.getElementById('terminal-output');
+        const terminalInput = document.getElementById('terminal-input');
+
+        const spells = {
+            'help': 'Available commands: <span class="text-accent-gold">help, clear, whoami, cast-fireball, exit</span>',
+            'whoami': 'User: <span class="text-arcane-cyan">Arch-Mage</span><br>Level: 99<br>Class: Frontend Developer',
+            'cast-fireball': '<span class="text-red-500">🔥 CRITICAL HIT! 9999 DMG 🔥</span><br>The terminal shakes violently...',
+            'exit': 'You cannot leave. The CSS binds you here.'
+        };
+
+        function printToTerminal(text, isUser = false) {
+            const div = document.createElement('div');
+            div.className = isUser ? 'text-gray-300 mb-2' : 'text-gray-400 mb-2';
+            div.innerHTML = isUser ? `<span class="text-accent-gold">></span> ${text}` : text;
+            terminalOutput.appendChild(div);
+            // Auto scroll
+            const body = document.getElementById('terminal-body');
+            body.scrollTop = body.scrollHeight;
+        }
+
+        terminalInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                const command = terminalInput.value.trim().toLowerCase();
+                printToTerminal(terminalInput.value, true);
+                
+                setTimeout(() => {
+                    if (spells[command]) {
+                        printToTerminal(spells[command]);
+                        if(command === 'cast-fireball') {
+                            // Screen shake effect
+                            gsap.to("body", { x: 5, duration: 0.05, repeat: 5, yoyo: true });
+                        }
+                    } else if (command === 'clear') {
+                        terminalOutput.innerHTML = '';
+                    } else if (command !== '') {
+                        printToTerminal(`<span class="text-red-500">Command not found: ${command}</span>`);
+                    }
+                }, 300);
+
+                terminalInput.value = '';
+            }
+        });
+
+        // Initial terminal text
+        setTimeout(() => printToTerminal('Connected to the Arcane Mainframe...'), 500);
+        setTimeout(() => printToTerminal('Decryption Key Verified.'), 800);
+        setTimeout(() => printToTerminal('Welcome, <span class="text-accent-gold">Developer</span>.'), 1100);
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>ABYSSAL COMMAND | Deep-Sea Operations Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Syne:wght@500;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,200;0,9..40,400;1,9..40,200&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="ocean-backdrop">
+    <canvas id="bioluminescent-canvas" aria-hidden="true"></canvas>
+    <div class="depth-overlay"></div>
+    <div class="caustics-layer"></div>
+    <div class="particle-drift" id="particle-drift-layer" aria-hidden="true"></div>
+  </div>
+
+  <div class="viewport-container">
+    <div class="viewport-frame">
+      <div class="viewport-border top-left"></div>
+      <div class="viewport-border top-right"></div>
+      <div class="viewport-border bottom-left"></div>
+      <div class="viewport-border bottom-right"></div>
+      <div class="hud-scanlines"></div>
+
+      <header class="main-header">
+        <div class="header-left">
+          <span class="station-id">HADAL-9</span>
+          <span class="division-tag">ABYSSAL OPS</span>
+        </div>
+        <div class="header-center">
+          <div class="depth-indicator">
+            <div class="depth-gauge-wrapper">
+              <div class="depth-bar-track">
+                <div class="depth-bar-fill" id="depth-fill"></div>
+              </div>
+              <div class="depth-ticks">
+                <span>0</span><span>2k</span><span>4k</span><span>6k</span><span>8k</span><span>10k</span>
+              </div>
+            </div>
+            <div class="depth-value-display">
+              <span class="current-depth" id="current-depth-num">5834</span>
+              <span class="depth-unit">M</span>
+            </div>
+          </div>
+        </div>
+        <div class="header-right">
+          <div class="time-sync">
+            <span class="mission-clock" id="mission-timer">00:00:00:00</span>
+            <span class="sync-status">SYNC</span>
+          </div>
+        </div>
+      </header>
+
+      <div class="pressure-warning-bar" id="pressure-warning">
+        <div class="klaxon-text">⚠ PRESSURE TOLERANCE CRITICAL — STRUCTURAL COMPENSATION ACTIVE ⚠</div>
+        <div class="klaxon-text" aria-hidden="true">⚠ PRESSURE TOLERANCE CRITICAL — STRUCTURAL COMPENSATION ACTIVE ⚠</div>
+      </div>
+
+      <main class="dashboard-grid">
+        <section class="panel hull-panel" id="hull-panel">
+          <div class="panel-header">
+            <h2 class="panel-title">
+              <span class="title-icon">⚙</span> HULL INTEGRITY
+            </h2>
+            <span class="panel-status warning">STRESS</span>
+          </div>
+          <div class="panel-content">
+            <div class="hull-wireframe">
+              <div class="hull-outline">
+                <div class="hull-section bow" id="hull-bow"></div>
+                <div class="hull-section midship" id="hull-midship"></div>
+                <div class="hull-section stern" id="hull-stern"></div>
+              </div>
+              <div class="stress-points" id="stress-overlay"></div>
+            </div>
+            <div class="integrity-stats">
+              <div class="stat-row">
+                <span>COMPOSITE</span>
+                <span class="stat-value" id="composite-value">87.3%</span>
+              </div>
+              <div class="stat-row">
+                <span>MICRO-FRACTURES</span>
+                <span class="stat-value alert" id="fracture-count">3</span>
+              </div>
+              <div class="stat-row">
+                <span>BULKHEAD 4</span>
+                <span class="stat-value warning" id="bulkhead-status">CAUTION</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel sonar-panel">
+          <div class="panel-header">
+            <h2 class="panel-title">
+              <span class="title-icon">◈</span> ACTIVE SONAR
+            </h2>
+            <span class="panel-status nominal">PING</span>
+          </div>
+          <div class="panel-content sonar-content">
+            <div class="sonar-display" id="sonar-display">
+              <canvas id="sonar-canvas" width="280" height="280"></canvas>
+              <div class="sonar-center-dot"></div>
+              <div class="sonar-range-ring ring-1"></div>
+              <div class="sonar-range-ring ring-2"></div>
+              <div class="sonar-range-ring ring-3"></div>
+            </div>
+            <div class="sonar-targets">
+              <div class="target-entry">
+                <span>CONTACT A1</span>
+                <span class="target-bearing">127°</span>
+                <span class="target-range">1.2km</span>
+              </div>
+              <div class="target-entry">
+                <span>CONTACT B3</span>
+                <span class="target-bearing">248°</span>
+                <span class="target-range">2.8km</span>
+              </div>
+              <div class="target-entry unidentified">
+                <span>ANOMALY</span>
+                <span class="target-bearing">015°</span>
+                <span class="target-range">0.4km</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel biolum-panel">
+          <div class="panel-header">
+            <h2 class="panel-title">
+              <span class="title-icon">✦</span> BIOLUMINESCENT FAUNA
+            </h2>
+            <span class="panel-status nominal">TRACKING</span>
+          </div>
+          <div class="panel-content">
+            <div class="fauna-spectrogram" id="fauna-spectrogram">
+              <div class="spectrum-bar" style="height: 42%"></div>
+              <div class="spectrum-bar" style="height: 78%"></div>
+              <div class="spectrum-bar" style="height: 55%"></div>
+              <div class="spectrum-bar" style="height: 91%"></div>
+              <div class="spectrum-bar" style="height: 34%"></div>
+              <div class="spectrum-bar" style="height: 67%"></div>
+              <div class="spectrum-bar" style="height: 88%"></div>
+              <div class="spectrum-bar" style="height: 45%"></div>
+              <div class="spectrum-bar" style="height: 72%"></div>
+              <div class="spectrum-bar" style="height: 53%"></div>
+            </div>
+            <div class="species-list">
+              <div class="species-entry">
+                <span class="species-marker" style="background: #7DF9FF;"></span>
+                <span>E. SPARKLING</span>
+                <span class="count">214</span>
+              </div>
+              <div class="species-entry">
+                <span class="species-marker" style="background: #FF6B9D;"></span>
+                <span>D. RED SHIFT</span>
+                <span class="count">87</span>
+              </div>
+              <div class="species-entry">
+                <span class="species-marker" style="background: #B98EFF;"></span>
+                <span>ABYSSAL JELLY</span>
+                <span class="count">12</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel current-panel">
+          <div class="panel-header">
+            <h2 class="panel-title">
+              <span class="title-icon">≈</span> CURRENT FLOW
+            </h2>
+            <span class="panel-status nominal">ACTIVE</span>
+          </div>
+          <div class="panel-content">
+            <div class="flow-visualization" id="current-flow">
+              <svg viewBox="0 0 200 60" preserveAspectRatio="none" class="flow-svg">
+                <defs>
+                  <linearGradient id="flowGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stop-color="#00F0FF" stop-opacity="0.1" />
+                    <stop offset="50%" stop-color="#00F0FF" stop-opacity="0.8" />
+                    <stop offset="100%" stop-color="#00F0FF" stop-opacity="0.1" />
+                  </linearGradient>
+                </defs>
+                <path d="M0,30 Q25,15 50,30 T100,30 T150,30 T200,30" fill="none" stroke="url(#flowGradient)" stroke-width="2" vector-effect="non-scaling-stroke" id="flow-path-1"/>
+                <path d="M0,20 Q25,35 50,20 T100,20 T150,20 T200,20" fill="none" stroke="url(#flowGradient)" stroke-width="1.5" vector-effect="non-scaling-stroke" id="flow-path-2" opacity="0.6"/>
+              </svg>
+            </div>
+            <div class="flow-stats">
+              <div class="flow-direction">
+                <span class="dir-arrow">→</span>
+                <span>247° SW</span>
+              </div>
+              <div class="flow-speed">
+                <span class="speed-value">1.8</span>
+                <span>KNOTS</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel pressure-panel">
+          <div class="panel-header">
+            <h2 class="panel-title">
+              <span class="title-icon">⬡</span> AMBIENT PRESSURE
+            </h2>
+            <span class="panel-status critical">CRIT</span>
+          </div>
+          <div class="panel-content">
+            <div class="pressure-gauge-container">
+              <div class="circular-gauge" id="pressure-gauge">
+                <svg viewBox="0 0 100 100">
+                  <circle cx="50" cy="50" r="42" fill="none" stroke="#1A2A3A" stroke-width="6"/>
+                  <circle cx="50" cy="50" r="42" fill="none" stroke="#FF4D6D" stroke-width="6" stroke-dasharray="264" stroke-dashoffset="50" stroke-linecap="round" id="gauge-arc" transform="rotate(-90 50 50)"/>
+                </svg>
+                <div class="gauge-value" id="pressure-value">612</div>
+                <div class="gauge-label">ATM</div>
+              </div>
+            </div>
+            <div class="pressure-trend">
+              <span>Δ 0.4 ATM/MIN</span>
+              <span class="trend-arrow up">▲</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel comms-panel">
+          <div class="panel-header">
+            <h2 class="panel-title">
+              <span class="title-icon">⌁</span> SURFACE COMMS
+            </h2>
+            <span class="panel-status nominal">LINK</span>
+          </div>
+          <div class="panel-content">
+            <div class="comms-wave">
+              <div class="wave-bar active"></div>
+              <div class="wave-bar active"></div>
+              <div class="wave-bar active"></div>
+              <div class="wave-bar"></div>
+              <div class="wave-bar active"></div>
+            </div>
+            <div class="comms-log">
+              <div class="log-entry">
+                <span class="log-time">04:22:18</span>
+                <span>SURFACE: STATUS REPORT REQUESTED</span>
+              </div>
+              <div class="log-entry">
+                <span class="log-time">04:20:05</span>
+                <span>ABYSSAL: NOMINAL, PROCEEDING</span>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <footer class="status-bar">
+        <div class="status-item">
+          <span class="status-dot green"></span>
+          <span>O2 SCRUBBERS</span>
+        </div>
+        <div class="status-item">
+          <span class="status-dot green"></span>
+          <span>REACTOR COOLANT</span>
+        </div>
+        <div class="status-item">
+          <span class="status-dot yellow"></span>
+          <span>EXT LIGHTS</span>
+        </div>
+        <div class="status-item">
+          <span class="status-dot red blink"></span>
+          <span>HULL SENSORS</span>
+        </div>
+        <div class="current-coords">
+          <span>LAT 21.8342° N</span>
+          <span>LON 145.1827° E</span>
+        </div>
+      </footer>
+    </div>
+  </div>
+
+  <script src="scripts.js"></script>
+</body>
+</html>

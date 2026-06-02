@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Te Kapehu Whetū — Polynesian Celestial Wayfinding</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;500;600;700&family=Spectral:ital,wght@0,200;0,300;0,400;0,600;1,200;1,300;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <canvas id="starDome" aria-hidden="true"></canvas>
+    <canvas id="wakeTrail" aria-hidden="true"></canvas>
+
+    <svg class="svg-defs" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <defs>
+            <pattern id="tapaPattern" x="0" y="0" width="60" height="60" patternUnits="userSpaceOnUse">
+                <rect width="60" height="60" fill="none"/>
+                <path d="M0 10 L60 10 M0 30 L60 30 M0 50 L60 50 M10 0 L10 60 M30 0 L30 60 M50 0 L50 60" stroke="#c4956a" stroke-width="0.5" opacity="0.3"/>
+                <path d="M0 20 Q15 15 30 20 Q45 25 60 20" stroke="#c4956a" stroke-width="0.8" fill="none" opacity="0.2"/>
+                <path d="M0 40 Q15 35 30 40 Q45 45 60 40" stroke="#c4956a" stroke-width="0.8" fill="none" opacity="0.2"/>
+                <circle cx="30" cy="30" r="3" fill="#c4956a" opacity="0.15"/>
+                <path d="M15 5 L17 10 L15 15 L20 12 L25 15 L23 10 L25 5 L20 8 Z" fill="#c4956a" opacity="0.1"/>
+            </pattern>
+            <pattern id="tapaPatternDense" x="0" y="0" width="30" height="30" patternUnits="userSpaceOnUse">
+                <rect width="30" height="30" fill="none"/>
+                <path d="M0 5 L30 5 M0 15 L30 15 M0 25 L30 25 M5 0 L5 30 M15 0 L15 30 M25 0 L25 30" stroke="#c4956a" stroke-width="0.3" opacity="0.2"/>
+                <circle cx="15" cy="15" r="1.5" fill="#c4956a" opacity="0.1"/>
+            </pattern>
+            <symbol id="tikiSymbol" viewBox="0 0 40 80">
+                <path d="M20 2 C22 2 24 4 24 6 C24 8 22 10 20 10 C18 10 16 8 16 6 C16 4 18 2 20 2 Z" fill="currentColor"/>
+                <rect x="14" y="11" width="12" height="3" rx="1" fill="currentColor"/>
+                <path d="M12 14 L28 14 L26 30 L14 30 Z" fill="currentColor" opacity="0.8"/>
+                <path d="M14 30 L12 50 L16 50 L18 35 L22 35 L24 50 L28 50 L26 30" fill="currentColor" opacity="0.6"/>
+                <circle cx="17" cy="6" r="1.5" fill="#0a1628"/>
+                <circle cx="23" cy="6" r="1.5" fill="#0a1628"/>
+                <path d="M18 8 Q20 9 22 8" stroke="#0a1628" stroke-width="0.8" fill="none"/>
+                <path d="M16 14 L8 22 M24 14 L32 22" stroke="currentColor" stroke-width="2" fill="none"/>
+                <path d="M16 35 L8 45 M24 35 L32 45" stroke="currentColor" stroke-width="1.5" fill="none"/>
+            </symbol>
+            <symbol id="heiMatau" viewBox="0 0 30 40">
+                <path d="M15 2 Q25 2 25 15 Q25 30 15 35 Q8 38 5 32 Q3 28 8 25 Q12 22 15 28" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+                <circle cx="15" cy="5" r="2" fill="currentColor"/>
+            </symbol>
+            <symbol id="starMarker" viewBox="0 0 20 20">
+                <path d="M10 0 L12 7 L20 7 L14 12 L16 20 L10 15 L4 20 L6 12 L0 7 L8 7 Z" fill="currentColor"/>
+            </symbol>
+            <symbol id="waveSymbol" viewBox="0 0 200 40">
+                <path d="M0 20 Q25 5 50 20 Q75 35 100 20 Q125 5 150 20 Q175 35 200 20" fill="none" stroke="currentColor" stroke-width="2"/>
+            </symbol>
+        </defs>
+    </svg>
+
+    <div class="wave-layer" aria-hidden="true">
+        <svg class="wave wave-1" viewBox="0 0 1440 120" preserveAspectRatio="none">
+            <path d="M0 60 Q180 20 360 60 Q540 100 720 60 Q900 20 1080 60 Q1260 100 1440 60 L1440 120 L0 120 Z"/>
+        </svg>
+        <svg class="wave wave-2" viewBox="0 0 1440 120" preserveAspectRatio="none">
+            <path d="M0 80 Q180 40 360 80 Q540 120 720 80 Q900 40 1080 80 Q1260 120 1440 80 L1440 120 L0 120 Z"/>
+        </svg>
+        <svg class="wave wave-3" viewBox="0 0 1440 120" preserveAspectRatio="none">
+            <path d="M0 90 Q180 60 360 90 Q540 120 720 90 Q900 60 1080 90 Q1260 120 1440 90 L1440 120 L0 120 Z"/>
+        </svg>
+        <svg class="wave wave-4" viewBox="0 0 1440 120" preserveAspectRatio="none">
+            <path d="M0 70 Q120 50 240 70 Q360 90 480 70 Q600 50 720 70 Q840 90 960 70 Q1080 50 1200 70 Q1320 90 1440 70 L1440 120 L0 120 Z"/>
+        </svg>
+    </div>
+
+    <div class="tapa-overlay" aria-hidden="true"></div>
+    <div class="bio-particles" id="bioParticles" aria-hidden="true"></div>
+
+    <div class="interface">
+
+        <header class="site-header">
+            <div class="header-tiki left">
+                <svg><use href="#tikiSymbol"/></svg>
+            </div>
+            <div class="header-content">
+                <div class="header-ornament top"></div>
+                <h1 class="site-title">Te Kapehu Whetū</h1>
+                <p class="site-subtitle">The Star Compass of the Ancient Wayfinders</p>
+                <div class="header-divider">
+                    <svg class="hei-matau left-hook"><use href="#heiMatau"/></svg>
+                    <span class="divider-line"></span>
+                    <svg class="hei-matau right-hook"><use href="#heiMatau"/></svg>
+                </div>
+                <p class="header-description">For millennia, Polynesian navigators crossed the vast Pacific — Te Moana Nui a Kiwa — reading the stars, swells, currents, and flight of birds to find islands beyond the horizon. This is their knowledge.</p>
+                <div class="header-ornament bottom"></div>
+            </div>
+            <div class="header-tiki right">
+                <svg><use href="#tikiSymbol"/></svg>
+            </div>
+        </header>
+
+        <nav class="carved-nav" aria-label="Wayfinding sections">
+            <button class="carved-marker active" data-section="star-compass">
+                <svg class="marker-icon"><use href="#starMarker"/></svg>
+                <span class="marker-label">Star Compass</span>
+                <span class="marker-hawaiian">Kapehu Whetū</span>
+                <span class="marker-glow"></span>
+            </button>
+            <button class="carved-marker" data-section="constellations">
+                <svg class="marker-icon"><use href="#heiMatau"/></svg>
+                <span class="marker-label">Constellations</span>
+                <span class="marker-hawaiian">Ngā Whetū</span>
+                <span class="marker-glow"></span>
+            </button>
+            <button class="carved-marker" data-section="ocean-currents">
+                <svg class="marker-icon"><use href="#waveSymbol"/></svg>
+                <span class="marker-label">Ocean Currents</span>
+                <span class="marker-hawaiian">Te Au</span>
+                <span class="marker-glow"></span>
+            </button>
+            <button class="carved-marker" data-section="wave-patterns">
+                <svg class="marker-icon"><use href="#waveSymbol"/></svg>
+                <span class="marker-label">Wave Patterns</span>
+                <span class="marker-hawaiian">Ngā Tai</span>
+                <span class="marker-glow"></span>
+            </button>
+            <button class="carved-marker" data-section="island-chains">
+                <svg class="marker-icon"><use href="#heiMatau"/></svg>
+                <span class="marker-label">Island Chains</span>
+                <span class="marker-hawaiian">Ngā Motu</span>
+                <span class="marker-glow"></span>
+            </button>
+        </nav>
+
+        <main class="content">
+
+            <section id="star-compass" class="wayfinding-section active">
+                <div class="section-frame">
+                    <div class="frame-corner top-left"></div>
+                    <div class="frame-corner top-right"></div>
+                    <div class="frame-corner bottom-left"></div>
+                    <div class="frame-corner bottom-right"></div>
+
+                    <div class="section-header">
+                        <h2>The Star Compass</h2>
+                        <p class="section-subtitle">Kapehu Whetū — 32 Houses of the Stars</p>
+                    </div>
+
+                    <div class="star-compass-container">
+                        <div class="compass-ring" id="compassRing">
+                            <div class="compass-center">
+                                <svg class="compass-voyager" viewBox="0 0 100 100">
+                                    <circle cx="50" cy="50" r="48" fill="none" stroke="currentColor" stroke-width="0.3" opacity="0.3"/>
+                                    <circle cx="50" cy="50" r="45" fill="none" stroke="currentColor" stroke-width="0.5" opacity="0.5"/>
+                                    <circle cx="50" cy="50" r="35" fill="none" stroke="currentColor" stroke-width="0.3" opacity="0.3" stroke-dasharray="2 4"/>
+                                    <circle cx="50" cy="50" r="25" fill="none" stroke="currentColor" stroke-width="0.3" opacity="0.2"/>
+                                    <path d="M50 5 L50 95 M5 50 L95 50" stroke="currentColor" stroke-width="0.3" opacity="0.3"/>
+                                    <path d="M15 15 L85 85 M85 15 L15 85" stroke="currentColor" stroke-width="0.2" opacity="0.2" stroke-dasharray="3 6"/>
+                                    <circle cx="50" cy="50" r="6" fill="none" stroke="currentColor" stroke-width="0.8" opacity="0.6"/>
+                                    <circle cx="50" cy="50" r="3" fill="currentColor" opacity="0.8"/>
+                                </svg>
+                            </div>
+                            <div class="compass-directions" id="compassDirections"></div>
+                            <div class="compass-quadrant-labels">
+                                <span class="quadrant-label ko" data-angle="45">Manu</span>
+                                <span class="quadrant-label mal" data-angle="135">Manu</span>
+                                <span class="quadrant-label kona" data-angle="225">Manu</span>
+                                <span class="quadrant-label haka" data-angle="315">Manu</span>
+                            </div>
+                        </div>
+
+                        <div class="compass-info">
+                            <h3>The 32 Houses</h3>
+                            <p>The star compass divides the horizon into 32 directional houses — each named and memorized by the navigator. Stars rise in specific houses and set in their opposing houses across the dome of the sky. By tracking which stars appear and disappear at which points on the horizon, the wayfinder maintains course across thousands of miles of open ocean.</p>
+                            <div class="compass-legend">
+                                <div class="legend-item">
+                                    <span class="legend-dot cardinal"></span>
+                                    <span>Cardinal directions — 'Ākau, Hikina, Hema, Komohana</span>
+                                </div>
+                                <div class="legend-item">
+                                    <span class="legend-dot intercardinal"></span>
+                                    <span>Manu — the four intercardinal bird points</span>
+                                </div>
+                                <div class="legend-item">
+                                    <span class="legend-dot house"></span>
+                                    <span>Star houses — where specific stars rise and set</span>
+                                </div>
+                            </div>
+                            <div class="compass-instruction">
+                                <svg class="instruction-icon"><use href="#heiMatau"/></svg>
+                                <span>Move your cursor across the sky to see how the star dome shifts with the navigator's perspective</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="constellations" class="wayfinding-section">
+                <div class="section-frame">
+                    <div class="frame-corner top-left"></div>
+                    <div class="frame-corner top-right"></div>
+                    <div class="frame-corner bottom-left"></div>
+                    <div class="frame-corner bottom-right"></div>
+
+                    <div class="section-header">
+                        <h2>Wayfinding Constellations</h2>
+                        <p class="section-subtitle">Ngā Whetū — Stars That Guide the Voyage</p>
+                    </div>
+
+                    <div class="constellation-grid">
+                        <div class="constellation-card" data-constellation="crux">
+                            <div class="constellation-display">
+                                <canvas class="constellation-canvas" data-name="crux" width="300" height="300"></canvas>
+                            </div>
+                            <div class="constellation-info">
+                                <h3>Te Puka — The Southern Cross</h3>
+                                <span class="constellation-latin">Crux Australis</span>
+                                <p>The most vital constellation for southern hemisphere navigation. The cross points toward the south celestial pole. By extending the long axis of the cross 4.5 times, a navigator locates the south point on the horizon — essential for finding Aotearoa and islands of the deep south.</p>
+                                <div class="star-list">
+                                    <span class="star-tag">Acrux</span>
+                                    <span class="star-tag">Mimosa</span>
+                                    <span class="star-tag">Gacrux</span>
+                                    <span class="star-tag">Imai</span>
+                                </div>
+                                <p class="constellation-note">Rises in the house of Hema, sets in Hema. Visible year-round in the southern tropics.</p>
+                            </div>
+                        </div>
+
+                        <div class="constellation-card" data-constellation="orion">
+                            <div class="constellation-display">
+                                <canvas class="constellation-canvas" data-name="orion" width="300" height="300"></canvas>
+                            </div>
+                            <div class="constellation-info">
+                                <h3>He Tautoru — Orion's Belt</h3>
+                                <span class="constellation-latin">Orion / Tautoru</span>
+                                <p>Three stars in a row — the most recognizable marker in the night sky. Orion rises due east (Hikina) and sets due west (Komohana), serving as a primary east-west reference. The navigator uses these three stars to maintain latitude during voyages along the equatorial routes.</p>
+                                <div class="star-list">
+                                    <span class="star-tag">Alnitak</span>
+                                    <span class="star-tag">Alnilam</span>
+                                    <span class="star-tag">Mintaka</span>
+                                    <span class="star-tag">Betelgeuse</span>
+                                    <span class="star-tag">Rigel</span>
+                                </div>
+                                <p class="constellation-note">Rises in Hikina, sets in Komohana. The belt is nearly on the celestial equator.</p>
+                            </div>
+                        </div>
+
+                        <div class="constellation-card" data-constellation="pleiades">
+                            <div class="constellation-display">
+                                <canvas class="constellation-canvas" data-name="pleiades" width="300" height="300"></canvas>
+                            </div>
+                            <div class="constellation-info">
+                                <h3>Matariki — The Pleiades</h3>
+                                <span class="constellation-latin">Pleiades / Seven Sisters</span>
+                                <p>The rising of Matariki marks the Māori new year and signals the beginning of the voyaging season. This tight cluster of seven stars appears in the pre-dawn sky at a specific time each year, telling navigators when the winds and currents will favor long ocean passages.</p>
+                                <div class="star-list">
+                                    <span class="star-tag">Matariki</span>
+                                    <span class="star-tag">Tupu-ā-rangi</span>
+                                    <span class="star-tag">Waitī</span>
+                                    <span class="star-tag">Waitā</span>
+                                    <span class="star-tag">Waipunarangi</span>
+                                    <span class="star-tag">Ururangi</span>
+                                    <span class="star-tag">Pōhutukawa</span>
+                                </div>
+                                <p class="constellation-note">Heliacal rising in late May/June. Marks the start of the voyaging season.</p>
+                            </div>
+                        </div>
+
+                        <div class="constellation-card" data-constellation="scorpius">
+                            <div class="constellation-display">
+                                <canvas class="constellation-canvas" data-name="scorpius" width="300" height="300"></canvas>
+                            </div>
+                            <div class="constellation-info">
+                                <h3>Te Matau a Māui — Māui's Fishhook</h3>
+                                <span class="constellation-latin">Scorpius</span>
+                                <p>The great fishhook of Māui, who fished up the islands from the ocean floor. Its distinctive curved shape tracks across the southern sky, and its red heart-star Antares serves as a navigation reference. The tail of the scorpion curves toward the south, helping wayfinders orient themselves.</p>
+                                <div class="star-list">
+                                    <span class="star-tag">Antares</span>
+                                    <span class="star-tag">Shaula</span>
+                                    <span class="star-tag">Sargas</span>
+                                    <span class="star-tag">Dschubba</span>
+                                </div>
+                                <p class="constellation-note">Visible in southern skies during the voyaging season. The hook shape is unmistakable.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="constellation-instruction">
+                        <svg class="instruction-icon"><use href="#heiMatau"/></svg>
+                        <span>Click and drag between stars to trace the constellation paths as the ancient navigators learned them</span>
+                    </div>
+                </div>
+            </section>
+
+            <section id="ocean-currents" class="wayfinding-section">
+                <div class="section-frame">
+                    <div class="frame-corner top-left"></div>
+                    <div class="frame-corner top-right"></div>
+                    <div class="frame-corner bottom-left"></div>
+                    <div class="frame-corner bottom-right"></div>
+
+                    <div class="section-header">
+                        <h2>Ocean Currents</h2>
+                        <p class="section-subtitle">Te Au — The Rivers Within the Sea</p>
+                    </div>
+
+                    <div class="currents-map-container">
+                        <canvas id="currentsCanvas" width="900" height="500"></canvas>
+                        <div class="current-legend">
+                            <h4>Major Currents of Te Moana Nui a Kiwa</h4>
+                            <div class="legend-item">
+                                <span class="current-indicator warm"></span>
+                                <span>Warm currents — North Equatorial, South Equatorial</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="current-indicator cold"></span>
+                                <span>Cold currents — Humboldt, California</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="current-indicator equatorial"></span>
+                                <span>Equatorial countercurrent — the voyager's highway</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="currents-knowledge">
+                        <div class="knowledge-card">
+                            <div class="knowledge-tiki">
+                                <svg><use href="#tikiSymbol"/></svg>
+                            </div>
+                            <h3>The Equatorial Highway</h3>
+                            <p>Polynesian voyagers understood that the great ocean currents formed natural highways across the Pacific. The South Equatorial Current flows from east to west, carrying canoes from island groups in the central Pacific toward the west. The Equatorial Countercurrent flows back to the east — the path likely taken by settlers reaching Rapa Nui.</p>
+                        </div>
+                        <div class="knowledge-card">
+                            <div class="knowledge-tiki">
+                                <svg><use href="#tikiSymbol"/></svg>
+                            </div>
+                            <h3>Reading Current Against Wave</h3>
+                            <p>Expert navigators could detect ocean currents by feeling the motion of the canoe through their bodies — the hull's response to current differs from its response to wind-driven waves. When current and swell align, the canoe rides smoothly. When they conflict, the vessel labors — telling the wayfinder that a current flows counter to the sea's surface motion.</p>
+                        </div>
+                        <div class="knowledge-card">
+                            <div class="knowledge-tiki">
+                                <svg><use href="#tikiSymbol"/></svg>
+                            </div>
+                            <h3>Te Tai — The Changing Tide</h3>
+                            <p>Tidal patterns around island chains create predictable flows that navigators memorized for each landfall. Approaching an island, the wayfinder reads changing tide rhythms as confirmation of nearby land — even before the island becomes visible. Tidal rips and upwellings near reefs serve as signposts in the open ocean.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="wave-patterns" class="wayfinding-section">
+                <div class="section-frame">
+                    <div class="frame-corner top-left"></div>
+                    <div class="frame-corner top-right"></div>
+                    <div class="frame-corner bottom-left"></div>
+                    <div class="frame-corner bottom-right"></div>
+
+                    <div class="section-header">
+                        <h2>Wave Patterns</h2>
+                        <p class="section-subtitle">Ngā Tai — Reading the Swell</p>
+                    </div>
+
+                    <div class="wave-visualization">
+                        <canvas id="waveCanvas" width="900" height="400"></canvas>
+                        <div class="wave-labels">
+                            <div class="wave-label" data-type="primary">
+                                <span class="wave-label-dot primary"></span>
+                                <span>Primary swell — generated by prevailing trade winds</span>
+                            </div>
+                            <div class="wave-label" data-type="reflected">
+                                <span class="wave-label-dot reflected"></span>
+                                <span>Reflected swell — bounces off island landmasses</span>
+                            </div>
+                            <div class="wave-label" data-type="refracted">
+                                <span class="wave-label-dot refracted"></span>
+                                <span>Refracted swell — bends around underwater features</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="wave-knowledge-grid">
+                        <div class="wave-knowledge-card">
+                            <h3>Te Ngaru — The Reflected Wave</h3>
+                            <p>When ocean swells strike an island, they reflect back toward the open sea. A navigator sailing away from land can feel these reflected waves bouncing back from the island behind them — confirming the island's position even when it has disappeared below the horizon. This technique allows wayfinders to maintain heading relative to known landmasses.</p>
+                        </div>
+                        <div class="wave-knowledge-card">
+                            <h3>Wave Refraction</h3>
+                            <p>Waves bend around islands and underwater shoals, creating interference patterns that an experienced navigator reads like a map. Where swells from different directions intersect, they form characteristic patterns — standing waves, confused seas, or smooth lanes — that signal the presence of land below the horizon.</p>
+                        </div>
+                        <div class="wave-knowledge-card">
+                            <h3>The Four Swells</h3>
+                            <p>Polynesian navigators tracked multiple swell systems simultaneously — the dominant trade-wind swell, the long-period swell from distant storms, refracted waves from island chains, and the subtle reflected wave from nearby land. Feeling these patterns through the hull of the waka, the wayfinder builds a mental map of the surrounding ocean.</p>
+                        </div>
+                        <div class="wave-knowledge-card">
+                            <h3>Ngā Tai Ārahi — Guiding Waves</h3>
+                            <p>Specific wave patterns serve as guides between island pairs. The swell refracting around a particular atoll creates a unique signature that navigators memorize. Approaching from the correct angle, the wayfinder recognizes the pattern and knows exactly where they are relative to the island — even in complete darkness or overcast skies.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="island-chains" class="wayfinding-section">
+                <div class="section-frame">
+                    <div class="frame-corner top-left"></div>
+                    <div class="frame-corner top-right"></div>
+                    <div class="frame-corner bottom-left"></div>
+                    <div class="frame-corner bottom-right"></div>
+
+                    <div class="section-header">
+                        <h2>Island Chains</h2>
+                        <p class="section-subtitle">Ngā Motu — Waypoints of the Ancestors</p>
+                    </div>
+
+                    <div class="island-map-container">
+                        <canvas id="islandCanvas" width="900" height="500"></canvas>
+                    </div>
+
+                    <div class="island-chains-grid">
+                        <div class="island-group" data-group="hawaii">
+                            <div class="island-group-header">
+                                <svg class="island-icon"><use href="#heiMatau"/></svg>
+                                <h3>Hawai'i</h3>
+                                <span class="island-coords">19°–22°N, 155°–160°W</span>
+                            </div>
+                            <p>The northern apex of the Polynesian Triangle. Settled from the Marquesas and Tahiti around 400 CE, then again around 1100 CE. Hawai'ian navigators developed a unique star compass system and maintained contact with the southern islands across 2,500 miles of open ocean.</p>
+                            <div class="island-features">
+                                <span class="feature-tag">Volcanic islands</span>
+                                <span class="feature-tag">Trade wind route</span>
+                                <span class="feature-tag">Hokule'a voyages</span>
+                            </div>
+                        </div>
+
+                        <div class="island-group" data-group="rapanui">
+                            <div class="island-group-header">
+                                <svg class="island-icon"><use href="#heiMatau"/></svg>
+                                <h3>Rapa Nui</h3>
+                                <span class="island-coords">27°S, 109°W</span>
+                            </div>
+                            <p>The eastern apex — the most isolated inhabited island on Earth. Settled around 300–400 CE via the equatorial countercurrent, its people maintained the longest ocean isolation in Polynesian history. The moai face inward, watching over the descendants of the original voyagers.</p>
+                            <div class="island-features">
+                                <span class="feature-tag">Equatorial countercurrent</span>
+                                <span class="feature-tag">Most isolated</span>
+                                <span class="feature-tag">Moai</span>
+                            </div>
+                        </div>
+
+                        <div class="island-group" data-group="aotearoa">
+                            <div class="island-group-header">
+                                <svg class="island-icon"><use href="#heiMatau"/></svg>
+                                <h3>Aotearoa</h3>
+                                <span class="island-coords">34°–47°S, 166°–178°E</span>
+                            </div>
+                            <p>The southern apex — the largest landmass settled by Polynesians. The Great Fleet traditions tell of multiple waka making the journey from Hawaiki around 1350 CE. Navigators followed the Southern Cross southward until new stars appeared and old ones disappeared below the northern horizon.</p>
+                            <div class="island-features">
+                                <span class="feature-tag">Southern Cross route</span>
+                                <span class="feature-tag">Temperate climate</span>
+                                <span class="feature-tag">Waka traditions</span>
+                            </div>
+                        </div>
+
+                        <div class="island-group" data-group="samoa-tonga">
+                            <div class="island-group-header">
+                                <svg class="island-icon"><use href="#heiMatau"/></svg>
+                                <h3>Sāmoa & Tonga</h3>
+                                <span class="island-coords">13°–21°S, 168°–178°W</span>
+                            </div>
+                            <p>The heart of Polynesia — the oldest settled islands in the region, occupied for over 3,000 years. From this ancestral homeland, the great voyages of exploration radiated outward across the Pacific. Tongan navigators maintained a maritime empire spanning 800 miles of ocean for centuries.</p>
+                            <div class="island-features">
+                                <span class="feature-tag">Ancestral homeland</span>
+                                <span class="feature-tag">Tu'i Tonga empire</span>
+                                <span class="feature-tag">3,000+ years</span>
+                            </div>
+                        </div>
+
+                        <div class="island-group" data-group="tahiti">
+                            <div class="island-group-header">
+                                <svg class="island-icon"><use href="#heiMatau"/></svg>
+                                <h3>Tahiti & The Society Islands</h3>
+                                <span class="island-coords">17°–18°S, 148°–152°W</span>
+                            </div>
+                            <p>The center of the Polynesian world — the island known as Hawaiki in many traditions. From Tahiti, navigators sailed to Hawai'i, Aotearoa, and Rapa Nui, creating the Polynesian Triangle. The revival of wayfinding began here with the Hokule'a voyage in 1976.</p>
+                            <div class="island-features">
+                                <span class="feature-tag">Hawaiki</span>
+                                <span class="feature-tag">Hokule'a origin</span>
+                                <span class="feature-tag">Central hub</span>
+                            </div>
+                        </div>
+
+                        <div class="island-group" data-group="marquesas">
+                            <div class="island-group-header">
+                                <svg class="island-icon"><use href="#heiMatau"/></svg>
+                                <h3>Te Henua Enana — The Marquesas</h3>
+                                <span class="island-coords">7°–10°S, 138°–141°W</span>
+                            </div>
+                            <p>The launching point for the settlement of Hawai'i. Marquesan navigators sailed north across 2,000 miles of open ocean to find the Hawaiian island chain. The cultural connections between the Marquesas and Hawai'i are preserved in language, agriculture, and ritual practice.</p>
+                            <div class="island-features">
+                                <span class="feature-tag">Hawaiian origin</span>
+                                <span class="feature-tag">Northward voyage</span>
+                                <span class="feature-tag">Cultural links</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="polynesian-triangle-note">
+                        <svg class="triangle-icon"><use href="#heiMatau"/></svg>
+                        <p>The Polynesian Triangle — spanning from Hawai'i in the north to Rapa Nui in the east to Aotearoa in the south — encompasses over 10 million square miles of open ocean. Every island within this vast triangle was discovered and settled by navigators without instruments, using only the knowledge encoded in this chart.</p>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+
+        <footer class="site-footer">
+            <div class="footer-ornament"></div>
+            <p class="footer-text">He hono tangata e kore e motu — <em>Human bonds cannot be severed</em></p>
+            <p class="footer-attribution">A tribute to the wayfinders of Te Moana Nui a Kiwa — the Pacific Ocean</p>
+            <div class="footer-tiki">
+                <svg><use href="#tikiSymbol"/></svg>
+            </div>
+        </footer>
+    </div>
+
+    <div class="cursor-glow" aria-hidden="true"></div>
+
+    <script src="scripts.js"></script>
+</body>
+</html>

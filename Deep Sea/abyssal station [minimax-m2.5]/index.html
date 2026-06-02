@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ABYSSAL STATION-7 | Deep Sea Research Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=Orbitron:wght@400;500;600;700;800;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Ambient Background Layers -->
+    <div class="ocean-depth-bg"></div>
+    <div class="vignette-overlay"></div>
+    <div class="scanline-overlay"></div>
+    <div class="noise-texture"></div>
+    
+    <!-- Current Flow Visualization -->
+    <canvas id="current-flow-canvas" class="current-flow-canvas"></canvas>
+    
+    <!-- Bioluminescent Particles (Behind UI) -->
+    <div class="bio-particle-container" id="bio-particles"></div>
+
+    <!-- Main Dashboard Container -->
+    <div class="dashboard-container">
+        <!-- Top Bar: Station Status & Depth -->
+        <header class="top-status-bar">
+            <div class="station-ident">
+                <span class="station-label">STATION</span>
+                <span class="station-id">ABYSSAL-7</span>
+                <span class="station-status online">● ONLINE</span>
+            </div>
+            <div class="depth-gauge-container">
+                <div class="depth-label">DEPTH</div>
+                <div class="depth-display" id="depth-display">
+                    <span class="depth-value" id="depth-value">3,847</span>
+                    <span class="depth-unit">m</span>
+                </div>
+                <div class="depth-bar">
+                    <div class="depth-bar-fill" id="depth-bar-fill"></div>
+                    <div class="depth-markers">
+                        <span>0</span>
+                        <span>2000</span>
+                        <span>4000</span>
+                        <span>6000</span>
+                        <span>8000</span>
+                    </div>
+                </div>
+            </div>
+            <div class="system-time">
+                <span class="time-label">MISSION TIME</span>
+                <span class="time-value" id="mission-time">000:14:32:07</span>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Left Panel: Hull Integrity & Pressure -->
+            <aside class="left-panel">
+                <!-- Hull Integrity Module -->
+                <div class="monitor-module hull-integrity">
+                    <div class="module-header">
+                        <span class="module-icon">◈</span>
+                        <span class="module-title">HULL INTEGRITY</span>
+                        <span class="module-status healthy" id="hull-status">NOMINAL</span>
+                    </div>
+                    <div class="hull-visual">
+                        <svg class="hull-diagram" viewBox="0 0 200 300">
+                            <!-- Hull structure -->
+                            <defs>
+                                <linearGradient id="hullGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#2d3a4a"/>
+                                    <stop offset="50%" style="stop-color:#1a2433"/>
+                                    <stop offset="100%" style="stop-color:#0d1219"/>
+                                </linearGradient>
+                                <filter id="glow">
+                                    <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                                    <feMerge>
+                                        <feMergeNode in="coloredBlur"/>
+                                        <feMergeNode in="SourceGraphic"/>
+                                    </feMerge>
+                                </filter>
+                            </defs>
+                            <ellipse cx="100" cy="150" rx="80" ry="130" fill="url(#hullGrad)" stroke="#3a4a5a" stroke-width="2"/>
+                            <ellipse cx="100" cy="150" rx="60" ry="110" fill="none" stroke="#00ffcc" stroke-width="1" opacity="0.3"/>
+                            <!-- Stress points -->
+                            <circle class="stress-point" cx="60" cy="80" r="4" fill="#00ffcc" filter="url(#glow)"/>
+                            <circle class="stress-point" cx="140" cy="120" r="4" fill="#00ffcc" filter="url(#glow)"/>
+                            <circle class="stress-point" cx="80" cy="200" r="4" fill="#00ffcc" filter="url(#glow)"/>
+                            <circle class="stress-point" cx="130" cy="240" r="4" fill="#00ffcc" filter="url(#glow)"/>
+                        </svg>
+                        <div class="hull-readings">
+                            <div class="reading-row">
+                                <span class="reading-label">PRESSURE</span>
+                                <span class="reading-value" id="hull-pressure">387.2</span>
+                                <span class="reading-unit">ATM</span>
+                            </div>
+                            <div class="reading-row">
+                                <span class="reading-label">STRESS</span>
+                                <span class="reading-value" id="hull-stress">12.4</span>
+                                <span class="reading-unit">%</span>
+                            </div>
+                            <div class="reading-row">
+                                <span class="reading-label">TEMP</span>
+                                <span class="reading-value" id="hull-temp">2.7</span>
+                                <span class="reading-unit">°C</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="integrity-bar">
+                        <div class="integrity-fill" id="integrity-fill"></div>
+                        <div class="integrity-segments">
+                            <span></span><span></span><span></span><span></span><span></span>
+                            <span></span><span></span><span></span><span></span><span></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pressure Warning Module -->
+                <div class="monitor-module pressure-warning">
+                    <div class="module-header">
+                        <span class="module-icon">⚡</span>
+                        <span class="module-title">EXTERNAL PRESSURE</span>
+                    </div>
+                    <div class="pressure-gauge">
+                        <svg class="pressure-dial" viewBox="0 0 200 120">
+                            <defs>
+                                <linearGradient id="pressureGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                                    <stop offset="0%" style="stop-color:#00ffcc"/>
+                                    <stop offset="60%" style="stop-color:#ffaa00"/>
+                                    <stop offset="100%" style="stop-color:#ff3344"/>
+                                </linearGradient>
+                            </defs>
+                            <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="#1a2433" stroke-width="8"/>
+                            <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="url(#pressureGrad)" stroke-width="4" stroke-dasharray="251" stroke-dashoffset="251" id="pressure-arc"/>
+                            <line x1="100" y1="100" x2="100" y2="35" stroke="#00ffcc" stroke-width="2" id="pressure-needle" transform="rotate(-90 100 100)"/>
+                            <circle cx="100" cy="100" r="8" fill="#0d1219" stroke="#00ffcc" stroke-width="2"/>
+                        </svg>
+                        <div class="pressure-readout">
+                            <span class="pressure-value" id="pressure-value">387.4</span>
+                            <span class="pressure-unit">ATM</span>
+                        </div>
+                    </div>
+                    <div class="warning-bar" id="warning-bar">
+                        <div class="warning-segments">
+                            <span class="warning-segment"></span>
+                            <span class="warning-segment"></span>
+                            <span class="warning-segment"></span>
+                            <span class="warning-segment"></span>
+                            <span class="warning-segment"></span>
+                            <span class="warning-segment"></span>
+                            <span class="warning-segment"></span>
+                            <span class="warning-segment"></span>
+                            <span class="warning-segment"></span>
+                            <span class="warning-segment"></span>
+                        </div>
+                        <span class="warning-label">CRUSH DEPTH WARNING</span>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Central Viewport -->
+            <section class="viewport-section">
+                <div class="viewport-frame">
+                    <div class="viewport-rim">
+                        <div class="rivet rivet-tl"></div>
+                        <div class="rivet rivet-tr"></div>
+                        <div class="rivet rivet-bl"></div>
+                        <div class="rivet rivet-br"></div>
+                        <div class="rim-segment"></div>
+                        <div class="rim-segment"></div>
+                        <div class="rim-segment"></div>
+                        <div class="rim-segment"></div>
+                    </div>
+                    <div class="viewport-glass">
+                        <!-- Viewport content layer -->
+                        <div class="viewport-content">
+                            <!-- Distant particles -->
+                            <div class="viewport-particles" id="viewport-particles"></div>
+                            <!-- Creature silhouettes -->
+                            <div class="creature-silhouette" id="creature-1"></div>
+                            <div class="creature-silhouette" id="creature-2"></div>
+                            <div class="creature-silhouette" id="creature-3"></div>
+                            <!-- Sonar ripple container -->
+                            <div class="sonar-ripples" id="sonar-ripples"></div>
+                        </div>
+                        <!-- Overlay elements -->
+                        <div class="viewport-overlay">
+                            <div class="viewport-grid"></div>
+                            <div class="depth-indicator">
+                                <span class="depth-marker" data-depth="3800">3800m</span>
+                                <span class="depth-marker" data-depth="3850">3850m</span>
+                                <span class="depth-marker" data-depth="3900">3900m</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="viewport-controls">
+                        <button class="viewport-btn" id="sonar-ping-btn">
+                            <span class="btn-icon">◉</span>
+                            <span class="btn-label">SONAR PING</span>
+                        </button>
+                        <button class="viewport-btn" id="floodlight-btn">
+                            <span class="btn-icon">☀</span>
+                            <span class="btn-label">FLOODLIGHT</span>
+                        </button>
+                        <button class="viewport-btn" id="record-btn">
+                            <span class="btn-icon">●</span>
+                            <span class="btn-label">RECORD</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Viewport Status -->
+                <div class="viewport-status">
+                    <div class="status-item">
+                        <span class="status-label">VISIBILITY</span>
+                        <span class="status-value" id="visibility-value">12.4m</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">WATER TEMP</span>
+                        <span class="status-value" id="water-temp">2.7°C</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">SALINITY</span>
+                        <span class="status-value">34.8 PSU</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Right Panel: Sonar & Bioluminescence -->
+            <aside class="right-panel">
+                <!-- Sonar Display Module -->
+                <div class="monitor-module sonar-display">
+                    <div class="module-header">
+                        <span class="module-icon">◉</span>
+                        <span class="module-title">SONAR ARRAY</span>
+                        <span class="module-status active" id="sonar-status">ACTIVE</span>
+                    </div>
+                    <div class="sonar-screen">
+                        <canvas id="sonar-canvas" class="sonar-canvas"></canvas>
+                        <div class="sonar-overlay">
+                            <div class="sonar-ring ring-1"></div>
+                            <div class="sonar-ring ring-2"></div>
+                            <div class="sonar-ring ring-3"></div>
+                            <div class="sonar-center"></div>
+                            <div class="sonar-sweep" id="sonar-sweep"></div>
+                        </div>
+                        <div class="sonar-readings">
+                            <span class="sonar-range">0-500m</span>
+                            <span class="sonar-bearing">BEARING: <span id="sonar-bearing">045°</span></span>
+                        </div>
+                    </div>
+                    <div class="sonar-blips" id="sonar-blips">
+                        <!-- Blips generated by JS -->
+                    </div>
+                </div>
+
+                <!-- Bioluminescence Tracker -->
+                <div class="monitor-module bio-tracker">
+                    <div class="module-header">
+                        <span class="module-icon">✦</span>
+                        <span class="module-title">BIO-LUM TRACKING</span>
+                        <span class="module-count" id="bio-count">7</span>
+                    </div>
+                    <div class="bio-display">
+                        <div class="bio-grid" id="bio-grid">
+                            <!-- Bio contacts generated by JS -->
+                        </div>
+                        <div class="bio-legend">
+                            <div class="legend-item">
+                                <span class="legend-color" style="background:#00ffcc"></span>
+                                <span>Unknown</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-color" style="background:#ff00aa"></span>
+                                <span>Class-A</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-color" style="background:#ffaa00"></span>
+                                <span>Class-B</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bio-activity-log" id="bio-log">
+                        <div class="log-entry">
+                            <span class="log-time">14:32:01</span>
+                            <span class="log-event">Contact-7 detected</span>
+                        </div>
+                        <div class="log-entry">
+                            <span class="log-time">14:31:47</span>
+                            <span class="log-event">Contact-6 departed</span>
+                        </div>
+                        <div class="log-entry">
+                            <span class="log-time">14:31:22</span>
+                            <span class="log-event">Biolum burst detected</span>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+        </main>
+
+        <!-- Bottom Bar: System Status -->
+        <footer class="bottom-status-bar">
+            <div class="system-monitor">
+                <div class="system-item">
+                    <span class="system-icon">⚡</span>
+                    <span class="system-label">POWER</span>
+                    <div class="system-bar">
+                        <div class="system-bar-fill" id="power-fill" style="width:87%"></div>
+                    </div>
+                    <span class="system-value">87%</span>
+                </div>
+                <div class="system-item">
+                    <span class="system-icon">◐</span>
+                    <span class="system-label">O2</span>
+                    <div class="system-bar">
+                        <div class="system-bar-fill" id="o2-fill" style="width:94%"></div>
+                    </div>
+                    <span class="system-value">94%</span>
+                </div>
+                <div class="system-item">
+                    <span class="system-icon">◈</span>
+                    <span class="system-label">COMMS</span>
+                    <div class="system-bar">
+                        <div class="system-bar-fill" id="comms-fill" style="width:73%"></div>
+                    </div>
+                    <span class="system-value">73%</span>
+                </div>
+            </div>
+            <div class="alert-panel" id="alert-panel">
+                <span class="alert-icon">⚠</span>
+                <span class="alert-message" id="alert-message">All systems nominal. Depth within safe parameters.</span>
+            </div>
+            <div class="station-coords">
+                <span class="coord-label">POSITION</span>
+                <span class="coord-value" id="station-coords">11°28'34"N 142°11'52"E</span>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Audio Elements (Hidden) -->
+    <audio id="sonar-ping-sound" preload="auto">
+        <source src="data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU" type="audio/wav">
+    </audio>
+    <audio id="warning-alarm" preload="auto">
+        <source src="data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU" type="audio/wav">
+    </audio>
+
+    <script src="scripts.js"></script>
+</body>
+</html>

@@ -1,0 +1,606 @@
+/* =========================================
+   1. VARIABLES & RESET
+   ========================================= */
+:root {
+    --color-bg: #050505;
+    --color-crt-bg: #0a0a0a;
+    --color-primary: #33ff00; /* Terminal Green */
+    --color-primary-dim: #1a8000;
+    --color-secondary: #ffb000; /* Amber */
+    --color-error: #ff003c;
+    --color-white: #e0e0e0;
+    --color-border: #333;
+    
+    --font-display: 'Press Start 2P', cursive;
+    --font-terminal: 'VT323', monospace;
+    
+    --scanline-color: rgba(0, 0, 0, 0.5);
+    --glow-strength: 0 0 10px var(--color-primary);
+    --glow-strong: 0 0 20px var(--color-primary), 0 0 40px var(--color-primary);
+    
+    --border-width: 2px;
+    --spacing-sm: 8px;
+    --spacing-md: 16px;
+    --spacing-lg: 32px;
+    --spacing-xl: 64px;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: var(--color-bg);
+    color: var(--color-primary);
+    font-family: var(--font-terminal);
+    font-size: 18px;
+    line-height: 1.4;
+    overflow-x: hidden;
+    height: 100vh;
+    width: 100vw;
+    /* Hide scrollbar for immersive feel */
+    scrollbar-width: none; 
+    -ms-overflow-style: none;
+}
+
+body::-webkit-scrollbar { 
+    display: none; 
+}
+
+/* =========================================
+   2. CRT & SCREEN EFFECTS
+   ========================================= */
+.crt-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 9999;
+    overflow: hidden;
+}
+
+/* Scanlines */
+.scanlines {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        to bottom,
+        rgba(255,255,255,0),
+        rgba(255,255,255,0) 50%,
+        rgba(0,0,0,0.2) 50%,
+        rgba(0,0,0,0.2)
+    );
+    background-size: 100% 4px;
+    animation: scrollScanlines 10s linear infinite;
+}
+
+/* Vignette & Curvature */
+.vignette {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(
+        circle,
+        rgba(0,0,0,0) 60%,
+        rgba(0,0,0,0.4) 80%,
+        rgba(0,0,0,0.9) 100%
+    );
+    box-shadow: inset 0 0 100px rgba(0,0,0,0.9);
+}
+
+/* Noise Texture */
+.noise {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0.05;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    animation: noiseAnim 0.5s steps(5) infinite;
+}
+
+/* Screen Flicker */
+.flicker {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.02);
+    opacity: 0;
+    animation: flickerAnim 0.15s infinite;
+    pointer-events: none;
+}
+
+/* =========================================
+   3. LAYOUT & TYPOGRAPHY
+   ========================================= */
+.interface-wrapper {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: var(--spacing-md);
+    position: relative;
+    z-index: 1;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+h1, h2, h3 {
+    font-family: var(--font-display);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: var(--spacing-md);
+}
+
+h1 {
+    font-size: 2rem;
+    line-height: 1.2;
+    text-shadow: var(--glow-strength);
+}
+
+.highlight {
+    color: var(--color-secondary);
+    text-shadow: 0 0 10px var(--color-secondary);
+}
+
+/* =========================================
+   4. HEADER & NAV
+   ========================================= */
+.boot-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: var(--spacing-lg);
+    border-bottom: var(--border-width) solid var(--color-primary);
+    padding-bottom: var(--spacing-md);
+}
+
+.logo-area {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+}
+
+.pixel-mascot {
+    width: 64px;
+    height: 64px;
+    border: 2px solid var(--color-primary);
+    background: #000;
+    animation: bounce 2s infinite ease-in-out;
+}
+
+.mascot-svg {
+    width: 100%;
+    height: 100%;
+    animation: glitch 3s infinite;
+}
+
+.system-status {
+    text-align: right;
+    font-size: 0.8rem;
+    color: var(--color-secondary);
+}
+
+.blink {
+    animation: blink 1s step-end infinite;
+}
+
+.delay-1 { animation-delay: 0.3s; }
+.delay-2 { animation-delay: 0.6s; }
+
+/* Navigation Tabs */
+.retro-nav {
+    display: flex;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-lg);
+    border-bottom: 1px solid var(--color-border);
+}
+
+.nav-btn {
+    background: transparent;
+    border: var(--border-width) solid var(--color-primary);
+    color: var(--color-primary);
+    font-family: var(--font-display);
+    font-size: 0.7rem;
+    padding: var(--spacing-sm) var(--spacing-md);
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+}
+
+.nav-btn:hover, .nav-btn.active {
+    background: var(--color-primary);
+    color: #000;
+    box-shadow: var(--glow-strong);
+}
+
+.nav-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+    transition: 0.5s;
+}
+
+.nav-btn:hover::before {
+    left: 100%;
+}
+
+/* =========================================
+   5. CONTENT SECTIONS
+   ========================================= */
+.content-grid {
+    flex: 1;
+    position: relative;
+    overflow-y: auto;
+    padding-right: var(--spacing-sm);
+}
+
+.content-section {
+    display: none;
+    animation: fadeIn 0.5s ease-out;
+}
+
+.content-section.active {
+    display: block;
+}
+
+.section-header {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-lg);
+}
+
+.decoration-line {
+    flex: 1;
+    height: 2px;
+    background: var(--color-primary);
+    box-shadow: var(--glow-strength);
+}
+
+/* Game Cards */
+.game-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: var(--spacing-lg);
+}
+
+.game-card {
+    background: #000;
+    border: 1px solid var(--color-primary-dim);
+    padding: var(--spacing-md);
+    position: relative;
+    transition: transform 0.2s, box-shadow 0.2s;
+    cursor: pointer;
+}
+
+.game-card:hover {
+    transform: translateY(-5px);
+    border-color: var(--color-primary);
+    box-shadow: var(--glow-strength);
+}
+
+.game-card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0, 255, 0, 0.05) 4px
+    );
+    pointer-events: none;
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    color: var(--color-secondary);
+    margin-bottom: var(--spacing-sm);
+}
+
+.card-image {
+    height: 150px;
+    background: #111;
+    border: 1px solid var(--color-border);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.placeholder-art {
+    width: 100%;
+    height: 100%;
+    opacity: 0.3;
+}
+
+.art-1 { background: linear-gradient(45deg, #000, #333); }
+.art-2 { background: linear-gradient(135deg, #000, #222); }
+.art-3 { background: linear-gradient(90deg, #000, #444); }
+
+.overlay-text {
+    position: absolute;
+    font-family: var(--font-display);
+    font-size: 0.8rem;
+    color: var(--color-primary);
+    text-shadow: 1px 1px 0 #000;
+    z-index: 2;
+}
+
+.card-footer {
+    margin-top: var(--spacing-md);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.genre {
+    font-size: 0.9rem;
+    color: var(--color-white);
+}
+
+.play-btn {
+    background: transparent;
+    border: 1px solid var(--color-primary);
+    color: var(--color-primary);
+    font-family: var(--font-terminal);
+    font-size: 1rem;
+    padding: 4px 8px;
+    cursor: pointer;
+}
+
+.play-btn:hover {
+    background: var(--color-primary);
+    color: #000;
+}
+
+/* High Scores Table */
+.scoreboard table {
+    width: 100%;
+    border-collapse: collapse;
+    border: 1px solid var(--color-primary-dim);
+}
+
+.scoreboard th, .scoreboard td {
+    text-align: left;
+    padding: var(--spacing-sm);
+    border-bottom: 1px solid var(--color-border);
+}
+
+.scoreboard th {
+    background: var(--color-primary-dim);
+    color: #000;
+    font-family: var(--font-display);
+    font-size: 0.8rem;
+}
+
+.scoreboard tr:hover td {
+    background: rgba(51, 255, 0, 0.1);
+}
+
+/* Terminal */
+.terminal-window {
+    background: #000;
+    border: 1px solid var(--color-primary);
+    height: 300px;
+    display: flex;
+    flex-direction: column;
+    padding: var(--spacing-md);
+    font-family: var(--font-terminal);
+    box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
+}
+
+.terminal-output {
+    flex: 1;
+    overflow-y: auto;
+    margin-bottom: var(--spacing-md);
+    color: var(--color-primary);
+}
+
+.terminal-input-line {
+    display: flex;
+    align-items: center;
+    border-top: 1px solid var(--color-primary-dim);
+    padding-top: var(--spacing-sm);
+}
+
+.prompt {
+    margin-right: var(--spacing-sm);
+    color: var(--color-secondary);
+}
+
+#cheat-input {
+    background: transparent;
+    border: none;
+    color: var(--color-primary);
+    font-family: var(--font-terminal);
+    font-size: 1.2rem;
+    width: 100%;
+    outline: none;
+}
+
+/* =========================================
+   6. FOOTER & MARQUEE
+   ========================================= */
+.retro-footer {
+    margin-top: var(--spacing-lg);
+    border-top: 1px solid var(--color-primary);
+    padding-top: var(--spacing-md);
+}
+
+.marquee-container {
+    overflow: hidden;
+    white-space: nowrap;
+    background: var(--color-primary-dim);
+    color: #000;
+    font-family: var(--font-display);
+    font-size: 0.7rem;
+    padding: 4px 0;
+    margin-bottom: var(--spacing-sm);
+}
+
+.marquee-text {
+    display: inline-block;
+    animation: marquee 15s linear infinite;
+}
+
+.copyright {
+    text-align: center;
+    font-size: 0.8rem;
+    color: var(--color-border);
+}
+
+/* =========================================
+   7. VHS TRACKING OVERLAY
+   ========================================= */
+.vhs-tracking {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.5' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.8'/%3E%3C/svg%3E");
+    background-size: 200px 200px;
+    z-index: 10000;
+    display: none;
+    pointer-events: none;
+    mix-blend-mode: overlay;
+}
+
+.vhs-tracking.active {
+    display: block;
+    animation: trackingRoll 0.2s linear infinite;
+}
+
+.tracking-line {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 50px;
+    background: rgba(255, 255, 255, 0.8);
+    opacity: 0.5;
+    animation: trackingMove 2s linear infinite;
+}
+
+.tracking-text {
+    position: absolute;
+    bottom: 20%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #000;
+    color: #fff;
+    padding: 10px 20px;
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    border: 2px solid #fff;
+    z-index: 10001;
+}
+
+/* =========================================
+   8. ANIMATIONS
+   ========================================= */
+@keyframes scrollScanlines {
+    0% { background-position: 0 0; }
+    100% { background-position: 0 100%; }
+}
+
+@keyframes noiseAnim {
+    0%, 100% { transform: translate(0, 0); }
+    10% { transform: translate(-5%, -5%); }
+    20% { transform: translate(-10%, 5%); }
+    30% { transform: translate(5%, -10%); }
+    40% { transform: translate(-5%, 15%); }
+    50% { transform: translate(-10%, 5%); }
+    60% { transform: translate(15%, 0); }
+    70% { transform: translate(0, 10%); }
+    80% { transform: translate(-15%, 0); }
+    90% { transform: translate(10%, 5%); }
+}
+
+@keyframes flickerAnim {
+    0% { opacity: 0.02; }
+    5% { opacity: 0.05; }
+    10% { opacity: 0.01; }
+    15% { opacity: 0.06; }
+    20% { opacity: 0.02; }
+    50% { opacity: 0.02; }
+    55% { opacity: 0.05; }
+    60% { opacity: 0.01; }
+    100% { opacity: 0.02; }
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+}
+
+@keyframes glitch {
+    0% { transform: translate(0); }
+    20% { transform: translate(-2px, 2px); }
+    40% { transform: translate(-2px, -2px); }
+    60% { transform: translate(2px, 2px); }
+    80% { transform: translate(2px, -2px); }
+    100% { transform: translate(0); }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes marquee {
+    0% { transform: translateX(100%); }
+    100% { transform: translateX(-100%); }
+}
+
+@keyframes trackingMove {
+    0% { top: -10%; }
+    100% { top: 110%; }
+}
+
+@keyframes trackingRoll {
+    0% { background-position: 0 0; }
+    100% { background-position: 0 200px; }
+}
+
+/* Glitch Effect on Hover for Cards */
+.game-card:hover .overlay-text {
+    animation: glitch 0.3s infinite;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    h1 { font-size: 1.2rem; }
+    .boot-header { flex-direction: column; gap: var(--spacing-md); }
+    .system-status { text-align: left; }
+    .game-grid { grid-template-columns: 1fr; }
+}

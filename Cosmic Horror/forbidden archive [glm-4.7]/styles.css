@@ -1,0 +1,540 @@
+/* 
+   AETHELGARD ARCHIVE - STYLESHEET
+   Theme: Eldritch Horror / Cosmic Decay
+   Aesthetic: Dark, Textural, Distorted
+*/
+
+/* --- 1. VARIABLES & RESET --- */
+:root {
+    --color-void: #020202;
+    --color-deep-void: #000000;
+    --color-eldritch-purple: #2a0a2e;
+    --color-sick-green: #4a6b4a;
+    --color-bone: #dcd0bc;
+    --color-blood: #5e0b0b;
+    --color-rust: #7a3e3e;
+    
+    --font-display: 'Cinzel', serif;
+    --font-terminal: 'VT323', monospace;
+    
+    --spacing-base: 1rem;
+    --spacing-xl: 4rem;
+    
+    --ease-creepy: cubic-bezier(0.68, -0.55, 0.27, 1.55);
+    --ease-linear: linear;
+}
+
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    background-color: var(--color-void);
+    color: var(--color-bone);
+    font-family: var(--font-terminal);
+    font-size: 18px;
+    line-height: 1.6;
+    overflow-x: hidden;
+    min-height: 100vh;
+    position: relative;
+}
+
+/* --- 2. ATMOSPHERE & BACKGROUNDS --- */
+
+/* Subtle grain texture overlay */
+.noise-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 9000;
+    opacity: 0.05;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+}
+
+/* Vignette to focus attention */
+.vignette {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 8999;
+    background: radial-gradient(circle, transparent 40%, var(--color-deep-void) 130%);
+}
+
+/* Starfield Background */
+.starfield {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    background: 
+        radial-gradient(1px 1px at 20px 30px, #fff, transparent),
+        radial-gradient(1px 1px at 100px 70px, #fff, transparent),
+        radial-gradient(2px 2px at 150px 200px, var(--color-sick-green), transparent),
+        radial-gradient(1.5px 1.5px at 300px 400px, var(--color-eldritch-purple), transparent);
+    background-size: 550px 550px;
+    animation: stars-move 100s linear infinite;
+}
+
+/* --- 3. TYPOGRAPHY & UTILITIES --- */
+
+h1, h2, h3 {
+    font-family: var(--font-display);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    font-weight: 700;
+}
+
+.eldritch-title {
+    font-size: clamp(3rem, 8vw, 6rem);
+    color: var(--color-bone);
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+    position: relative;
+    animation: text-flicker 4s infinite;
+}
+
+.corruptible {
+    transition: all 0.3s ease;
+}
+
+/* Text corruption state applied via JS or hover */
+.corruptible:hover {
+    color: var(--color-blood);
+    text-shadow: 2px 0 var(--color-sick-green), -2px 0 var(--color-eldritch-purple);
+    letter-spacing: 0.3em;
+}
+
+/* --- 4. SANITY HUD --- */
+
+.sanity-hud {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    width: 300px;
+    z-index: 1000;
+    background: rgba(2, 2, 2, 0.85);
+    border: 1px solid var(--color-rust);
+    padding: 1rem;
+    backdrop-filter: blur(4px);
+    box-shadow: 0 0 15px rgba(94, 11, 11, 0.2);
+    transform: skewX(-5deg);
+}
+
+.hud-label {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--color-rust);
+    margin-bottom: 0.5rem;
+}
+
+.meter-container {
+    width: 100%;
+    height: 12px;
+    background: var(--color-deep-void);
+    border: 1px solid var(--color-bone);
+    position: relative;
+    overflow: hidden;
+}
+
+.meter-fill {
+    height: 100%;
+    width: 100%;
+    background: linear-gradient(90deg, var(--color-sick-green), var(--color-blood));
+    box-shadow: 0 0 10px var(--color-blood);
+    transform-origin: left;
+    transition: width 0.5s ease-out, filter 0.5s;
+}
+
+.hud-value {
+    float: right;
+    font-size: 1.2rem;
+    color: var(--color-bone);
+}
+
+/* --- 5. HEADER --- */
+
+.archive-header {
+    min-height: 80vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.header-content {
+    text-align: center;
+    z-index: 2;
+}
+
+.sigil-container {
+    width: 150px;
+    height: 150px;
+    margin: 0 auto 2rem;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.rotating-ring {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border: 1px dashed var(--color-bone);
+    border-radius: 50%;
+    animation: spin-slow 20s linear infinite;
+    opacity: 0.5;
+}
+
+.inner-eye {
+    width: 10px;
+    height: 10px;
+    background: var(--color-blood);
+    border-radius: 50%;
+    box-shadow: 0 0 20px var(--color-blood);
+    animation: pulse-eye 3s ease-in-out infinite;
+}
+
+.subtitle {
+    font-family: var(--font-terminal);
+    letter-spacing: 0.5em;
+    color: var(--color-sick-green);
+    margin-top: -1rem;
+}
+
+/* --- 6. SEARCH SECTION --- */
+
+.search-section {
+    padding: var(--spacing-xl) 1rem;
+    display: flex;
+    justify-content: center;
+    position: relative;
+}
+
+.search-ritual-box {
+    width: 100%;
+    max-width: 600px;
+    position: relative;
+}
+
+.search-label {
+    display: block;
+    margin-bottom: 1rem;
+    font-family: var(--font-display);
+    color: var(--color-bone);
+    text-align: center;
+}
+
+.input-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+#void-search {
+    width: 100%;
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid var(--color-bone);
+    color: var(--color-bone);
+    font-family: var(--font-terminal);
+    font-size: 1.5rem;
+    padding: 1rem 0;
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+#void-search:focus {
+    border-bottom-color: var(--color-blood);
+}
+
+#void-search::placeholder {
+    color: rgba(220, 208, 188, 0.3);
+}
+
+.cursor-blink {
+    position: absolute;
+    bottom: 1rem;
+    right: 0;
+    width: 2px;
+    height: 1.5rem;
+    background: var(--color-blood);
+    animation: blink 1s step-end infinite;
+}
+
+.terminal-feedback {
+    margin-top: 1rem;
+    height: 1.5rem;
+    color: var(--color-sick-green);
+    font-size: 0.9rem;
+}
+
+/* --- 7. THE NON-EUCLIDEAN GRID --- */
+
+.archive-grid-wrapper {
+    padding: 4rem 1rem;
+    perspective: 1000px; /* Essential for the 3D effect */
+}
+
+.chaos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+    transform-style: preserve-3d;
+    transform: rotateX(2deg) rotateY(-2deg); /* Slight tilt makes it feel "wrong" */
+    transition: transform 0.5s ease;
+}
+
+.chaos-grid:hover {
+    transform: rotateX(0deg) rotateY(0deg);
+}
+
+.grid-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.grid-decoration {
+    width: 100px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--color-bone), transparent);
+    margin: 1rem auto;
+}
+
+/* --- 8. ARTIFACT CARDS --- */
+
+.artifact-card {
+    background: rgba(10, 10, 10, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 2rem;
+    position: relative;
+    min-height: 350px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: transform 0.3s var(--ease-creepy), box-shadow 0.3s ease;
+    overflow: hidden;
+    backdrop-filter: blur(5px);
+    /* Clip path for non-rectangular shape */
+    clip-path: polygon(
+        0 0, 
+        100% 0, 
+        100% 85%, 
+        90% 100%, 
+        0 100%
+    );
+}
+
+.artifact-card:hover {
+    transform: translateY(-10px) scale(1.02);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+    z-index: 10;
+}
+
+.ref-id {
+    font-size: 0.8rem;
+    color: var(--color-rust);
+    margin-bottom: 1rem;
+    display: block;
+    font-family: var(--font-terminal);
+}
+
+.artifact-card h3 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    color: var(--color-bone);
+}
+
+.excerpt {
+    font-size: 1rem;
+    color: rgba(220, 208, 188, 0.7);
+    margin-bottom: 1.5rem;
+    line-height: 1.5;
+}
+
+/* Custom Border Effects based on card type */
+
+/* 1. Tentacle Border */
+.tentacle-border::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    border: 2px solid transparent;
+    background: linear-gradient(var(--color-void), var(--color-void)) padding-box,
+                linear-gradient(45deg, var(--color-bone), transparent, var(--color-bone)) border-box;
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+}
+
+/* 2. Glitch Border */
+.glitch-border {
+    animation: border-glitch 2s infinite linear alternate-reverse;
+}
+
+/* 3. Vein Border */
+.vein-border {
+    border: 1px solid var(--color-blood);
+    box-shadow: inset 0 0 20px rgba(94, 11, 11, 0.2);
+}
+.vein-border::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: repeating-linear-gradient(
+        45deg,
+        transparent,
+        transparent 10px,
+        rgba(94, 11, 11, 0.05) 10px,
+        rgba(94, 11, 11, 0.05) 20px
+    );
+    pointer-events: none;
+}
+
+/* Buttons */
+.examine-btn {
+    background: transparent;
+    border: 1px solid var(--color-bone);
+    color: var(--color-bone);
+    padding: 0.8rem 1.5rem;
+    font-family: var(--font-display);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    align-self: flex-start;
+}
+
+.examine-btn:hover {
+    background: var(--color-blood);
+    border-color: var(--color-blood);
+    color: var(--color-void);
+    box-shadow: 0 0 15px var(--color-blood);
+}
+
+/* --- 9. FOOTER --- */
+
+.archive-footer {
+    text-align: center;
+    padding: 4rem 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    margin-top: 4rem;
+    position: relative;
+}
+
+.footer-text p {
+    margin-bottom: 0.5rem;
+}
+
+.sub-text {
+    color: var(--color-sick-green);
+    font-size: 0.9rem;
+}
+
+/* --- 10. MODAL --- */
+
+.hidden-modal {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.95);
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.5s ease;
+}
+
+.hidden-modal.active {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.modal-content {
+    background: #0a0a0a;
+    border: 1px solid var(--color-bone);
+    padding: 3rem;
+    max-width: 600px;
+    width: 90%;
+    position: relative;
+    box-shadow: 0 0 50px rgba(0,0,0,1);
+}
+
+.close-x {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: none;
+    border: none;
+    color: var(--color-bone);
+    font-size: 2rem;
+    cursor: pointer;
+    font-family: var(--font-terminal);
+}
+
+.close-x:hover {
+    color: var(--color-blood);
+}
+
+/* --- 11. ANIMATIONS --- */
+
+@keyframes spin-slow {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+@keyframes pulse-eye {
+    0%, 100% { transform: scale(1); opacity: 0.8; }
+    50% { transform: scale(1.5); opacity: 1; box-shadow: 0 0 30px var(--color-blood); }
+}
+
+@keyframes text-flicker {
+    0% { opacity: 1; transform: skewX(0deg); }
+    5% { opacity: 0.8; transform: skewX(2deg); }
+    10% { opacity: 1; transform: skewX(0deg); }
+    15% { opacity: 0.9; transform: skewX(-1deg); }
+    16% { opacity: 1; transform: skewX(0deg); }
+    100% { opacity: 1; transform: skewX(0deg); }
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+}
+
+@keyframes stars-move {
+    from { background-position: 0 0; }
+    to { background-position: 0 1000px; }
+}
+
+@keyframes border-glitch {
+    0% { clip-path: polygon(0 2%, 100% 2%, 100% 95%, 95% 100%, 0 100%); }
+    20% { clip-path: polygon(5% 0, 100% 0, 100% 98%, 90% 100%, 0 95%); }
+    40% { clip-path: polygon(0 0, 95% 0, 100% 92%, 92% 100%, 0 100%); }
+    60% { clip-path: polygon(0 5%, 100% 5%, 100% 100%, 100% 100%, 0 100%); }
+    80% { clip-path: polygon(0 0, 100% 0, 100% 98%, 85% 100%, 0 98%); }
+    100% { clip-path: polygon(0 2%, 100% 2%, 100% 95%, 95% 100%, 0 100%); }
+}
+
+/* Media Queries */
+@media (max-width: 768px) {
+    .eldritch-title { font-size: 3rem; }
+    .sanity-hud { width: 90%; right: 5%; bottom: 1rem; }
+    .chaos-grid { transform: none; }
+}

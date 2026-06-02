@@ -1,0 +1,500 @@
+/* =========================================
+   VARIABLES & RESET
+   ========================================= */
+:root {
+  --bg-color: #0a0a0a;
+  --paper-color: #e0d8c8;
+  --ink-color: #1a1a1a;
+  --accent-red: #8a0303; /* Blood red */
+  --accent-red-bright: #ff0000;
+  --accent-blue: #2c3e50; /* Faded blue for pins */
+  --shadow-hard: 4px 4px 0px rgba(0, 0, 0, 0.8);
+  --shadow-soft: 0 10px 30px rgba(0, 0, 0, 0.5);
+  --font-display: 'Chomsky', serif; /* Fallback to serif if not loaded */
+  --font-typewriter: 'Courier Prime', monospace;
+  --font-serif: 'Playfair Display', serif;
+  --transition-speed: 0.3s;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg-color);
+  color: var(--paper-color);
+  font-family: var(--font-typewriter);
+  overflow-x: hidden;
+  line-height: 1.6;
+  cursor: crosshair; /* Noir detective feel */
+}
+
+/* =========================================
+   ATMOSPHERIC OVERLAYS
+   ========================================= */
+
+/* Film Grain / Noise */
+#noise-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.08;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  animation: grain 0.5s steps(5) infinite;
+}
+
+/* Vignette */
+#vignette-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 9998;
+  background: radial-gradient(circle, transparent 40%, #000000 100%);
+}
+
+/* Rain Overlay */
+#rain-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 9997;
+  opacity: 0.4;
+}
+
+/* Venetian Blinds Shadow */
+#blinds-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 9996;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0%,
+    transparent 40%,
+    rgba(0, 0, 0, 0.8) 40%,
+    rgba(0, 0, 0, 0.8) 60%
+  );
+  animation: blind-shift 20s linear infinite;
+}
+
+/* Flashlight Effect */
+#flashlight {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  background: radial-gradient(circle, transparent 20%, rgba(0, 0, 0, 0.95) 70%);
+  pointer-events: none;
+  z-index: 9995;
+  transform: translate(-50%, -50%);
+  mix-blend-mode: multiply;
+  transition: transform 0.1s ease-out;
+}
+
+/* =========================================
+   ANIMATIONS
+   ========================================= */
+@keyframes grain {
+  0%, 100% { transform: translate(0, 0); }
+  10% { transform: translate(-5%, -5%); }
+  20% { transform: translate(-10%, 5%); }
+  30% { transform: translate(5%, -10%); }
+  40% { transform: translate(-5%, 15%); }
+  50% { transform: translate(-10%, 5%); }
+  60% { transform: translate(15%, 0); }
+  70% { transform: translate(0, 10%); }
+  80% { transform: translate(-15%, 0); }
+  90% { transform: translate(10%, 5%); }
+}
+
+@keyframes blind-shift {
+  0% { background-position: 0 0; }
+  100% { background-position: 0 100%; }
+}
+
+@keyframes typewriter {
+  from { width: 0; }
+  to { width: 100%; }
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* =========================================
+   LAYOUT & TYPOGRAPHY
+   ========================================= */
+.case-file-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  position: relative;
+  z-index: 1;
+}
+
+h1, h2, h3 {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 1rem;
+}
+
+.section-title {
+  margin-bottom: 2rem;
+  border-bottom: 2px solid var(--accent-red);
+  padding-bottom: 10px;
+  display: flex;
+  align-items: center;
+}
+
+.section-title h2 {
+  font-size: 2.5rem;
+  color: var(--paper-color);
+  text-shadow: 2px 2px 0px #000;
+}
+
+.underline {
+  flex-grow: 1;
+  height: 2px;
+  background: var(--accent-red);
+  margin-left: 20px;
+  opacity: 0.6;
+}
+
+/* =========================================
+   HEADER: THE DOSSIER
+   ========================================= */
+.dossier-header {
+  text-align: center;
+  margin-bottom: 60px;
+  position: relative;
+}
+
+.stamp-box {
+  position: absolute;
+  top: -20px;
+  right: 0;
+  transform: rotate(15deg);
+}
+
+.stamp {
+  border: 3px solid var(--accent-red);
+  color: var(--accent-red);
+  padding: 5px 15px;
+  font-family: var(--font-display);
+  font-weight: bold;
+  font-size: 1.2rem;
+  text-transform: uppercase;
+  opacity: 0.8;
+  transform: rotate(-5deg);
+  display: inline-block;
+  margin-bottom: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  box-shadow: 2px 2px 5px rgba(0,0,0,0.5);
+}
+
+.stamp-confidential {
+  border-color: #d4af37; /* Gold */
+  color: #d4af37;
+  transform: rotate(-10deg);
+}
+
+h1 {
+  font-size: 4rem;
+  margin: 0;
+  text-shadow: 3px 3px 0px #000;
+}
+
+.highlight {
+  color: var(--accent-red);
+  font-style: italic;
+}
+
+.meta-data {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  margin-top: 20px;
+  font-size: 1.1rem;
+  color: #aaa;
+}
+
+.status-red {
+  color: var(--accent-red);
+  font-weight: bold;
+  animation: blink 2s infinite;
+}
+
+/* =========================================
+   SECTION: THE BOARD (CORKBOARD)
+   ========================================= */
+.board-section {
+  position: relative;
+  height: 600px;
+  background-color: #2a1f15; /* Dark cork color */
+  border: 15px solid #1a120b;
+  box-shadow: inset 0 0 50px #000, 0 20px 50px rgba(0,0,0,0.8);
+  margin-bottom: 80px;
+  overflow: hidden;
+  border-radius: 4px;
+  /* Cork texture simulation */
+  background-image: radial-gradient(#3e2e22 15%, transparent 16%), radial-gradient(#3e2e22 15%, transparent 16%);
+  background-size: 20px 20px;
+  background-position: 0 0, 10px 10px;
+}
+
+.thread-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.corkboard-content {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+}
+
+.evidence-card {
+  position: absolute;
+  width: 180px;
+  background: var(--paper-color);
+  color: var(--ink-color);
+  padding: 10px;
+  box-shadow: 2px 2px 10px rgba(0,0,0,0.5);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  cursor: pointer;
+}
+
+.evidence-card:hover {
+  transform: scale(1.05) rotate(0deg) !important;
+  box-shadow: 5px 5px 20px rgba(0,0,0,0.8);
+  z-index: 10;
+}
+
+.photo-frame {
+  border: 1px solid #000;
+  padding: 5px;
+  background: #fff;
+  margin-bottom: 5px;
+  text-align: center;
+}
+
+.photo-placeholder {
+  width: 100%;
+  height: 120px;
+  background: #333;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  filter: grayscale(100%) contrast(120%);
+}
+
+.photo-placeholder span {
+  font-size: 3rem;
+  color: #555;
+}
+
+.photo-label {
+  font-family: var(--font-typewriter);
+  font-weight: bold;
+  font-size: 0.9rem;
+  margin-top: 5px;
+  text-transform: uppercase;
+  border-bottom: 1px dashed #000;
+}
+
+.pin {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  box-shadow: 2px 2px 3px rgba(0,0,0,0.6);
+  z-index: 3;
+}
+
+.pin.red { background: var(--accent-red); }
+.pin.blue { background: var(--accent-blue); }
+
+.note {
+  width: 200px;
+  background: #fff;
+  font-family: 'Playfair Display', serif;
+  font-style: italic;
+  padding: 20px;
+  transform: rotate(-4deg);
+}
+
+.note p {
+  font-size: 1rem;
+  line-height: 1.4;
+}
+
+/* =========================================
+   SECTION: TESTIMONIES
+   ========================================= */
+.testimony-section {
+  margin-bottom: 80px;
+}
+
+.paper-sheet {
+  background: var(--paper-color);
+  color: var(--ink-color);
+  padding: 40px;
+  max-width: 800px;
+  margin: 0 auto;
+  box-shadow: var(--shadow-hard);
+  position: relative;
+  transform: rotate(-1deg);
+}
+
+.paper-sheet::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 5px;
+  background: repeating-linear-gradient(90deg, #000 0, #000 10px, transparent 10px, transparent 20px);
+  opacity: 0.1;
+}
+
+.paper-sheet h3 {
+  font-family: var(--font-serif);
+  font-size: 1.8rem;
+  border-bottom: 1px solid #000;
+  padding-bottom: 10px;
+  margin-bottom: 20px;
+}
+
+.typewriter-text {
+  font-size: 1.1rem;
+  text-align: justify;
+  margin-bottom: 20px;
+  white-space: pre-wrap;
+}
+
+.signature {
+  font-family: 'Playfair Display', serif;
+  font-style: italic;
+  font-size: 1.5rem;
+  text-align: right;
+  margin-top: 30px;
+  color: #000;
+}
+
+/* =========================================
+   SECTION: SUSPECTS
+   ========================================= */
+.suspects-section {
+  margin-bottom: 80px;
+}
+
+.grid-layout {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 40px;
+}
+
+.suspect-card {
+  background: #1a1a1a;
+  border: 1px solid #333;
+  padding: 20px;
+  position: relative;
+  transition: transform 0.3s ease;
+}
+
+.suspect-card:hover {
+  transform: translateY(-5px);
+  border-color: var(--accent-red);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  border-bottom: 1px solid #333;
+  padding-bottom: 10px;
+}
+
+.card-header h3 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: var(--paper-color);
+}
+
+.badge {
+  background: var(--accent-red);
+  color: #fff;
+  padding: 2px 8px;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.card-body p {
+  margin-bottom: 10px;
+  color: #aaa;
+  font-size: 0.95rem;
+}
+
+.card-body strong {
+  color: var(--paper-color);
+}
+
+/* =========================================
+   FOOTER
+   ========================================= */
+.dossier-footer {
+  text-align: center;
+  margin-top: 60px;
+  padding-top: 20px;
+  border-top: 1px solid #333;
+  color: #555;
+  font-size: 0.8rem;
+}
+
+.barcode {
+  font-family: 'Courier Prime', monospace;
+  letter-spacing: 2px;
+  margin-top: 10px;
+  opacity: 0.5;
+}
+
+/* =========================================
+   RESPONSIVE
+   ========================================= */
+@media (max-width: 768px) {
+  h1 { font-size: 2.5rem; }
+  .board-section { height: 400px; }
+  .evidence-card { width: 140px; }
+  .meta-data { flex-direction: column; gap: 10px; }
+}

@@ -1,0 +1,395 @@
+/* --- CSS Variables & Reset --- */
+:root {
+  /* Palette: Deep Ocean & Bioluminescence */
+  --color-ocean-deep: #020b14;
+  --color-ocean-mid: #0a1f33;
+  --color-ocean-light: #1a3c5a;
+  --color-bio-teal: #00f2ff;
+  --color-bio-glow: rgba(0, 242, 255, 0.6);
+  --color-star-white: #f0f4f8;
+  
+  /* Palette: Earth & Wood (Carved Motifs) */
+  --color-wood-dark: #3e2723;
+  --color-wood-mid: #5d4037;
+  --color-wood-light: #8d6e63;
+  --color-tapa-fiber: #d7ccc8;
+  --color-tapa-shadow: rgba(62, 39, 35, 0.1);
+
+  /* Typography */
+  --font-display: 'Cinzel Decorative', cursive;
+  --font-body: 'Cormorant Garamond', serif;
+
+  /* Spacing & Layout */
+  --spacing-unit: 1rem;
+  --border-radius-card: 4px; /* Slightly sharp, like carved wood */
+  --transition-speed: 0.4s;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--color-ocean-deep);
+  color: var(--color-star-white);
+  font-family: var(--font-body);
+  overflow: hidden; /* App-like feel */
+  height: 100vh;
+  width: 100vw;
+  position: relative;
+  cursor: crosshair; /* Navigation feel */
+}
+
+/* --- Background Textures & Atmosphere --- */
+
+/* The Tapa Cloth Texture Generator using CSS Gradients */
+.tapa-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  opacity: 0.08;
+  pointer-events: none;
+  background-image: 
+    radial-gradient(circle at 50% 50%, var(--color-tapa-fiber) 1px, transparent 1.5px),
+    radial-gradient(circle at 50% 50%, var(--color-tapa-fiber) 1px, transparent 1.5px);
+  background-size: 20px 20px;
+  background-position: 0 0, 10px 10px;
+  /* Add a noise filter via SVG data URI for fiber look if needed, but dots work for subtle texture */
+}
+
+.vignette {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  pointer-events: none;
+  background: radial-gradient(circle at center, transparent 40%, var(--color-ocean-deep) 90%, #000 100%);
+}
+
+/* --- Canvas Layer --- */
+#wayfinder-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+}
+
+/* --- UI Layer --- */
+.interface-layer {
+  position: relative;
+  z-index: 10;
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  pointer-events: none; /* Let clicks pass to canvas where no UI exists */
+}
+
+/* --- Header / HUD --- */
+.hud-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 2rem;
+  pointer-events: auto;
+  text-shadow: 0 0 10px var(--color-bio-glow);
+}
+
+/* Compass Rose */
+.compass-rose {
+  width: 80px;
+  height: 80px;
+  position: relative;
+  animation: spin-slow 60s linear infinite;
+}
+
+.compass-ring {
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  border: 1px solid var(--color-bio-teal);
+  border-radius: 50%;
+  box-shadow: 0 0 15px var(--color-bio-teal);
+}
+
+.compass-needle {
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 4px; height: 40px;
+  background: var(--color-bio-teal);
+  transform: translate(-50%, -50%) rotate(45deg);
+  box-shadow: 0 0 10px var(--color-bio-teal);
+}
+
+.compass-center {
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 8px; height: 8px;
+  background: var(--color-ocean-deep);
+  border: 2px solid var(--color-bio-teal);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.title-block {
+  text-align: right;
+  margin-right: 2rem;
+}
+
+.main-title {
+  font-family: var(--font-display);
+  font-size: 2.5rem;
+  font-weight: 900;
+  letter-spacing: 0.2rem;
+  color: var(--color-bio-teal);
+  margin-bottom: 0.2rem;
+  text-transform: uppercase;
+}
+
+.subtitle {
+  font-family: var(--font-body);
+  font-size: 1rem;
+  font-style: italic;
+  color: var(--color-wood-light);
+  opacity: 0.8;
+}
+
+.status-block {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+  color: var(--color-bio-teal);
+  border: 1px solid var(--color-bio-teal);
+  padding: 0.5rem 1rem;
+  background: rgba(2, 11, 20, 0.6);
+  backdrop-filter: blur(4px);
+}
+
+.status-indicator {
+  width: 8px;
+  height: 8px;
+  background: var(--color-bio-teal);
+  border-radius: 50%;
+  box-shadow: 0 0 8px var(--color-bio-teal);
+  animation: pulse 2s infinite;
+}
+.status-indicator.active {
+  background: var(--color-bio-teal);
+}
+
+/* --- Navigation Controls (Stick Chart Style) --- */
+.stick-chart-nav {
+  position: absolute;
+  bottom: 3rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 1.5rem;
+  pointer-events: auto;
+  background: linear-gradient(to bottom, var(--color-wood-dark), var(--color-wood-mid));
+  padding: 1rem 2rem;
+  border-radius: 50px;
+  box-shadow: 
+    0 10px 20px rgba(0,0,0,0.5),
+    inset 0 1px 1px rgba(255,255,255,0.2),
+    inset 0 -1px 1px rgba(0,0,0,0.5);
+  border: 1px solid #2a1a15;
+}
+
+.nav-btn {
+  background: transparent;
+  border: none;
+  color: var(--color-wood-light);
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  transition: all 0.3s ease;
+  position: relative;
+  padding: 0.5rem 1rem;
+}
+
+.nav-btn .icon {
+  font-size: 1.2rem;
+  color: var(--color-bio-teal);
+  opacity: 0.5;
+  transition: opacity 0.3s;
+}
+
+.nav-btn:hover {
+  color: var(--color-star-white);
+  transform: translateY(-2px);
+}
+
+.nav-btn:hover .icon {
+  opacity: 1;
+  text-shadow: 0 0 10px var(--color-bio-teal);
+}
+
+.nav-btn.active {
+  color: var(--color-star-white);
+  text-shadow: 0 0 5px var(--color-bio-teal);
+}
+
+.nav-btn.active .icon {
+  opacity: 1;
+  color: var(--color-bio-teal);
+}
+
+/* Active indicator line under button */
+.nav-btn.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 20px;
+  height: 2px;
+  background: var(--color-bio-teal);
+  box-shadow: 0 0 5px var(--color-bio-teal);
+}
+
+/* --- Info Panel (Carved Wood Look) --- */
+.info-panel {
+  position: absolute;
+  top: 50%;
+  right: -400px; /* Hidden initially */
+  transform: translateY(-50%);
+  width: 320px;
+  background: rgba(10, 31, 51, 0.9);
+  border: 1px solid var(--color-wood-mid);
+  padding: 2rem;
+  transition: right 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+  pointer-events: auto;
+  box-shadow: -10px 0 30px rgba(0,0,0,0.8);
+  backdrop-filter: blur(10px);
+}
+
+.info-panel.open {
+  right: 2rem;
+}
+
+.panel-border {
+  position: absolute;
+  top: 5px; left: 5px; right: 5px; bottom: 5px;
+  border: 1px solid var(--color-bio-teal);
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+.panel-content h2 {
+  font-family: var(--font-display);
+  color: var(--color-bio-teal);
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid var(--color-wood-mid);
+  padding-bottom: 0.5rem;
+}
+
+.divider {
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--color-wood-mid), transparent);
+  margin: 1rem 0;
+}
+
+#panel-desc {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  color: var(--color-tapa-fiber);
+  margin-bottom: 1.5rem;
+}
+
+.data-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.data-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.data-item .label {
+  font-size: 0.8rem;
+  color: var(--color-wood-light);
+  text-transform: uppercase;
+  letter-spacing: 0.1rem;
+}
+
+.data-item .value {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  color: var(--color-bio-teal);
+}
+
+/* --- Decorative Motifs --- */
+.motif {
+  position: absolute;
+  width: 100px;
+  height: 100px;
+  pointer-events: none;
+  opacity: 0.3;
+  color: var(--color-wood-mid);
+}
+
+.motif.top-left {
+  top: 2rem;
+  left: 2rem;
+  transform: rotate(0deg);
+}
+
+.motif.bottom-right {
+  bottom: 2rem;
+  right: 2rem;
+  transform: rotate(180deg);
+}
+
+/* --- Animations --- */
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+  0% { opacity: 0.5; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.2); }
+  100% { opacity: 0.5; transform: scale(1); }
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .hud-header {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  
+  .title-block {
+    margin-right: 0;
+    margin-top: 1rem;
+  }
+
+  .info-panel {
+    width: 90%;
+    right: -100%;
+  }
+  
+  .info-panel.open {
+    right: 5%;
+  }
+}

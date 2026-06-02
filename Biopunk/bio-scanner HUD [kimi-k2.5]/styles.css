@@ -1,0 +1,1081 @@
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Crimson+Text:wght@400;600&family=Courier+Prime:wght@400;700&display=swap');
+
+:root {
+  /* Biopunk Color Palette */
+  --bg-primary: #0a0c0e;
+  --bg-secondary: #111418;
+  --bg-panel: rgba(10, 15, 20, 0.85);
+  
+  /* Clinical/Cyber Colors */
+  --cyan-glow: #00f0ff;
+  --cyan-dim: rgba(0, 240, 255, 0.3);
+  --cyan-dark: #004d52;
+  
+  /* Organic/Visceral Colors */
+  --flesh-pink: #ff6b6b;
+  --flesh-dark: #8b2635;
+  --organ-amber: #ffb347;
+  --sickly-green: #9eff00;
+  --bio-teal: #00ff9d;
+  
+  /* Alert Colors */
+  --alert-red: #ff003c;
+  --alert-amber: #ffaa00;
+  --alert-bg: rgba(255, 0, 60, 0.1);
+  
+  /* Text Colors */
+  --text-primary: #e0f0f0;
+  --text-dim: #5a6a6a;
+  --text-dark: #2a3a3a;
+  
+  /* Animation Timing */
+  --pulse-speed: 1.2s;
+  --breathing-speed: 4s;
+  --scan-speed: 8s;
+  
+  /* Spacing */
+  --panel-gap: 1rem;
+  --border-radius: 2px;
+  --border-clinical: 1px solid rgba(0, 240, 255, 0.2);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+/* Atmospheric Overlays */
+.scanlines {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    to bottom,
+    rgba(255,255,255,0),
+    rgba(255,255,255,0) 50%,
+    rgba(0,0,0,0.1) 50%,
+    rgba(0,0,0,0.1)
+  );
+  background-size: 100% 4px;
+  pointer-events: none;
+  z-index: 1000;
+  animation: scanlineMove 10s linear infinite;
+}
+
+.vignette {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle, transparent 60%, rgba(0,0,0,0.8) 100%);
+  pointer-events: none;
+  z-index: 999;
+}
+
+.organic-membrane {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: 
+    radial-gradient(circle at 20% 50%, rgba(255, 107, 107, 0.05) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(0, 255, 157, 0.03) 0%, transparent 50%);
+  animation: membraneBreath var(--breathing-speed) ease-in-out infinite;
+  pointer-events: none;
+  z-index: 998;
+}
+
+.blood-splatter {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="20" cy="30" r="2" fill="%238b2635" opacity="0.8"/><circle cx="80" cy="70" r="3" fill="%238b2635" opacity="0.6"/><circle cx="50" cy="50" r="1.5" fill="%23ff6b6b" opacity="0.7"/></svg>');
+  opacity: 0;
+  pointer-events: none;
+  z-index: 997;
+  transition: opacity 0.5s;
+}
+
+.blood-splatter.active {
+  opacity: 0.3;
+  animation: bloodPulse 2s ease-in-out infinite;
+}
+
+/* Main Container */
+.biosync-container {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: 1rem;
+  background: 
+    linear-gradient(135deg, rgba(0,240,255,0.02) 0%, transparent 50%),
+    linear-gradient(225deg, rgba(255,0,60,0.02) 0%, transparent 50%);
+}
+
+/* Header Styles */
+.hud-header {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 2rem;
+  padding: 1rem 2rem;
+  border-bottom: var(--border-clinical);
+  background: rgba(0, 20, 30, 0.6);
+  backdrop-filter: blur(10px);
+  margin-bottom: var(--panel-gap);
+  position: relative;
+  overflow: hidden;
+}
+
+.hud-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--cyan-glow), transparent);
+  animation: headerScan 4s linear infinite;
+}
+
+.system-title {
+  font-family: 'Crimson Text', serif;
+  font-size: 2rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  color: var(--cyan-glow);
+  text-shadow: 0 0 10px var(--cyan-dim);
+  margin-bottom: 0.5rem;
+}
+
+.version {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  font-family: 'Share Tech Mono', monospace;
+}
+
+.patient-id {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.label {
+  color: var(--text-dim);
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+}
+
+.id-code {
+  font-size: 1.2rem;
+  color: var(--sickly-green);
+  text-shadow: 0 0 5px rgba(158, 255, 0, 0.3);
+}
+
+.status-indicator {
+  padding: 0.2rem 0.8rem;
+  border: 1px solid;
+  font-size: 0.8rem;
+  letter-spacing: 0.1em;
+}
+
+.status-indicator.stable {
+  color: var(--bio-teal);
+  border-color: var(--bio-teal);
+  background: rgba(0, 255, 157, 0.1);
+  box-shadow: 0 0 10px rgba(0, 255, 157, 0.2);
+}
+
+.chrono-display {
+  text-align: center;
+}
+
+.time {
+  display: block;
+  font-size: 2rem;
+  color: var(--cyan-glow);
+  text-shadow: 0 0 15px var(--cyan-dim);
+  letter-spacing: 0.1em;
+}
+
+.date {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  letter-spacing: 0.15em;
+}
+
+.alert-level {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.5rem;
+}
+
+.alert-label {
+  font-size: 0.75rem;
+  color: var(--alert-amber);
+  letter-spacing: 0.1em;
+}
+
+.alert-meter {
+  width: 150px;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.alert-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--bio-teal), var(--alert-amber), var(--alert-red));
+  transition: width 0.5s ease;
+  position: relative;
+}
+
+.alert-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 20px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5));
+  animation: shimmer 2s infinite;
+}
+
+.alert-value {
+  font-size: 1.1rem;
+  color: var(--alert-amber);
+}
+
+/* Main Grid Layout */
+.hud-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 280px 1fr 320px;
+  gap: var(--panel-gap);
+  min-height: 0;
+}
+
+/* Panel Base Styles */
+.bio-panel {
+  background: var(--bg-panel);
+  border: var(--border-clinical);
+  padding: 1.2rem;
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(5px);
+}
+
+.bio-panel::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--cyan-glow), transparent);
+  opacity: 0.5;
+}
+
+.panel-title {
+  font-family: 'Crimson Text', serif;
+  font-size: 0.9rem;
+  letter-spacing: 0.15em;
+  color: var(--cyan-glow);
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(0, 240, 255, 0.2);
+  text-transform: uppercase;
+}
+
+/* Left Column - Organ Monitor */
+.organ-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.organ-item {
+  position: relative;
+  padding: 0.8rem;
+  background: rgba(0, 20, 30, 0.4);
+  border-left: 3px solid var(--cyan-dim);
+  transition: all 0.3s;
+}
+
+.organ-item:hover {
+  background: rgba(0, 40, 50, 0.6);
+  border-left-color: var(--cyan-glow);
+}
+
+.organ-name {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  margin-bottom: 0.5rem;
+  letter-spacing: 0.05em;
+}
+
+.organ-bar {
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  overflow: hidden;
+  position: relative;
+}
+
+.organ-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--cyan-dark), var(--cyan-glow));
+  border-radius: 3px;
+  transition: width 1s ease;
+  position: relative;
+}
+
+.organ-fill.warning {
+  background: linear-gradient(90deg, var(--alert-amber), #ffcc00);
+}
+
+.organ-fill.critical {
+  background: linear-gradient(90deg, var(--alert-red), #ff0066);
+  animation: criticalPulse 1.5s ease-in-out infinite;
+}
+
+.organ-value {
+  position: absolute;
+  right: 0.8rem;
+  top: 0.8rem;
+  font-size: 0.85rem;
+  color: var(--text-primary);
+}
+
+.organ-pulse {
+  position: absolute;
+  left: -3px;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--flesh-pink);
+  opacity: 0;
+  animation: organPulse var(--pulse-speed) ease-in-out infinite;
+}
+
+/* Toxin Monitor */
+.toxin-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.8rem;
+}
+
+.toxin-item {
+  text-align: center;
+}
+
+.toxin-name {
+  display: block;
+  font-size: 0.65rem;
+  color: var(--text-dim);
+  margin-bottom: 0.5rem;
+  letter-spacing: 0.05em;
+}
+
+.toxin-circle {
+  position: relative;
+  width: 60px;
+  height: 60px;
+  margin: 0 auto;
+}
+
+.toxin-circle svg {
+  transform: rotate(-90deg);
+  width: 100%;
+  height: 100%;
+}
+
+.toxin-bg {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.1);
+  stroke-width: 3;
+}
+
+.toxin-progress {
+  fill: none;
+  stroke: var(--cyan-glow);
+  stroke-width: 3;
+  stroke-linecap: round;
+  transition: stroke-dasharray 1s ease;
+  filter: drop-shadow(0 0 3px var(--cyan-dim));
+}
+
+.toxin-progress.warning {
+  stroke: var(--alert-amber);
+  filter: drop-shadow(0 0 3px rgba(255, 170, 0, 0.5));
+}
+
+.toxin-progress.critical {
+  stroke: var(--alert-red);
+  filter: drop-shadow(0 0 5px rgba(255, 0, 60, 0.6));
+  animation: glowPulse 2s ease-in-out infinite;
+}
+
+.toxin-percent {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 0.8rem;
+  font-weight: bold;
+}
+
+/* Center Column - Anatomical Display */
+.anatomical-display {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at center, rgba(0, 30, 40, 0.6) 0%, transparent 70%);
+  border: var(--border-clinical);
+  overflow: hidden;
+}
+
+.scanner-ring {
+  position: absolute;
+  border: 2px solid rgba(0, 240, 255, 0.3);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.scanner-ring.outer {
+  width: 500px;
+  height: 500px;
+  animation: rotate 20s linear infinite;
+}
+
+.scanner-ring.inner {
+  width: 400px;
+  height: 400px;
+  border-color: rgba(255, 107, 107, 0.2);
+  animation: rotate 15s linear infinite reverse;
+}
+
+.scanner-beam {
+  position: absolute;
+  width: 2px;
+  height: 100%;
+  background: linear-gradient(to bottom, transparent, var(--cyan-glow), transparent);
+  opacity: 0.5;
+  animation: scanMove 3s ease-in-out infinite;
+  box-shadow: 0 0 10px var(--cyan-glow);
+}
+
+.body-wireframe {
+  height: 90%;
+  width: auto;
+  filter: drop-shadow(0 0 8px rgba(0, 240, 255, 0.4));
+  z-index: 10;
+}
+
+.wireframe-path {
+  stroke: var(--cyan-glow);
+  stroke-opacity: 0.8;
+  transition: all 0.3s;
+}
+
+.wireframe-path.torso {
+  fill: rgba(0, 240, 255, 0.05);
+}
+
+.organ-nodes .node {
+  fill: var(--bg-primary);
+  stroke: var(--cyan-glow);
+  stroke-width: 2;
+  cursor: pointer;
+  transition: all 0.3s;
+  filter: drop-shadow(0 0 5px var(--cyan-dim));
+}
+
+.organ-nodes .node:hover {
+  fill: var(--cyan-glow);
+  r: 15;
+  filter: drop-shadow(0 0 15px var(--cyan-glow));
+}
+
+.organ-nodes .node[data-status="warning"] {
+  stroke: var(--alert-amber);
+  filter: drop-shadow(0 0 5px rgba(255, 170, 0, 0.6));
+  animation: warningPulse 2s ease-in-out infinite;
+}
+
+.organ-nodes .node[data-status="critical"] {
+  stroke: var(--alert-red);
+  filter: drop-shadow(0 0 8px rgba(255, 0, 60, 0.8));
+  animation: criticalPulse 1s ease-in-out infinite;
+}
+
+.neural-path {
+  stroke: rgba(0, 255, 157, 0.3);
+  stroke-dasharray: 5, 5;
+  animation: dashMove 2s linear infinite;
+}
+
+.scan-data {
+  position: absolute;
+  bottom: 2rem;
+  left: 2rem;
+  background: rgba(0, 0, 0, 0.8);
+  border: 1px solid var(--cyan-dim);
+  padding: 0.5rem 1rem;
+  font-size: 0.8rem;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.anatomical-display:hover .scan-data {
+  opacity: 1;
+}
+
+/* Right Column - Neural Status */
+.neural-visualizer {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.synaptic-core {
+  position: relative;
+  width: 80px;
+  height: 80px;
+}
+
+.synapse-ring {
+  position: absolute;
+  border: 2px solid var(--bio-teal);
+  border-radius: 50%;
+  opacity: 0.6;
+  animation: synapseExpand 2s ease-out infinite;
+}
+
+.synapse-ring:nth-child(1) { width: 100%; height: 100%; animation-delay: 0s; }
+.synapse-ring:nth-child(2) { width: 70%; height: 70%; top: 15%; left: 15%; animation-delay: 0.3s; }
+.synapse-ring:nth-child(3) { width: 40%; height: 40%; top: 30%; left: 30%; animation-delay: 0.6s; }
+
+.neural-metrics {
+  flex: 1;
+}
+
+.metric {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.4rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.metric-label {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+}
+
+.metric-value {
+  font-size: 0.85rem;
+  color: var(--cyan-glow);
+}
+
+.metric-value.critical {
+  color: var(--alert-red);
+  animation: textFlicker 3s infinite;
+}
+
+.neural-graph {
+  height: 60px;
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 0.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.neural-bar {
+  flex: 1;
+  background: linear-gradient(to top, var(--cyan-dark), var(--cyan-glow));
+  min-height: 5px;
+  transition: height 0.3s;
+}
+
+/* Nanomachine Section */
+.nano-canvas-container {
+  position: relative;
+  height: 120px;
+  background: radial-gradient(circle at center, rgba(0, 40, 60, 0.5), transparent);
+  border: 1px solid rgba(0, 240, 255, 0.2);
+  margin-bottom: 1rem;
+  overflow: hidden;
+}
+
+#nanomachine-canvas {
+  width: 100%;
+  height: 100%;
+}
+
+.nano-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem;
+  background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+}
+
+.nano-stat {
+  text-align: center;
+}
+
+.nano-label {
+  display: block;
+  font-size: 0.65rem;
+  color: var(--text-dim);
+  margin-bottom: 0.2rem;
+}
+
+.nano-value {
+  font-size: 0.9rem;
+  color: var(--sickly-green);
+  font-weight: bold;
+}
+
+.nano-targets {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.target-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.target-name {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  display: flex;
+  justify-content: space-between;
+}
+
+.target-progress {
+  height: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.target-fill {
+  height: 100%;
+  background: var(--bio-teal);
+  border-radius: 2px;
+  transition: width 0.5s;
+  position: relative;
+}
+
+.target-fill.warning {
+  background: var(--alert-amber);
+}
+
+.target-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 10px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4));
+}
+
+/* Mutation Tracker */
+.mutation-display {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.mutation-dna {
+  height: 100px;
+  position: relative;
+  perspective: 1000px;
+}
+
+.helix-container {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  transform-style: preserve-3d;
+  animation: helixRotate 10s linear infinite;
+}
+
+.dna-strand {
+  position: absolute;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--flesh-pink), transparent);
+  top: 50%;
+  transform-origin: center;
+  opacity: 0.6;
+}
+
+.mutation-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.mutation-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.mut-label {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  width: 100px;
+}
+
+.splice-bar {
+  flex: 1;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.splice-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--flesh-dark), var(--flesh-pink));
+  border-radius: 3px;
+  animation: dnaPulse 3s ease-in-out infinite;
+}
+
+.mut-percent {
+  font-size: 0.85rem;
+  color: var(--flesh-pink);
+  width: 40px;
+  text-align: right;
+}
+
+.mut-value {
+  font-size: 0.85rem;
+  color: var(--text-primary);
+  flex: 1;
+  text-align: right;
+}
+
+.mut-value.warning {
+  color: var(--alert-amber);
+}
+
+/* Footer */
+.hud-footer {
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr;
+  gap: var(--panel-gap);
+  margin-top: var(--panel-gap);
+  height: 180px;
+  min-height: 180px;
+}
+
+.footer-title {
+  font-family: 'Crimson Text', serif;
+  font-size: 0.8rem;
+  letter-spacing: 0.1em;
+  color: var(--cyan-glow);
+  margin-bottom: 0.8rem;
+  opacity: 0.8;
+}
+
+/* Gene Matrix */
+.gene-matrix {
+  background: var(--bg-panel);
+  border: var(--border-clinical);
+  padding: 1rem;
+  overflow: hidden;
+}
+
+.matrix-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 4px;
+  height: calc(100% - 2rem);
+}
+
+.gene-cell {
+  aspect-ratio: 1;
+  background: rgba(0, 40, 50, 0.4);
+  border: 1px solid rgba(0, 240, 255, 0.1);
+  transition: all 0.3s;
+  position: relative;
+  overflow: hidden;
+}
+
+.gene-cell.active {
+  background: rgba(0, 255, 157, 0.3);
+  border-color: var(--bio-teal);
+  box-shadow: 0 0 10px rgba(0, 255, 157, 0.3);
+}
+
+.gene-cell.mutated {
+  background: rgba(255, 107, 107, 0.3);
+  border-color: var(--flesh-pink);
+}
+
+.gene-cell::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: currentColor;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: all 0.3s;
+}
+
+.gene-cell.active::before {
+  width: 60%;
+  height: 60%;
+}
+
+/* ECG Display */
+.cardiac-rhythm {
+  background: var(--bg-panel);
+  border: var(--border-clinical);
+  padding: 1rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.ecg-display {
+  position: relative;
+  height: 100%;
+}
+
+#heartbeat-canvas {
+  width: 100%;
+  height: 100%;
+  opacity: 0.9;
+}
+
+.bpm-display {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  text-align: right;
+}
+
+.bpm-value {
+  display: block;
+  font-size: 3rem;
+  color: var(--flesh-pink);
+  font-family: 'Crimson Text', serif;
+  text-shadow: 0 0 20px rgba(255, 107, 107, 0.5);
+  line-height: 1;
+}
+
+.bpm-label {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  letter-spacing: 0.2em;
+}
+
+/* System Logs */
+.system-logs {
+  background: var(--bg-panel);
+  border: var(--border-clinical);
+  padding: 1rem;
+  overflow: hidden;
+}
+
+.log-terminal {
+  height: calc(100% - 2rem);
+  overflow-y: auto;
+  font-family: 'Courier Prime', monospace;
+  font-size: 0.75rem;
+  line-height: 1.6;
+}
+
+.log-entry {
+  padding: 0.2rem 0;
+  color: var(--text-dim);
+  border-left: 2px solid transparent;
+  padding-left: 0.5rem;
+  margin-bottom: 0.3rem;
+  animation: logEntry 0.3s ease-out;
+}
+
+.log-entry.warning {
+  color: var(--alert-amber);
+  border-left-color: var(--alert-amber);
+  background: rgba(255, 170, 0, 0.05);
+}
+
+.log-entry.critical {
+  color: var(--alert-red);
+  border-left-color: var(--alert-red);
+  background: var(--alert-bg);
+  animation: logAlert 1s ease-in-out infinite;
+}
+
+.timestamp {
+  color: var(--cyan-dim);
+  margin-right: 0.5rem;
+}
+
+/* Animations */
+@keyframes scanlineMove {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(4px); }
+}
+
+@keyframes headerScan {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+@keyframes membraneBreath {
+  0%, 100% { opacity: 0.3; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(1.02); }
+}
+
+@keyframes bloodPulse {
+  0%, 100% { opacity: 0.2; }
+  50% { opacity: 0.4; }
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-20px); opacity: 0; }
+  50% { opacity: 1; }
+  100% { transform: translateX(20px); opacity: 0; }
+}
+
+@keyframes criticalPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+@keyframes warningPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.05); }
+}
+
+@keyframes organPulse {
+  0%, 100% { opacity: 0; }
+  50% { opacity: 0.5; }
+}
+
+@keyframes glowPulse {
+  0%, 100% { filter: drop-shadow(0 0 5px rgba(255, 0, 60, 0.6)); }
+  50% { filter: drop-shadow(0 0 15px rgba(255, 0, 60, 0.9)); }
+}
+
+@keyframes textFlicker {
+  0%, 100% { opacity: 1; }
+  92% { opacity: 1; }
+  93% { opacity: 0.3; }
+  94% { opacity: 1; }
+  95% { opacity: 0.2; }
+  96% { opacity: 1; }
+}
+
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes scanMove {
+  0%, 100% { left: 10%; opacity: 0; }
+  50% { opacity: 0.8; }
+  100% { left: 90%; opacity: 0; }
+}
+
+@keyframes dashMove {
+  to { stroke-dashoffset: -20; }
+}
+
+@keyframes synapseExpand {
+  0% { transform: scale(0.8); opacity: 0.8; }
+  100% { transform: scale(1.3); opacity: 0; }
+}
+
+@keyframes helixRotate {
+  from { transform: rotateY(0deg); }
+  to { transform: rotateY(360deg); }
+}
+
+@keyframes dnaPulse {
+  0%, 100% { opacity: 0.8; }
+  50% { opacity: 1; box-shadow: 0 0 10px var(--flesh-pink); }
+}
+
+@keyframes logEntry {
+  from { opacity: 0; transform: translateX(-10px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes logAlert {
+  0%, 100% { background: var(--alert-bg); }
+  50% { background: rgba(255, 0, 60, 0.2); }
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--cyan-dim);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--cyan-glow);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 1400px) {
+  .hud-grid {
+    grid-template-columns: 250px 1fr 280px;
+  }
+  .hud-footer {
+    grid-template-columns: 1fr 1.5fr 1fr;
+  }
+}
+
+/* Utility Classes */
+.hidden { display: none; }
+.opacity-50 { opacity: 0.5; }
+.text-glow { text-shadow: 0 0 10px currentColor; }

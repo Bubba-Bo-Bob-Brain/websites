@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>午後の夢 — Midnight Arcade</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Noto+Sans+JP:wght@300;400;700;900&family=Zen+Tokyo+Zoo&family=Press+Start+2P&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- CRT Overlay Effects -->
+  <div class="crt-overlay"></div>
+  <div class="scanlines"></div>
+  <div class="vignette"></div>
+  <div class="chromatic-aberration"></div>
+
+  <!-- Parallax Background Layers -->
+  <div class="parallax-container">
+    <div class="palm-layer palm-back" data-speed="0.2"></div>
+    <div class="grid-floor"></div>
+    <div class="palm-layer palm-mid" data-speed="0.5"></div>
+    <div class="palm-layer palm-front" data-speed="0.8"></div>
+  </div>
+
+  <!-- Floating Japanese Characters -->
+  <div class="floating-kana" aria-hidden="true">夢</div>
+  <div class="floating-kana" aria-hidden="true">夜</div>
+  <div class="floating-kana" aria-hidden="true">音</div>
+  <div class="floating-kana" aria-hidden="true">幻</div>
+
+  <!-- Main Container -->
+  <main class="player-container">
+    
+    <!-- Header -->
+    <header class="player-header">
+      <div class="logo-mark">
+        <span class="logo-jp">午後の夢</span>
+        <span class="logo-en">MIDNIGHT ARCADE</span>
+      </div>
+      <div class="header-time" id="headerTime">00:00</div>
+    </header>
+
+    <!-- Visualizer Section -->
+    <section class="visualizer-section">
+      <!-- Rotating Marble Bust -->
+      <div class="bust-container">
+        <div class="bust-ring ring-1"></div>
+        <div class="bust-ring ring-2"></div>
+        <div class="bust-ring ring-3"></div>
+        <div class="marble-bust">
+          <svg viewBox="0 0 200 240" class="bust-svg">
+            <defs>
+              <linearGradient id="marbleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#f0e6ff"/>
+                <stop offset="50%" stop-color="#e8d5ff"/>
+                <stop offset="100%" stop-color="#c9a8e8"/>
+              </linearGradient>
+              <filter id="marbleGlow">
+                <feGaussianBlur stdDeviation="3" result="blur"/>
+                <feMerge>
+                  <feMergeNode in="blur"/>
+                  <feMergeNode in="SourceGraphic"/>
+                </feMerge>
+              </filter>
+            </defs>
+            <!-- Classical bust silhouette -->
+            <path d="M100 20 C60 20 45 50 45 80 C45 100 50 120 55 135 L50 155 L70 150 L80 180 L120 180 L130 150 L150 155 L145 135 C150 120 155 100 155 80 C155 50 140 20 100 20Z" fill="url(#marbleGrad)"/>
+            <!-- Face details -->
+            <ellipse cx="85" cy="75" rx="6" ry="8" fill="#b8a0d0"/>
+            <ellipse cx="115" cy="75" rx="6" ry="8" fill="#b8a0d0"/>
+            <path d="M90 95 Q100 105 110 95" stroke="#a080c0" stroke-width="2" fill="none"/>
+            <!-- Hair curls -->
+            <circle cx="70" cy="60" r="8" fill="url(#marbleGrad)"/>
+            <circle cx="85" cy="52" r="10" fill="url(#marbleGrad)"/>
+            <circle cx="105" cy="50" r="10" fill="url(#marbleGrad)"/>
+            <circle cx="125" cy="55" r="9" fill="url(#marbleGrad)"/>
+            <circle cx="140" cy="65" r="7" fill="url(#marbleGrad)"/>
+            <!-- Base -->
+            <rect x="55" y="180" width="90" height="15" rx="3" fill="#d0b8e8"/>
+            <rect x="45" y="195" width="110" height="20" rx="5" fill="url(#marbleGrad)"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Waveform Canvas -->
+      <div class="waveform-container">
+        <canvas id="waveformCanvas" width="800" height="120"></canvas>
+        <div class="oscilloscope-grid">
+          <div class="grid-line h"></div>
+          <div class="grid-line h"></div>
+          <div class="grid-line h"></div>
+          <div class="grid-line v"></div>
+          <div class="grid-line v"></div>
+          <div class="grid-line v"></div>
+          <div class="grid-line v"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Windows 95 Dialog Box: Track Info -->
+    <div class="win95-dialog track-info-dialog">
+      <div class="win95-titlebar">
+        <div class="win95-icon">🎵</div>
+        <span class="win95-title">NOW_PLAYING.EXE</span>
+        <div class="win95-buttons">
+          <button class="win95-btn minimize">_</button>
+          <button class="win95-btn maximize">□</button>
+          <button class="win95-btn close">×</button>
+        </div>
+      </div>
+      <div class="win95-content">
+        <div class="album-art-container">
+          <div class="album-art" id="albumArt">
+            <div class="holographic-sheen"></div>
+            <div class="album-art-inner">
+              <div class="album-placeholder" id="albumPlaceholder">
+                <span class="placeholder-text">夕暮れ</span>
+                <div class="placeholder-sun"></div>
+              </div>
+            </div>
+          </div>
+          <div class="cd-reflection"></div>
+        </div>
+        <div class="track-meta">
+          <h1 class="track-title" id="trackTitle">Midnight Cruiser '84</h1>
+          <p class="track-artist" id="trackArtist">ＮＥＯＮ ＤＲＥＡＭＳ</p>
+          <div class="track-album" id="trackAlbum">〜 Tokyo After Dark 〜</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Controls Section -->
+    <section class="controls-section">
+      <!-- VHS Tracking Bar -->
+      <div class="vhs-track-container">
+        <div class="vhs-label">TRACKING</div>
+        <div class="vhs-bar" id="vhsBar">
+          <div class="vhs-progress" id="vhsProgress"></div>
+          <div class="vhs-glitch-line" id="vhsGlitch"></div>
+          <div class="vhs-tracking-dots">
+            <span></span><span></span><span></span><span></span><span></span>
+            <span></span><span></span><span></span><span></span><span></span>
+          </div>
+        </div>
+        <div class="vhs-time">
+          <span id="currentTime">00:00</span>
+          <span class="time-separator"> / </span>
+          <span id="totalTime">04:20</span>
+        </div>
+      </div>
+
+      <!-- Transport Controls -->
+      <div class="transport-controls">
+        <button class="control-btn shuffle" id="shuffleBtn" title="Shuffle">
+          <svg viewBox="0 0 24 24"><path d="M10.59 9.17L5.41 4 4 5.41l5.17 5.17 1.42-1.41zM14.5 4l2.53 2.53-2.53 2.53-1.42-1.41L15.12 6H14c-2.21 0-4.21.9-5.66 2.34l-1.41 1.41 1.41 1.41 1.41-1.41C10.76 8.92 12.33 8.24 14 8.24h1.12l-1.93 1.93 1.42 1.41L18.47 6l-3.97-3.97-1.41 1.41L15.12 4H14zm-2.12 10.83l-1.41 1.41L6 12.41l-2 2V16h2.76l1.53-1.53-1.41-1.41-1.12 1.12zM20.59 14L18 16.59 15.41 14l-1.41 1.41L16.59 19 14 21.59 15.41 23 18 20.41 20.59 23 22 21.59 19.41 19 22 16.41 20.59 14z"/></svg>
+        </button>
+        <button class="control-btn prev" id="prevBtn" title="Previous">
+          <svg viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
+        </button>
+        <button class="control-btn play-pause" id="playPauseBtn" title="Play/Pause">
+          <div class="play-icon" id="playIcon">
+            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          </div>
+          <div class="pause-icon" id="pauseIcon" hidden>
+            <svg viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+          </div>
+        </button>
+        <button class="control-btn next" id="nextBtn" title="Next">
+          <svg viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+        </button>
+        <button class="control-btn repeat" id="repeatBtn" title="Repeat">
+          <svg viewBox="0 0 24 24"><path d="M7 7h8v2l4-3.5L15 1v2H5v6h2V7zm8 10H7v-2l-4 3.5L7 20v-2h10v-6h-2v4z"/></svg>
+        </button>
+      </div>
+
+      <!-- Volume Control -->
+      <div class="volume-section">
+        <span class="vol-label">VOL</span>
+        <div class="volume-bar" id="volumeBar">
+          <div class="volume-fill" id="volumeFill"></div>
+        </div>
+        <span class="vol-value" id="volValue">80%</span>
+      </div>
+    </section>
+
+    <!-- Playlist Section -->
+    <section class="playlist-section">
+      <div class="playlist-header">
+        <h2 class="playlist-title">
+          <span class="title-jp">プレイリスト</span>
+          <span class="title-en">PLAYLIST</span>
+        </h2>
+        <div class="playlist-actions">
+          <button class="playlist-btn add" id="addTrackBtn" title="Add Track">+</button>
+          <button class="playlist-btn clear" id="clearPlaylistBtn" title="Clear">×</button>
+        </div>
+      </div>
+      
+      <ul class="playlist" id="playlist">
+        <li class="playlist-item playing" data-track="0" draggable="true">
+          <div class="column-divider"></div>
+          <div class="track-number">01</div>
+          <div class="track-info">
+            <span class="track-name">Midnight Cruiser '84</span>
+            <span class="track-artist-small">ＮＥＯＮ ＤＲＥＡＭＳ</span>
+          </div>
+          <div class="track-duration">04:20</div>
+          <div class="track-visual">
+            <div class="eq-bar"></div>
+            <div class="eq-bar"></div>
+            <div class="eq-bar"></div>
+            <div class="eq-bar"></div>
+          </div>
+          <button class="track-remove" title="Remove">×</button>
+        </li>
+        <li class="playlist-item" data-track="1" draggable="true">
+          <div class="column-divider"></div>
+          <div class="track-number">02</div>
+          <div class="track-info">
+            <span class="track-name">Macintoshè Ｍａｉｄ</span>
+            <span class="track-artist-small">デジタル ラブ</span>
+          </div>
+          <div class="track-duration">03:45</div>
+          <div class="track-visual">
+            <div class="eq-bar"></div>
+            <div class="eq-bar"></div>
+            <div class="eq-bar"></div>
+            <div class="eq-bar"></div>
+          </div>
+          <button class="track-remove" title="Remove">×</button>
+        </li>
+        <li class="playlist-item" data-track="2" draggable="true">
+          <div class="column-divider"></div>
+          <div class="track-number">03</div>
+          <div class="track-info">
+            <span class="track-name">Palm Trees & Pixel Dreams</span>
+            <span class="track-artist-small">ＳＵＮＳＥＴ ＣＬＵＢ</span>
+          </div>
+          <div class="track-duration">05:12</div>
+          <div class="track-visual">
+            <div class="eq-bar"></div>
+            <div class="eq-bar"></div>
+            <div class="eq-bar"></div>
+            <div class="eq-bar"></div>
+          </div>
+          <button class="track-remove" title="Remove">×</button>
+        </li>
+        <li class="playlist-item" data-track="3" draggable="true">
+          <div class="column-divider"></div>
+          <div class="track-number">04</div>
+          <div class="track-info">
+            <span class="track-name">ＳＨＯＰＰＩＮＧ  ＭＡＬＬ  ９５</span>
+            <span class="track-artist-small">エレベーター ミュージック</span>
+          </div>
+          <div class="track-duration">03:08</div>
+          <div class="track-visual">
+            <div class="eq-bar"></div>
+            <div class="eq-bar"></div>
+            <div class="eq-bar"></div>
+            <div class="eq-bar"></div>
+          </div>
+          <button class="track-remove" title="Remove">×</button>
+        </li>
+        <li class="playlist-item" data-track="4" draggable="true">
+          <div class="column-divider"></div>
+          <div class="track-number">05</div>
+          <div class="track-info">
+            <span class="track-name">Crying in the Lamborghini</span>
+            <span class="track-artist-small">ＳＡＤ ＢＯＹ ＳＡＴＵＲＤＡＹ</span>
+          </div>
+          <div class="track-duration">04:55</div>
+          <div class="track-visual">
+            <div class="eq-bar"></div>
+            <div class="eq-bar"></div>
+            <div class="eq-bar"></div>
+            <div class="eq-bar"></div>
+          </div>
+          <button class="track-remove" title="Remove">×</button>
+        </li>
+        <li class="playlist-item" data-track="5" draggable="true">
+          <div class="column-divider"></div>
+          <div class="track-number">06</div>
+          <div class="track-info">
+            <span class="track-name">Fuji at Dusk (feat. 夢見)</span>
+            <span class="track-artist-small">ＡＥＳＴＨＥＴＩＣ ＳＯＵＮＤ</span>
+          </div>
+          <div class="track-duration">06:33</div>
+          <div class="track-visual">
+            <div class="eq-bar"></div>
+            <div class="eq-bar"></div>
+            <div class="eq-bar"></div>
+            <div class="eq-bar"></div>
+          </div>
+          <button class="track-remove" title="Remove">×</button>
+        </li>
+      </ul>
+    </section>
+
+    <!-- Footer -->
+    <footer class="player-footer">
+      <div class="footer-marquee">
+        <span>ＭＩＤＮＩＧＨＴ　ＡＲＣＡＤＥ　〜　午後の夢　〜　ＤＩＧＩＴＡＬ　ＥＭＯＴＩＯＮＳ　〜　ＶＡＰＯＲＷＡＶＥ　ＦＯＲＥＶＥＲ　〜　</span>
+      </div>
+      <div class="footer-glitch"></div>
+    </footer>
+
+  </main>
+
+  <!-- Add Track Modal -->
+  <div class="modal-overlay" id="addTrackModal">
+    <div class="win95-dialog modal-dialog">
+      <div class="win95-titlebar">
+        <div class="win95-icon">📁</div>
+        <span class="win95-title">ADD_TRACK.EXE</span>
+        <div class="win95-buttons">
+          <button class="win95-btn close" id="closeModal">×</button>
+        </div>
+      </div>
+      <div class="win95-content modal-content">
+        <div class="form-group">
+          <label>Track Title:</label>
+          <input type="text" id="newTrackTitle" placeholder="Enter track title...">
+        </div>
+        <div class="form-group">
+          <label>Artist:</label>
+          <input type="text" id="newTrackArtist" placeholder="Enter artist name...">
+        </div>
+        <div class="form-group">
+          <label>Duration:</label>
+          <input type="text" id="newTrackDuration" placeholder="MM:SS" value="03:00">
+        </div>
+        <div class="modal-actions">
+          <button class="modal-btn primary" id="confirmAddTrack">ＡＤＤ</button>
+          <button class="modal-btn" id="cancelAddTrack">ＣＡＮＣＥＬ</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="scripts.js"></script>
+</body>
+</html>

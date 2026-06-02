@@ -1,0 +1,766 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   ABYSSAL STATION Ω‑9 — DEEP‑SEA OPERATIONS DASHBOARD
+   Design direction: crushing‑depth submarine viewport aesthetic
+   Bioluminescent accents • CRT scanlines • pressure‑aware ambience
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ───── Google Fonts ───── */
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Raleway:wght@300;400;600&display=swap');
+
+/* ───── CSS Custom Properties ───── */
+:root {
+  /* Deep‑sea palette */
+  --abyss-dark:        #060b14;
+  --abyss-mid:         #0b1628;
+  --abyss-deep:        #0f1f38;
+  --steel-100:         #1a2e44;
+  --steel-200:         #243b55;
+  --steel-300:         #2e4d6b;
+  --glass-border:      rgba(42, 80, 130, 0.35);
+  --glass-bg:          rgba(8, 18, 38, 0.65);
+  --glass-glow:        rgba(42, 130, 200, 0.08);
+
+  /* Bioluminescent accent colors */
+  --bio-cyan:          #00f0e8;
+  --bio-teal:          #20e8b8;
+  --bio-blue:          #40a0ff;
+  --bio-magenta:       #c840ff;
+  --bio-amber:         #ffb840;
+  --bio-green:         #40ff88;
+
+  /* Alert / status */
+  --warn-red:          #ff3040;
+  --warn-orange:       #ff8820;
+  --safe-green:        #20ff88;
+  --neutral-gray:      #5a7a9a;
+
+  /* Typography */
+  --font-display:      'Orbitron', sans-serif;
+  --font-terminal:     'Share Tech Mono', monospace;
+  --font-body:         'Raleway', sans-serif;
+
+  /* Timing */
+  --ease-out:          cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --ease-in-out:       cubic-bezier(0.445, 0.05, 0.55, 0.95);
+}
+
+/* ───── Reset & Base ───── */
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 14px;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-body);
+  background: var(--abyss-dark);
+  color: #a8c8e0;
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* ───── Ambient deep‑sea radial gradient that shifts with depth ───── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 40%,
+      rgba(5, 30, 80, 0.5) 0%,
+      rgba(4, 12, 30, 0.8) 50%,
+      rgba(2, 6, 16, 1) 100%);
+  pointer-events: none;
+  z-index: 0;
+  animation: ambientShift 12s ease-in-out infinite alternate;
+}
+
+@keyframes ambientShift {
+  0%   { filter: hue-rotate(0deg) brightness(0.7); }
+  50%  { filter: hue-rotate(8deg) brightness(0.8); }
+  100% { filter: hue-rotate(-6deg) brightness(0.65); }
+}
+
+/* ───── CRT Scanline Overlay ───── */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent 0px,
+    transparent 2px,
+    rgba(0, 0, 0, 0.07) 2px,
+    rgba(0, 0, 0, 0.07) 4px
+  );
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* ───── Particle Field (bioluminescent drift) ───── */
+#particleField {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  overflow: hidden;
+}
+
+.particle {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  will-change: transform, opacity;
+  animation: particleDrift linear infinite;
+}
+
+@keyframes particleDrift {
+  0%   { transform: translate3d(0, 0, 0) scale(1);   opacity: 0; }
+  10%  { opacity: 1; }
+  90%  { opacity: 1; }
+  100% { transform: translate3d(var(--dx), var(--dy), 0) scale(0.3); opacity: 0; }
+}
+
+/* ───── Viewport (submarine observation port) ───── */
+#viewport {
+  position: relative;
+  width: 100%;
+  max-width: 1100px;
+  height: 340px;
+  margin: 0 auto;
+  border-radius: 0 0 50% 50% / 0 0 60% 60%;
+  overflow: hidden;
+  border: 2px solid var(--steel-200);
+  box-shadow:
+    inset 0 0 60px rgba(0, 20, 60, 0.8),
+    0 0 30px rgba(0, 100, 180, 0.15),
+    0 8px 32px rgba(0, 0, 0, 0.6);
+  z-index: 2;
+}
+
+#viewportCanvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  image-rendering: auto;
+}
+
+#viewportOverlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+#viewportFrame {
+  width: 92%;
+  height: 92%;
+  opacity: 0.7;
+}
+
+/* ───── Top Bar ───── */
+#topBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding: 0.8rem 2rem;
+  background: linear-gradient(180deg, rgba(11, 22, 40, 0.95), rgba(6, 11, 20, 0.98));
+  border-bottom: 1px solid var(--glass-border);
+  position: relative;
+  z-index: 5;
+}
+
+#stationName {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 900;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  color: var(--bio-cyan);
+  text-shadow:
+    0 0 8px rgba(0, 240, 232, 0.4),
+    0 0 20px rgba(0, 240, 232, 0.15);
+}
+
+#stationName .accent {
+  color: var(--bio-magenta);
+  text-shadow:
+    0 0 6px rgba(200, 64, 255, 0.5);
+}
+
+#missionClock {
+  font-family: var(--font-terminal);
+  font-size: 1.6rem;
+  color: var(--bio-blue);
+  letter-spacing: 0.15em;
+  text-shadow: 0 0 10px rgba(64, 160, 255, 0.4);
+  animation: clockPulse 2s ease-in-out infinite alternate;
+}
+
+@keyframes clockPulse {
+  0%   { opacity: 0.85; }
+  100% { opacity: 1; }
+}
+
+#depthBar, #pressureBar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+#depthBar label, #pressureBar label,
+#currentInfo label, #tempInfo label {
+  font-family: var(--font-display);
+  font-size: 0.65rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--neutral-gray);
+}
+
+#depthGaugeWrap, #pressureGaugeWrap {
+  position: relative;
+  width: 130px;
+  height: 130px;
+}
+
+#depthGaugeWrap canvas, #pressureGaugeWrap canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+#depthValue, #pressureValue {
+  position: absolute;
+  bottom: 18%;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-terminal);
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--bio-cyan);
+  text-shadow: 0 0 8px rgba(0, 240, 232, 0.5);
+  white-space: nowrap;
+}
+
+#pressureValue {
+  color: var(--bio-teal);
+  text-shadow: 0 0 8px rgba(32, 232, 184, 0.5);
+}
+
+/* ───── Dashboard Grid ───── */
+#dashboard {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto auto;
+  gap: 1.2rem;
+  padding: 1.2rem 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 3;
+}
+
+/* ───── Panels (glassmorphism cards) ───── */
+.panel {
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px) saturate(1.2);
+  -webkit-backdrop-filter: blur(12px) saturate(1.2);
+  border: 1px solid var(--glass-border);
+  border-radius: 8px;
+  padding: 1.2rem 1.4rem;
+  position: relative;
+  overflow: hidden;
+  transition: box-shadow 0.4s var(--ease-out);
+}
+
+.panel::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -50%;
+  width: 200%;
+  height: 100%;
+  background: linear-gradient(
+    115deg,
+    transparent 30%,
+    rgba(0, 240, 232, 0.025) 45%,
+    rgba(0, 240, 232, 0.04) 50%,
+    rgba(0, 240, 232, 0.025) 55%,
+    transparent 70%
+  );
+  animation: panelShimmer 6s ease-in-out infinite;
+}
+
+@keyframes panelShimmer {
+  0%   { transform: translateX(-30%); }
+  100% { transform: translateX(30%); }
+}
+
+.panel:hover {
+  box-shadow:
+    0 0 20px rgba(0, 240, 232, 0.08),
+    inset 0 0 30px rgba(0, 240, 232, 0.02);
+}
+
+.panel h2 {
+  font-family: var(--font-display);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--bio-cyan);
+  margin-bottom: 0.8rem;
+  text-shadow: 0 0 6px rgba(0, 240, 232, 0.3);
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.panel h2::before {
+  content: '';
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background: var(--bio-cyan);
+  border-radius: 50%;
+  box-shadow: 0 0 6px var(--bio-cyan);
+  animation: dotPulse 2s ease-in-out infinite;
+}
+
+@keyframes dotPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.4; transform: scale(0.7); }
+}
+
+.panel canvas {
+  display: block;
+  width: 100%;
+  border-radius: 4px;
+}
+
+/* ───── Sonar Panel ───── */
+#sonarPanel {
+  grid-column: 1 / 2;
+  grid-row: 1 / 2;
+}
+
+#sonarCanvas {
+  height: 320px;
+  background: radial-gradient(ellipse at center, #0a1a2e 0%, #060e1a 100%);
+  border: 1px solid rgba(0, 240, 232, 0.12);
+  border-radius: 6px;
+}
+
+#sonarInfo {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.6rem;
+  font-family: var(--font-terminal);
+  font-size: 0.85rem;
+  color: var(--neutral-gray);
+  position: relative;
+  z-index: 2;
+}
+
+#sonarInfo strong {
+  color: var(--bio-blue);
+}
+
+/* ───── Fauna Panel ───── */
+#faunaPanel {
+  grid-column: 2 / 3;
+  grid-row: 1 / 2;
+}
+
+#faunaCanvas {
+  height: 260px;
+  background: radial-gradient(ellipse at center, #081628 0%, #040a14 100%);
+  border: 1px solid rgba(32, 232, 184, 0.12);
+  border-radius: 6px;
+}
+
+#faunaList {
+  margin-top: 0.6rem;
+  max-height: 110px;
+  overflow-y: auto;
+  list-style: none;
+  font-family: var(--font-terminal);
+  font-size: 0.78rem;
+  line-height: 1.8;
+  scrollbar-width: thin;
+  scrollbar-color: var(--steel-300) transparent;
+}
+
+#faunaList::-webkit-scrollbar { width: 4px; }
+#faunaList::-webkit-scrollbar-track { background: transparent; }
+#faunaList::-webkit-scrollbar-thumb { background: var(--steel-300); border-radius: 2px; }
+
+#faunaList li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+#faunaList li .bio-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  box-shadow: 0 0 4px currentColor;
+}
+
+#faunaList li span.name { color: #c8d8e8; }
+#faunaList li span.count { color: var(--neutral-gray); margin-left: auto; font-size: 0.72rem; }
+
+/* ───── Hull Integrity Panel ───── */
+#hullPanel {
+  grid-column: 1 / 2;
+  grid-row: 2 / 3;
+}
+
+#hullDiagram {
+  width: 100%;
+  max-width: 300px;
+  display: block;
+  margin: 0 auto 0.8rem;
+  filter: drop-shadow(0 0 8px rgba(42, 80, 130, 0.3));
+}
+
+#hullDiagram circle { transition: stroke 0.6s ease; }
+
+#hullStatus {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-terminal);
+  font-size: 0.85rem;
+  position: relative;
+  z-index: 2;
+}
+
+#hullStatus strong { color: var(--safe-green); }
+#hullStatus .warning { color: var(--warn-orange); }
+#hullStatus .danger  { color: var(--warn-red); }
+
+/* ───── Systems & Alerts Panel ───── */
+#systemsPanel {
+  grid-column: 2 / 3;
+  grid-row: 2 / 3;
+}
+
+#systemBars {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  margin-bottom: 0.8rem;
+  position: relative;
+  z-index: 2;
+}
+
+.sysBar label {
+  font-family: var(--font-terminal);
+  font-size: 0.75rem;
+  color: var(--neutral-gray);
+  letter-spacing: 0.08em;
+  margin-bottom: 0.25rem;
+  display: block;
+}
+
+.bar {
+  height: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 5px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+  position: relative;
+}
+
+.bar .fill {
+  height: 100%;
+  border-radius: 5px;
+  transition: width 1s var(--ease-out), background 1s ease;
+  position: relative;
+}
+
+/* Subtle animated shimmer on fills */
+.bar .fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+  animation: shimmer 3s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0%   { left: -100%; }
+  100% { left: 200%; }
+}
+
+#powerBar       { background: linear-gradient(90deg, #1a6a3a, var(--safe-green)); box-shadow: 0 0 8px rgba(32, 255, 136, 0.3); }
+#o2Bar           { background: linear-gradient(90deg, #1a5a8a, var(--bio-blue)); box-shadow: 0 0 8px rgba(64, 160, 255, 0.3); }
+#tempBar         { background: linear-gradient(90deg, #6a4a1a, var(--bio-amber)); box-shadow: 0 0 8px rgba(255, 184, 64, 0.3); }
+#commBar         { background: linear-gradient(90deg, #5a2a7a, var(--bio-magenta)); box-shadow: 0 0 8px rgba(200, 64, 255, 0.3); }
+
+/* Alert Log */
+#alertLog {
+  list-style: none;
+  max-height: 100px;
+  overflow-y: auto;
+  font-family: var(--font-terminal);
+  font-size: 0.72rem;
+  line-height: 1.7;
+  scrollbar-width: thin;
+  scrollbar-color: var(--steel-300) transparent;
+}
+
+#alertLog::-webkit-scrollbar { width: 4px; }
+#alertLog::-webkit-scrollbar-track { background: transparent; }
+#alertLog::-webkit-scrollbar-thumb { background: var(--steel-300); border-radius: 2px; }
+
+#alertLog li {
+  padding: 0.2rem 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+#alertLog li:last-child { border-bottom: none; }
+
+#alertLog li .alert-time {
+  color: var(--neutral-gray);
+  min-width: 60px;
+}
+
+#alertLog li .alert-level {
+  font-weight: 700;
+  min-width: 40px;
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+}
+
+#alertLog li .alert-level.info    { color: var(--bio-blue); }
+#alertLog li .alert-level.warn    { color: var(--warn-orange); }
+#alertLog li .alert-level.critical { color: var(--warn-red); }
+
+#alertLog li .alert-msg {
+  color: #8aa0b4;
+}
+
+/* ───── Bottom Bar ───── */
+#bottomBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding: 0.7rem 2rem;
+  background: linear-gradient(180deg, rgba(6, 11, 20, 0.98), rgba(11, 22, 40, 0.95));
+  border-top: 1px solid var(--glass-border);
+  position: relative;
+  z-index: 5;
+}
+
+#currentInfo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+#currentCanvas {
+  display: block;
+  width: 220px;
+  height: 50px;
+}
+
+#tempInfo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+#tempValue {
+  font-family: var(--font-terminal);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--bio-teal);
+  text-shadow: 0 0 8px rgba(32, 232, 184, 0.4);
+}
+
+/* ───── Klaxon ───── */
+#klaxonWrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+#klaxonBtn {
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--warn-red);
+  background: linear-gradient(180deg, #2a0a0e, #1a0508);
+  border: 1px solid rgba(255, 48, 64, 0.4);
+  border-radius: 4px;
+  padding: 0.5rem 1.4rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+#klaxonBtn:hover {
+  background: linear-gradient(180deg, #3a0f18, #2a0a0e);
+  border-color: rgba(255, 48, 64, 0.7);
+  box-shadow: 0 0 16px rgba(255, 48, 64, 0.3);
+}
+
+#klaxonBtn:active {
+  transform: scale(0.97);
+}
+
+#klaxonBtn.active {
+  animation: klaxonPulse 0.8s ease-in-out infinite alternate;
+}
+
+@keyframes klaxonPulse {
+  0%   { background: linear-gradient(180deg, #2a0a0e, #1a0508); box-shadow: 0 0 8px rgba(255, 48, 64, 0.3); }
+  100% { background: linear-gradient(180deg, #4a1520, #2a0a0e); box-shadow: 0 0 24px rgba(255, 48, 64, 0.6); }
+}
+
+#klaxonBar {
+  width: 160px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+#klaxonBar .klaxon-fill {
+  height: 100%;
+  width: 0%;
+  background: var(--warn-red);
+  border-radius: 2px;
+  transition: width 0.3s ease;
+  box-shadow: 0 0 6px var(--warn-red);
+}
+
+/* ── Timestamp ── */
+#timeStamp {
+  font-family: var(--font-terminal);
+  font-size: 0.75rem;
+  color: var(--neutral-gray);
+  letter-spacing: 0.05em;
+}
+
+/* ───── Submarine Viewport Frame Overlays ───── */
+/* Bubble / caustic shimmer on viewport */
+#viewport::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 30% 20%, rgba(0, 200, 180, 0.04) 0%, transparent 50%),
+    radial-gradient(ellipse at 70% 70%, rgba(0, 150, 255, 0.03) 0%, transparent 40%);
+  pointer-events: none;
+  border-radius: inherit;
+  animation: causticShift 8s ease-in-out infinite alternate;
+}
+
+@keyframes causticShift {
+  0%   { opacity: 0.6; }
+  50%  { opacity: 1; }
+  100% { opacity: 0.5; }
+}
+
+/* ───── Depth‑aware ambient tint (applied via JS as class) ───── */
+body.depth-shallow   { --ambient-tint: rgba(0, 80, 120, 0.12); }
+body.depth-mid       { --ambient-tint: rgba(0, 40, 80, 0.20); }
+body.depth-deep      { --ambient-tint: rgba(10, 10, 50, 0.30); }
+body.depth-hadal     { --ambient-tint: rgba(5, 0, 20, 0.40); }
+
+body.depth-shallow #viewport { border-color: rgba(0, 180, 220, 0.3); }
+body.depth-mid     #viewport { border-color: rgba(0, 120, 180, 0.25); }
+body.depth-deep    #viewport { border-color: rgba(40, 40, 100, 0.2); }
+body.depth-hadal   #viewport { border-color: rgba(80, 20, 60, 0.2); }
+
+/* ───── Sonar Ping Ripple (keyframes defined here, used in canvas) ───── */
+@keyframes sonarPing {
+  0%   { transform: scale(0.3); opacity: 0.8; }
+  100% { transform: scale(1.0); opacity: 0; }
+}
+
+/* ───── Scrollbar Global ───── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); }
+::-webkit-scrollbar-thumb { background: var(--steel-300); border-radius: 3px; }
+
+/* ───── Utility & Animation Classes ───── */
+.fade-in {
+  animation: fadeIn 0.6s var(--ease-out) forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.glow-text-cyan {
+  text-shadow:
+    0 0 6px rgba(0, 240, 232, 0.5),
+    0 0 20px rgba(0, 240, 232, 0.2);
+}
+
+.glow-text-magenta {
+  text-shadow:
+    0 0 6px rgba(200, 64, 255, 0.5),
+    0 0 20px rgba(200, 64, 255, 0.2);
+}
+
+/* ───── Responsive ───── */
+@media (max-width: 900px) {
+  #dashboard {
+    grid-template-columns: 1fr;
+    padding: 1rem;
+  }
+
+  #sonarPanel, #faunaPanel, #hullPanel, #systemsPanel {
+    grid-column: 1;
+  }
+
+  #topBar {
+    flex-direction: column;
+    align-items: center;
+    padding: 0.6rem 1rem;
+  }
+
+  #missionClock { order: -1; }
+
+  #viewport { height: 240px; }
+}
+
+@media (max-width: 520px) {
+  html { font-size: 12px; }
+  #bottomBar { flex-direction: column; align-items: stretch; text-align: center; }
+  #klaxonWrap { order: -1; }
+}

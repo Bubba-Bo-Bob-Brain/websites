@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BRUTAL WEATHER</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;700&family=Space+Mono:wght@400;700&family=VT323&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Main temperature display - intentionally massive -->
+        <div class="temperature-monster">
+            <div class="temp-value" id="current-temp">--</div>
+            <div class="temp-unit">°C</div>
+            <div class="temp-location" id="current-location">LOADING...</div>
+        </div>
+
+        <!-- Overlapping control panel - deliberately overlapping -->
+        <div class="control-panel">
+            <div class="panel-header">
+                <h2><i class="fas fa-cogs"></i> CONTROL PANEL</h2>
+                <div class="exposed-grid-indicator">GRID: 12 COL</div>
+            </div>
+            <div class="search-section">
+                <input type="text" id="location-input" placeholder="ENTER CITY (RAW INPUT)" class="brutal-input">
+                <button id="search-btn" class="brutal-btn"><i class="fas fa-search"></i> FETCH</button>
+                <button id="geolocate-btn" class="brutal-btn brutal-btn-alt"><i class="fas fa-crosshairs"></i> LOCATE</button>
+            </div>
+            <div class="unit-toggle">
+                <span class="toggle-label">UNIT SYSTEM:</span>
+                <div class="toggle-switch">
+                    <button class="unit-option active" data-unit="metric">METRIC (°C)</button>
+                    <button class="unit-option" data-unit="imperial">IMPERIAL (°F)</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Data panels with clashing grids -->
+        <div class="data-panels">
+            <!-- Panel 1: Conditions -->
+            <div class="data-panel panel-conditions">
+                <div class="panel-title">
+                    <i class="fas fa-cloud"></i> CURRENT CONDITIONS
+                    <span class="panel-id">PANEL #01</span>
+                </div>
+                <div class="panel-content">
+                    <div class="condition-row">
+                        <span class="condition-label">FEELS LIKE</span>
+                        <span class="condition-value" id="feels-like">--</span>
+                    </div>
+                    <div class="condition-row">
+                        <span class="condition-label">HUMIDITY</span>
+                        <span class="condition-value" id="humidity">--%</span>
+                    </div>
+                    <div class="condition-row">
+                        <span class="condition-label">PRESSURE</span>
+                        <span class="condition-value" id="pressure">-- hPa</span>
+                    </div>
+                    <div class="condition-row">
+                        <span class="condition-label">VISIBILITY</span>
+                        <span class="condition-value" id="visibility">-- km</span>
+                    </div>
+                    <div class="condition-row">
+                        <span class="condition-label">UV INDEX</span>
+                        <span class="condition-value uv-display" id="uv-index">--</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Panel 2: Wind - with raw CSS arrows -->
+            <div class="data-panel panel-wind">
+                <div class="panel-title">
+                    <i class="fas fa-wind"></i> WIND ANALYSIS
+                    <span class="panel-id">PANEL #02</span>
+                </div>
+                <div class="panel-content">
+                    <div class="wind-display">
+                        <div class="wind-speed">
+                            <span class="wind-label">SPEED</span>
+                            <span class="wind-value" id="wind-speed">-- km/h</span>
+                        </div>
+                        <div class="wind-direction-container">
+                            <span class="wind-label">DIRECTION</span>
+                            <div class="wind-direction-display">
+                                <div class="compass-rose">
+                                    <div class="compass-n">N</div>
+                                    <div class="compass-e">E</div>
+                                    <div class="compass-s">S</div>
+                                    <div class="compass-w">W</div>
+                                    <div class="wind-arrow" id="wind-arrow"></div>
+                                </div>
+                                <div class="wind-degrees" id="wind-degrees">--°</div>
+                            </div>
+                        </div>
+                        <div class="wind-gust">
+                            <span class="wind-label">GUST</span>
+                            <span class="wind-value" id="wind-gust">-- km/h</span>
+                        </div>
+                    </div>
+                    <!-- Raw CSS arrow examples exposed -->
+                    <div class="css-arrow-examples">
+                        <div class="example-title">RAW CSS ARROWS:</div>
+                        <div class="arrow-example arrow-n">↑ N</div>
+                        <div class="arrow-example arrow-ne">↗ NE</div>
+                        <div class="arrow-example arrow-e">→ E</div>
+                        <div class="arrow-example arrow-se">↘ SE</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Panel 3: Raw HTML table forecast - no styling mercy -->
+            <div class="data-panel panel-forecast">
+                <div class="panel-title">
+                    <i class="fas fa-table"></i> HOURLY FORECAST (RAW TABLE)
+                    <span class="panel-id">PANEL #03</span>
+                </div>
+                <div class="panel-content">
+                    <table class="brutal-table" id="hourly-forecast">
+                        <thead>
+                            <tr>
+                                <th>TIME</th>
+                                <th>TEMP</th>
+                                <th>CONDITION</th>
+                                <th>PRECIP</th>
+                                <th>WIND</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Will be populated by JS -->
+                            <tr><td colspan="5">LOADING DATA...</td></tr>
+                        </tbody>
+                    </table>
+                    <div class="table-note">
+                        <i class="fas fa-info-circle"></i> This table uses default browser styles with intentional overflow
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Alert system with jarring color shift -->
+        <div class="alert-panel" id="alert-panel">
+            <div class="alert-header">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span class="alert-title">WEATHER ALERTS</span>
+                <span class="alert-count" id="alert-count">0 ACTIVE</span>
+            </div>
+            <div class="alert-content" id="alert-content">
+                <div class="no-alerts">NO ACTIVE ALERTS</div>
+            </div>
+            <div class="alert-blink-indicator">BLINK MODE: <span id="blink-status">OFF</span></div>
+        </div>
+
+        <!-- Exposed structural elements -->
+        <div class="grid-overlay">
+            <div class="grid-line vertical v1"></div>
+            <div class="grid-line vertical v2"></div>
+            <div class="grid-line vertical v3"></div>
+            <div class="grid-line horizontal h1"></div>
+            <div class="grid-line horizontal h2"></div>
+            <div class="grid-line horizontal h3"></div>
+        </div>
+
+        <!-- Footer with raw details -->
+        <div class="footer">
+            <div class="footer-left">
+                <span class="footer-label">BRUTAL WEATHER v1.0</span>
+                <span class="footer-data">DATA SOURCE: OpenWeatherMap API</span>
+            </div>
+            <div class="footer-right">
+                <span class="footer-label">LAST UPDATE:</span>
+                <span class="footer-data" id="last-update">--:--:--</span>
+                <button id="refresh-btn" class="brutal-btn brutal-btn-small"><i class="fas fa-redo"></i> FORCE REFRESH</button>
+            </div>
+        </div>
+
+        <!-- Debug overlay (optional toggle) -->
+        <div class="debug-overlay">
+            <div class="debug-header">DEBUG INFO</div>
+            <div class="debug-content">
+                <div>Viewport: <span id="viewport-size">--</span></div>
+                <div>Grid Conflict: <span class="debug-highlight">ACTIVE</span></div>
+                <div>Anti-Design Score: <span class="debug-highlight">98/100</span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="scripts.js"></script>
+</body>
+</html>

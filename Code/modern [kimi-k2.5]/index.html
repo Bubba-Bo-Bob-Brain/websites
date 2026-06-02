@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEXUS | Collaborative Code Reality</title>
+    <meta name="description" content="Next-generation source code management and collaboration platform">
+    
+    <!-- Preconnect for fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Syncopate:wght@400;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Main Styles -->
+    <link rel="stylesheet" href="styles.css">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://unpkg.com/phosphor-icons@1.4.2/src/css/icons.css">
+</head>
+<body>
+    <!-- Scanline Overlay -->
+    <div class="scanlines" aria-hidden="true"></div>
+    
+    <!-- Custom Cursor -->
+    <div class="cursor-dot" id="cursor-dot"></div>
+    <div class="cursor-outline" id="cursor-outline"></div>
+    
+    <!-- Navigation -->
+    <nav class="nav-bar" id="navbar">
+        <div class="nav-brand">
+            <div class="logo-container">
+                <svg class="logo-svg" viewBox="0 0 100 100" aria-hidden="true">
+                    <defs>
+                        <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#00f0ff;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#ff00a0;stop-opacity:1" />
+                        </linearGradient>
+                    </defs>
+                    <path d="M50 5 L95 50 L50 95 L5 50 Z" fill="none" stroke="url(#logoGrad)" stroke-width="3" class="logo-path"/>
+                    <circle cx="50" cy="50" r="15" fill="#00f0ff" class="logo-core"/>
+                </svg>
+            </div>
+            <span class="brand-text">NEXUS</span>
+        </div>
+        
+        <div class="nav-search-container">
+            <div class="search-box" id="command-palette-trigger">
+                <i class="ph ph-magnifying-glass"></i>
+                <input type="text" placeholder="Search repositories, files, commands..." aria-label="Search">
+                <span class="shortcut-hint">⌘K</span>
+            </div>
+        </div>
+        
+        <div class="nav-actions">
+            <button class="nav-btn" aria-label="Notifications">
+                <i class="ph ph-bell"></i>
+                <span class="notification-badge">3</span>
+            </button>
+            <button class="nav-btn" aria-label="Create new">
+                <i class="ph ph-plus"></i>
+            </button>
+            <div class="user-menu">
+                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=developer" alt="User avatar" class="avatar">
+                <div class="status-indicator online"></div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Command Palette (Hidden by default) -->
+    <div class="command-palette" id="command-palette" aria-hidden="true">
+        <div class="palette-backdrop"></div>
+        <div class="palette-container">
+            <div class="palette-header">
+                <i class="ph ph-terminal"></i>
+                <input type="text" placeholder="Type a command or search..." id="palette-input">
+                <kbd class="esc-hint">ESC</kbd>
+            </div>
+            <div class="palette-results" id="palette-results">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Layout -->
+    <main class="main-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-section">
+                <h3 class="sidebar-title">Repositories</h3>
+                <ul class="repo-list">
+                    <li class="repo-item active" data-repo="neural-core">
+                        <div class="repo-icon">
+                            <i class="ph ph-cube"></i>
+                        </div>
+                        <div class="repo-info">
+                            <span class="repo-name">neural-core</span>
+                            <span class="repo-meta">TypeScript • 2.4k commits</span>
+                        </div>
+                        <div class="repo-status">
+                            <span class="status-dot active"></span>
+                        </div>
+                    </li>
+                    <li class="repo-item" data-repo="quantum-sync">
+                        <div class="repo-icon">
+                            <i class="ph ph-git-merge"></i>
+                        </div>
+                        <div class="repo-info">
+                            <span class="repo-name">quantum-sync</span>
+                            <span class="repo-meta">Rust • 892 commits</span>
+                        </div>
+                        <div class="repo-status">
+                            <span class="status-dot"></span>
+                        </div>
+                    </li>
+                    <li class="repo-item" data-repo="hologram-ui">
+                        <div class="repo-icon">
+                            <i class="ph ph-frame-corners"></i>
+                        </div>
+                        <div class="repo-info">
+                            <span class="repo-name">hologram-ui</span>
+                            <span class="repo-meta">React • 1.1k commits</span>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+            
+            <div class="sidebar-section">
+                <h3 class="sidebar-title">Workspace</h3>
+                <div class="workspace-stats">
+                    <div class="stat-card">
+                        <i class="ph ph-git-commit"></i>
+                        <span class="stat-value" id="commit-count">2,847</span>
+                        <span class="stat-label">Commits today</span>
+                    </div>
+                    <div class="stat-card">
+                        <i class="ph ph-users"></i>
+                        <span class="stat-value">14</span>
+                        <span class="stat-label">Active devs</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Content Area -->
+        <div class="content-wrapper">
+            <!-- Repository Header -->
+            <header class="repo-header">
+                <div class="repo-title-section">
+                    <div class="breadcrumbs">
+                        <span class="crumb">neural-core</span>
+                        <i class="ph ph-caret-right"></i>
+                        <span class="crumb active">main</span>
+                    </div>
+                    <h1 class="repo-title">
+                        <i class="ph ph-book-open"></i>
+                        neural-core
+                        <span class="visibility-badge public">
+                            <i class="ph ph-globe"></i> Public
+                        </span>
+                    </h1>
+                    <p class="repo-description">Neural network processing core with quantum acceleration modules</p>
+                </div>
+                
+                <div class="repo-actions">
+                    <div class="action-group">
+                        <button class="btn btn-secondary">
+                            <i class="ph ph-eye"></i>
+                            <span>Watch</span>
+                            <span class="count">1.2k</span>
+                        </button>
+                        <button class="btn btn-secondary">
+                            <i class="ph ph-star"></i>
+                            <span>Star</span>
+                            <span class="count">8.5k</span>
+                        </button>
+                        <button class="btn btn-secondary">
+                            <i class="ph ph-git-fork"></i>
+                            <span>Fork</span>
+                            <span class="count">342</span>
+                        </button>
+                    </div>
+                    <div class="clone-dropdown">
+                        <button class="btn btn-primary clone-btn">
+                            <i class="ph ph-code"></i>
+                            <span>Code</span>
+                            <i class="ph ph-caret-down"></i>
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Live Commit Graph Visualization -->
+            <section class="commit-graph-section" aria-label="Repository activity visualization">
+                <div class="section-header">
+                    <h2><i class="ph ph-activity"></i> Live Pulse</h2>
+                    <div class="graph-controls">
+                        <button class="control-btn active" data-range="day">24h</button>
+                        <button class="control-btn" data-range="week">7d</button>
+                        <button class="control-btn" data-range="month">30d</button>
+                    </div>
+                </div>
+                <div class="graph-container" id="commit-graph">
+                    <canvas id="commit-canvas"></canvas>
+                    <div class="graph-overlay">
+                        <div class="pulse-indicator">
+                            <span class="pulse-dot"></span>
+                            <span class="pulse-text">LIVE</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Main Content Grid -->
+            <div class="content-grid">
+                <!-- File Tree Explorer -->
+                <section class="file-explorer-panel">
+                    <div class="panel-header">
+                        <div class="branch-selector">
+                            <i class="ph ph-git-branch"></i>
+                            <select aria-label="Select branch">
+                                <option>main</option>
+                                <option>develop</option>
+                                <option>feature/neural-rewrite</option>
+                                <option>hotfix/quantum-leak</option>
+                            </select>
+                            <i class="ph ph-caret-down"></i>
+                        </div>
+                        <div class="panel-actions">
+                            <button class="icon-btn" title="Add file">
+                                <i class="ph ph-plus"></i>
+                            </button>
+                            <button class="icon-btn" title="Download">
+                                <i class="ph ph-download-simple"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="file-tree" id="file-tree">
+                        <div class="tree-item directory expanded" data-path="/">
+                            <div class="tree-row">
+                                <i class="ph ph-caret-down toggle-icon"></i>
+                                <i class="ph ph-folder"></i>
+                                <span class="tree-label">root</span>
+                            </div>
+                            <div class="tree-children">
+                                <div class="tree-item directory" data-path="/src">
+                                    <div class="tree-row">
+                                        <i class="ph ph-caret-right toggle-icon"></i>
+                                        <i class="ph ph-folder"></i>
+                                        <span class="tree-label">src</span>
+                                    </div>
+                                    <div class="tree-children collapsed">
+                                        <div class="tree-item file" data-path="/src/neural.ts">
+                                            <div class="tree-row">
+                                                <i class="ph ph-file-ts"></i>
+                                                <span class="tree-label">neural.ts</span>
+                                                <span class="file-meta">12KB</span>
+                                            </div>
+                                        </div>
+                                        <div class="tree-item file" data-path="/src/quantum.rs">
+                                            <div class="tree-row">
+                                                <i class="ph ph-file-rs"></i>
+                                                <span class="tree-label">quantum.rs</span>
+                                                <span class="file-meta">8.4KB</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="tree-item file" data-path="/README.md">
+                                    <div class="tree-row">
+                                        <i class="ph ph-file-text"></i>
+                                        <span class="tree-label">README.md</span>
+                                        <span class="file-meta">Updated 2h ago</span>
+                                    </div>
+                                </div>
+                                <div class="tree-item file" data-path="/package.json">
+                                    <div class="tree-row">
+                                        <i class="ph ph-file-json"></i>
+                                        <span class="tree-label">package.json</span>
+                                        <span class="file-meta">v2.4.1</span>
+                                    </div>
+                                </div>
+                                <div class="tree-item file" data-path="/.gitignore">
+                                    <div class="tree-row">
+                                        <i class="ph ph-file"></i>
+                                        <span class="tree-label">.gitignore</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Code Diff Viewer -->
+                <section class="diff-viewer-panel">
+                    <div class="panel-header sticky">
+                        <div class="diff-stats">
+                            <span class="stat additions">+1,247</span>
+                            <span class="stat deletions">-382</span>
+                            <span class="file-path">src/neural.ts</span>
+                        </div>
+                        <div class="diff-actions">
+                            <button class="btn btn-sm btn-ghost">
+                                <i class="ph ph-arrows-in-line-vertical"></i>
+                                Collapse
+                            </button>
+                            <button class="btn btn-sm btn-ghost">
+                                <i class="ph ph-copy"></i>
+                                Copy
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="diff-content" id="diff-viewer">
+                        <div class="diff-line header">
+                            <span class="line-num">@@ -45,12 +45,24 @@</span>
+                        </div>
+                        <div class="diff-line context">
+                            <span class="line-num old">45</span>
+                            <span class="line-num new">45</span>
+                            <span class="line-content">export class NeuralCore {</span>
+                        </div>
+                        <div class="diff-line context">
+                            <span class="line-num old">46</span>
+                            <span class="line-num new">46</span>
+                            <span class="line-content">  private quantumState: QuantumState;</span>
+                        </div>
+                        <div class="diff-line deletion">
+                            <span class="line-num old">47</span>
+                            <span class="line-num new"></span>
+                            <span class="line-content">  constructor() {</span>
+                        </div>
+                        <div class="diff-line deletion">
+                            <span class="line-num old">48</span>
+                            <span class="line-num new"></span>
+                            <span class="line-content">    this.quantumState = new QuantumState();</span>
+                        </div>
+                        <div class="diff-line addition">
+                            <span class="line-num old"></span>
+                            <span class="line-num new">47</span>
+                            <span class="line-content">  constructor(config: NeuralConfig) {</span>
+                        </div>
+                        <div class="diff-line addition">
+                            <span class="line-num old"></span>
+                            <span class="line-num new">48</span>
+                            <span class="line-content">    this.quantumState = new QuantumState(config.dimensions);</span>
+                        </div>
+                        <div class="diff-line addition">
+                            <span class="line-num old"></span>
+                            <span class="line-num new">49</span>
+                            <span class="line-content">    this.initializeTensorFlow();</span>
+                        </div>
+                        <div class="diff-line context">
+                            <span class="line-num old">49</span>
+                            <span class="line-num new">50</span>
+                            <span class="line-content">  }</span>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Activity & Collaboration Section -->
+            <div class="bottom-grid">
+                <!-- Contribution Heatmap -->
+                <section class="heatmap-section">
+                    <div class="section-header">
+                        <h3><i class="ph ph-calendar-check"></i> Contribution Matrix</h3>
+                        <span class="contribution-count">1,247 contributions in the last year</span>
+                    </div>
+                    <div class="heatmap-container" id="contribution-heatmap">
+                        <div class="heatmap-grid" id="heatmap-grid">
+                            <!-- Generated by JS -->
+                        </div>
+                        <div class="heatmap-legend">
+                            <span>Less</span>
+                            <div class="legend-box level-0"></div>
+                            <div class="legend-box level-1"></div>
+                            <div class="legend-box level-2"></div>
+                            <div class="legend-box level-3"></div>
+                            <div class="legend-box level-4"></div>
+                            <span>More</span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Merge Requests -->
+                <section class="merge-requests-section">
+                    <div class="section-header">
+                        <h3><i class="ph ph-git-pull-request"></i> Merge Requests</h3>
+                        <a href="#" class="view-all">View all 12 <i class="ph ph-arrow-right"></i></a>
+                    </div>
+                    <div class="mr-list">
+                        <div class="mr-card status-open">
+                            <div class="mr-icon">
+                                <i class="ph ph-git-pull-request"></i>
+                            </div>
+                            <div class="mr-content">
+                                <h4 class="mr-title">Feature: Quantum entanglement sync</h4>
+                                <div class="mr-meta">
+                                    <span class="mr-author">@sarah-chen</span>
+                                    <span class="mr-time">2 hours ago</span>
+                                    <span class="mr-status open">Open</span>
+                                </div>
+                                <div class="mr-stats">
+                                    <span class="stat-item"><i class="ph ph-chat-circle"></i> 8 comments</span>
+                                    <span class="stat-item"><i class="ph ph-check-circle"></i> 3/3 checks</span>
+                                    <span class="stat-item conflicts"><i class="ph ph-warning"></i> No conflicts</span>
+                                </div>
+                            </div>
+                            <div class="mr-actions">
+                                <button class="btn btn-sm btn-primary">Review</button>
+                            </div>
+                        </div>
+
+                        <div class="mr-card status-merged">
+                            <div class="mr-icon">
+                                <i class="ph ph-git-merge"></i>
+                            </div>
+                            <div class="mr-content">
+                                <h4 class="mr-title">Fix: Memory leak in tensor operations</h4>
+                                <div class="mr-meta">
+                                    <span class="mr-author">@alex-kov</span>
+                                    <span class="mr-time">5 hours ago</span>
+                                    <span class="mr-status merged">Merged</span>
+                                </div>
+                                <div class="mr-stats">
+                                    <span class="stat-item"><i class="ph ph-chat-circle"></i> 12 comments</span>
+                                    <span class="stat-item"><i class="ph ph-check-circle"></i> 5/5 checks</span>
+                                </div>
+                            </div>
+                            <div class="mr-actions">
+                                <button class="btn btn-sm btn-ghost">View</button>
+                            </div>
+                        </div>
+
+                        <div class="mr-card status-draft">
+                            <div class="mr-icon">
+                                <i class="ph ph-git-pull-request"></i>
+                            </div>
+                            <div class="mr-content">
+                                <h4 class="mr-title">WIP: Neural network optimization</h4>
+                                <div class="mr-meta">
+                                    <span class="mr-author">@maria-garcia</span>
+                                    <span class="mr-time">1 day ago</span>
+                                    <span class="mr-status draft">Draft</span>
+                                </div>
+                                <div class="mr-stats">
+                                    <span class="stat-item"><i class="ph ph-chat-circle"></i> 2 comments</span>
+                                    <span class="stat-item"><i class="ph ph-circle-notch"></i> 1/4 checks</span>
+                                </div>
+                            </div>
+                            <div class="mr-actions">
+                                <button class="btn btn-sm btn-ghost">View</button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <div class="footer-grid">
+            <div class="footer-brand">
+                <span class="logo-text">NEXUS</span>
+                <p class="tagline">Forge the future of code</p>
+                <div class="social-links">
+                    <a href="#" aria-label="GitHub"><i class="ph ph-github-logo"></i></a>
+                    <a href="#" aria-label="Twitter"><i class="ph ph-twitter-logo"></i></a>
+                    <a href="#" aria-label="Discord"><i class="ph ph-discord-logo"></i></a>
+                </div>
+            </div>
+            <div class="footer-links">
+                <div class="link-group">
+                    <h4>Platform</h4>
+                    <ul>
+                        <li><a href="#">Repositories</a></li>
+                        <li><a href="#">Collaboration</a></li>
+                        <li><a href="#">CI/CD</a></li>
+                        <li><a href="#">Security</a></li>
+                    </ul>
+                </div>
+                <div class="link-group">
+                    <h4>Resources</h4>
+                    <ul>
+                        <li><a href="#">Documentation</a></li>
+                        <li><a href="#">API Reference</a></li>
+                        <li><a href="#">Community</a></li>
+                        <li><a href="#">Support</a></li>
+                    </ul>
+                </div>
+                <div class="link-group">
+                    <h4>Company</h4>
+                    <ul>
+                        <li><a href="#">About</a></li>
+                        <li><a href="#">Blog</a></li>
+                        <li><a href="#">Careers</a></li>
+                        <li><a href="#">Contact</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2024 Nexus Labs. All systems nominal.</p>
+            <div class="system-status">
+                <span class="status-dot online"></span>
+                <span>All systems operational</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="scripts.js"></script>
+</body>
+</html>

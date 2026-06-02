@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Shattered Realm - An Interactive Ancient Atlas</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Noto+Sans+Cuneiform&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Decorative cuneiform background overlay -->
+    <div class="cuneiform-overlay" aria-hidden="true">
+        <span>&#120138;</span><span>&#120170;</span><span>&#120134;</span>
+        <span>&#120144;</span><span>&#120157;</span><span>&#120138;</span>
+        <span>&#120170;</span><span>&#120134;</span><span>&#120144;</span>
+    </div>
+
+    <!-- Main container -->
+    <div class="atlas-container">
+        <!-- Header with title -->
+        <header class="atlas-header">
+            <div class="header-inscription">
+                <span class="cuneiform-decor">&#120138;&#120144;&#120157;</span>
+                <h1>The Shattered Realm</h1>
+                <p class="subtitle">Chronicle of the Fallen Kingdoms</p>
+                <span class="cuneiform-decor">&#120170;&#120134;&#120144;</span>
+            </div>
+            <div class="header-details">
+                <span class="era-indicator">Current Era: <strong id="current-era">The Age of Kings</strong></span>
+            </div>
+        </header>
+
+        <!-- Main content area -->
+        <main class="atlas-main">
+            <!-- Map container -->
+            <div class="map-wrapper">
+                <div class="map-frame">
+                    <div class="map-inner">
+                        <!-- SVG World Map -->
+                        <svg id="world-map" viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                                <!-- Gradient for terrain -->
+                                <linearGradient id="terrainGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#c9a86c;stop-opacity:1" />
+                                    <stop offset="50%" style="stop-color:#b8956e;stop-opacity:1" />
+                                    <stop offset="100%" style="stop-color:#a08050;stop-opacity:1" />
+                                </linearGradient>
+                                
+                                <!-- Water gradient -->
+                                <linearGradient id="waterGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#4a7c8c;stop-opacity:1" />
+                                    <stop offset="100%" style="stop-color:#2d5a6b;stop-opacity:1" />
+                                </linearGradient>
+                                
+                                <!-- Mountain pattern -->
+                                <pattern id="mountainPattern" patternUnits="userSpaceOnUse" width="40" height="30">
+                                    <path d="M0,30 L10,15 L20,25 L30,10 L40,20 L40,30 Z" fill="#8b7355" opacity="0.6"/>
+                                </pattern>
+                                
+                                <!-- Trade route glow filter -->
+                                <filter id="routeGlow" x="-50%" y="-50%" width="200%" height="200%">
+                                    <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                                    <feMerge>
+                                        <feMergeNode in="coloredBlur"/>
+                                        <feMergeNode in="SourceGraphic"/>
+                                    </feMerge>
+                                </filter>
+                                
+                                <!-- Stone texture filter -->
+                                <filter id="stoneTexture">
+                                    <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="5" result="noise"/>
+                                    <feDiffuseLighting in="noise" lighting-color="#d4c4a8" surfaceScale="2">
+                                        <feDistantLight azimuth="45" elevation="60"/>
+                                    </feDiffuseLighting>
+                                </filter>
+                            </defs>
+                            
+                            <!-- Background (ocean) -->
+                            <rect class="ocean" x="0" y="0" width="1200" height="800" fill="url(#waterGradient)"/>
+                            
+                            <!-- Continent shapes -->
+                            <g id="continents">
+                                <!-- Main continent -->
+                                <path class="continent landmass" d="M150,200 Q200,150 350,180 L450,120 Q550,100 600,150 L700,130 Q800,120 900,180 L950,250 Q1000,300 980,400 L950,500 Q900,600 800,620 L700,650 Q600,680 500,650 L400,620 Q300,600 250,550 L200,450 Q150,350 150,280 Z" fill="url(#terrainGradient)" stroke="#6b5344" stroke-width="3"/>
+                                
+                                <!-- Northern peninsula -->
+                                <path class="continent landmass" d="M350,180 Q380,120 450,80 L550,60 Q650,50 700,80 L650,130 Q550,100 450,120 Z" fill="url(#terrainGradient)" stroke="#6b5344" stroke-width="2"/>
+                                
+                                <!-- Southern continent -->
+                                <path class="continent landmass" d="M200,450 Q250,420 300,450 L350,520 Q400,580 350,650 L250,680 Q150,660 150,550 Z" fill="url(#terrainGradient)" stroke="#6b5344" stroke-width="2"/>
+                                
+                                <!-- Eastern islands -->
+                                <path class="continent island" d="M950,300 Q1000,280 1050,320 L1020,380 Q980,400 950,370 Z" fill="url(#terrainGradient)" stroke="#6b5344" stroke-width="2"/>
+                                <path class="continent island" d="M980,420 Q1020,400 1060,440 L1030,480 Q990,490 970,460 Z" fill="url(#terrainGradient)" stroke="#6b5344" stroke-width="2"/>
+                            </g>
+                            
+                            <!-- Mountain ranges -->
+                            <g id="mountains">
+                                <path class="mountain-range" d="M350,150 L370,130 L390,145 L410,120 L430,140 L450,110 L470,135" fill="url(#mountainPattern)" stroke="#6b5344"/>
+                                <path class="mountain-range" d="M600,150 L620,130 L640,145 L660,125 L680,140 L700,120" fill="url(#mountainPattern)" stroke="#6b5344"/>
+                                <path class="mountain-range" d="M280,500 L300,480 L320,495 L340,470 L360,490" fill="url(#mountainPattern)" stroke="#6b5344"/>
+                            </g>
+                            
+                            <!-- Rivers -->
+                            <g id="rivers">
+                                <path class="river" d="M380,180 Q400,250 450,300 Q500,350 480,420 Q460,480 500,550" fill="none" stroke="#5a8fa8" stroke-width="4" opacity="0.7"/>
+                                <path class="river" d="M700,200 Q720,280 680,350 Q640,420 700,500" fill="none" stroke="#5a8fa8" stroke-width="3" opacity="0.7"/>
+                                <path class="river" d="M300,450 Q350,480 380,550 Q410,620 350,680" fill="none" stroke="#5a8fa8" stroke-width="3" opacity="0.7"/>
+                            </g>
+                            
+                            <!-- Trade Routes -->
+                            <g id="trade-routes">
+                                <!-- Northern trade route -->
+                                <path id="route-north" class="trade-route" 
+                                      d="M450,120 Q550,150 600,200 Q700,280 750,350 Q800,420 850,480"
+                                      fill="none" stroke="#c9a227" stroke-width="3" stroke-dasharray="10,5" filter="url(#routeGlow)"/>
+                                
+                                <!-- Southern trade route -->
+                                <path id="route-south" class="trade-route"
+                                      d="M300,500 Q400,520 500,550 Q600,580 700,620 Q800,660 850,650"
+                                      fill="none" stroke="#c9a227" stroke-width="3" stroke-dasharray="10,5" filter="url(#routeGlow)"/>
+                                
+                                <!-- Eastern maritime route -->
+                                <path id="route-east" class="trade-route"
+                                      d="M850,480 Q900,450 950,420 Q980,380 1020,380"
+                                      fill="none" stroke="#2d6a8c" stroke-width="3" stroke-dasharray="10,5" filter="url(#routeGlow)"/>
+                                
+                                <!-- Western caravan route -->
+                                <path id="route-west" class="trade-route"
+                                      d="M450,120 Q350,180 280,280 Q220,380 200,450"
+                                      fill="none" stroke="#8b5a2b" stroke-width="3" stroke-dasharray="10,5" filter="url(#routeGlow)"/>
+                            </g>
+                            
+                            <!-- Caravan icons (animated) -->
+                            <g id="caravans">
+                                <g class="caravan" data-route="route-north" data-progress="0.2">
+                                    <circle r="8" fill="#d4a843" stroke="#6b5344" stroke-width="2"/>
+                                    <text y="4" text-anchor="middle" font-size="10">🐪</text>
+                                </g>
+                                <g class="caravan" data-route="route-north" data-progress="0.7">
+                                    <circle r="8" fill="#d4a843" stroke="#6b5344" stroke-width="2"/>
+                                    <text y="4" text-anchor="middle" font-size="10">🐪</text>
+                                </g>
+                                <g class="caravan" data-route="route-south" data-progress="0.3">
+                                    <circle r="8" fill="#d4a843" stroke="#6b5344" stroke-width="2"/>
+                                    <text y="4" text-anchor="middle" font-size="10">🐫</text>
+                                </g>
+                                <g class="caravan" data-route="route-east" data-progress="0.5">
+                                    <circle r="8" fill="#d4a843" stroke="#6b5344" stroke-width="2"/>
+                                    <text y="4" text-anchor="middle" font-size="10">⛵</text>
+                                </g>
+                            </g>
+                            
+                            <!-- Kingdoms/Regions -->
+                            <g id="kingdoms">
+                                <!-- Valdoria - Northern Empire -->
+                                <g class="kingdom" data-kingdom="valdoria" data-era="kings">
+                                    <path class="kingdom-border" d="M380,80 Q450,50 520,60 L540,100 Q500,130 420,120 Z"/>
+                                    <circle class="kingdom-capital" cx="450" cy="85" r="15" fill="#8b2942" stroke="#d4a843" stroke-width="3"/>
+                                    <text class="kingdom-label" x="450" y="65" text-anchor="middle">Valdoria</text>
+                                </g>
+                                
+                                <!-- Sunken Kingdom - Central -->
+                                <g class="kingdom" data-kingdom="sunken" data-era="gods">
+                                    <path class="kingdom-border" d="M450,150 Q550,130 620,180 L600,260 Q520,290 440,250 Z"/>
+                                    <circle class="kingdom-capital" cx="520" cy="200" r="15" fill="#1e5f8a" stroke="#d4a843" stroke-width="3"/>
+                                    <text class="kingdom-label" x="520" y="180" text-anchor="middle">Sunken Realm</text>
+                                </g>
+                                
+                                <!-- Ashenvale - Eastern desert -->
+                                <g class="kingdom" data-kingdom="ashenvale" data-era="all">
+                                    <path class="kingdom-border" d="M700,150 Q800,140 880,200 L860,300 Q780,320 700,280 Z"/>
+                                    <circle class="kingdom-capital" cx="780" cy="220" r="15" fill="#8b4513" stroke="#d4a843" stroke-width="3"/>
+                                    <text class="kingdom-label" x="780" y="200" text-anchor="middle">Ashenvale</text>
+                                </g>
+                                
+                                <!-- Myrkwood - Western forest -->
+                                <g class="kingdom" data-kingdom="myrkwood" data-era="all">
+                                    <path class="kingdom-border" d="M180,250 Q280,220 350,280 L320,380 Q240,400 180,340 Z"/>
+                                    <circle class="kingdom-capital" cx="260" cy="300" r="15" fill="#2d5a3d" stroke="#d4a843" stroke-width="3"/>
+                                    <text class="kingdom-label" x="260" y="280" text-anchor="middle">Myrkwood</text>
+                                </g>
+                                
+                                <!-- Pelagoris - Southern empire -->
+                                <g class="kingdom" data-kingdom="pelagoris" data-era="kings">
+                                    <path class="kingdom-border" d="M280,480 Q400,450 480,520 L450,620 Q360,660 280,600 Z"/>
+                                    <circle class="kingdom-capital" cx="370" cy="550" r="15" fill="#4a3d8a" stroke="#d4a843" stroke-width="3"/>
+                                    <text class="kingdom-label" x="370" y="530" text-anchor="middle">Pelagoris</text>
+                                </g>
+                                
+                                <!-- Threshold Isles - Eastern islands -->
+                                <g class="kingdom" data-kingdom="threshold" data-era="all">
+                                    <path class="kingdom-border" d="M950,300 Q1000,280 1050,320 L1020,380 Q980,390 950,350 Z"/>
+                                    <circle class="kingdom-capital" cx="990" cy="340" r="12" fill="#5a8a6a" stroke="#d4a843" stroke-width="2"/>
+                                    <text class="kingdom-label" x="990" y="320" text-anchor="middle">Threshold</text>
+                                </g>
+                                
+                                <!-- Obsidian Peaks - Northern mountains (appears in later era) -->
+                                <g class="kingdom hidden" data-kingdom="obsidian" data-era="shattered">
+                                    <path class="kingdom-border" d="M550,60 Q620,40 680,60 L700,100 Q650,120 580,110 Z"/>
+                                    <circle class="kingdom-capital" cx="620" cy="75" r="12" fill="#3d3d3d" stroke="#d4a843" stroke-width="2"/>
+                                    <text class="kingdom-label" x="620" y="55" text-anchor="middle">Obsidian Peaks</text>
+                                </g>
+                                
+                                <!-- Broken Coast - Southern (appears in shattered era) -->
+                                <g class="kingdom hidden" data-kingdom="broken" data-era="shattered">
+                                    <path class="kingdom-border" d="M200,550 Q250,520 300,560 L280,640 Q220,660 180,600 Z"/>
+                                    <circle class="kingdom-capital" cx="240" cy="590" r="12" fill="#6b4423" stroke="#d4a843" stroke-width="2"/>
+                                    <text class="kingdom-label" x="240" y="570" text-anchor="middle">Broken Coast</text>
+                                </g>
+                            </g>
+                            
+                            <!-- Location markers -->
+                            <g id="locations">
+                                <g class="location-marker" data-location="sacred-grove">
+                                    <circle cx="260" cy="320" r="8" fill="#2d5a3d" stroke="#d4a843" stroke-width="2"/>
+                                    <circle cx="260" cy="320" r="12" fill="none" stroke="#2d5a3d" stroke-width="1" opacity="0.5"/>
+                                </g>
+                                <g class="location-marker" data-location="temple-ruins">
+                                    <circle cx="520" cy="220" r="8" fill="#8b2942" stroke="#d4a843" stroke-width="2"/>
+                                    <circle cx="520" cy="220" r="12" fill="none" stroke="#8b2942" stroke-width="1" opacity="0.5"/>
+                                </g>
+                                <g class="location-marker" data-location="oracle-pond">
+                                    <circle cx="780" cy="260" r="8" fill="#1e5f8a" stroke="#d4a843" stroke-width="2"/>
+                                    <circle cx="780" cy="260" r="12" fill="none" stroke="#1e5f8a" stroke-width="1" opacity="0.5"/>
+                                </g>
+                                <g class="location-marker" data-location="ancient-portal">
+                                    <circle cx="990" cy="360" r="8" fill="#5a3d8a" stroke="#d4a843" stroke-width="2"/>
+                                    <circle cx="990" cy="360" r="12" fill="none" stroke="#5a3d8a" stroke-width="1" opacity="0.5"/>
+                                </g>
+                            </g>
+                        </svg>
+                        
+                        <!-- Map annotations overlay -->
+                        <div class="map-annotations">
+                            <div class="annotation hidden" data-for="sacred-grove">
+                                <span class="annotation-icon">🌳</span>
+                                <span class="annotation-text">The Sacred Grove of Yggdrasil's Whisper</span>
+                            </div>
+                            <div class="annotation hidden" data-for="temple-ruins">
+                                <span class="annotation-icon">🏛️</span>
+                                <span class="annotation-text">Ruins of the Temple Eternal</span>
+                            </div>
+                            <div class="annotation hidden" data-for="oracle-pond">
+                                <span class="annotation-icon">🔮</span>
+                                <span class="annotation-text">The Oracle's Mirror</span>
+                            </div>
+                            <div class="annotation hidden" data-for="ancient-portal">
+                                <span class="annotation-icon">🌀</span>
+                                <span class="annotation-text">Portal of the Threshold</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Timeline controls -->
+                <div class="timeline-container">
+                    <div class="timeline-inscription">
+                        <span class="cuneiform-small">&#120138;</span>
+                        <span>Chronological Shift</span>
+                        <span class="cuneiform-small">&#120170;</span>
+                    </div>
+                    <div class="timeline-track">
+                        <div class="timeline-eras">
+                            <button class="era-button" data-era="gods">Age of Gods</button>
+                            <button class="era-button active" data-era="kings">Age of Kings</button>
+                            <button class="era-button" data-era="shattered">Shattered Era</button>
+                        </div>
+                        <input type="range" id="timeline-slider" min="0" max="2" value="1" step="1">
+                        <div class="timeline-markers">
+                            <span>Era I</span>
+                            <span>Era II</span>
+                            <span>Era III</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Side panel for details -->
+            <aside class="info-panel">
+                <div class="panel-stone-frame">
+                    <div class="panel-content">
+                        <div class="panel-header">
+                            <h2 id="panel-title">The Shattered Realm</h2>
+                            <span class="panel-cuneiform">&#120138;&#120144;&#120157;</span>
+                        </div>
+                        
+                        <div class="panel-body" id="panel-body">
+                            <p class="intro-text">Behold the cartography of an ancient world, where empires rose and fell like tides of fate. Select a kingdom to reveal its secrets, or trace the trade routes that bound these lands together.</p>
+                            
+                            <div class="feature-section">
+                                <h3>Legend</h3>
+                                <div class="legend-items">
+                                    <div class="legend-item">
+                                        <span class="legend-symbol capital"></span>
+                                        <span>Capital City</span>
+                                    </div>
+                                    <div class="legend-item">
+                                        <span class="legend-symbol route-land"></span>
+                                        <span>Caravan Route</span>
+                                    </div>
+                                    <div class="legend-item">
+                                        <span class="legend-symbol route-sea"></span>
+                                        <span>Maritime Route</span>
+                                    </div>
+                                    <div class="legend-item">
+                                        <span class="legend-symbol location"></span>
+                                        <span>Point of Interest</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mythology-section">
+                                <h3>Divine Annotations</h3>
+                                <div class="myth-card">
+                                    <span class="myth-deity">☽ The Moon Weaver</span>
+                                    <p>"The trade routes follow the paths the gods walked when they walked among mortals."</p>
+                                </div>
+                                <div class="myth-card">
+                                    <span class="myth-deity">☉ The Eternal Flame</span>
+                                    <p>"Empires burn brightest before they shatter. The Shattered Era approaches..."</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="panel-footer">
+                            <span class="deco-line"></span>
+                            <span class="cuneiform-signature">&#120170;&#120134;&#120144;&#120157;&#120138;</span>
+                            <span class="deco-line"></span>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+        </main>
+        
+        <!-- Footer -->
+        <footer class="atlas-footer">
+            <div class="footer-inscription">
+                <span>Cartographer's Seal</span>
+                <span class="cuneiform-footer">&#120138;&#120144;&#120157;&#120170;&#120134;</span>
+                <span>Mortal hands crafted this work</span>
+            </div>
+        </footer>
+    </div>
+    
+    <!-- Tooltip element -->
+    <div class="tooltip" id="tooltip"></div>
+    
+    <script src="scripts.js"></script>
+</body>
+</html>

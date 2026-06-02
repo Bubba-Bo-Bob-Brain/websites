@@ -1,0 +1,403 @@
+/* 
+    NEURO-GOTHIC OS // STYLESHEET 
+    Aesthetic: Cyber-Gothic Brutalism
+*/
+
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=JetBrains+Mono:wght@300;500&display=swap');
+
+:root {
+    /* Color Palette */
+    --bg-color: #0a0a0c;
+    --panel-bg: rgba(15, 15, 18, 0.85);
+    --border-color: #2a2a2e;
+    --text-primary: #d1d1d1;
+    --text-dim: #666666;
+    
+    /* Accent Colors */
+    --accent-amber: #ffb300; /* Warning/Data */
+    --accent-red: #ff003c;   /* Danger/Critical */
+    --accent-violet: #6a0dad; /* Ghostly/Void */
+    --accent-blue: #00f2ff;  /* System/Stable */
+    
+    /* Spacing & Effects */
+    --glitch-speed: 0.2s;
+    --terminal-padding: 15px;
+    --glow-shadow: 0 0 10px rgba(255, 179, 0, 0.3);
+}
+
+/* --- Base & Reset --- */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-primary);
+    font-family: 'JetBrains Mono', monospace;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden; /* Terminal feel - no scrolling the body */
+    display: flex;
+    flex-direction: column;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+/* --- Atmospheric Layers --- */
+.noise-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: url('https://grainy-gradients.vercel.app/noise.svg'); /* Subtle grain texture */
+    opacity: 0.08;
+    pointer-events: none;
+    z-index: 999;
+}
+
+.scanlines {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: linear-gradient(
+        to bottom,
+        rgba(18, 16, 16, 0) 50%,
+        rgba(0, 0, 0, 0.15) 50%
+    );
+    background-size: 100% 4px;
+    pointer-events: none;
+    z-index: 998;
+}
+
+.vignette {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: radial-gradient(circle, transparent 40%, rgba(0,0,0,0.85) 100%);
+    pointer-events: none;
+    z-index: 997;
+}
+
+/* --- Glitch / Propaganda Overlay --- */
+#glitch-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(255, 0, 60, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    pointer-events: none;
+}
+
+.propaganda-text {
+    font-family: 'Cinzel', serif;
+    font-size: 5rem;
+    font-weight: 700;
+    color: var(--accent-red);
+    text-shadow: 3px 3px 0px #000, -3px -3px 0px #fff;
+    letter-spacing: 1rem;
+    transform: skewY(-5deg);
+}
+
+.hidden { display: none !important; }
+
+/* --- Layout Structure --- */
+#app-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 10px;
+    position: relative;
+    z-index: 10;
+}
+
+.system-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 10px;
+    background: var(--panel-bg);
+}
+
+.system-title h1 {
+    font-family: 'Cinzel', serif;
+    font-size: 1.4rem;
+    letter-spacing: 2px;
+    color: var(--text-primary);
+}
+
+.version {
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    vertical-align: middle;
+}
+
+.status-item {
+    display: flex;
+    gap: 10px;
+}
+
+.label { color: var(--text-dim); font-size: 0.8rem; }
+.value { font-weight: bold; }
+.status-warning { color: var(--accent-amber); animation: flicker 2s infinite; }
+.level-red { color: var(--accent-red); animation: pulse-red 1.5s infinite; }
+
+.terminal-grid {
+    display: grid;
+    grid-template-columns: 280px 1fr 300px;
+    grid-template-rows: 1fr auto;
+    gap: 15px;
+    flex-grow: 1;
+    overflow: hidden;
+}
+
+/* --- Common Components --- */
+.module {
+    background: var(--panel-bg);
+    border: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    padding: var(--terminal-padding);
+    position: relative;
+}
+
+.module-title {
+    font-family: 'Cinzel', serif;
+    font-size: 0.9rem;
+    color: var(--accent-amber);
+    margin-bottom: 15px;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 5px;
+    letter-spacing: 1px;
+}
+
+/* --- Sidebar Left: Factions & Logs --- */
+.sidebar-left {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.faction-item {
+    padding: 8px 0;
+    border-left: 2px solid transparent;
+    transition: all 0.3s;
+}
+
+.faction-item.active {
+    border-left: 2px solid var(--accent-amber);
+    padding-left: 10px;
+    background: rgba(255, 179, 0, 0.05);
+}
+
+.faction-name {
+    display: block;
+    font-weight: bold;
+    font-size: 0.9rem;
+}
+
+.faction-desc {
+    font-size: 0.75rem;
+    color: var(--text-dim);
+}
+
+.log-list {
+    list-style: none;
+    font-size: 0.75rem;
+    color: var(--text-dim);
+}
+
+.log-list li {
+    margin-bottom: 5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* --- Main Viewport: Map & Lore --- */
+.main-viewport {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.map-wrapper {
+    flex: 2;
+    background: var(--panel-bg);
+    border: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+}
+
+.map-header {
+    padding: 10px;
+    background: rgba(0,0,0,0.3);
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.7rem;
+    color: var(--text-dim);
+}
+
+.map-canvas {
+    flex-grow: 1;
+    position: relative;
+    background-image: 
+        radial-gradient(circle at 50% 50%, rgba(106, 13, 173, 0.1) 0%, transparent 70%),
+        linear-gradient(var(--border-color) 1px, transparent 1px),
+        linear-gradient(90deg, var(--border-color) 1px, transparent 1px);
+    background-size: 100% 100%, 40px 40px, 40px 40px;
+    overflow: hidden;
+}
+
+.map-node {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+}
+
+.node-red { background: var(--accent-red); box-shadow: 0 0 15px var(--accent-red); }
+.node-amber { background: var(--accent-amber); box-shadow: 0 0 15px var(--accent-amber); }
+.node-blue { background: var(--accent-blue); box-shadow: 0 0 15px var(--accent-blue); }
+
+.map-overlay-text {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    font-size: 0.8rem;
+    color: var(--accent-red);
+    opacity: 0.6;
+}
+
+.lore-display {
+    flex: 1;
+    background: var(--panel-bg);
+    border: 1px solid var(--border-color);
+    padding: 15px;
+    overflow-y: auto;
+}
+
+.highlight {
+    color: var(--accent-amber);
+    font-weight: bold;
+}
+
+.redacted {
+    background: #000;
+    color: transparent;
+    user-select: none;
+    display: inline-block;
+    padding: 0 5px;
+    margin: 2px 0;
+}
+
+/* --- Sidebar Right: Surveillance & Stream --- */
+.sidebar-right {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.cam-feed {
+    width: 100%;
+    aspect-ratio: 4/3;
+    background: #050505;
+    border: 1px solid #1a1a1a;
+    position: relative;
+    overflow: hidden;
+}
+
+.cam-label {
+    position: absolute;
+    top: 5px; left: 5px;
+    font-size: 0.6rem;
+    color: var(--accent-blue);
+    z-index: 2;
+}
+
+.cam-static {
+    width: 100%;
+    height: 100%;
+    opacity: 0.15;
+    background: url('https://media.giphy.com/media/oEI9uWUzn9W00/giphy.gif'); /* Static effect */
+    background-size: cover;
+}
+
+.stream-container {
+    font-size: 0.7rem;
+    height: 150px;
+    overflow: hidden;
+    color: var(--accent-blue);
+}
+
+.stream-line {
+    margin-bottom: 4px;
+    opacity: 0.8;
+}
+
+/* --- Footer: Command Line --- */
+.terminal-footer {
+    margin-top: 10px;
+    padding: 10px;
+    background: #000;
+    border: 1px solid var(--border-color);
+}
+
+.command-line {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.prompt {
+    color: var(--accent-amber);
+    white-space: nowrap;
+}
+
+#cmd-input {
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text-primary);
+    font-family: 'JetBrains Mono', monospace;
+    width: 100%;
+}
+
+/* --- Animations --- */
+
+@keyframes flicker {
+    0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% { opacity: 1; }
+    20%, 22%, 24%, 55% { opacity: 0.4; }
+}
+
+@keyframes pulse-red {
+    0% { opacity: 1; }
+    50% { opacity: 0.3; }
+    100% { opacity: 1; }
+}
+
+/* Custom Scrollbar for terminal-look */
+::-webkit-scrollbar {
+    width: 4px;
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+}
+::-webkit-scrollbar-thumb:hover {
+    background: var(--accent-amber);
+}
+
+/* --- Mobile Fallback (Basic) --- */
+@media (max-width: 1000px) {
+    .terminal-grid {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto auto auto;
+        overflow-y: auto;
+    }
+    body { overflow-y: auto; }
+    #app-container { height: auto; }
+}

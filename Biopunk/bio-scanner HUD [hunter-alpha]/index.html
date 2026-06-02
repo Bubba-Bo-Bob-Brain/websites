@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEXUS-7 // BIOLOGICAL INTEGRITY MONITOR</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;900&family=Share+Tech+Mono&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="scanline-overlay"></div>
+    <div class="crt-flicker"></div>
+    
+    <div class="hud-container">
+        <header class="top-bar">
+            <div class="top-bar-left">
+                <div class="system-logo">
+                    <div class="logo-hex"></div>
+                    <span class="logo-text">NEXUS<span class="logo-accent">-7</span></span>
+                </div>
+                <div class="system-status">
+                    <span class="status-dot active"></span>
+                    <span class="status-label">SYSTEM ONLINE</span>
+                    <span class="status-divider">|</span>
+                    <span class="status-time" id="systemTime">00:00:00</span>
+                </div>
+            </div>
+            <div class="top-bar-center">
+                <div class="patient-id">
+                    <span class="label-tiny">SUBJECT</span>
+                    <span class="patient-name">KAEL-07 // DESIGNATE: OBSIDIAN</span>
+                </div>
+            </div>
+            <div class="top-bar-right">
+                <div class="threat-level">
+                    <span class="label-tiny">BIOHAZARD INDEX</span>
+                    <div class="threat-meter">
+                        <div class="threat-fill" id="threatFill"></div>
+                        <span class="threat-value" id="threatValue">3.7</span>
+                    </div>
+                </div>
+                <div class="alert-indicator" id="alertIndicator">
+                    <span class="alert-icon">!</span>
+                    <span class="alert-text">2 ANOMALIES</span>
+                </div>
+            </div>
+        </header>
+
+        <div class="heartbeat-container">
+            <canvas id="ecgCanvas" class="ecg-canvas"></canvas>
+            <div class="bpm-display">
+                <span class="bpm-value" id="bpmValue">72</span>
+                <span class="bpm-label">BPM</span>
+            </div>
+            <div class="pulse-ring" id="pulseRing"></div>
+        </div>
+
+        <main class="main-grid">
+            <section class="column-left">
+                <div class="panel body-scanner-panel" data-breath="true">
+                    <div class="panel-header">
+                        <div class="panel-icon">D</div>
+                        <h2 class="panel-title">SOMATIC INTEGRITY MAP</h2>
+                        <div class="panel-status online">ACTIVE SCAN</div>
+                    </div>
+                    <div class="body-scanner">
+                        <div class="body-outline-container" id="bodyOutline">
+                            <div class="body-part head"></div>
+                            <div class="body-part neck"></div>
+                            <div class="body-part torso"></div>
+                            <div class="body-part arm-left"></div>
+                            <div class="body-part arm-right"></div>
+                            <div class="body-part leg-left"></div>
+                            <div class="body-part leg-right"></div>
+                            <div class="organ-dot brain" data-organ="brain" data-status="warning"></div>
+                            <div class="organ-dot heart" data-organ="heart" data-status="critical"></div>
+                            <div class="organ-dot lung-left" data-organ="lung-left" data-status="healthy"></div>
+                            <div class="organ-dot lung-right" data-organ="lung-right" data-status="healthy"></div>
+                            <div class="organ-dot liver" data-organ="liver" data-status="mutated"></div>
+                            <div class="organ-dot kidney-left" data-organ="kidney-left" data-status="healthy"></div>
+                            <div class="organ-dot kidney-right" data-organ="kidney-right" data-status="warning"></div>
+                            <div class="organ-dot stomach" data-organ="stomach" data-status="healthy"></div>
+                            <div class="mutation-zone"></div>
+                            <div class="scan-line"></div>
+                        </div>
+                        <div class="body-scan-info">
+                            <div class="scan-coord" id="scanCoord">X: 150 Y: 230</div>
+                            <div class="scan-depth" id="scanDepth">DEPTH: 4.2cm</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel neural-panel" data-breath="true">
+                    <div class="panel-header">
+                        <div class="panel-icon">N</div>
+                        <h2 class="panel-title">NEURAL LINK INTEGRITY</h2>
+                        <div class="panel-status warning">DEGRADED</div>
+                    </div>
+                    <div class="neural-content">
+                        <div class="neural-hub">
+                            <canvas id="neuralCanvas" width="280" height="180"></canvas>
+                        </div>
+                        <div class="neural-stats">
+                            <div class="neural-stat">
+                                <span class="stat-label">BANDWIDTH</span>
+                                <span class="stat-value" id="bandwidth">847 Tb/s</span>
+                            </div>
+                            <div class="neural-stat">
+                                <span class="stat-label">LATENCY</span>
+                                <span class="stat-value warning" id="latency">12.4 ms</span>
+                            </div>
+                            <div class="neural-stat">
+                                <span class="stat-label">PACKET LOSS</span>
+                                <span class="stat-value critical" id="packetLoss">2.3%</span>
+                            </div>
+                            <div class="neural-stat">
+                                <span class="stat-label">SYNC RATE</span>
+                                <span class="stat-value" id="syncRate">97.1%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="column-center">
+                <div class="panel organ-status-panel" data-breath="true">
+                    <div class="panel-header">
+                        <div class="panel-icon">O</div>
+                        <h2 class="panel-title">ORGAN STATUS GRID</h2>
+                        <div class="panel-status online">MONITORING</div>
+                    </div>
+                    <div class="organ-grid" id="organGrid">
+                        <div class="organ-card critical" data-organ="heart" data-breath="true">
+                            <div class="organ-card-header">
+                                <span class="organ-icon">H</span>
+                                <span class="organ-name">CARDIAC</span>
+                                <span class="organ-flag critical">CRITICAL</span>
+                            </div>
+                            <div class="organ-card-body">
+                                <div class="organ-metric">
+                                    <span class="metric-label">EFFICIENCY</span>
+                                    <div class="metric-bar">
+                                        <div class="metric-fill critical" style="width: 43%"></div>
+                                    </div>
+                                    <span class="metric-value">43%</span>
+                                </div>
+                                <div class="organ-metric">
+                                    <span class="metric-label">INTEGRITY</span>
+                                    <div class="metric-bar">
+                                        <div class="metric-fill warning" style="width: 61%"></div>
+                                    </div>
+                                    <span class="metric-value">61%</span>
+                                </div>
+                                <div class="organ-metric">
+                                    <span class="metric-label">MUTATION</span>
+                                    <div class="metric-bar">
+                                        <div class="metric-fill mutation" style="width: 28%"></div>
+                                    </div>
+                                    <span class="metric-value">28%</span>
+                                </div>
+                            </div>
+                            <div class="organ-card-footer">
+                                <span class="footer-note">ARTERIAL FIBROSIS DETECTED</span>
+                            </div>
+                        </div>
+                        <div class="organ-card warning" data-organ="brain" data-breath="true">
+                            <div class="organ-card-header">
+                                <span class="organ-icon">B</span>
+                                <span class="organ-name">CEREBRAL</span>
+                                <span class="organ-flag warning">CAUTION</span>
+                            </div>
+                            <div class="organ-card-body">
+                                <div class="organ-metric">
+                                    <span class="metric-label">ACTIVITY</span>
+                                    <div class="metric-bar">
+                                        <div class="metric-fill healthy" style="width: 89%"></div>
+                                    </div>
+                                    <span class="metric-value">89%</span>
+                                </div>
+                                <div class="organ-metric">
+                                    <span class="metric-label">INTEGRITY</span>
+                                    <div class="metric-bar">
+                                        <div class="metric-fill warning" style="width: 72%"></div>
+                                    </div>
+                                    <span class="metric-value">72%</span>
+                                </div>
+                                <div class="organ-metric">
+                                    <span class="metric-label">MUTATION</span>
+                                    <div class="metric-bar">
+                                        <div class="metric-fill mutation" style="width: 15%"></div>
+                                    </div>
+                                    <span class="metric-value">15%</span>
+                                </div>
+                            </div>
+                            <div class="organ-card-footer">
+                                <span class="footer-note">SYNAPTIC RESTRUCTURING PHASE 2</span>
+                            </div>
+                        </div>
+                        <div class="organ-card mutated" data-organ="liver" data-breath="true">
+                            <div class="organ-card-header">
+                                <span class="organ-icon">L</span>
+                                <span class="organ-name">HEPATIC</span>
+                                <span class="organ-flag mutated">MUTATED</span>
+                            </div>
+                            <div class="organ-card-body">
+                                <div class="organ-metric">
+                                    <span class="metric-label">EFFICIENCY</span>
+                                    <div class="metric-bar">
+                                        <div class="metric-fill healthy" style="width: 94%"></div>
+                                    </div>
+                                    <span class="metric-value">94%</span>
+                                </div>
+                                <div class="organ-metric">
+                                    <span class="metric-label">INTEGRITY</span>
+                                    <div class="metric-bar">
+                                        <div class="metric-fill mutation" style="width: 55%"></div>
+                                    </div>
+                                    <span class="metric-value">55%</span>
+                                </div>
+                                <div class="organ-metric">
+                                    <span class="metric-label">MUTATION</span>
+                                    <div class="metric-bar">
+                                        <div class="metric-fill mutation" style="width: 67%"></div>
+                                    </div>
+                                    <span class="metric-value">67%</span>
+                                </div>
+                            </div>
+                            <div class="organ-card-footer">
+                                <span class="footer-note">HEPATOCYTE REWRITE IN PROGRESS</span>
+                            </div>
+                        </div>
+                        <div class="organ-card healthy" data-organ="lungs" data-breath="true">
+                            <div class="organ-card-header">
+                                <span class="organ-icon">P</span>
+                                <span class="organ-name">PULMONARY</span>
+                                <span class="organ-flag healthy">NOMINAL</span>
+                            </div>
+                            <div class="organ-card-body">
+                                <div class="organ-metric">
+                                    <span class="metric-label">CAPACITY</span>
+                                    <div class="metric-bar">
+                                        <div class="metric-fill healthy" style="width: 96%"></div>
+                                    </div>
+                                    <span class="metric-value">96%</span>
+                                </div>
+                                <div class="organ-metric">
+                                    <span class="metric-label">INTEGRITY</span>
+                                    <div class="metric-bar">
+                                        <div class="metric-fill healthy" style="width: 98%"></div>
+                                    </div>
+                                    <span class="metric-value">98%</span>
+                                </div>
+                                <div class="organ-metric">
+                                    <span class="metric-label">MUTATION</span>
+                                    <div class="metric-bar">
+                                        <div class="metric-fill mutation" style="width: 3%"></div>
+                                    </div>
+                                    <span class="metric-value">3%</span>
+                                </div>
+                            </div>
+                            <div class="organ-card-footer">
+                                <span class="footer-note">ALL PARAMETERS WITHIN RANGE</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel nanomachine-panel" data-breath="true">
+                    <div class="panel-header">
+                        <div class="panel-icon">X</div>
+                        <h2 class="panel-title">NANOMACHINE SWARM DEPLOYMENT</h2>
+                        <div class="panel-status online">ACTIVE</div>
+                    </div>
+                    <div class="nanomachine-content">
+                        <canvas id="nanoCanvas" class="nano-canvas"></canvas>
+                        <div class="nano-stats-row">
+                            <div class="nano-stat">
+                                <div class="nano-stat-icon">X</div>
+                                <div class="nano-stat-info">
+                                    <span class="nano-stat-value" id="nanoTotal">2.4M</span>
+                                    <span class="nano-stat-label">TOTAL UNITS</span>
+                                </div>
+                            </div>
+                            <div class="nano-stat">
+                                <div class="nano-stat-icon">R</div>
+                                <div class="nano-stat-info">
+                                    <span class="nano-stat-value" id="nanoActive">847K</span>
+                                    <span class="nano-stat-label">DEPLOYED</span>
+                                </div>
+                            </div>
+                            <div class="nano-stat">
+                                <div class="nano-stat-icon">+</div>
+                                <div class="nano-stat-info">
+                                    <span class="nano-stat-value" id="nanoRepair">12.4K</span>
+                                    <span class="nano-stat-label">REPAIRING</span>
+                                </div>
+                            </div>
+                            <div class="nano-stat">
+                                <div class="nano-stat-icon">.</div>
+                                <div class="nano-stat-info">
+                                    <span class="nano-stat-value warning" id="nanoIdle">1.5M</span>
+                                    <span class="nano-stat-label">STANDBY</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="deployment-controls">
+                            <button class="deploy-btn" id="deployRepair">DEPLOY REPAIR SWARM</button>
+                            <button class="deploy-btn secondary" id="deployScan">INITIATE DEEP SCAN</button>
+                            <button class="deploy-btn danger" id="deployPurge">TOXIN PURGE PROTOCOL</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="column-right">
+                <div class="panel mutation-panel" data-breath="true">
+                    <div class="panel-header">
+                        <div class="panel-icon">M</div>
+                        <h2 class="panel-title">MUTATION PROGRESSION</h2>
+                        <div class="panel-status warning">PHASE 2</div>
+                    </div>
+                    <div class="mutation-content">
+                        <div class="mutation-timeline">
+                            <div class="timeline-track">
+                                <div class="timeline-progress" id="mutationProgress" style="width: 47%"></div>
+                                <div class="timeline-marker" style="left: 25%">
+                                    <span class="marker-label">PHASE 1</span>
+                                    <span class="marker-status complete">V</span>
+                                </div>
+                                <div class="timeline-marker active" style="left: 50%">
+                                    <span class="marker-label">PHASE 2</span>
+                                    <span class="marker-status active">*</span>
+                                </div>
+                                <div class="timeline-marker" style="left: 75%">
+                                    <span class="marker-label">PHASE 3</span>
+                                    <span class="marker-status pending">O</span>
+                                </div>
+                                <div class="timeline-marker" style="left: 100%">
+                                    <span class="marker-label">COMPLETE</span>
+                                    <span class="marker-status pending">O</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="gene-sequence" id="geneSequence"></div>
+                        <div class="mutation-details">
+                            <div class="mutation-detail">
+                                <span class="detail-label">ACTIVE MUTATIONS</span>
+                                <span class="detail-value" id="activeMutations">7</span>
+                            </div>
+                            <div class="mutation-detail">
+                                <span class="detail-label">STABILITY</span>
+                                <span class="detail-value warning" id="mutationStability">72.4%</span>
+                            </div>
+                            <div class="mutation-detail">
+                                <span class="detail-label">EXPRESSION RATE</span>
+                                <span class="detail-value" id="expressionRate">+0.3%/hr</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel toxin-panel" data-breath="true">
+                    <div class="panel-header">
+                        <div class="panel-icon">T</div>
+                        <h2 class="panel-title">TOXIN CONCENTRATION</h2>
+                        <div class="panel-status warning">ELEVATED</div>
+                    </div>
+                    <div class="toxin-content">
+                        <div class="toxin-item">
+                            <div class="toxin-header">
+                                <span class="toxin-name">NEUROTOXIN-X7</span>
+                                <span class="toxin-level critical">HIGH</span>
+                            </div>
+                            <div class="toxin-bar-container">
+                                <div class="toxin-bar" style="--fill: 78%; --color: var(--critical)">
+                                    <div class="toxin-bar-fill"></div>
+                                </div>
+                                <span class="toxin-value">78.2 ug/L</span>
+                            </div>
+                        </div>
+                        <div class="toxin-item">
+                            <div class="toxin-header">
+                                <span class="toxin-name">HEMOLYTIC AGENT</span>
+                                <span class="toxin-level warning">MODERATE</span>
+                            </div>
+                            <div class="toxin-bar-container">
+                                <div class="toxin-bar" style="--fill: 45%; --color: var(--warning)">
+                                    <div class="toxin-bar-fill"></div>
+                                </div>
+                                <span class="toxin-value">45.1 ug/L</span>
+                            </div>
+                        </div>
+                        <div class="toxin-item">
+                            <div class="toxin-header">
+                                <span class="toxin-name">MUTAGEN COMPOUND</span>
+                                <span class="toxin-level critical">CRITICAL</span>
+                            </div>
+                            <div class="toxin-bar-container">
+                                <div class="toxin-bar" style="--fill: 91%; --color: var(--mutation)">
+                                    <div class="toxin-bar-fill"></div>
+                                </div>
+                                <span class="toxin-value">91.7 ug/L</span>
+                            </div>
+                        </div>
+                        <div class="toxin-item">
+                            <div class="toxin-header">
+                                <span class="toxin-name">SYNTHETIC CORROSIVE</span>
+                                <span class="toxin-level healthy">LOW</span>
+                            </div>
+                            <div class="toxin-bar-container">
+                                <div class="toxin-bar" style="--fill: 12%; --color: var(--healthy)">
+                                    <div class="toxin-bar-fill"></div>
+                                </div>
+                                <span class="toxin-value">12.3 ug/L</span>
+                            </div>
+                        </div>
+                        <div class="toxin-summary">
+                            <span class="summary-label">OVERALL TOXICITY INDEX</span>
+                            <span class="summary-value critical" id="toxIndex">56.8</span>
+                            <span class="summary-unit">/ 100</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel gene-matrix-panel" data-breath="true">
+                    <div class="panel-header">
+                        <div class="panel-icon">G</div>
+                        <h2 class="panel-title">GENE-SPLICE COMPATIBILITY</h2>
+                        <div class="panel-status online">ANALYZING</div>
+                    </div>
+                    <div class="gene-matrix" id="geneMatrix"></div>
+                    <div class="matrix-legend">
+                        <div class="legend-item"><span class="legend-swatch compatible"></span>COMPATIBLE</div>
+                        <div class="legend-item"><span class="legend-swatch partial"></span>PARTIAL</div>
+                        <div class="legend-item"><span class="legend-swatch unstable"></span>UNSTABLE</div>
+                        <div class="legend-item"><span class="legend-swatch reject"></span>REJECTION</div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer class="bottom-bar">
+            <div class="log-container" id="logContainer">
+                <div class="log-entry">
+                    <span class="log-time">[00:00:01]</span>
+                    <span class="log-type info">SYS</span>
+                    <span class="log-msg">NEXUS-7 biological integrity monitor initialized</span>
+                </div>
+            </div>
+            <div class="bottom-stats">
+                <span class="bottom-stat">UPTIME: <span id="uptime">00:00:00</span></span>
+                <span class="bottom-stat">FRAME: <span id="frameCount">0</span></span>
+                <span class="bottom-stat">MEM: <span id="memUsage">247</span>MB</span>
+            </div>
+        </footer>
+    </div>
+
+    <script src="scripts.js"></script>
+</body>
+</html>

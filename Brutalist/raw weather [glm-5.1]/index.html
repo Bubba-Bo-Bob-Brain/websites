@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WX_DASH — BRUTALIST WEATHER</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <div class="grain-overlay"></div>
+
+    <nav class="top-bar">
+        <div class="top-bar__brand">WX_DASH</div>
+        <div class="top-bar__location">
+            <span class="top-bar__pin">&#9650;</span>
+            <span>CHICAGO, IL — 41.8781°N 87.6298°W</span>
+        </div>
+        <div class="top-bar__time" id="liveTime">--:--:--</div>
+        <div class="top-bar__status">
+            <span class="status-dot"></span>
+            LIVE
+        </div>
+    </nav>
+
+    <section class="alert-banner" id="alertBanner">
+        <div class="alert-banner__icon">▲▲▲</div>
+        <div class="alert-banner__content">
+            <span class="alert-banner__label">WIND ADVISORY</span>
+            <span class="alert-banner__detail">IN EFFECT UNTIL 06:00 CST — GUSTS UP TO 55 MPH EXPECTED. SECURE OUTDOOR OBJECTS.</span>
+        </div>
+        <button class="alert-banner__close" id="alertClose" aria-label="Dismiss alert">✕</button>
+    </section>
+
+    <main class="dashboard">
+
+        <section class="hero-temp">
+            <div class="hero-temp__label">CURRENT TEMPERATURE</div>
+            <div class="hero-temp__value" id="heroTemp">
+                <span class="hero-temp__degrees">47</span>
+                <span class="hero-temp__unit">°F</span>
+            </div>
+            <div class="hero-temp__meta">
+                <span class="hero-temp__feels">FEELS LIKE 39°F</span>
+                <span class="hero-temp__hi-lo">H:52° L:38°</span>
+            </div>
+            <div class="hero-temp__condition">PARTLY CLOUDY</div>
+            <div class="hero-temp__raw-data">
+                <span>RAW: 8.3°C / 281.5K / 505.4°R</span>
+            </div>
+        </section>
+
+        <section class="conditions-grid">
+
+            <div class="panel panel--wind panel--overlap-1">
+                <div class="panel__header">
+                    <span class="panel__title">WIND</span>
+                    <span class="panel__tag">LIVE</span>
+                </div>
+                <div class="panel__body">
+                    <div class="wind-compass" id="windCompass">
+                        <div class="wind-compass__ring">
+                            <span class="wind-compass__dir" data-dir="N">N</span>
+                            <span class="wind-compass__dir" data-dir="E">E</span>
+                            <span class="wind-compass__dir" data-dir="S">S</span>
+                            <span class="wind-compass__dir" data-dir="W">W</span>
+                            <span class="wind-compass__dir" data-dir="NE">NE</span>
+                            <span class="wind-compass__dir" data-dir="SE">SE</span>
+                            <span class="wind-compass__dir" data-dir="SW">SW</span>
+                            <span class="wind-compass__dir" data-dir="NW">NW</span>
+                        </div>
+                        <div class="wind-compass__arrow" id="windArrow">
+                            <div class="wind-arrow"></div>
+                        </div>
+                        <div class="wind-compass__center-label">NW</div>
+                    </div>
+                    <div class="wind-stats">
+                        <div class="wind-stat">
+                            <span class="wind-stat__label">SPEED</span>
+                            <span class="wind-stat__value">23 <small>MPH</small></span>
+                        </div>
+                        <div class="wind-stat">
+                            <span class="wind-stat__label">GUST</span>
+                            <span class="wind-stat__value gust-value">41 <small>MPH</small></span>
+                        </div>
+                        <div class="wind-stat">
+                            <span class="wind-stat__label">DIR</span>
+                            <span class="wind-stat__value">315°</span>
+                        </div>
+                        <div class="wind-stat">
+                            <span class="wind-stat__label">BEAUFORT</span>
+                            <span class="wind-stat__value">5</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel panel--humidity panel--overlap-2">
+                <div class="panel__header">
+                    <span class="panel__title">HUMIDITY</span>
+                </div>
+                <div class="panel__body">
+                    <div class="big-stat">
+                        <span class="big-stat__value">67</span>
+                        <span class="big-stat__unit">%</span>
+                    </div>
+                    <div class="stat-bar">
+                        <div class="stat-bar__fill stat-bar__fill--humidity" style="width: 67%"></div>
+                    </div>
+                    <div class="stat-detail">
+                        <span>DEW POINT: 37°F</span>
+                        <span>COMFORT: MODERATE</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel panel--pressure panel--overlap-3">
+                <div class="panel__header">
+                    <span class="panel__title">BAROMETRIC PRESSURE</span>
+                    <span class="panel__trend panel__trend--falling">▼ FALLING</span>
+                </div>
+                <div class="panel__body">
+                    <div class="big-stat">
+                        <span class="big-stat__value">29.83</span>
+                        <span class="big-stat__unit">"Hg</span>
+                    </div>
+                    <div class="pressure-history" id="pressureHistory">
+                        <div class="pressure-bar" data-val="30.12"></div>
+                        <div class="pressure-bar" data-val="30.05"></div>
+                        <div class="pressure-bar" data-val="29.98"></div>
+                        <div class="pressure-bar" data-val="29.94"></div>
+                        <div class="pressure-bar" data-val="29.90"></div>
+                        <div class="pressure-bar" data-val="29.87"></div>
+                        <div class="pressure-bar" data-val="29.83"></div>
+                        <div class="pressure-bar" data-val="--"></div>
+                        <div class="pressure-bar" data-val="--"></div>
+                    </div>
+                    <div class="pressure-labels">
+                        <span>3HR AGO</span>
+                        <span>NOW</span>
+                        <span>+3HR</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel panel--visibility">
+                <div class="panel__header">
+                    <span class="panel__title">VISIBILITY</span>
+                </div>
+                <div class="panel__body">
+                    <div class="big-stat">
+                        <span class="big-stat__value">8</span>
+                        <span class="big-stat__unit">MI</span>
+                    </div>
+                    <div class="visibility-scale">
+                        <span class="visibility-mark" data-level="0">0</span>
+                        <span class="visibility-mark" data-level="2">2</span>
+                        <span class="visibility-mark" data-level="4">4</span>
+                        <span class="visibility-mark" data-level="6">6</span>
+                        <span class="visibility-mark active" data-level="8">8</span>
+                        <span class="visibility-mark" data-level="10">10+</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel panel--uv">
+                <div class="panel__header">
+                    <span class="panel__title">UV INDEX</span>
+                </div>
+                <div class="panel__body">
+                    <div class="big-stat">
+                        <span class="big-stat__value uv-level-2">2</span>
+                        <span class="big-stat__unit">LOW</span>
+                    </div>
+                    <div class="uv-scale">
+                        <div class="uv-block uv-block--low"></div>
+                        <div class="uv-block uv-block--low"></div>
+                        <div class="uv-block uv-block--mod"></div>
+                        <div class="uv-block uv-block--mod"></div>
+                        <div class="uv-block uv-block--mod"></div>
+                        <div class="uv-block uv-block--high"></div>
+                        <div class="uv-block uv-block--high"></div>
+                        <div class="uv-block uv-block--vhigh"></div>
+                        <div class="uv-block uv-block--vhigh"></div>
+                        <div class="uv-block uv-block--ext"></div>
+                        <div class="uv-block uv-block--ext"></div>
+                    </div>
+                    <div class="uv-labels">
+                        <span>LOW</span>
+                        <span>MOD</span>
+                        <span>HIGH</span>
+                        <span>V.HIGH</span>
+                        <span>EXT</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel panel--sun">
+                <div class="panel__header">
+                    <span class="panel__title">SUN CYCLE</span>
+                </div>
+                <div class="panel__body">
+                    <div class="sun-arc" id="sunArc">
+                        <div class="sun-arc__path"></div>
+                        <div class="sun-arc__horizon"></div>
+                        <div class="sun-arc__position" id="sunPosition"></div>
+                    </div>
+                    <div class="sun-times">
+                        <div class="sun-time">
+                            <span class="sun-time__label">SUNRISE</span>
+                            <span class="sun-time__value">06:42</span>
+                        </div>
+                        <div class="sun-time">
+                            <span class="sun-time__label">SOLAR NOON</span>
+                            <span class="sun-time__value">11:58</span>
+                        </div>
+                        <div class="sun-time">
+                            <span class="sun-time__label">SUNSET</span>
+                            <span class="sun-time__value">17:14</span>
+                        </div>
+                        <div class="sun-time">
+                            <span class="sun-time__label">DAYLIGHT</span>
+                            <span class="sun-time__value">10H 32M</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+        <section class="hourly-section">
+            <div class="section-header">
+                <h2 class="section-header__title">HOURLY FORECAST</h2>
+                <span class="section-header__count">24 PERIODS</span>
+            </div>
+            <div class="hourly-scroll" id="hourlyScroll">
+                <table class="hourly-table">
+                    <thead>
+                        <tr>
+                            <th>TIME</th>
+                            <th>TEMP</th>
+                            <th>FL</th>
+                            <th>COND</th>
+                            <th>RAIN%</th>
+                            <th>WIND</th>
+                            <th>GUST</th>
+                            <th>HUM</th>
+                            <th>UV</th>
+                            <th>PRES</th>
+                            <th>CLOUD</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>12:00</td>
+                            <td>47°</td>
+                            <td>39°</td>
+                            <td>PCLDY</td>
+                            <td>5%</td>
+                            <td>NW23</td>
+                            <td>41</td>
+                            <td>67%</td>
+                            <td>2</td>
+                            <td>29.83</td>
+                            <td>45%</td>
+                        </tr>
+                        <tr>
+                            <td>13:00</td>
+                            <td>48°</td>
+                            <td>40°</td>
+                            <td>PCLDY</td>
+                            <td>5%</td>
+                            <td>NW21</td>
+                            <td>38</td>
+                            <td>64%</td>
+                            <td>2</td>
+                            <td>29.82</td>
+                            <td>42%</td>
+                        </tr>
+                        <tr>
+                            <td>14:00</td>
+                            <td>49°</td>
+                            <td>41°</td>
+                            <td>PCLDY</td>
+                            <td>10%</td>
+                            <td>NW19</td>
+                            <td>35</td>
+                            <td>62%</td>
+                            <td>2</td>
+                            <td>29.81</td>
+                            <td>50%</td>
+                        </tr>
+                        <tr>
+                            <td>15:00</td>
+                            <td>50°</td>
+                            <td>42°</td>
+                            <td>CLDY</td>
+                            <td>15%</td>
+                            <td>W17</td>
+                            <td>32</td>
+                            <td>60%</td>
+                            <td>1</td>
+                            <td>29.80</td>
+                            <td>65%</td>
+                        </tr>
+                        <tr>
+                            <td>16:00</td>
+                            <td>50°</td>
+                            <td>42°</td>
+                            <td>CLDY</td>
+                            <td>20%</td>
+                            <td>W18</td>
+                            <td>33</td>
+                            <td>61%</td>
+                            <td>0</td>
+                            <td>29.78</td>
+                            <td>72%</td>
+                        </tr>
+                        <tr>
+                            <td>17:00</td>
+                            <td>49°</td>
+                            <td>41°</td>
+                            <td>OVCST</td>
+                            <td>30%</td>
+                            <td>W20</td>
+                            <td>36</td>
+                            <td>64%</td>
+                            <td>0</td>
+                            <td>29.76</td>
+                            <td>85%</td>
+                        </tr>
+                        <tr class="row--alert">
+                            <td>18:00</td>
+                            <td>47°</td>
+                            <td>38°</td>
+                            <td>RAIN</td>
+                            <td>65%</td>
+                            <td>W25</td>
+                            <td>45</td>
+                            <td>72%</td>
+                            <td>0</td>
+                            <td>29.73</td>
+                            <td>92%</td>
+                        </tr>
+                        <tr class="row--alert">
+                            <td>19:00</td>
+                            <td>45°</td>
+                            <td>35°</td>
+                            <td>RAIN</td>
+                            <td>80%</td>
+                            <td>W28</td>
+                            <td>48</td>
+                            <td>78%</td>
+                            <td>0</td>
+                            <td>29.70</td>
+                            <td>95%</td>
+                        </tr>
+                        <tr class="row--alert">
+                            <td>20:00</td>
+                            <td>44°</td>
+                            <td>33°</td>
+                            <td>RWIND</td>
+                            <td>85%</td>
+                            <td>W30</td>
+                            <td>52</td>
+                            <td>82%</td>
+                            <td>0</td>
+                            <td>29.67</td>
+                            <td>97%</td>
+                        </tr>
+                        <tr>
+                            <td>21:00</td>
+                            <td>43°</td>
+                            <td>32°</td>
+                            <td>RN/CL</td>
+                            <td>70%</td>
+                            <td>W26</td>
+                            <td>44</td>
+                            <td>80%</td>
+                            <td>0</td>
+                            <td>29.65</td>
+                            <td>90%</td>
+                        </tr>
+                        <tr>
+                            <td>22:00</td>
+                            <td>42°</td>
+                            <td>31°</td>
+                            <td>CLDY</td>
+                            <td>40%</td>
+                            <td>NW22</td>
+                            <td>38</td>
+                            <td>76%</td>
+                            <td>0</td>
+                            <td>29.64</td>
+                            <td>78%</td>
+                        </tr>
+                        <tr>
+                            <td>23:00</td>
+                            <td>41°</td>
+                            <td>30°</td>
+                            <td>PCLDY</td>
+                            <td>20%</td>
+                            <td>NW20</td>
+                            <td>35</td>
+                            <td>73%</td>
+                            <td>0</td>
+                            <td>29.63</td>
+                            <td>65%</td>
+                        </tr>
+                        <tr>
+                            <td>00:00</td>
+                            <td>40°</td>
+                            <td>29°</td>
+                            <td>PCLDY</td>
+                            <td>15%</td>
+                            <td>NW18</td>
+                            <td>32</td>
+                            <td>70%</td>
+                            <td>0</td>
+                            <td>29.62</td>
+                            <td>55%</td>
+                        </tr>
+                        <tr>
+                            <td>01:00</td>
+                            <td>39°</td>
+                            <td>28°</td>
+                            <td>CLDY</td>
+                            <td>25%</td>
+                            <td>NW16</td>
+                            <td>28</td>
+                            <td>72%</td>
+                            <td>0</td>
+                            <td>29.61</td>
+                            <td>60%</td>
+                        </tr>
+                        <tr>
+                            <td>02:00</td>
+                            <td>39°</td>
+                            <td>27°</td>
+                            <td>OVCST</td>
+                            <td>35%</td>
+                            <td>NW15</td>
+                            <td>26</td>
+                            <td>75%</td>
+                            <td>0</td>
+                            <td>29.60</td>
+                            <td>70%</td>
+                        </tr>
+                        <tr>
+                            <td>03:00</td>
+                            <td>38°</td>
+                            <td>26°</td>
+                            <td>OVCST</td>
+                            <td>40%</td>
+                            <td>N14</td>
+                            <td>24</td>
+                            <td>78%</td>
+                            <td>0</td>
+                            <td>29.59</td>
+                            <td>78%</td>
+                        </tr>
+                        <tr>
+                            <td>04:00</td>
+                            <td>38°</td>
+                            <td>25°</td>
+                            <td>CLDY</td>
+                            <td>30%</td>
+                            <td>N13</td>
+                            <td>22</td>
+                            <td>80%</td>
+                            <td>0</td>
+                            <td>29.58</td>
+                            <td>72%</td>
+                        </tr>
+                        <tr>
+                            <td>05:00</td>
+                            <td>38°</td>
+                            <td>25°</td>
+                            <td>PCLDY</td>
+                            <td>15%</td>
+                            <td>N12</td>
+                            <td>20</td>
+                            <td>82%</td>
+                            <td>0</td>
+                            <td>29.58</td>
+                            <td>60%</td>
+                        </tr>
+                        <tr>
+                            <td>06:00</td>
+                            <td>38°</td>
+                            <td>25°</td>
+                            <td>FAIR</td>
+                            <td>5%</td>
+                            <td>NNW11</td>
+                            <td>18</td>
+                            <td>84%</td>
+                            <td>0</td>
+                            <td>29.59</td>
+                            <td>40%</td>
+                        </tr>
+                        <tr>
+                            <td>07:00</td>
+                            <td>39°</td>
+                            <td>27°</td>
+                            <td>FAIR</td>
+                            <td>5%</td>
+                            <td>NNW10</td>
+                            <td>16</td>
+                            <td>80%</td>
+                            <td>0</td>
+                            <td>29.60</td>
+                            <td>30%</td>
+                        </tr>
+                        <tr>
+                            <td>08:00</td>
+                            <td>41°</td>
+                            <td>29°</td>
+                            <td>SUNNY</td>
+                            <td>0%</td>
+                            <td>NW9</td>
+                            <td>14</td>
+                            <td>74%</td>
+                            <td>1</td>
+                            <td>29.62</td>
+                            <td>15%</td>
+                        </tr>
+                        <tr>
+                            <td>09:00</td>
+                            <td>43°</td>
+                            <td>32°</td>
+                            <td>SUNNY</td>
+                            <td>0%</td>
+                            <td>NW10</td>
+                            <td>15</td>
+                            <td>68%</td>
+                            <td>1</td>
+                            <td>29.63</td>
+                            <td>10%</td>
+                        </tr>
+                        <tr>
+                            <td>10:00</td>
+                            <td>45°</td>
+                            <td>34°</td>
+                            <td>SUNNY</td>
+                            <td>0%</td>
+                            <td>NW12</td>
+                            <td>18</td>
+                            <td>63%</td>
+                            <td>2</td>
+                            <td>29.64</td>
+                            <td>8%</td>
+                        </tr>
+                        <tr>
+                            <td>11:00</td>
+                            <td>47°</td>
+                            <td>36°</td>
+                            <td>FAIR</td>
+                            <td>0%</td>
+                            <td>NW14</td>
+                            <td>20</td>
+                            <td>58%</td>
+                            <td>3</td>
+                            <td>29.65</td>
+                            <td>12%</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="weekly-section">
+            <div class="section-header">
+                <h2 class="section-header__title">7-DAY OUTLOOK</h2>
+                <span class="section-header__tag">UPDATED 11:32 CST</span>
+            </div>
+            <div class="weekly-grid">
+                <div class="weekly-card weekly-card--today">
+                    <div class="weekly-card__day">TODAY</div>
+                    <div class="weekly-card__hi">52°</div>
+                    <div class="weekly-card__lo">38°</div>
+                    <div class="weekly-card__cond">PCLDY → RAIN</div>
+                    <div class="weekly-card__rain">
+                        <span class="weekly-card__rain-bar" style="width: 85%"></span>
+                        <span class="weekly-card__rain-pct">85%</span>
+                    </div>
+                    <div class="weekly-card__wind">NW23→W30</div>
+                </div>
+                <div class="weekly-card">
+                    <div class="weekly-card__day">TUE</div>
+                    <div class="weekly-card__hi">44°</div>
+                    <div class="weekly-card__lo">32°</div>
+                    <div class="weekly-card__cond">CLDY / WIND</div>
+                    <div class="weekly-card__rain">
+                        <span class="weekly-card__rain-bar" style="width: 20%"></span>
+                        <span class="weekly-card__rain-pct">20%</span>
+                    </div>
+                    <div class="weekly-card__wind">NW18</div>
+                </div>
+                <div class="weekly-card">
+                    <div class="weekly-card__day">WED</div>
+                    <div class="weekly-card__hi">39°</div>
+                    <div class="weekly-card__lo">28°</div>
+                    <div class="weekly-card__cond">SNOW SHWRS</div>
+                    <div class="weekly-card__rain">
+                        <span class="weekly-card__rain-bar" style="width: 55%"></span>
+                        <span class="weekly-card__rain-pct">55%</span>
+                    </div>
+                    <div class="weekly-card__wind">N22</div>
+                </div>
+                <div class="weekly-card">
+                    <div class="weekly-card__day">THU</div>
+                    <div class="weekly-card__hi">36°</div>
+                    <div class="weekly-card__lo">24°</div>
+                    <div class="weekly-card__cond">FLURRIES</div>
+                    <div class="weekly-card__rain">
+                        <span class="weekly-card__rain-bar" style="width: 40%"></span>
+                        <span class="weekly-card__rain-pct">40%</span>
+                    </div>
+                    <div class="weekly-card__wind">NNW15</div>
+                </div>
+                <div class="weekly-card">
+                    <div class="weekly-card__day">FRI</div>
+                    <div class="weekly-card__hi">41°</div>
+                    <div class="weekly-card__lo">29°</div>
+                    <div class="weekly-card__cond">PCLDY</div>
+                    <div class="weekly-card__rain">
+                        <span class="weekly-card__rain-bar" style="width: 10%"></span>
+                        <span class="weekly-card__rain-pct">10%</span>
+                    </div>
+                    <div class="weekly-card__wind">W12</div>
+                </div>
+                <div class="weekly-card">
+                    <div class="weekly-card__day">SAT</div>
+                    <div class="weekly-card__hi">48°</div>
+                    <div class="weekly-card__lo">35°</div>
+                    <div class="weekly-card__cond">MOSTLY SUNNY</div>
+                    <div class="weekly-card__rain">
+                        <span class="weekly-card__rain-bar" style="width: 5%"></span>
+                        <span class="weekly-card__rain-pct">5%</span>
+                    </div>
+                    <div class="weekly-card__wind">SW10</div>
+                </div>
+                <div class="weekly-card">
+                    <div class="weekly-card__day">SUN</div>
+                    <div class="weekly-card__hi">52°</div>
+                    <div class="weekly-card__lo">38°</div>
+                    <div class="weekly-card__cond">RAIN LIKELY</div>
+                    <div class="weekly-card__rain">
+                        <span class="weekly-card__rain-bar" style="width: 70%"></span>
+                        <span class="weekly-card__rain-pct">70%</span>
+                    </div>
+                    <div class="weekly-card__wind">S15</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="radar-section">
+            <div class="section-header">
+                <h2 class="section-header__title">RADAR / PRECIP MAP</h2>
+                <span class="section-header__tag">SIMULATED</span>
+            </div>
+            <div class="radar-container" id="radarContainer">
+                <canvas class="radar-canvas" id="radarCanvas"></canvas>
+                <div class="radar-overlay">
+                    <div class="radar-ring radar-ring--1"></div>
+                    <div class="radar-ring radar-ring--2"></div>
+                    <div class="radar-ring radar-ring--3"></div>
+                    <div class="radar-sweep" id="radarSweep"></div>
+                    <div class="radar-center"></div>
+                    <div class="radar-label radar-label--n">N</div>
+                    <div class="radar-label radar-label--s">S</div>
+                    <div class="radar-label radar-label--e">E</div>
+                    <div class="radar-label radar-label--w">W</div>
+                </div>
+                <div class="radar-legend">
+                    <span class="radar-legend__item" data-level="light">LIGHT</span>
+                    <span class="radar-legend__item" data-level="mod">MODERATE</span>
+                    <span class="radar-legend__item" data-level="heavy">HEAVY</span>
+                    <span class="radar-legend__item" data-level="severe">SEVERE</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="air-quality-section">
+            <div class="section-header">
+                <h2 class="section-header__title">AIR QUALITY INDEX</h2>
+            </div>
+            <div class="aqi-panel">
+                <div class="aqi-value">
+                    <span class="aqi-value__number">42</span>
+                    <span class="aqi-value__label aqi-value__label--good">GOOD</span>
+                </div>
+                <div class="aqi-bar">
+                    <div class="aqi-segment aqi-segment--good"></div>
+                    <div class="aqi-segment aqi-segment--mod"></div>
+                    <div class="aqi-segment aqi-segment--usg"></div>
+                    <div class="aqi-segment aqi-segment--unh"></div>
+                    <div class="aqi-segment aqi-segment--vunh"></div>
+                    <div class="aqi-segment aqi-segment--haz"></div>
+                    <div class="aqi-marker" id="aqiMarker" style="left: 14%"></div>
+                </div>
+                <div class="aqi-labels">
+                    <span>0</span>
+                    <span>50</span>
+                    <span>100</span>
+                    <span>150</span>
+                    <span>200</span>
+                    <span>300</span>
+                    <span>500</span>
+                </div>
+                <div class="aqi-pollutants">
+                    <div class="aqi-pollutant">
+                        <span class="aqi-pollutant__name">PM2.5</span>
+                        <span class="aqi-pollutant__val">12.3 µg/m³</span>
+                    </div>
+                    <div class="aqi-pollutant">
+                        <span class="aqi-pollutant__name">PM10</span>
+                        <span class="aqi-pollutant__val">24.7 µg/m³</span>
+                    </div>
+                    <div class="aqi-pollutant">
+                        <span class="aqi-pollutant__name">O₃</span>
+                        <span class="aqi-pollutant__val">0.032 ppm</span>
+                    </div>
+                    <div class="aqi-pollutant">
+                        <span class="aqi-pollutant__name">NO₂</span>
+                        <span class="aqi-pollutant__val">18 ppb</span>
+                    </div>
+                    <div class="aqi-pollutant">
+                        <span class="aqi-pollutant__name">SO₂</span>
+                        <span class="aqi-pollutant__val">4 ppb</span>
+                    </div>
+                    <div class="aqi-pollutant">
+                        <span class="aqi-pollutant__name">CO</span>
+                        <span class="aqi-pollutant__val">0.4 ppm</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="raw-data-section">
+            <div class="section-header">
+                <h2 class="section-header__title">RAW METAR</h2>
+                <span class="section-header__tag">KORD</span>
+            </div>
+            <div class="raw-data-block" id="metarBlock">
+                KORD 121753Z 32023G41KT 10SM FEW045 BKN070 08/03 A2983 RMK AO2 SLP092 T00780028 57014
+            </div>
+            <div class="raw-data-decoded">
+                <div class="decoded-row"><span>STATION</span><span>KORD — CHICAGO O'HARE</span></div>
+                <div class="decoded-row"><span>TIME</span><span>17:53 UTC / 11:53 CST</span></div>
+                <div class="decoded-row"><span>WIND</span><span>320° AT 23KT GUST 41KT</span></div>
+                <div class="decoded-row"><span>VIS</span><span>10 STATUTE MILES</span></div>
+                <div class="decoded-row"><span>SKY</span><span>FEW @ 4500FT / BKN @ 7000FT</span></div>
+                <div class="decoded-row"><span>TEMP</span><span>8°C (47°F)</span></div>
+                <div class="decoded-row"><span>DEW</span><span>3°C (37°F)</span></div>
+                <div class="decoded-row"><span>ALTIM</span><span>29.83 INHG</span></div>
+                <div class="decoded-row"><span>RMK</span><span>AO2 / SLP092 / T00780028 / 57014</span></div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="site-footer">
+        <div class="site-footer__left">
+            DATA: NWS / NOAA — PROCESSED: <span id="footerTime">--:--:--</span> CST
+        </div>
+        <div class="site-footer__center">
+            WX_DASH v0.8.3 — BRUTALIST WEATHER INTERFACE
+        </div>
+        <div class="site-footer__right">
+            REFRESH: <span id="refreshCountdown">300</span>S
+        </div>
+    </footer>
+
+    <script src="scripts.js"></script>
+</body>
+</html>

@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GAIA-OS // PLANETARY SIMULATION DASHBOARD</title>
+    <!-- Fonts: Space Mono for data, Orbitron for headers -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <!-- Styles -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- CRT Scanline Overlay -->
+    <div class="scanlines"></div>
+    <div class="noise-overlay"></div>
+
+    <!-- Main Dashboard Container -->
+    <main class="dashboard-grid">
+
+        <!-- HEADER: System Status & Global Time -->
+        <header class="top-bar">
+            <div class="brand-section">
+                <h1 class="glitch-text" data-text="GAIA-OS v9.2">GAIA-OS v9.2</h1>
+                <span class="status-badge active">● SYSTEM OPTIMAL</span>
+            </div>
+            <div class="global-metrics ticker-container">
+                <div class="metric-item">
+                    <span class="label">POPULATION</span>
+                    <span class="value" id="pop-counter">8,124,593,002</span>
+                    <span class="trend up">▲ 0.04%</span>
+                </div>
+                <div class="metric-item">
+                    <span class="label">CO2 LEVELS</span>
+                    <span class="value warning">424.1 ppm</span>
+                    <span class="trend up">▲ 1.2ppm</span>
+                </div>
+                <div class="metric-item">
+                    <span class="label">GLOBAL TEMP</span>
+                    <span class="value">15.4°C</span>
+                    <span class="trend neutral">● 0.0°C</span>
+                </div>
+                <div class="metric-item">
+                    <span class="label">ENERGY CONSUMPTION</span>
+                    <span class="value">28.4 TW</span>
+                </div>
+                <div class="metric-item">
+                    <span class="label">SIMULATION TIME</span>
+                    <span class="value" id="sim-clock">14:02:45 UTC</span>
+                </div>
+            </div>
+            <div class="control-panel">
+                <button class="btn-icon" title="Pause Simulation">⏸</button>
+                <button class="btn-icon" title="Toggle Grid">▦</button>
+                <button class="btn-icon" title="Full Data Dump">📥</button>
+            </div>
+        </header>
+
+        <!-- LEFT COLUMN: Geological & Atmospheric -->
+        <aside class="left-panel">
+            <section class="panel-box tectonics">
+                <h3 class="panel-title">🌍 TECTONIC ACTIVITY</h3>
+                <ul class="feed-list" id="quake-feed">
+                    <li class="feed-item severity-high">
+                        <span class="time">12:04</span>
+                        <span class="loc">Pacific Ring (M7.2)</span>
+                        <span class="icon">🌋</span>
+                    </li>
+                    <li class="feed-item severity-med">
+                        <span class="time">11:58</span>
+                        <span class="loc">Andes Fault (M4.5)</span>
+                        <span class="icon">📉</span>
+                    </li>
+                    <li class="feed-item severity-low">
+                        <span class="time">11:45</span>
+                        <span class="loc">Iceland Rift (M2.1)</span>
+                        <span class="icon">⚠️</span>
+                    </li>
+                    <!-- JS will populate more -->
+                </ul>
+            </section>
+
+            <section class="panel-box weather">
+                <h3 class="panel-title">🌪️ ATMOSPHERIC FLOW</h3>
+                <div class="weather-grid">
+                    <div class="weather-stat">
+                        <span class="icon">💨</span>
+                        <span class="val">124 km/h</span>
+                        <span class="lbl">Max Gust</span>
+                    </div>
+                    <div class="weather-stat">
+                        <span class="icon">⛈️</span>
+                        <span class="val">4,201</span>
+                        <span class="lbl">Active Storms</span>
+                    </div>
+                    <div class="weather-stat">
+                        <span class="icon">🌧️</span>
+                        <span class="val">12mm</span>
+                        <span class="lbl">Global Avg Rain</span>
+                    </div>
+                </div>
+                <div class="mini-map-container">
+                    <div class="mini-map-bg"></div>
+                    <div class="storm-cell" style="top:20%; left:30%"></div>
+                    <div class="storm-cell" style="top:60%; left:70%"></div>
+                </div>
+            </section>
+
+            <section class="panel-box biodiversity">
+                <h3 class="panel-title">🦋 BIODIVERSITY INDEX</h3>
+                <div class="bar-chart-container">
+                    <div class="bar-row">
+                        <span>Mammals</span>
+                        <div class="bar-fill" style="width: 45%"></div>
+                    </div>
+                    <div class="bar-row">
+                        <span>Birds</span>
+                        <div class="bar-fill" style="width: 72%"></div>
+                    </div>
+                    <div class="bar-row">
+                        <span>Insects</span>
+                        <div class="bar-fill" style="width: 98%"></div>
+                    </div>
+                    <div class="bar-row">
+                        <span>Marine Life</span>
+                        <div class="bar-fill" style="width: 61%"></div>
+                    </div>
+                </div>
+            </section>
+        </aside>
+
+        <!-- CENTER COLUMN: The Planet Viewport -->
+        <section class="viewport-container">
+            <div class="planet-wrapper">
+                <!-- The Planet Canvas -->
+                <canvas id="planet-canvas"></canvas>
+                <!-- Overlay UI on top of planet -->
+                <div class="viewport-overlay">
+                    <div class="crosshair"></div>
+                    <div class="data-readout">
+                        <div>SAT-01 // ORBITAL VIEW</div>
+                        <div>LAT: <span id="lat-val">00.00</span> LON: <span id="lon-val">00.00</span></div>
+                    </div>
+                </div>
+            </div>
+            <div class="viewport-controls">
+                <button class="btn-primary">🌐 TOPOGRAPHY</button>
+                <button class="btn-secondary">🔥 THERMAL</button>
+                <button class="btn-secondary">🌐 TRAFFIC</button>
+                <button class="btn-secondary">🌑 NIGHT</button>
+            </div>
+        </section>
+
+        <!-- RIGHT COLUMN: Economy & Resources -->
+        <aside class="right-panel">
+            <section class="panel-box economy">
+                <h3 class="panel-title">💹 GLOBAL TRADE</h3>
+                <div class="stock-ticker">
+                    <div class="stock-row">
+                        <span>🇺🇸 S&amp;P 500</span>
+                        <span class="up">4,520.12</span>
+                    </div>
+                    <div class="stock-row">
+                        <span>🇪🇺 EURO STOXX</span>
+                        <span class="down">4,102.45</span>
+                    </div>
+                    <div class="stock-row">
+                        <span>🇨🇳 SHANGHAI</span>
+                        <span class="up">3,201.00</span>
+                    </div>
+                    <div class="stock-row">
+                        <span>🏏 CRUDE OIL</span>
+                        <span class="down">$78.40</span>
+                    </div>
+                    <div class="stock-row">
+                        <span>🥇 GOLD</span>
+                        <span class="up">$2,034.10</span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="panel-box resources">
+                <h3 class="panel-title">⛏️ RESOURCE RESERVES</h3>
+                <div class="resource-list">
+                    <div class="res-item">
+                        <span class="icon">💧</span>
+                        <div class="res-info">
+                            <span class="name">Fresh Water</span>
+                            <div class="progress-bar"><div class="fill" style="width: 30%"></div></div>
+                        </div>
+                        <span class="status critical">CRITICAL</span>
+                    </div>
+                    <div class="res-item">
+                        <span class="icon">⚡</span>
+                        <div class="res-info">
+                            <span class="name">Energy Grid</span>
+                            <div class="progress-bar"><div class="fill" style="width: 85%"></div></div>
+                        </div>
+                        <span class="status ok">STABLE</span>
+                    </div>
+                    <div class="res-item">
+                        <span class="icon">🍞</span>
+                        <div class="res-info">
+                            <span class="name">Grain Stocks</span>
+                            <div class="progress-bar"><div class="fill" style="width: 60%"></div></div>
+                        </div>
+                        <span class="status warn">LOW</span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="panel-box comms">
+                <h3 class="panel-title">📡 DATA TRAFFIC</h3>
+                <div class="network-visual">
+                    <!-- Simulated network nodes -->
+                    <div class="node active"></div>
+                    <div class="node"></div>
+                    <div class="node active"></div>
+                    <div class="node"></div>
+                    <div class="node active"></div>
+                </div>
+                <div class="log-console" id="system-log">
+                    <div class="log-line">> Initializing...</div>
+                    <div class="log-line">> Connecting to satellites...</div>
+                </div>
+            </section>
+        </aside>
+
+        <!-- FOOTER: Global Warnings & Alerts -->
+        <footer class="bottom-bar">
+            <div class="alert-marquee">
+                <span class="alert-item critical">⚠️ ALERT: SECTOR 7G VOLCANIC ACTIVITY DETECTED</span>
+                <span class="alert-item warn">⚠️ WARNING: UNUSUAL TECTONIC DRIFT IN ANTARCTIC PLATE</span>
+                <span class="alert-item info">ℹ️ INFO: MAJOR DATA PACKET RECEIVED FROM MARS COLONY</span>
+            </div>
+            <div class="footer-stats">
+                <div>SERVER LOAD: <span id="cpu-load">42%</span></div>
+                <div>MEMORY: <span id="mem-load">12TB / 64TB</span></div>
+                <div>UPTIME: <span>99.999%</span></div>
+            </div>
+        </footer>
+
+    </main>
+
+    <!-- Scripts -->
+    <script src="scripts.js"></script>
+</body>
+</html>

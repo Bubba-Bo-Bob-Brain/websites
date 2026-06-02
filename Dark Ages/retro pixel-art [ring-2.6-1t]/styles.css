@@ -1,0 +1,1780 @@
+/* ============================================================
+   THE DARK AGES — A PIXEL CHRONICLE
+   styles.css — Full retro pixel-art aesthetic
+   ============================================================ */
+
+/* ---------- CSS VARIABLES & ROOT THEME ---------- */
+:root {
+  /* Palette: Deep earth, candlelight, parchment, blood, shadow */
+  --bg-deep:        #0a0a0e;
+  --bg-dark:        #111014;
+  --bg-panel:       #1a1816;
+  --bg-panel-light: #22201e;
+  --bg-parchment:   #d4c5a0;
+  --bg-parchment-d: #b0a070;
+  --ink:            #e8dcc8;
+  --ink-dim:        #8a7e65;
+  --ink-faint:      #4a4238;
+  --accent-gold:    #d4a017;
+  --accent-gold-d:  #a07810;
+  --accent-blood:   #8b1a1a;
+  --accent-blood-d: #5c0f0f;
+  --accent-green:   #3a8a3a;
+  --accent-blue:    #3a5a8a;
+  --accent-fire:    #e25c1a;
+  --accent-fire-hi: #ff8833;
+  --accent-poison:  #6a4a8a;
+  --border-dark:    #2a2826;
+  --border-light:   #3a3836;
+  --border-accent:  #5a4828;
+  --pixel-size: 2px;
+  --font-display: 'Courier New', 'Courier', monospace;
+  --font-body: 'Courier New', 'Courier', monospace;
+  --glow-fire: 0 0 20px rgba(226, 92, 26, 0.5), 0 0 60px rgba(226, 92, 26, 0.15);
+  --glow-gold: 0 0 10px rgba(212, 160, 23, 0.4);
+  --glow-blue: 0 0 10px rgba(58, 90, 138, 0.4);
+}
+
+/* ---------- GLOBAL RESET & BASE ---------- */
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 14px;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-accent) var(--bg-dark);
+}
+
+body {
+  background-color: var(--bg-deep);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  line-height: 1.5;
+  overflow: hidden;
+  height: 100vh;
+  width: 100vw;
+  cursor: none;
+}
+
+/* Custom cursor — none; using #cursor-glow instead */
+*, *::before, *::after {
+  cursor: none;
+}
+
+/* ---------- SCROLLBAR ---------- */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-dark);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-accent);
+  border-radius: 0;
+}
+
+/* ==============================
+   CURSOR GLOW
+   ============================== */
+#cursor-glow {
+  position: fixed;
+  top: 0; left: 0;
+  width: 24px; height: 24px;
+  border: 1px solid var(--accent-gold);
+  border-radius: 0;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 99999;
+  transition: width 0.15s, height 0.15s, border-color 0.15s;
+  mix-blend-mode: screen;
+}
+
+#cursor-glow::before {
+  content: '';
+  position: absolute;
+  top: 4px; left: 4px;
+  width: 16px; height: 16px;
+  background: rgba(212, 160, 23, 0.12);
+  border: 1px solid rgba(212, 160, 23, 0.3);
+}
+
+#cursor-glow::after {
+  content: '+';
+  position: absolute;
+  top: 5px; left: 6px;
+  font-size: 10px;
+  color: rgba(212, 160, 23, 0.7);
+  font-family: var(--font-display);
+  line-height: 1;
+}
+
+#cursor-glow.hover-active {
+  width: 32px; height: 32px;
+  border-color: var(--accent-fire-hi);
+  animation: cursorPulse 0.8s ease-in-out infinite;
+}
+
+@keyframes cursorPulse {
+  0%, 100% { box-shadow: 0 0 4px rgba(255, 136, 51, 0.3); }
+  50% { box-shadow: 0 0 12px rgba(255, 136, 51, 0.6); }
+}
+
+/* ==============================
+   WEATHER OVERLAYS
+   ============================== */
+#weather-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+  z-index: 50;
+  overflow: hidden;
+}
+
+.weather-layer {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  opacity: 0;
+  transition: opacity 1s;
+  pointer-events: none;
+}
+
+.weather-layer.active {
+  opacity: 1;
+}
+
+/* Rain drops */
+#rain-layer::before {
+  content: '';
+  position: absolute;
+  top: -100%; left: 0;
+  width: 100%; height: 200%;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent 0px,
+    transparent 2px,
+    rgba(120, 140, 170, 0.3) 2px,
+    rgba(120, 140, 170, 0.3) 3px
+  );
+  animation: rainFall 0.5s linear infinite;
+}
+
+@keyframes rainFall {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(40px); }
+}
+
+/* Fog */
+#fog-layer {
+  background:
+    radial-gradient(ellipse at 20% 50%, rgba(150, 150, 140, 0.15) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 30%, rgba(150, 150, 140, 0.12) 0%, transparent 40%),
+    radial-gradient(ellipse at 50% 80%, rgba(140, 140, 130, 0.1) 0%, transparent 50%);
+  animation: fogDrift 8s ease-in-out infinite alternate;
+}
+
+@keyframes fogDrift {
+  0% { opacity: 0.4; transform: translateX(-20px); }
+  100% { opacity: 0.7; transform: translateX(20px); }
+}
+
+/* Snow */
+#snow-layer::before {
+  content: '';
+  position: absolute;
+  top: -100%; left: 0;
+  width: 100%; height: 200%;
+  background:
+    radial-gradient(1px 1px at 10% 20%, rgba(255,255,255,0.6), transparent),
+    radial-gradient(1px 1px at 30% 60%, rgba(255,255,255,0.5), transparent),
+    radial-gradient(1px 1px at 50% 10%, rgba(255,255,255,0.6), transparent),
+    radial-gradient(1px 1px at 70% 80%, rgba(255,255,255,0.5), transparent),
+    radial-gradient(1px 1px at 90% 40%, rgba(255,255,255,0.6), transparent);
+  background-size: 100px 150px;
+  animation: snowFall 3s linear infinite;
+}
+
+#snow-layer::after {
+  content: '';
+  position: absolute;
+  top: -100%; left: 0;
+  width: 100%; height: 200%;
+  background:
+    radial-gradient(1px 1px at 15% 80%, rgba(255,255,255,0.5), transparent),
+    radial-gradient(1px 1px at 45% 30%, rgba(255,255,255,0.6), transparent),
+    radial-gradient(1px 1px at 65% 50%, rgba(255,255,255,0.5), transparent),
+    radial-gradient(1px 1px at 85% 10%, rgba(255,255,255,0.6), transparent);
+  background-size: 120px 160px;
+  animation: snowFall 4s linear infinite 0.5s;
+}
+
+@keyframes snowFall {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(150px); }
+}
+
+/* Ash */
+#ash-layer {
+  background:
+    radial-gradient(ellipse at 30% 40%, rgba(180, 140, 80, 0.1) 0%, transparent 40%),
+    radial-gradient(ellipse at 70% 60%, rgba(180, 140, 80, 0.08) 0%, transparent 35%);
+  animation: ashFall 4s ease-in infinite;
+}
+
+@keyframes ashFall {
+  0% { opacity: 0.3; transform: translateY(-10px); }
+  50% { opacity: 0.6; }
+  100% { opacity: 0.3; transform: translateY(10px); }
+}
+
+/* ==============================
+   DAY/NIGHT CYCLE OVERLAY
+   ============================== */
+#day-night-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+  z-index: 2;
+  transition: background 3s ease;
+}
+
+/* ==============================
+   TOP BAR
+   ============================== */
+#top-bar {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%;
+  height: 50px;
+  background: linear-gradient(180deg, #1a1816 0%, #151311 100%);
+  border-bottom: 2px solid var(--border-accent);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  z-index: 100;
+}
+
+.bar-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.bar-item {
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  color: var(--ink-dim);
+  text-shadow: 1px 1px 0px var(--bg-deep);
+  white-space: nowrap;
+}
+
+#bar-title {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: var(--accent-gold);
+  text-shadow: 0 0 8px rgba(212, 160, 23, 0.4), 1px 1px 0px var(--bg-deep);
+  letter-spacing: 3px;
+}
+
+#faith-icon {
+  color: var(--accent-gold);
+  font-size: 1.2rem;
+  animation: faithGlow 3s ease-in-out infinite;
+}
+
+@keyframes faithGlow {
+  0%, 100% { text-shadow: 0 0 4px rgba(212, 160, 23, 0.3); }
+  50% { text-shadow: 0 0 12px rgba(212, 160, 23, 0.7); }
+}
+
+#season-display {
+  color: var(--accent-green);
+  font-size: 0.8rem;
+}
+
+/* Monastery Tower (center bar) */
+#bar-center {
+  position: relative;
+}
+
+#monastery-tower {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+.tower-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+}
+
+.tower-window {
+  font-size: 1rem;
+  color: var(--accent-gold);
+  text-shadow: 0 0 6px rgba(212, 160, 23, 0.5);
+  animation: windowFlicker 4s ease-in-out infinite;
+}
+
+#tower-window2 {
+  animation-delay: 2s;
+  animation-duration: 3s;
+}
+
+@keyframes windowFlicker {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; text-shadow: 0 0 12px rgba(212, 160, 23, 0.9); }
+}
+
+.tower-spire {
+  font-size: 1.2rem;
+  color: var(--accent-gold);
+  text-shadow: 0 0 6px rgba(212, 160, 23, 0.4);
+}
+
+/* Bell System */
+#bell-container {
+  position: absolute;
+  top: -2px;
+  right: -20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: none;
+  pointer-events: none;
+}
+
+#bell-rope {
+  color: var(--ink-faint);
+  font-size: 0.9rem;
+}
+
+#bell {
+  font-size: 1.8rem;
+  color: var(--accent-gold);
+  text-shadow: 0 0 8px rgba(212, 160, 23, 0.5);
+  transition: transform 0.1s;
+  cursor: none;
+  pointer-events: none;
+}
+
+#bell.tolling {
+  animation: bellTolling 0.6s ease-in-out;
+}
+
+@keyframes bellTolling {
+  0% { transform: rotate(0deg); }
+  25% { transform: rotate(15deg); }
+  50% { transform: rotate(-15deg); }
+  75% { transform: rotate(10deg); }
+  100% { transform: rotate(0deg); }
+}
+
+#bell-shadow {
+  font-size: 1rem;
+  color: var(--ink-faint);
+}
+
+/* Clock Display */
+#clock-display {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  color: var(--ink);
+  letter-spacing: 2px;
+  text-shadow: 0 0 8px rgba(226, 92, 26, 0.3);
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+}
+
+#hour-display, #minute-display {
+  color: var(--accent-gold);
+  font-weight: bold;
+}
+
+#period-display {
+  font-size: 0.7rem;
+  color: var(--ink-dim);
+  margin-left: 2px;
+}
+
+/* Right bar items */
+#weather-icon {
+  font-size: 1.3rem;
+}
+
+#temperature-display {
+  color: var(--accent-fire);
+  font-weight: bold;
+}
+
+#moon-phase {
+  font-size: 1.1rem;
+}
+
+/* ==============================
+   MAIN LAYOUT
+   ============================== */
+#main-container {
+  display: flex;
+  margin-top: 50px;
+  height: calc(100vh - 50px - 60px);
+  position: relative;
+}
+
+/* ==============================
+   LEFT PANEL
+   ============================== */
+#left-panel {
+  width: 250px;
+  min-width: 250px;
+  background: linear-gradient(180deg, #151311 0%, #1a1816 100%);
+  border-right: 2px solid var(--border-accent);
+  padding: 12px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.panel-section {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-dark);
+  border-top: 2px solid var(--border-accent);
+  padding: 10px;
+}
+
+.panel-heading {
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  color: var(--accent-gold);
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  margin-bottom: 10px;
+  text-shadow: 0 0 6px rgba(212, 160, 23, 0.3);
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border-dark);
+  text-align: center;
+}
+
+/* Stats */
+.stat-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+  font-size: 0.78rem;
+}
+
+.stat-label {
+  width: 60px;
+  color: var(--ink-dim);
+  flex-shrink: 0;
+  font-size: 0.75rem;
+}
+
+.stat-bar-container {
+  flex: 1;
+  height: 10px;
+  background: var(--bg-deep);
+  border: 1px solid var(--border-dark);
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent-blood-d), var(--accent-blood));
+  transition: width 0.5s ease;
+  position: relative;
+}
+
+.stat-bar::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: repeating-linear-gradient(
+    90deg,
+    transparent 0px,
+    rgba(255,255,255,0.05) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+}
+
+.stat-bar-hunger { background: linear-gradient(90deg, var(--accent-gold-d), var(--accent-gold)); }
+.stat-bar-faith  { background: linear-gradient(90deg, var(--accent-blue), #5a8abc); }
+.stat-bar-rep    { background: linear-gradient(90deg, var(--accent-green-d), var(--accent-green)); }
+.stat-bar-gold   { background: linear-gradient(90deg, var(--accent-gold-d), #e6b82e); }
+
+.stat-value {
+  width: 30px;
+  text-align: right;
+  color: var(--ink);
+  font-weight: bold;
+  font-size: 0.8rem;
+}
+
+/* Inventory */
+.inventory-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+}
+
+.inv-slot {
+  aspect-ratio: 1;
+  background: var(--bg-deep);
+  border: 1px solid var(--border-dark);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transition: border-color 0.2s;
+  cursor: none;
+}
+
+.inv-slot:hover {
+  border-color: var(--accent-gold);
+}
+
+.inv-slot.empty {
+  opacity: 0.3;
+}
+
+.inv-icon {
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.inv-count {
+  position: absolute;
+  bottom: 1px;
+  right: 3px;
+  font-size: 0.6rem;
+  color: var(--accent-gold);
+  font-weight: bold;
+}
+
+/* Quests */
+.quest-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.quest-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 6px;
+  font-size: 0.75rem;
+  border: 1px solid transparent;
+  transition: all 0.2s;
+  cursor: none;
+}
+
+.quest-item:hover {
+  background: var(--bg-panel-light);
+  border-color: var(--border-accent);
+}
+
+.quest-active {
+  border-left: 2px solid var(--accent-gold);
+}
+
+.quest-active .quest-text {
+  color: var(--ink);
+}
+
+.quest-inactive {
+  opacity: 0.5;
+}
+
+.quest-inactive .quest-text {
+  color: var(--ink-dim);
+}
+
+.quest-locked {
+  opacity: 0.3;
+}
+
+.quest-locked .quest-text {
+  font-style: italic;
+  color: var(--ink-faint);
+}
+
+.quest-icon {
+  font-size: 0.7rem;
+  flex-shrink: 0;
+}
+
+.quest-active .quest-icon { color: var(--accent-gold); }
+.quest-inactive .quest-icon { color: var(--ink-faint); }
+.quest-locked .quest-icon { color: var(--accent-blood); }
+
+/* ==============================
+   MAP AREA (CENTER)
+   ============================== */
+#map-area {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse at 50% 50%, #151318 0%, #0a0a0e 70%);
+}
+
+#map-container {
+  position: relative;
+  width: 700px;
+  height: 500px;
+}
+
+/* Terrain Layer */
+#terrain-layer {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background:
+    /* Patchy grass texture */
+    radial-gradient(2px 2px at 20% 30%, rgba(60, 80, 40, 0.4), transparent),
+    radial-gradient(2px 2px at 40% 70%, rgba(60, 80, 40, 0.3), transparent),
+    radial-gradient(2px 2px at 60% 20%, rgba(60, 80, 40, 0.3), transparent),
+    radial-gradient(2px 2px at 80% 60%, rgba(60, 80, 40, 0.4), transparent),
+    radial-gradient(3px 3px at 50% 50%, rgba(50, 70, 30, 0.3), transparent),
+    /* Ground base */
+    radial-gradient(ellipse at 50% 70%, #2a3a1a 0%, #1a2a0e 100%);
+  border: 2px solid var(--border-accent);
+  overflow: hidden;
+}
+
+/* Path */
+.pixel-path {
+  position: absolute;
+  color: var(--bg-parchment-d);
+  font-size: 1.2rem;
+  text-shadow: 0 0 4px rgba(176, 160, 112, 0.3);
+  z-index: 2;
+}
+
+.p1 { bottom: 80px; left: 50px; }
+.p2 { bottom: 80px; left: 80px; }
+.p3 { bottom: 80px; left: 110px; }
+.p4 { bottom: 80px; left: 250px; }
+.p5 { bottom: 80px; left: 280px; }
+
+/* Trees */
+.pixel-tree {
+  position: absolute;
+  font-size: 1.4rem;
+  z-index: 3;
+  filter: drop-shadow(1px 1px 0 rgba(0,0,0,0.5));
+  animation: treeSway 6s ease-in-out infinite;
+}
+
+@keyframes treeSway {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(1deg); }
+  75% { transform: rotate(-1deg); }
+}
+
+.t1 { bottom: 60px; left: 20px; animation-delay: 0s; }
+.t2 { bottom: 40px; left: 170px; animation-delay: 1s; }
+.t3 { bottom: 55px; left: 450px; animation-delay: 0.5s; }
+.t4 { bottom: 70px; left: 560px; animation-delay: 1.5s; }
+.t5 { bottom: 35px; left: 620px; animation-delay: 2s; }
+.t6 { bottom: 80px; left: 350px; animation-delay: 0.8s; }
+.t7 { bottom: 25px; left: 100px; animation-delay: 1.2s; }
+.t8 { bottom: 65px; left: 500px; animation-delay: 0.3s; }
+
+/* Bushes */
+.pixel-bush {
+  position: absolute;
+  font-size: 1rem;
+  z-index: 2;
+}
+
+.b1 { bottom: 75px; left: 130px; }
+.b2 { bottom: 90px; left: 420px; }
+.b3 { bottom: 50px; left: 570px; }
+
+/* Rocks */
+.pixel-rock {
+  position: absolute;
+  font-size: 1rem;
+  z-index: 2;
+}
+
+.r1 { bottom: 55px; left: 200px; }
+.r2 { bottom: 100px; left: 480px; }
+
+/* Fence */
+.pixel-fence {
+  position: absolute;
+  color: var(--accent-gold-d);
+  font-size: 1.2rem;
+  z-index: 2;
+}
+
+.f1 { bottom: 95px; left: 30px; }
+.f2 { bottom: 95px; left: 45px; }
+.f3 { bottom: 95px; left: 60px; }
+.f4 { bottom: 95px; left: 350px; }
+.f5 { bottom: 95px; left: 365px; }
+.f6 { bottom: 95px; left: 380px; }
+
+/* Stream */
+.pixel-water {
+  position: absolute;
+  bottom: 20px;
+  left: 150px;
+  width: 200px;
+  height: 16px;
+  background: linear-gradient(90deg,
+    rgba(58, 90, 138, 0.3),
+    rgba(58, 90, 138, 0.6),
+    rgba(58, 90, 138, 0.3)
+  );
+  border: 1px solid rgba(58, 90, 138, 0.4);
+  animation: streamFlow 2s linear infinite;
+  overflow: hidden;
+  z-index: 2;
+}
+
+.pixel-water::before {
+  content: '';
+  position: absolute;
+  top: 0; left: -50%;
+  width: 200%;
+  height: 100%;
+  background: repeating-linear-gradient(
+    90deg,
+    transparent 0px,
+    rgba(255,255,255,0.1) 3px,
+    transparent 6px,
+    transparent 12px
+  );
+  animation: waterShift 1.5s linear infinite;
+}
+
+@keyframes streamFlow {
+  0% { box-shadow: inset 0 0 8px rgba(58, 90, 138, 0.3); }
+  50% { box-shadow: inset 0 0 14px rgba(58, 90, 138, 0.5); }
+  100% { box-shadow: inset 0 0 8px rgba(58, 90, 138, 0.3); }
+}
+
+@keyframes waterShift {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(50%); }
+}
+
+/* Graves */
+.pixel-grave {
+  position: absolute;
+  font-size: 1rem;
+  z-index: 2;
+  filter: grayscale(0.3);
+}
+
+.g1 { bottom: 60px; left: 400px; }
+.g2 { bottom: 60px; left: 430px; }
+
+/* ==============================
+   MAP LOCATIONS & BUILDINGS
+   ============================== */
+.map-location {
+  position: absolute;
+  z-index: 5;
+  cursor: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: transform 0.3s;
+}
+
+.map-location:hover {
+  transform: scale(1.1);
+  z-index: 10;
+}
+
+.location-label {
+  font-family: var(--font-display);
+  font-size: 0.65rem;
+  color: var(--ink-dim);
+  margin-top: 2px;
+  text-shadow: 1px 1px 2px var(--bg-deep);
+  white-space: nowrap;
+  letter-spacing: 1px;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.map-location:hover .location-label {
+  opacity: 1;
+  color: var(--accent-gold);
+}
+
+/* Building pixels */
+.building-pixel {
+  font-size: 0.85rem;
+  line-height: 1.1;
+  color: var(--ink);
+  filter: drop-shadow(1px 1px 0 rgba(0,0,0,0.6));
+}
+
+.building-roof {
+  color: var(--accent-blood);
+  font-weight: bold;
+}
+
+.roof-dark { color: #3a2a1a; }
+.roof-green { color: var(--accent-green); }
+
+.building-body {
+  color: var(--bg-parchment-d);
+}
+
+.building-door {
+  color: var(--accent-gold-d);
+}
+
+.smoke {
+  animation: smokeRise 3s ease-in-out infinite;
+}
+
+@keyframes smokeRise {
+  0% { transform: translateY(0); opacity: 0.8; }
+  50% { transform: translateY(-5px); opacity: 0.5; }
+  100% { transform: translateY(-10px); opacity: 0.2; }
+}
+
+/* Tavern - positioned */
+#loc-tavern { bottom: 90px; left: 50px; }
+
+/* Church */
+#loc-church { bottom: 80px; left: 230px; }
+
+.church-pixel .church-spire {
+  color: var(--accent-gold);
+  font-size: 1rem;
+}
+
+.church-pixel .church-wall {
+  color: var(--bg-parchment-d);
+}
+
+/* Blacksmith */
+#loc-blacksmith { bottom: 90px; left: 350px; }
+
+.blacksmith-pixel .building-body {
+  color: #5a4a3a;
+}
+
+/* Herbalist */
+#loc-herbalist { bottom: 90px; left: 500px; }
+
+.herbalist-pixel .roof-green {
+  color: var(--accent-green);
+}
+
+/* Gate */
+#loc-gate { bottom: 70px; left: 50px; }
+
+.gate-pixel .gate-tower {
+  color: var(--accent-gold-d);
+}
+
+.gate-pixel .gate-door {
+  color: var(--ink-faint);
+}
+
+/* Crypt */
+#loc-crypt { bottom: 60px; left: 400px; }
+
+.crypt-pixel {
+  font-size: 0.9rem;
+}
+
+.crypt-roof { color: var(--ink-faint); }
+.crypt-body { color: #6a5a4a; }
+.crypt-body { color: var(--accent-poison); }
+.crypt-entrance { color: var(--accent-blood-d); }
+
+/* Market */
+#loc-market { bottom: 90px; left: 220px; }
+
+.market-pixel .market-canopy {
+  color: var(--accent-gold);
+  font-size: 1rem;
+}
+
+/* Mine */
+#loc-mine { bottom: 50px; left: 480px; }
+
+.mine-pixel {
+  font-size: 0.85rem;
+}
+
+.mine-mouth { color: #3a3a3a; }
+.mine-wall   { color: #4a4a3a; }
+
+/* Farm */
+#loc-farm { bottom: 70px; left: 580px; }
+
+.farm-pixel .farm-field {
+  color: var(--accent-green);
+}
+
+.farm-pixel .farm-house {
+  color: var(--accent-blood-d);
+}
+
+/* Woods */
+#loc-woods { bottom: 30px; left: 120px; }
+
+.woods-pixel .deep-woods {
+  font-size: 1rem;
+}
+
+/* ==============================
+   PLAYER CHARACTER
+   ============================== */
+#player-character {
+  position: absolute;
+  bottom: 25px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 8;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  animation: playerBreath 3s ease-in-out infinite;
+}
+
+@keyframes playerBreath {
+  0%, 100% { transform: translateX(-50%) scaleY(1); }
+  50% { transform: translateX(-50%) scaleY(1.03); }
+}
+
+.player-sprite {
+  font-size: 1.2rem;
+  line-height: 1;
+  text-align: center;
+  filter: drop-shadow(0 0 6px rgba(212, 160, 23, 0.5));
+}
+
+.player-head {
+  color: var(--bg-parchment);
+}
+
+.player-body {
+  color: #4a3a2a;
+}
+
+.player-legs {
+  color: #3a2a1a;
+}
+
+.player-name {
+  font-family: var(--font-display);
+  font-size: 0.6rem;
+  color: var(--accent-gold);
+  letter-spacing: 2px;
+  margin-top: 2px;
+  text-shadow: 0 0 4px rgba(212, 160, 23, 0.5);
+}
+
+/* ==============================
+   CAMPFIRE
+   ============================== */
+#campfire {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 6;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+}
+
+.fire-base {
+  font-size: 1rem;
+  color: #3a2a1a;
+}
+
+.fire-middle {
+  font-size: 1.2rem;
+  line-height: 1;
+  margin-top: -4px;
+}
+
+.fire-top {
+  font-size: 1rem;
+  line-height: 1;
+  margin-top: -6px;
+}
+
+.fire-flicker {
+  color: var(--accent-fire);
+  display: inline-block;
+  animation: fireDance 0.8s ease-in-out infinite alternate;
+  text-shadow: 0 0 8px rgba(226, 92, 26, 0.8), 0 0 16px rgba(226, 92, 26, 0.3);
+}
+
+.f1 { animation-delay: 0s; }
+.f2 { animation-delay: 0.2s; }
+.f3 { animation-delay: 0.4s; }
+.f4 { animation-delay: 0.1s; }
+.f5 { animation-delay: 0.3s; }
+
+@keyframes fireDance {
+  0% { transform: scaleY(1) scaleX(1); opacity: 0.8; }
+  100% { transform: scaleY(1.4) scaleX(0.9); opacity: 1; }
+}
+
+/* Fire light effect on terrain */
+#campfire::before {
+  content: '';
+  position: absolute;
+  bottom: -5px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 120px;
+  height: 60px;
+  background: radial-gradient(ellipse at 50% 100%, rgba(226, 92, 26, 0.15), transparent 70%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* ==============================
+   RIGHT PANEL
+   ============================== */
+#right-panel {
+  width: 280px;
+  min-width: 280px;
+  background: linear-gradient(180deg, #151311 0%, #1a1816 100%);
+  border-left: 2px solid var(--border-accent);
+  padding: 12px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Time Controls */
+.time-slider-container {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.time-label {
+  font-family: var(--font-display);
+  font-size: 0.7rem;
+  color: var(--ink-dim);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+#time-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  background: var(--bg-deep);
+  border: 1px solid var(--border-dark);
+  outline: none;
+  cursor: none;
+}
+
+#time-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  background: var(--accent-gold);
+  border: 1px solid var(--accent-gold-d);
+  cursor: none;
+}
+
+#time-slider::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  background: var(--accent-gold);
+  border: 1px solid var(--accent-gold-d);
+  cursor: none;
+}
+
+.time-markers {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.65rem;
+  color: var(--ink-faint);
+}
+
+/* Season Controls */
+.season-control, .weather-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.season-buttons, .weather-buttons {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.season-btn, .weather-btn {
+  background: var(--bg-deep);
+  border: 1px solid var(--border-dark);
+  color: var(--ink-dim);
+  padding: 6px 8px;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  cursor: none;
+  transition: all 0.2s;
+}
+
+.season-btn:hover, .weather-btn:hover {
+  border-color: var(--accent-gold);
+  color: var(--accent-gold);
+}
+
+.season-btn.active, .weather-btn.active {
+  border-color: var(--accent-gold);
+  color: var(--accent-gold);
+  background: var(--bg-panel-light);
+  box-shadow: inset 0 0 8px rgba(212, 160, 23, 0.15);
+}
+
+/* Event Log */
+#event-log {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 200px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.log-entry {
+  display: flex;
+  gap: 6px;
+  font-size: 0.72rem;
+  padding: 4px 6px;
+  border-left: 1px solid transparent;
+  transition: border-color 0.2s;
+}
+
+.log-entry:hover {
+  border-left-color: var(--border-accent);
+}
+
+.log-important {
+  border-left-color: var(--accent-gold);
+  background: rgba(212, 160, 23, 0.05);
+}
+
+.log-time {
+  color: var(--ink-faint);
+  flex-shrink: 0;
+  font-size: 0.68rem;
+}
+
+.log-text {
+  color: var(--ink-dim);
+}
+
+/* Detail Panel */
+#detail-panel {
+  flex: 1;
+}
+
+#detail-heading {
+  /* Will be updated by JS */
+}
+
+#detail-content {
+  font-size: 0.8rem;
+  color: var(--ink-dim);
+  line-height: 1.6;
+}
+
+.detail-placeholder {
+  color: var(--ink-faint);
+  font-style: italic;
+  text-align: center;
+  padding: 20px 0;
+}
+
+.illuminated-border-full, .illuminated-line {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 0;
+}
+
+.illum-char {
+  color: var(--accent-gold);
+  font-size: 1.2rem;
+}
+
+.illum-text {
+  color: var(--accent-gold);
+  font-size: 0.8rem;
+  letter-spacing: 4px;
+  text-shadow: 0 0 6px rgba(212, 160, 23, 0.3);
+}
+
+.border-char { color: var(--ink-faint); }
+
+.border-ornament {
+  color: var(--accent-gold);
+  font-size: 0.8rem;
+}
+
+.manuscript-ornament {
+  text-align: center;
+  color: var(--accent-gold);
+  font-size: 0.9rem;
+  letter-spacing: 4px;
+  margin: 8px 0;
+  text-shadow: 0 0 6px rgba(212, 160, 23, 0.2);
+}
+
+/* ==============================
+   PLAGUE DOCTOR NPC
+   ============================== */
+#plague-doctor {
+  position: fixed;
+  top: 50px;
+  left: 0;
+  width: 100%;
+  height: calc(100% - 50px);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+#plague-doctor.hidden {
+  display: none;
+}
+
+.npc-overlay {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.npc-speech {
+  background: var(--bg-panel);
+  border: 2px solid var(--border-accent);
+  border-top: 3px solid var(--accent-gold);
+  padding: 20px;
+  max-width: 420px;
+  width: 90%;
+  position: relative;
+  pointer-events: auto;
+  box-shadow: 0 0 30px rgba(0,0,0,0.7), var(--glow-gold);
+}
+
+.npc-speech::before {
+  content: '';
+  position: absolute;
+  top: -16px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 12px solid transparent;
+  border-right: 12px solid transparent;
+  border-bottom: 16px solid var(--border-accent);
+}
+
+.npc-speech::after {
+  content: '';
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  border-bottom: 14px solid var(--bg-panel);
+}
+
+.pixel-art-doctor {
+  text-align: center;
+  margin-bottom: 14px;
+}
+
+.doctor-hat {
+  font-size: 1.5rem;
+  color: var(--accent-blood);
+}
+
+.doctor-face {
+  font-size: 1.2rem;
+  margin: 2px 0;
+}
+
+.doctor-eyes {
+  color: var(--accent-gold);
+  text-shadow: 0 0 6px rgba(212, 160, 23, 0.6);
+  animation: doctorGlow 2s ease-in-out infinite;
+}
+
+@keyframes doctorGlow {
+  0%, 100% { text-shadow: 0 0 6px rgba(212, 160, 23, 0.4); }
+  50% { text-shadow: 0 0 14px rgba(212, 160, 23, 0.9); }
+}
+
+.doctor-beak {
+  color: var(--accent-gold-d);
+}
+
+.doctor-body {
+  font-size: 1rem;
+  color: var(--ink-dim);
+}
+
+.doctor-coat { color: #2a2a2a; }
+.doctor-hands { color: var(--bg-parchment-d); }
+
+#doctor-quote {
+  font-family: var(--font-body);
+  font-style: italic;
+  color: var(--ink);
+  line-height: 1.6;
+  margin: 10px 0;
+  border-left: 2px solid var(--accent-gold-d);
+  padding-left: 10px;
+}
+
+#doctor-dismiss {
+  display: block;
+  margin: 12px auto 0;
+  background: var(--bg-deep);
+  border: 1px solid var(--border-accent);
+  color: var(--accent-gold);
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+  letter-spacing: 2px;
+  padding: 8px 20px;
+  cursor: none;
+  transition: all 0.2s;
+}
+
+#doctor-dismiss:hover {
+  background: var(--accent-blood-d);
+  border-color: var(--accent-blood);
+  color: var(--bg-parchment);
+}
+
+/* ==============================
+   FOOTER
+   ============================== */
+#footer {
+  position: fixed;
+  bottom: 0; left: 0;
+  width: 100%;
+  background: linear-gradient(180deg, #151311 0%, #0a0a0e 100%);
+  border-top: 2px solid var(--border-accent);
+  padding: 8px 16px;
+  z-index: 100;
+}
+
+.manuscript-footer {
+  text-align: center;
+}
+
+.footer-text {
+  font-family: var(--font-display);
+  font-size: 0.65rem;
+  color: var(--ink-faint);
+  letter-spacing: 2px;
+}
+
+/* ==============================
+   TOAST NOTIFICATION
+   ============================== */
+.toast {
+  position: fixed;
+  top: 60px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-20px);
+  background: var(--bg-panel);
+  border: 2px solid var(--accent-gold);
+  padding: 10px 24px;
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  color: var(--ink);
+  z-index: 300;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.4s;
+  box-shadow: 0 0 20px rgba(212, 160, 23, 0.3), 0 4px 20px rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.toast.visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.toast.hidden {
+  display: flex;
+}
+
+#toast-icon {
+  font-size: 1.2rem;
+}
+
+/* ==============================
+   MODAL
+   ============================== */
+#modal-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0, 0, 0, 0.75);
+  z-index: 250;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(2px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+}
+
+.modal-visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal-hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.modal-box {
+  background: var(--bg-panel);
+  border: 2px solid var(--border-accent);
+  border-top: 3px solid var(--accent-gold);
+  width: 500px;
+  max-width: 90vw;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 0 40px rgba(0,0,0,0.8), var(--glow-gold);
+  animation: modalAppear 0.3s ease-out;
+}
+
+@keyframes modalAppear {
+  0% { transform: scale(0.9); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-dark);
+}
+
+#modal-title {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  color: var(--accent-gold);
+  letter-spacing: 2px;
+  text-shadow: 0 0 6px rgba(212, 160, 23, 0.3);
+}
+
+.modal-close-btn {
+  background: var(--bg-deep);
+  border: 1px solid var(--border-dark);
+  color: var(--ink-dim);
+  font-family: var(--font-display);
+  font-size: 1rem;
+  width: 28px; height: 28px;
+  cursor: none;
+  transition: all 0.2s;
+}
+
+.modal-close-btn:hover {
+  border-color: var(--accent-blood);
+  color: var(--accent-blood);
+}
+
+.modal-body {
+  padding: 16px;
+  font-size: 0.85rem;
+  color: var(--ink);
+  line-height: 1.7;
+}
+
+.modal-body .modal-illustration {
+  text-align: center;
+  font-size: 2.5rem;
+  margin: 10px 0;
+  filter: drop-shadow(0 0 8px rgba(212, 160, 23, 0.3));
+}
+
+.modal-actions {
+  padding: 12px 16px;
+  border-top: 1px solid var(--border-dark);
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+.modal-btn {
+  background: var(--bg-deep);
+  border: 1px solid var(--border-accent);
+  color: var(--accent-gold);
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+  letter-spacing: 1px;
+  padding: 8px 16px;
+  cursor: none;
+  transition: all 0.2s;
+}
+
+.modal-btn:hover {
+  background: var(--accent-gold-d);
+  color: var(--bg-deep);
+}
+
+.modal-btn.danger {
+  border-color: var(--accent-blood);
+  color: var(--accent-blood);
+}
+
+.modal-btn.danger:hover {
+  background: var(--accent-blood);
+  color: #fff;
+}
+
+.modal-btn.secondary {
+  border-color: var(--border-dark);
+  color: var(--ink-dim);
+}
+
+.modal-btn.secondary:hover {
+  border-color: var(--ink-dim);
+  color: var(--ink);
+}
+
+/* ==============================
+   DAY/NIGHT CYCLE VISUAL EFFECTS
+   ============================== */
+body.day-mode #map-area {
+  background: radial-gradient(ellipse at 50% 50%, #2a2a3a 0%, #1a1a2e 70%);
+}
+
+body.night-mode #map-area {
+  background: radial-gradient(ellipse at 50% 30%, #0a0a1a 0%, #050510 70%);
+}
+
+body.night-mode .pixel-tree,
+body.night-mode .pixel-bush {
+  filter: brightness(0.7) drop-shadow(0 0 3px rgba(100, 100, 150, 0.3));
+}
+
+body.night-mode #player-character {
+  filter: drop-shadow(0 0 8px rgba(200, 200, 255, 0.3));
+}
+
+/* Stars at night */
+body.night-mode #terrain-layer::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 60%;
+  background:
+    radial-gradient(1px 1px at 10% 10%, rgba(255,255,255,0.8), transparent),
+    radial-gradient(1px 1px at 25% 20%, rgba(255,255,255,0.6), transparent),
+    radial-gradient(1px 1px at 40% 5%, rgba(255,255,255,0.7), transparent),
+    radial-gradient(1px 1px at 55% 15%, rgba(255,255,255,0.5), transparent),
+    radial-gradient(1px 1px at 70% 8%, rgba(255,255,255,0.8), transparent),
+    radial-gradient(1px 1px at 85% 25%, rgba(255,255,255,0.6), transparent),
+    radial-gradient(1px 1px at 15% 40%, rgba(255,255,255,0.5), transparent),
+    radial-gradient(1px 1px at 60% 35%, rgba(255,255,255,0.7), transparent),
+    radial-gradient(1px 1px at 90% 15%, rgba(255,255,255,0.6), transparent),
+    radial-gradient(1px 1px at 45% 50%, rgba(255,255,255,0.4), transparent),
+    radial-gradient(1px 1px at 5% 25%, rgba(255,255,255,0.6), transparent),
+    radial-gradient(1px 1px at 35% 55%, rgba(255,255,255,0.5), transparent),
+    radial-gradient(1px 1px at 80% 45%, rgba(255,255,255,0.7), transparent),
+    radial-gradient(1px 1px at 75% 60%, rgba(255,255,255,0.4), transparent),
+    radial-gradient(1px 1px at 20% 65%, rgba(255,255,255,0.5), transparent);
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Moon */
+body.night-mode #terrain-layer::after {
+  content: '☽';
+  position: absolute;
+  top: 15px; right: 50px;
+  font-size: 2rem;
+  color: rgba(200, 200, 255, 0.6);
+  text-shadow: 0 0 15px rgba(200, 200, 255, 0.4);
+  animation: moonGlow 4s ease-in-out infinite;
+}
+
+@keyframes moonGlow {
+  0%, 100% { text-shadow: 0 0 15px rgba(200, 200, 255, 0.3); }
+  50% { text-shadow: 0 0 25px rgba(200, 200, 255, 0.7); }
+}
+
+/* Sunrise/sunset overlay */
+body.sunset-mode #map-area {
+  background: radial-gradient(ellipse at 50% 60%, #3a1a1a 0%, #1a0a0a 70%);
+}
+
+/* ==============================
+   SEASON EFFECTS
+   ============================== */
+body.season-winter #terrain-layer {
+  filter: hue-rotate(180deg) saturate(0.5) brightness(0.9);
+}
+
+body.season-winter .pixel-water {
+  background: linear-gradient(90deg,
+    rgba(180, 200, 220, 0.3),
+    rgba(180, 200, 220, 0.6),
+    rgba(180, 200, 220, 0.3)
+  );
+}
+
+body.season-spring #terrain-layer {
+  filter: hue-rotate(30deg) saturate(1.3) brightness(1.05);
+}
+
+body.season-summer #terrain-layer {
+  filter: saturate(1.2) brightness(1.05);
+}
+
+body.season-autumn #terrain-layer {
+  filter: hue-rotate(-15deg) saturate(1.1);
+}
+
+/* ==============================
+   RAIN PARTICLES
+   ============================== */
+.rain-drop {
+  position: absolute;
+  width: 1px;
+  height: 12px;
+  background: linear-gradient(transparent, rgba(150, 170, 200, 0.6));
+  animation: rainDropFall linear infinite;
+}
+
+@keyframes rainDropFall {
+  0% { transform: translateY(-20px); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translateY(520px); opacity: 0; }
+}
+
+/* ==============================
+   SNOW PARTICLES
+   ============================== */
+.snow-flake {
+  position: absolute;
+  color: #fff;
+  font-size: 0.6rem;
+  animation: snowFlakeFall linear infinite;
+  text-shadow: 0 0 3px rgba(255,255,255,0.5);
+}
+
+@keyframes snowFlakeFall {
+  0% { transform: translateY(-10px) rotate(0deg); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translateY(510px) rotate(360deg); opacity: 0; }
+}
+
+/* ==============================
+   ILLUMINATED MANUSCRIPT BORDERS
+   ============================== */
+.illuminated-border-full {
+  padding: 4px 0;
+}
+
+/* ==============================
+   RESPONSIVE ADJUSTMENTS
+   ============================== */
+@media (max-width: 1100px) {
+  #main-container {
+    flex-direction: column;
+    height: auto;
+  }
+
+  #left-panel, #right-panel {
+    width: 100%;
+    min-width: unset;
+    flex-direction: row;
+    flex-wrap: wrap;
+    overflow-y: visible;
+    max-height: none;
+  }
+
+  #left-panel {
+    border-right: none;
+    border-bottom: 2px solid var(--border-accent);
+    order: 1;
+  }
+
+  #map-area {
+    order: 2;
+    min-height: 500px;
+  }
+
+  #right-panel {
+    border-left: none;
+    border-top: 2px solid var(--border-accent);
+    order: 3;
+  }
+
+  #top-bar {
+    font-size: 0.75rem;
+    padding: 0 8px;
+  }
+}
+
+@media (max-width: 700px) {
+  html { font-size: 12px; }
+
+  #bell-container { display: none; }
+  #monastery-tower { transform: scale(0.8); }
+}

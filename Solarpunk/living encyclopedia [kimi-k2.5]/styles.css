@@ -1,0 +1,1448 @@
+/* 
+   The Verdant Library - Solarpunk Encyclopedia Styles
+   A living, breathing interface that responds to solar intensity
+*/
+
+/* ================================
+   CSS VARIABLES & SUNLIGHT STATES
+   ================================ */
+
+:root {
+  /* Typography */
+  --font-display: 'Oranienbaum', serif;
+  --font-body: 'Work Sans', sans-serif;
+  
+  /* Organic Spacing Scale */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2.5rem;
+  --space-2xl: 4rem;
+  --space-3xl: 6rem;
+  
+  /* Animation Timing */
+  --ease-organic: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-growth: cubic-bezier(0.4, 0, 0.2, 1);
+  --duration-sway: 3s;
+  --duration-grow: 0.6s;
+}
+
+/* Sunlight Level: HIGH (Default) */
+html[data-sunlight-level="high"] {
+  --solar-primary: #F4A261;
+  --solar-accent: #E9C46A;
+  --solar-glow: rgba(244, 162, 97, 0.3);
+  --bg-primary: #FEFAE0;
+  --bg-secondary: #FAEDCD;
+  --bg-card: #FFFDF5;
+  --text-primary: #2A3D2A;
+  --text-secondary: #5C6B5C;
+  --leaf-green: #606C38;
+  --leaf-light: #8A9A5B;
+  --bark-brown: #283618;
+  --vine-color: #4A5D23;
+  --soil-dark: #1A1C15;
+  --fiber-texture: #E8D5B7;
+  --seed-packet: #D4A373;
+}
+
+/* Sunlight Level: MEDIUM */
+html[data-sunlight-level="medium"] {
+  --solar-primary: #D4A373;
+  --solar-accent: #BC8A5F;
+  --solar-glow: rgba(212, 163, 115, 0.3);
+  --bg-primary: #F5F1E8;
+  --bg-secondary: #E6DCC4;
+  --bg-card: #FFFCF8;
+  --text-primary: #2C3E2C;
+  --text-secondary: #5D6E5D;
+  --leaf-green: #556B2F;
+  --leaf-light: #7B8B4A;
+  --bark-brown: #2F3D23;
+  --vine-color: #3D4F1F;
+  --soil-dark: #1F2118;
+  --fiber-texture: #DCC6A5;
+  --seed-packet: #C9A87C;
+}
+
+/* Sunlight Level: LOW */
+html[data-sunlight-level="low"] {
+  --solar-primary: #A8A29E;
+  --solar-accent: #D6D3D1;
+  --solar-glow: rgba(168, 162, 158, 0.3);
+  --bg-primary: #E7E5E4;
+  --bg-secondary: #D6D3D1;
+  --bg-card: #F5F5F4;
+  --text-primary: #292524;
+  --text-secondary: #57534E;
+  --leaf-green: #4A5D23;
+  --leaf-light: #687A3D;
+  --bark-brown: #1C1917;
+  --vine-color: #2F3D23;
+  --soil-dark: #0C0A09;
+  --fiber-texture: #C9B99A;
+  --seed-packet: #A8A29E;
+}
+
+/* Sunlight Level: TWILIGHT */
+html[data-sunlight-level="twilight"] {
+  --solar-primary: #818CF8;
+  --solar-accent: #A5B4FC;
+  --solar-glow: rgba(129, 140, 248, 0.3);
+  --bg-primary: #1E293B;
+  --bg-secondary: #0F172A;
+  --bg-card: #334155;
+  --text-primary: #F1F5F9;
+  --text-secondary: #CBD5E1;
+  --leaf-green: #86EFAC;
+  --leaf-light: #4ADE80;
+  --bark-brown: #0F172A;
+  --vine-color: #65A30D;
+  --soil-dark: #020617;
+  --fiber-texture: #475569;
+  --seed-packet: #64748B;
+}
+
+/* ================================
+   BASE STYLES & RESET
+   ================================ */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  line-height: 1.6;
+  transition: background-color 1s var(--ease-growth), color 1s var(--ease-growth);
+  overflow-x: hidden;
+  background-image: 
+    radial-gradient(circle at 20% 50%, var(--solar-glow) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(96, 108, 56, 0.05) 0%, transparent 50%);
+}
+
+/* Custom Selection Colors */
+::selection {
+  background-color: var(--leaf-green);
+  color: var(--bg-primary);
+}
+
+/* Custom Scrollbar - Organic Style */
+::-webkit-scrollbar {
+  width: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, var(--leaf-light) 0%, var(--leaf-green) 100%);
+  border-radius: 6px;
+  border: 3px solid var(--bg-secondary);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, var(--leaf-green) 0%, var(--bark-brown) 100%);
+}
+
+/* ================================
+   PHOTOSYNTHESIS LOADER
+   ================================ */
+
+.loader-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #1B4332 0%, #2D6A4F 50%, #40916C 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  transition: opacity 0.8s var(--ease-growth), visibility 0.8s;
+}
+
+.loader-overlay.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.photosynthesis-container {
+  text-align: center;
+  color: #B7E4C7;
+}
+
+.leaf-loader {
+  width: 120px;
+  height: 120px;
+  margin-bottom: var(--space-lg);
+  filter: drop-shadow(0 0 20px rgba(183, 228, 199, 0.4));
+}
+
+.leaf-vein {
+  stroke: #95D5B2;
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+  animation: growVein 2s ease-out forwards;
+}
+
+@keyframes growVein {
+  to { stroke-dashoffset: 0; }
+}
+
+.leaf-blade-left,
+.leaf-blade-right {
+  fill: #74C69D;
+  opacity: 0;
+  transform-origin: 50px 20px;
+  animation: unfoldLeaf 1s ease-out 1.5s forwards;
+}
+
+.leaf-blade-right {
+  animation-delay: 1.8s;
+}
+
+@keyframes unfoldLeaf {
+  0% {
+    opacity: 0;
+    transform: scale(0) rotate(-10deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+.sun-particle {
+  fill: #FFD700;
+  opacity: 0;
+  animation: absorbLight 2s ease-in-out 2.5s infinite;
+}
+
+@keyframes absorbLight {
+  0%, 100% {
+    opacity: 0.3;
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-10px) scale(1.2);
+    filter: drop-shadow(0 0 10px #FFD700);
+  }
+}
+
+.loading-text {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  letter-spacing: 0.1em;
+  margin-bottom: var(--space-md);
+  animation: pulseText 2s ease-in-out infinite;
+}
+
+@keyframes pulseText {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
+}
+
+.energy-bar {
+  width: 200px;
+  height: 4px;
+  background: rgba(183, 228, 199, 0.2);
+  border-radius: 2px;
+  overflow: hidden;
+  margin: 0 auto;
+}
+
+.energy-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #95D5B2 0%, #D8F3DC 100%);
+  width: 0%;
+  animation: fillEnergy 3s ease-out forwards;
+  box-shadow: 0 0 10px #95D5B2;
+}
+
+@keyframes fillEnergy {
+  0% { width: 0%; }
+  100% { width: 100%; }
+}
+
+/* ================================
+   SUNLIGHT INTENSITY METER
+   ================================ */
+
+.solar-meter-container {
+  position: fixed;
+  top: var(--space-lg);
+  right: var(--space-lg);
+  background: var(--bg-card);
+  border: 2px solid var(--solar-primary);
+  border-radius: 20px;
+  padding: var(--space-md) var(--space-lg);
+  box-shadow: 
+    0 4px 20px rgba(0,0,0,0.1),
+    inset 0 2px 4px rgba(255,255,255,0.5);
+  z-index: 100;
+  min-width: 220px;
+  transition: all 0.5s var(--ease-growth);
+}
+
+.solar-meter-container:hover {
+  transform: translateY(-2px);
+  box-shadow: 
+    0 8px 30px rgba(0,0,0,0.15),
+    inset 0 2px 4px rgba(255,255,255,0.5);
+}
+
+.solar-meter-label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--text-secondary);
+  margin-bottom: var(--space-xs);
+}
+
+.solar-meter-label i {
+  color: var(--solar-primary);
+  animation: rotateSun 10s linear infinite;
+}
+
+@keyframes rotateSun {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.solar-meter-display {
+  font-family: var(--font-display);
+  font-size: 1.75rem;
+  color: var(--solar-primary);
+  margin-bottom: var(--space-sm);
+  text-shadow: 0 2px 4px var(--solar-glow);
+}
+
+.solar-spectrum-bar {
+  height: 8px;
+  background: linear-gradient(90deg, 
+    #4338ca 0%, 
+    #818cf8 25%, 
+    #fbbf24 50%, 
+    #f59e0b 75%, 
+    #dc2626 100%);
+  border-radius: 4px;
+  position: relative;
+  overflow: hidden;
+  margin-bottom: var(--space-xs);
+}
+
+.spectrum-fill {
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 100%;
+  width: 0%;
+  background: var(--bg-card);
+  opacity: 0.8;
+  transition: width 0.3s var(--ease-growth);
+}
+
+.solar-time {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  text-align: right;
+  font-style: italic;
+}
+
+/* ================================
+   VINE NAVIGATION SIDEBAR
+   ================================ */
+
+.vine-sidebar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 280px;
+  height: 100vh;
+  background: linear-gradient(180deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
+  border-right: 3px solid var(--vine-color);
+  padding: var(--space-xl) var(--space-lg);
+  overflow-y: auto;
+  z-index: 50;
+  box-shadow: 5px 0 20px rgba(0,0,0,0.1);
+}
+
+/* Vine Stem SVG Background */
+.vine-stem-svg {
+  position: absolute;
+  left: 40px;
+  top: 120px;
+  width: 60px;
+  height: calc(100% - 240px);
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+.vine-path {
+  stroke: var(--vine-color);
+  stroke-width: 3;
+  stroke-linecap: round;
+  filter: drop-shadow(2px 2px 2px rgba(0,0,0,0.1));
+}
+
+/* Logo Section */
+.nav-logo {
+  text-align: center;
+  margin-bottom: var(--space-2xl);
+  color: var(--bark-brown);
+}
+
+.nav-logo i {
+  font-size: 3rem;
+  display: block;
+  margin-bottom: var(--space-sm);
+  color: var(--leaf-green);
+  animation: gentleSway var(--duration-sway) ease-in-out infinite;
+}
+
+@keyframes gentleSway {
+  0%, 100% { transform: rotate(-2deg); }
+  50% { transform: rotate(2deg); }
+}
+
+.nav-logo span {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  line-height: 1.2;
+  display: block;
+}
+
+/* Navigation List */
+.vine-nav-list {
+  list-style: none;
+  position: relative;
+}
+
+.nav-node {
+  margin-bottom: var(--space-lg);
+  position: relative;
+  padding-left: var(--space-xl);
+}
+
+.nav-node::before {
+  content: '';
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 12px;
+  height: 12px;
+  background: var(--vine-color);
+  border-radius: 50% 0 50% 50%;
+  transform: translateY(-50%) rotate(-45deg);
+  transition: all 0.3s var(--ease-organic);
+}
+
+.nav-node.active::before,
+.nav-node:hover::before {
+  background: var(--solar-primary);
+  transform: translateY(-50%) rotate(-45deg) scale(1.3);
+  box-shadow: 0 0 10px var(--solar-glow);
+}
+
+.nav-leaf {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  text-decoration: none;
+  color: var(--text-primary);
+  padding: var(--space-sm) var(--space-md);
+  background: var(--bg-card);
+  border-radius: 0 25px 25px 0;
+  border-left: 4px solid var(--leaf-green);
+  transition: all 0.3s var(--ease-organic);
+  position: relative;
+  overflow: hidden;
+}
+
+.nav-leaf::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 0%;
+  height: 100%;
+  background: linear-gradient(90deg, var(--leaf-light), transparent);
+  transition: width 0.3s var(--ease-organic);
+  z-index: 0;
+}
+
+.nav-node.active .nav-leaf,
+.nav-leaf:hover {
+  transform: translateX(10px);
+  border-left-color: var(--solar-primary);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.nav-leaf:hover::before {
+  width: 100%;
+}
+
+.leaf-icon {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--leaf-green);
+  color: white;
+  border-radius: 50% 0 50% 50%;
+  transform: rotate(-45deg);
+  transition: all 0.3s var(--ease-organic);
+  z-index: 1;
+}
+
+.nav-leaf:hover .leaf-icon {
+  background: var(--solar-primary);
+  transform: rotate(-45deg) scale(1.1);
+}
+
+.leaf-icon i {
+  transform: rotate(45deg);
+  font-size: 0.9rem;
+}
+
+.leaf-text {
+  font-weight: 500;
+  z-index: 1;
+  position: relative;
+}
+
+/* Cooperative Badge */
+.nav-footer {
+  margin-top: var(--space-3xl);
+  text-align: center;
+}
+
+.cooperative-badge {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-md);
+  background: rgba(96, 108, 56, 0.1);
+  border-radius: 16px;
+  border: 2px dashed var(--leaf-green);
+  color: var(--leaf-green);
+  font-size: 0.8rem;
+}
+
+.cooperative-badge i {
+  font-size: 1.5rem;
+}
+
+/* ================================
+   MAIN CONTENT AREA
+   ================================ */
+
+.main-content {
+  margin-left: 280px;
+  padding: var(--space-2xl) var(--space-3xl);
+  min-height: 100vh;
+  position: relative;
+}
+
+/* Mobile Nav Toggle */
+.mobile-nav-toggle {
+  display: none;
+  position: fixed;
+  bottom: var(--space-lg);
+  right: var(--space-lg);
+  width: 60px;
+  height: 60px;
+  background: var(--leaf-green);
+  border: none;
+  border-radius: 50%;
+  color: white;
+  font-size: 1.5rem;
+  cursor: pointer;
+  z-index: 200;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  transition: all 0.3s var(--ease-organic);
+}
+
+.mobile-nav-toggle:hover {
+  transform: scale(1.1) rotate(90deg);
+  background: var(--solar-primary);
+}
+
+/* ================================
+   ARTICLE HEADER
+   ================================ */
+
+.article-header {
+  margin-bottom: var(--space-2xl);
+  padding-bottom: var(--space-xl);
+  border-bottom: 2px solid var(--bg-secondary);
+  position: relative;
+}
+
+.article-header::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 200px;
+  height: 2px;
+  background: var(--solar-primary);
+}
+
+.breadcrumbs {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-lg);
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  flex-wrap: wrap;
+}
+
+.breadcrumbs a {
+  color: var(--leaf-green);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.breadcrumbs a:hover {
+  color: var(--solar-primary);
+  text-decoration: underline;
+}
+
+.breadcrumb-separator {
+  opacity: 0.5;
+}
+
+.current-page {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.article-title {
+  font-family: var(--font-display);
+  font-size: 3rem;
+  line-height: 1.2;
+  color: var(--bark-brown);
+  margin-bottom: var(--space-md);
+  position: relative;
+  display: inline-block;
+}
+
+.article-title::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(90deg, var(--leaf-green), var(--solar-primary), transparent);
+  border-radius: 2px;
+}
+
+.article-meta {
+  display: flex;
+  gap: var(--space-xl);
+  flex-wrap: wrap;
+  margin-top: var(--space-lg);
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.meta-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.meta-item i {
+  color: var(--leaf-green);
+}
+
+.sustainability-rating {
+  background: linear-gradient(135deg, var(--leaf-green), var(--leaf-light));
+  color: white;
+  padding: var(--space-xs) var(--space-md);
+  border-radius: 20px;
+  font-weight: 500;
+  box-shadow: 0 2px 8px rgba(96, 108, 56, 0.3);
+}
+
+/* ================================
+   WIKI ARTICLE LAYOUT
+   ================================ */
+
+.wiki-article {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: var(--space-3xl);
+  align-items: start;
+}
+
+/* ================================
+   PLANT-FIBER INFOBOX
+   ================================ */
+
+.plant-fiber-infobox {
+  background: var(--bg-card);
+  border: 3px solid var(--fiber-texture);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 
+    0 4px 20px rgba(0,0,0,0.08),
+    inset 0 0 60px rgba(139, 115, 85, 0.05);
+  position: relative;
+}
+
+.plant-fiber-infobox::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' /%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23noise)' opacity='0.08'/%3E%3C/svg%3E");
+  pointer-events: none;
+  opacity: 0.6;
+  mix-blend-mode: multiply;
+}
+
+.infobox-header {
+  background: linear-gradient(135deg, var(--bark-brown), var(--leaf-green));
+  color: white;
+  padding: var(--space-md) var(--space-lg);
+  position: relative;
+  overflow: hidden;
+}
+
+.infobox-header h3 {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  position: relative;
+  z-index: 1;
+}
+
+.fiber-texture-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 10px,
+    rgba(255,255,255,0.05) 10px,
+    rgba(255,255,255,0.05) 20px
+  );
+}
+
+.infobox-content {
+  padding: var(--space-lg);
+  position: relative;
+}
+
+.infobox-image-container {
+  margin-bottom: var(--space-lg);
+  text-align: center;
+}
+
+.infobox-image {
+  width: 100%;
+  height: 180px;
+  background: linear-gradient(135deg, var(--bg-secondary), var(--fiber-texture));
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: var(--space-sm);
+  position: relative;
+  overflow: hidden;
+}
+
+.placeholder-mycelium i {
+  font-size: 3rem;
+  color: var(--leaf-green);
+  opacity: 0.6;
+}
+
+.image-caption {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+.infobox-data {
+  display: grid;
+  gap: var(--space-sm);
+}
+
+.infobox-data dt {
+  font-weight: 600;
+  color: var(--bark-brown);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: var(--space-sm);
+}
+
+.infobox-data dd {
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  padding-left: var(--space-md);
+  border-left: 2px solid var(--leaf-light);
+}
+
+.infobox-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  margin-top: var(--space-lg);
+  padding-top: var(--space-md);
+  border-top: 1px dashed var(--fiber-texture);
+}
+
+.tag {
+  background: rgba(96, 108, 56, 0.1);
+  color: var(--leaf-green);
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: 12px;
+  font-size: 0.75rem;
+  border: 1px solid var(--leaf-light);
+}
+
+.infobox-footer {
+  padding: var(--space-md) var(--space-lg);
+  background: var(--bg-secondary);
+  border-top: 2px solid var(--fiber-texture);
+}
+
+.action-btn {
+  width: 100%;
+  padding: var(--space-md);
+  background: linear-gradient(135deg, var(--leaf-green), var(--bark-brown));
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-family: var(--font-body);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s var(--ease-organic);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  position: relative;
+  overflow: hidden;
+}
+
+.action-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transition: left 0.5s;
+}
+
+.action-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(96, 108, 56, 0.4);
+}
+
+.action-btn:hover::before {
+  left: 100%;
+}
+
+/* ================================
+   ARTICLE BODY CONTENT
+   ================================ */
+
+.article-body {
+  max-width: 65ch;
+}
+
+.article-section {
+  margin-bottom: var(--space-2xl);
+}
+
+.article-section h2 {
+  font-family: var(--font-display);
+  font-size: 1.75rem;
+  color: var(--bark-brown);
+  margin-bottom: var(--space-lg);
+  position: relative;
+  padding-bottom: var(--space-sm);
+}
+
+.article-section h2::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 60px;
+  height: 3px;
+  background: var(--solar-primary);
+  border-radius: 2px;
+}
+
+.lead-paragraph {
+  font-size: 1.2rem;
+  line-height: 1.7;
+  color: var(--text-primary);
+  margin-bottom: var(--space-lg);
+  padding: var(--space-lg);
+  background: rgba(244, 162, 97, 0.1);
+  border-left: 4px solid var(--solar-primary);
+  border-radius: 0 8px 8px 0;
+}
+
+.article-section p {
+  margin-bottom: var(--space-md);
+  text-align: justify;
+  hyphens: auto;
+}
+
+.wiki-link {
+  color: var(--leaf-green);
+  text-decoration: none;
+  border-bottom: 1px dashed var(--leaf-green);
+  transition: all 0.2s;
+  font-weight: 500;
+}
+
+.wiki-link:hover {
+  color: var(--solar-primary);
+  border-bottom-style: solid;
+  border-bottom-color: var(--solar-primary);
+}
+
+/* Implementation Grid */
+.implementation-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-lg);
+  margin: var(--space-xl) 0;
+}
+
+.impl-card {
+  background: var(--bg-card);
+  padding: var(--space-lg);
+  border-radius: 12px;
+  border: 2px solid var(--bg-secondary);
+  transition: all 0.3s var(--ease-organic);
+  position: relative;
+  overflow: hidden;
+}
+
+.impl-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(90deg, var(--leaf-green), var(--solar-primary));
+  transform: scaleX(0);
+  transition: transform 0.3s var(--ease-organic);
+}
+
+.impl-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  border-color: var(--leaf-light);
+}
+
+.impl-card:hover::before {
+  transform: scaleX(1);
+}
+
+.impl-icon {
+  width: 50px;
+  height: 50px;
+  background: linear-gradient(135deg, var(--leaf-light), var(--leaf-green));
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: var(--space-md);
+  color: white;
+  font-size: 1.25rem;
+  box-shadow: 0 4px 10px rgba(96, 108, 56, 0.3);
+}
+
+.impl-card h4 {
+  font-family: var(--font-display);
+  color: var(--bark-brown);
+  margin-bottom: var(--space-sm);
+  font-size: 1.1rem;
+}
+
+.impl-card p {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin: 0;
+  text-align: left;
+}
+
+/* Pull Quote */
+.pull-quote {
+  margin: var(--space-2xl) 0;
+  padding: var(--space-xl);
+  background: linear-gradient(135deg, var(--bg-secondary), transparent);
+  border-left: 5px solid var(--solar-primary);
+  border-radius: 0 16px 16px 0;
+  position: relative;
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  color: var(--bark-brown);
+  line-height: 1.6;
+  font-style: italic;
+}
+
+.pull-quote::before {
+  content: '"';
+  position: absolute;
+  top: -20px;
+  left: 20px;
+  font-size: 6rem;
+  color: var(--solar-primary);
+  opacity: 0.3;
+  font-family: serif;
+  line-height: 1;
+}
+
+.pull-quote cite {
+  display: block;
+  margin-top: var(--space-md);
+  font-size: 0.9rem;
+  font-style: normal;
+  font-family: var(--font-body);
+  color: var(--text-secondary);
+}
+
+/* Impact List */
+.impact-list {
+  list-style: none;
+  margin: var(--space-lg) 0;
+}
+
+.impact-list li {
+  padding: var(--space-md) 0;
+  border-bottom: 1px solid var(--bg-secondary);
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.impact-metric {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  color: var(--leaf-green);
+  font-weight: bold;
+  min-width: 80px;
+}
+
+/* ================================
+   SEED BANK CROSS-REFERENCE
+   ================================ */
+
+.seed-bank-index {
+  margin-top: var(--space-3xl);
+  padding-top: var(--space-2xl);
+  border-top: 3px solid var(--bg-secondary);
+}
+
+.seed-bank-header {
+  text-align: center;
+  margin-bottom: var(--space-2xl);
+}
+
+.seed-bank-header h2 {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  color: var(--bark-brown);
+  margin-bottom: var(--space-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-md);
+}
+
+.seed-bank-header h2 i {
+  color: var(--solar-primary);
+  animation: gentleSway 4s ease-in-out infinite;
+}
+
+.seed-bank-header p {
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+.seed-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--space-xl);
+}
+
+.seed-packet {
+  position: relative;
+  background: var(--bg-card);
+  border-radius: 8px;
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.4s var(--ease-organic);
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+  border: 2px solid var(--seed-packet);
+}
+
+.seed-packet::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.03) 2px,
+      rgba(0,0,0,0.03) 4px
+    );
+  pointer-events: none;
+}
+
+.packet-texture {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 8px;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--seed-packet),
+    var(--seed-packet) 10px,
+    transparent 10px,
+    transparent 20px
+  );
+  opacity: 0.5;
+}
+
+.packet-content {
+  padding: var(--space-xl) var(--space-lg);
+  position: relative;
+  z-index: 1;
+}
+
+.packet-icon {
+  width: 50px;
+  height: 50px;
+  background: var(--bg-secondary);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: var(--space-md);
+  color: var(--leaf-green);
+  font-size: 1.25rem;
+  border: 2px solid var(--leaf-light);
+  transition: all 0.3s var(--ease-organic);
+}
+
+.seed-packet:hover {
+  transform: translateY(-8px) rotate(1deg);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.15);
+  border-color: var(--leaf-green);
+}
+
+.seed-packet:hover .packet-icon {
+  background: var(--leaf-green);
+  color: white;
+  transform: scale(1.1) rotate(-10deg);
+}
+
+.seed-packet.featured {
+  border-color: var(--solar-primary);
+  background: linear-gradient(135deg, var(--bg-card), rgba(244, 162, 97, 0.1));
+}
+
+.seed-packet.featured .packet-texture {
+  background: repeating-linear-gradient(
+    90deg,
+    var(--solar-primary),
+    var(--solar-primary) 10px,
+    transparent 10px,
+    transparent 20px
+  );
+  opacity: 0.8;
+}
+
+.packet-content h4 {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  color: var(--bark-brown);
+  margin-bottom: var(--space-sm);
+  line-height: 1.3;
+}
+
+.packet-category {
+  display: inline-block;
+  padding: var(--space-xs) var(--space-sm);
+  background: rgba(96, 108, 56, 0.1);
+  color: var(--leaf-green);
+  border-radius: 12px;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: var(--space-md);
+}
+
+.packet-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  padding-top: var(--space-md);
+  border-top: 1px dashed var(--bg-secondary);
+}
+
+.germination-time i {
+  margin-right: var(--space-xs);
+  color: var(--solar-primary);
+}
+
+.viability {
+  color: var(--leaf-green);
+  font-weight: 600;
+}
+
+/* ================================
+   FOOTER
+   ================================ */
+
+.wiki-footer {
+  margin-top: var(--space-3xl);
+  padding: var(--space-2xl) 0;
+  border-top: 3px solid var(--leaf-green);
+  background: linear-gradient(180deg, transparent, rgba(96, 108, 56, 0.05));
+}
+
+.footer-content {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: var(--space-xl);
+  margin-bottom: var(--space-xl);
+}
+
+.footer-section h4 {
+  font-family: var(--font-display);
+  color: var(--bark-brown);
+  margin-bottom: var(--space-md);
+  font-size: 1.1rem;
+}
+
+.footer-section p {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.footer-links {
+  list-style: none;
+}
+
+.footer-links li {
+  margin-bottom: var(--space-sm);
+}
+
+.footer-links a {
+  color: var(--leaf-green);
+  text-decoration: none;
+  transition: color 0.2s;
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.footer-links a::before {
+  content: '→';
+  opacity: 0;
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+.footer-links a:hover {
+  color: var(--solar-primary);
+}
+
+.footer-links a:hover::before {
+  opacity: 1;
+  transform: translateX(4px);
+}
+
+.carbon-seal {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-md) var(--space-lg);
+  background: linear-gradient(135deg, var(--leaf-green), var(--bark-brown));
+  color: white;
+  border-radius: 50px;
+  font-size: 0.85rem;
+  box-shadow: 0 4px 15px rgba(96, 108, 56, 0.3);
+}
+
+.carbon-seal i {
+  font-size: 1.25rem;
+}
+
+.footer-bottom {
+  text-align: center;
+  padding-top: var(--space-xl);
+  border-top: 1px solid var(--bg-secondary);
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+}
+
+/* ================================
+   RESPONSIVE DESIGN
+   ================================ */
+
+@media (max-width: 1200px) {
+  .wiki-article {
+    grid-template-columns: 1fr;
+  }
+  
+  .plant-fiber-infobox {
+    max-width: 400px;
+    margin: 0 auto var(--space-2xl);
+    order: -1;
+  }
+}
+
+@media (max-width: 900px) {
+  .vine-sidebar {
+    transform: translateX(-100%);
+    transition: transform 0.4s var(--ease-organic);
+    box-shadow: 5px 0 30px rgba(0,0,0,0.2);
+  }
+  
+  .vine-sidebar.open {
+    transform: translateX(0);
+  }
+  
+  .main-content {
+    margin-left: 0;
+    padding: var(--space-xl);
+  }
+  
+  .mobile-nav-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .solar-meter-container {
+    top: auto;
+    bottom: var(--space-lg);
+    right: var(--space-lg);
+    left: var(--space-lg);
+    min-width: auto;
+  }
+  
+  .article-title {
+    font-size: 2rem;
+  }
+  
+  .implementation-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .article-meta {
+    flex-direction: column;
+    gap: var(--space-sm);
+  }
+  
+  .seed-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .breadcrumbs {
+    font-size: 0.75rem;
+  }
+}
+
+/* ================================
+   ACCESSIBILITY & MOTION
+   ================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Focus Visible Styles */
+*:focus-visible {
+  outline: 3px solid var(--solar-primary);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+  :root {
+    --text-primary: #000000;
+    --bg-primary: #ffffff;
+    --leaf-green: #006400;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .vine-sidebar,
+  .solar-meter-container,
+  .mobile-nav-toggle,
+  .loader-overlay {
+    display: none !important;
+  }
+  
+  .main-content {
+    margin-left: 0;
+  }
+  
+  body {
+    background: white;
+    color: black;
+  }
+}

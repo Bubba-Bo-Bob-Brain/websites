@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEXUS-7 Biopunk Medical Scanner — Cybernetic Patient HUD</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=VT323&family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <!-- Heartbeat Pulse Driver -->
+    <div id="heartbeat-driver"></div>
+
+    <!-- Scan Line Sweep -->
+    <div id="scan-line"></div>
+
+    <!-- ═══════════════════ TOP STATUS BAR ═══════════════════ -->
+    <header id="top-bar">
+        <div class="bar-section" id="patient-info">
+            <span class="label">SUBJECT</span>
+            <span class="value" id="patient-id">CYB-2077-Ω-0471</span>
+        </div>
+        <div class="bar-section" id="scan-time">
+            <span class="label">SCAN EPOCH</span>
+            <span class="value" id="timestamp">0000.00.00 — 00:00:00</span>
+        </div>
+        <div class="bar-section" id="vitals-ticker">
+            <span class="label">CARDIO</span>
+            <span class="value ticker" id="heart-rate">72 BPM</span>
+            <span class="divider">│</span>
+            <span class="label">SPO₂</span>
+            <span class="value ticker" id="spo2">98.4%</span>
+            <span class="divider">│</span>
+            <span class="label">BP</span>
+            <span class="value ticker" id="blood-pressure">124/78</span>
+            <span class="divider">│</span>
+            <span class="label">TEMP</span>
+            <span class="value ticker" id="body-temp">36.7°C</span>
+            <span class="divider">│</span>
+            <span class="label">SYNTH-SAT</span>
+            <span class="value ticker" id="synth-sat">94.2%</span>
+        </div>
+        <div class="bar-section" id="system-status">
+            <span class="label">NEXUS VER</span>
+            <span class="value">7.2.1-rc4</span>
+        </div>
+    </header>
+
+    <!-- ═══════════════════ MAIN GRID LAYOUT ═══════════════════ -->
+    <main id="hud-grid">
+
+        <!-- ──────── UPPER LEFT: MUTATION PROGRESSION ──────── -->
+        <section class="panel" id="mutation-panel">
+            <div class="panel-header">
+                <span class="panel-icon">⧬</span>
+                <h2>MUTATION PROGRESSION</h2>
+                <span class="panel-status" id="mut-status">ACTIVE</span>
+            </div>
+            <div class="panel-body">
+                <div class="mutation-visualizer">
+                    <svg viewBox="0 0 280 120" class="dna-helix">
+                        <!-- DNA backbone left -->
+                        <path d="M10 60 Q35 20, 70 60 Q105 100, 140 60 Q175 20, 210 60 Q245 100, 280 60"
+                              fill="none" stroke="#ff3366" stroke-width="1.5" opacity="0.6" stroke-dasharray="4 2"/>
+                        <!-- DNA backbone right -->
+                        <path d="M10 65 Q35 105, 70 65 Q105 25, 140 65 Q175 105, 210 65 Q245 25, 280 65"
+                              fill="none" stroke="#ff3366" stroke-width="1.5" opacity="0.6" stroke-dasharray="4 2"/>
+                        <!-- Base pairs with mutation highlights -->
+                        <line x1="25" y1="40" x2="25" y2="85" stroke="#ff3366" stroke-width="1" opacity="0.3"/>
+                        <circle cx="25" cy="42" r="3" fill="#00ff88"/>
+                        <circle cx="25" cy="83" r="3" fill="#00ff88"/>
+
+                        <line x1="55" y1="30" x2="55" y2="95" stroke="#ff3366" stroke-width="1" opacity="0.3"/>
+                        <circle cx="55" cy="32" r="3.5" fill="#ff3366" class="mutated"/>
+                        <circle cx="55" cy="92" r="3.5" fill="#ffaa00" class="mutated"/>
+
+                        <line x1="85" y1="45" x2="85" y2="80" stroke="#ff3366" stroke-width="1" opacity="0.3"/>
+                        <circle cx="85" cy="47" r="3" fill="#00ff88"/>
+                        <circle cx="85" cy="78" r="3" fill="#00ff88"/>
+
+                        <line x1="115" y1="25" x2="115" y2="100" stroke="#ff3366" stroke-width="1" opacity="0.3"/>
+                        <circle cx="115" cy="27" r="4" fill="#ff3366" class="mutated"/>
+                        <circle cx="115" cy="97" r="4" fill="#ff3366" class="mutated"/>
+
+                        <line x1="145" y1="40" x2="145" y2="85" stroke="#ff3366" stroke-width="1" opacity="0.3"/>
+                        <circle cx="145" cy="42" r="3" fill="#00ff88"/>
+                        <circle cx="145" cy="83" r="3" fill="#00ff88"/>
+
+                        <line x1="175" y1="35" x2="175" y2="90" stroke="#ff3366" stroke-width="1" opacity="0.3"/>
+                        <circle cx="175" cy="37" r="3.5" fill="#ffaa00" class="mutated"/>
+                        <circle cx="175" cy="88" r="3.5" fill="#00ff88"/>
+
+                        <line x1="205" y1="28" x2="205" y2="97" stroke="#ff3366" stroke-width="1" opacity="0.3"/>
+                        <circle cx="205" cy="30" r="4" fill="#ff3366" class="mutated"/>
+                        <circle cx="205" cy="94" r="4" fill="#ff3366" class="mutated"/>
+
+                        <line x1="235" y1="42" x2="235" y2="83" stroke="#ff3366" stroke-width="1" opacity="0.3"/>
+                        <circle cx="235" cy="44" r="3" fill="#00ff88"/>
+                        <circle cx="235" cy="81" r="3" fill="#00ff88"/>
+
+                        <!-- Mutation wave overlay -->
+                        <path d="M0 60 Q20 45, 40 60 Q60 75, 80 60 Q100 40, 120 60 Q140 80, 160 60 Q180 42, 200 60 Q220 78, 240 60 Q260 45, 280 60"
+                              fill="none" stroke="#00ff88" stroke-width="1" opacity="0.15" id="mutation-wave"/>
+                    </svg>
+                </div>
+                <div class="mutation-stats">
+                    <div class="stat-row">
+                        <span class="stat-label">STAGE</span>
+                        <span class="stat-value" id="mut-stage">III-C</span>
+                        <span class="stat-bar"><span class="stat-fill" id="mut-bar" style="width: 67%"></span></span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">GENOME INTEGRITY</span>
+                        <span class="stat-value bad" id="genome-int">72.4%</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">CHROMOSOMAL ANOMALIES</span>
+                        <span class="stat-value warn" id="chrom-anom">14</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">TELOMERE LENGTH</span>
+                        <span class="stat-value" id="telomere">4.2kb</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">PROG. RATE</span>
+                        <span class="stat-value warn" id="prog-rate">+0.3%/day</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ──────── UPPER RIGHT: NEURAL LINK INTEGRITY ──────── -->
+        <section class="panel" id="neural-panel">
+            <div class="panel-header">
+                <span class="panel-icon">◈</span>
+                <h2>NEURAL LINK INTEGRITY</h2>
+                <span class="panel-status good" id="neural-status">STABLE</span>
+            </div>
+            <div class="panel-body">
+                <div class="neural-viz">
+                    <svg viewBox="0 0 280 160" class="neural-network">
+                        <!-- Central hub -->
+                        <circle cx="140" cy="80" r="12" fill="#4488ff" opacity="0.8" class="neural-node center-node"/>
+                        <circle cx="140" cy="80" r="20" fill="none" stroke="#4488ff" stroke-width="0.5" opacity="0.3" class="neural-ring"/>
+
+                        <!-- Nodes -->
+                        <circle cx="70" cy="35" r="6" fill="#4488ff" opacity="0.7" class="neural-node n1"/>
+                        <circle cx="210" cy="35" r="6" fill="#4488ff" opacity="0.7" class="neural-node n2"/>
+                        <circle cx="40" cy="95" r="6" fill="#4488ff" opacity="0.7" class="neural-node n3"/>
+                        <circle cx="240" cy="95" r="6" fill="#4488ff" opacity="0.7" class="neural-node n4"/>
+                        <circle cx="70" cy="140" r="6" fill="#00ff88" opacity="0.7" class="neural-node n5"/>
+                        <circle cx="210" cy="140" r="6" fill="#ff3366" opacity="0.7" class="neural-node n6 degraded"/>
+                        <circle cx="140" cy="20" r="5" fill="#4488ff" opacity="0.7" class="neural-node n7"/>
+                        <circle cx="140" cy="145" r="5" fill="#ffaa00" opacity="0.7" class="neural-node n8 degraded"/>
+                        <circle cx="25" cy="80" r="5" fill="#4488ff" opacity="0.6" class="neural-node n9"/>
+                        <circle cx="255" cy="80" r="5" fill="#4488ff" opacity="0.6" class="neural-node n10"/>
+
+                        <!-- Connections - strong -->
+                        <line x1="140" y1="80" x2="70" y2="35" stroke="#4488ff" stroke-width="1" opacity="0.5" class="neural-link"/>
+                        <line x1="140" y1="80" x2="210" y2="35" stroke="#4488ff" stroke-width="1" opacity="0.5" class="neural-link"/>
+                        <line x1="140" y1="80" x2="40" y2="95" stroke="#4488ff" stroke-width="1" opacity="0.5" class="neural-link"/>
+                        <line x1="140" y1="80" x2="240" y2="95" stroke="#4488ff" stroke-width="1" opacity="0.5" class="neural-link"/>
+                        <line x1="140" y1="80" x2="70" y2="140" stroke="#00ff88" stroke-width="1" opacity="0.4" class="neural-link"/>
+                        <line x1="140" y1="80" x2="140" y2="20" stroke="#4488ff" stroke-width="1" opacity="0.4" class="neural-link"/>
+                        <line x1="140" y1="80" x2="25" y2="80" stroke="#4488ff" stroke-width="1" opacity="0.4" class="neural-link"/>
+                        <line x1="140" y1="80" x2="255" y2="80" stroke="#4488ff" stroke-width="1" opacity="0.4" class="neural-link"/>
+
+                        <!-- Degraded connections -->
+                        <line x1="140" y1="80" x2="210" y2="140" stroke="#ff3366" stroke-width="1" opacity="0.3" class="neural-link degraded-link" stroke-dasharray="4 3"/>
+                        <line x1="140" y1="80" x2="140" y2="145" stroke="#ffaa00" stroke-width="1" opacity="0.3" class="neural-link degraded-link" stroke-dasharray="4 3"/>
+
+                        <!-- Cross connections -->
+                        <line x1="70" y1="35" x2="210" y2="35" stroke="#4488ff" stroke-width="0.5" opacity="0.2" class="neural-link"/>
+                        <line x1="40" y1="95" x2="70" y2="140" stroke="#4488ff" stroke-width="0.5" opacity="0.2" class="neural-link"/>
+                        <line x1="240" y1="95" x2="210" y2="140" stroke="#ff3366" stroke-width="0.5" opacity="0.2" class="neural-link"/>
+                        <line x1="70" y1="35" x2="140" y2="20" stroke="#4488ff" stroke-width="0.5" opacity="0.2" class="neural-link"/>
+                        <line x1="210" y1="35" x2="255" y2="80" stroke="#4488ff" stroke-width="0.5" opacity="0.2" class="neural-link"/>
+
+                        <!-- Signal pulses (animated circles) -->
+                        <circle cx="140" cy="80" r="15" fill="none" stroke="#4488ff" stroke-width="0.5" opacity="0" class="pulse-ring p1"/>
+                        <circle cx="140" cy="80" r="15" fill="none" stroke="#4488ff" stroke-width="0.5" opacity="0" class="pulse-ring p2" style="animation-delay: 0.5s"/>
+                        <circle cx="140" cy="80" r="15" fill="none" stroke="#4488ff" stroke-width="0.5" opacity="0" class="pulse-ring p3" style="animation-delay: 1s"/>
+                    </svg>
+                </div>
+                <div class="neural-stats">
+                    <div class="stat-row">
+                        <span class="stat-label">LINK BANDWIDTH</span>
+                        <span class="stat-value" id="nw-bw">2.4 TB/s</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">LATENCY</span>
+                        <span class="stat-value good" id="nw-lat">2.3ms</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">PACKET LOSS</span>
+                        <span class="stat-value" id="nw-loss">0.01%</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">NODE COUNT</span>
+                        <span class="stat-value" id="nw-nodes">10/12</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">DEGRADED NODES</span>
+                        <span class="stat-value bad">2 — C7, L4</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ──────── CENTER: ANATOMICAL BODY OVERLAY ──────── -->
+        <section class="panel" id="body-panel">
+            <div class="panel-header">
+                <span class="panel-icon">⊞</span>
+                <h2>ANATOMICAL SCAN — FRONTAL PROJECTION</h2>
+                <span class="panel-status" id="scan-mode">LIVE FEED</span>
+            </div>
+            <div class="panel-body body-viz-container">
+                <svg viewBox="0 0 400 520" class="body-wireframe" id="body-svg">
+                    <!-- Torso outline -->
+                    <path d="M200 60 C200 55, 170 50, 155 70 C140 90, 130 120, 125 160 C120 200, 120 260, 125 320 C130 380, 140 440, 150 490 C155 510, 165 520, 180 520 L220 520 C235 520, 245 510, 250 490 C260 440, 270 380, 275 320 C280 260, 280 200, 275 160 C270 120, 260 90, 245 70 C230 50, 200 55, 200 60 Z"
+                          fill="none" stroke="#ff3366" stroke-width="1.5" opacity="0.3" class="body-outline"/>
+
+                    <!-- Head -->
+                    <ellipse cx="200" cy="35" rx="35" ry="42" fill="none" stroke="#ff3366" stroke-width="1" opacity="0.3"/>
+                    <!-- Neck -->
+                    <line x1="190" y1="77" x2="188" y2="100" stroke="#ff3366" stroke-width="1" opacity="0.2"/>
+                    <line x1="210" y1="77" x2="212" y2="100" stroke="#ff3366" stroke-width="1" opacity="0.2"/>
+
+                    <!-- Spine -->
+                    <line x1="200" y1="105" x2="200" y2="320" stroke="#ff3366" stroke-width="1" opacity="0.2" stroke-dasharray="3 4"/>
+                    <!-- Spine vertebrae -->
+                    <circle cx="200" cy="120" r="2" fill="#ff3366" opacity="0.3"/>
+                    <circle cx="200" cy="140" r="2" fill="#ff3366" opacity="0.3"/>
+                    <circle cx="200" cy="160" r="2" fill="#ff3366" opacity="0.3"/>
+                    <circle cx="200" cy="180" r="2" fill="#ff3366" opacity="0.3"/>
+                    <circle cx="200" cy="200" r="2" fill="#ff3366" opacity="0.3"/>
+                    <circle cx="200" cy="220" r="2" fill="#ff3366" opacity="0.3"/>
+                    <circle cx="200" cy="240" r="2" fill="#ff3366" opacity="0.3"/>
+                    <circle cx="200" cy="260" r="2" fill="#ff3366" opacity="0.3"/>
+                    <circle cx="200" cy="280" r="2" fill="#ff3366" opacity="0.3"/>
+                    <circle cx="200" cy="300" r="2" fill="#ff3366" opacity="0.3"/>
+
+                    <!-- Ribcage -->
+                    <path d="M155 130 Q170 115, 190 125 Q200 130, 210 125 Q230 115, 245 130" fill="none" stroke="#ff3366" stroke-width="0.8" opacity="0.25"/>
+                    <path d="M152 150 Q170 135, 190 145 Q200 150, 210 145 Q230 135, 248 150" fill="none" stroke="#ff3366" stroke-width="0.8" opacity="0.25"/>
+                    <path d="M150 170 Q170 155, 190 165 Q200 170, 210 165 Q230 155, 250 170" fill="none" stroke="#ff3366" stroke-width="0.8" opacity="0.25"/>
+
+                    <!-- Shoulders -->
+                    <path d="M155 100 Q135 105, 120 120" fill="none" stroke="#ff3366" stroke-width="0.8" opacity="0.2"/>
+                    <path d="M245 100 Q265 105, 280 120" fill="none" stroke="#ff3366" stroke-width="0.8" opacity="0.2"/>
+
+                    <!-- Arms -->
+                    <path d="M120 120 Q105 150, 95 180 Q88 200, 80 220" fill="none" stroke="#ff3366" stroke-width="0.8" opacity="0.2"/>
+                    <path d="M280 120 Q295 150, 305 180 Q312 200, 320 220" fill="none" stroke="#ff3366" stroke-width="0.8" opacity="0.2"/>
+
+                    <!-- Legs -->
+                    <path d="M180 490 Q170 520, 155 560 Q145 590, 140 620" fill="none" stroke="#ff3366" stroke-width="1" opacity="0.25" id="leg-left"/>
+                    <path d="M220 490 Q230 520, 245 560 Q255 590, 260 620" fill="none" stroke="#ff3366" stroke-width="1" opacity="0.25" id="leg-right"/>
+
+                    <!-- ═══ ORGANS ═══ -->
+
+                    <!-- BRAIN (head) -->
+                    <ellipse cx="200" cy="32" rx="22" ry="26" fill="#ff3366" fill-opacity="0.08" stroke="#ff3366" stroke-width="1.5" opacity="0.7" id="organ-brain" class="organ-highlight"/>
+                    <text x="200" y="36" text-anchor="middle" fill="#ff3366" font-size="8" opacity="0.7" font-family="'Share Tech Mono', monospace">BRN</text>
+
+                    <!-- Heart (center-left) -->
+                    <path d="M155 210 Q155 195, 170 190 Q185 188, 190 200 Q195 215, 175 225 Q160 230, 155 210"
+                          fill="#ff3366" fill-opacity="0.06" stroke="#ff3366" stroke-width="1.5" opacity="0.7" id="organ-heart" class="organ-highlight"/>
+                    <text x="162" y="210" fill="#ff3366" font-size="7" opacity="0.7" font-family="'Share Tech Mono', monospace">HRT</text>
+
+                    <!-- Lungs (left & right) -->
+                    <path d="M130 160 Q140 150, 160 155 Q170 160, 165 180 Q160 200, 140 205 Q125 205, 125 190 Q126 170, 130 160"
+                          fill="#4488ff" fill-opacity="0.05" stroke="#4488ff" stroke-width="1" opacity="0.5" id="organ-lung-l" class="organ-highlight"/>
+                    <path d="M270 160 Q260 150, 240 155 Q230 160, 235 180 Q240 200, 260 205 Q275 205, 275 190 Q274 170, 270 160"
+                          fill="#4488ff" fill-opacity="0.05" stroke="#4488ff" stroke-width="1" opacity="0.5" id="organ-lung-r" class="organ-highlight"/>
+                    <text x="143" y="182" fill="#4488ff" font-size="6" opacity="0.5" font-family="'Share Tech Mono', monospace">L</text>
+                    <text x="257" y="182" fill="#4488ff" font-size="6" opacity="0.5" font-family="'Share Tech Mono', monospace">R</text>
+
+                    <!-- Liver (right side, upper abdomen) -->
+                    <path d="M195 240 Q220 230, 240 240 Q250 260, 240 280 Q230 300, 210 310 Q195 315, 190 300 Q185 275, 195 240"
+                          fill="#00ff88" fill-opacity="0.05" stroke="#00ff88" stroke-width="1" opacity="0.5" id="organ-liver" class="organ-highlight"/>
+                    <text x="215" y="278" fill="#00ff88" font-size="7" opacity="0.5" font-family="'Share Tech Mono', monospace">LIV</text>
+
+                    <!-- Kidneys -->
+                    <path d="M130 280 Q135 265, 150 262 Q165 260, 168 275 Q170 295, 158 310 Q145 318, 135 305 Q128 290, 130 280"
+                          fill="#ffaa00" fill-opacity="0.04" stroke="#ffaa00" stroke-width="0.8" opacity="0.4" id="organ-kidney-l" class="organ-highlight"/>
+                    <path d="M270 280 Q265 265, 250 262 Q235 260, 232 275 Q230 295, 242 310 Q255 318, 265 305 Q272 290, 270 280"
+                          fill="#ffaa00" fill-opacity="0.04" stroke="#ffaa00" stroke-width="0.8" opacity="0.4" id="organ-kidney-r" class="organ-highlight"/>
+
+                    <!-- Stomach / Pancreas (center abdomen) -->
+                    <path d="M175 290 Q185 280, 200 285 Q215 280, 225 290 Q230 310, 215 330 Q200 345, 185 340 Q172 325, 175 290"
+                          fill="#aa66ff" fill-opacity="0.04" stroke="#aa66ff" stroke-width="0.8" opacity="0.4" id="organ-pancreas" class="organ-highlight"/>
+                    <text x="198" y="316" fill="#aa66ff" font-size="6" opacity="0.4" font-family="'Share Tech Mono', monospace">PNC</text>
+
+                    <!-- Cybernetic spine implant -->
+                    <rect x="196" y="110" width="8" height="180" rx="2" fill="#00ff88" fill-opacity="0.08" stroke="#00ff88" stroke-width="0.5" opacity="0.4" stroke-dasharray="2 3"/>
+                    <text x="200" y="108" fill="#00ff88" font-size="5" opacity="0.4" font-family="'Share Tech Mono', monospace" text-anchor="middle">SYNTH-SPINE v3.1</text>
+
+                    <!-- Cybernetic arm (right) -->
+                    <path d="M280 120 Q295 150, 305 180 Q312 200, 320 220" fill="none" stroke="#00ff88" stroke-width="1.2" opacity="0.35" stroke-dasharray="5 3" id="cyber-arm"/>
+                    <rect x="298" y="165" width="12" height="6" rx="1" fill="#00ff88" fill-opacity="0.15" stroke="#00ff88" stroke-width="0.5" opacity="0.4"/>
+                    <text x="310" y="176" fill="#00ff88" font-size="4" opacity="0.4" font-family="'Share Tech Mono', monospace">AUG</text>
+
+                    <!-- Scan overlay grid -->
+                    <g opacity="0.06" id="body-grid">
+                        <!-- Horizontal grid lines -->
+                        <line x1="100" y1="100" x2="300" y2="100" stroke="#4488ff" stroke-width="0.3"/>
+                        <line x1="100" y1="200" x2="300" y2="200" stroke="#4488ff" stroke-width="0.3"/>
+                        <line x1="100" y1="300" x2="300" y2="300" stroke="#4488ff" stroke-width="0.3"/>
+                        <line x1="100" y1="400" x2="300" y2="400" stroke="#4488ff" stroke-width="0.3"/>
+                        <line x1="100" y1="500" x2="300" y2="500" stroke="#4488ff" stroke-width="0.3"/>
+                        <!-- Vertical grid lines -->
+                        <line x1="150" y1="60" x2="150" y2="520" stroke="#4488ff" stroke-width="0.3"/>
+                        <line x1="200" y1="60" x2="200" y2="520" stroke="#4488ff" stroke-width="0.3"/>
+                        <line x1="250" y1="60" x2="250" y2="520" stroke="#4488ff" stroke-width="0.3"/>
+                    </g>
+
+                    <!-- Animated scan line within body -->
+                    <line x1="100" y1="0" x2="300" y2="0" stroke="#00ff88" stroke-width="1" opacity="0.6" id="inner-scan-line"/>
+                </svg>
+
+                <!-- Floating data overlays on body -->
+                <div class="body-overlay" id="overlay-brain">
+                    <span class="overlay-label">NEURAL DENSITY</span>
+                    <span class="overlay-value" id="neural-density">94.7%</span>
+                </div>
+                <div class="body-overlay" id="overlay-heart">
+                    <span class="overlay-label">CARDIAC OUTPUT</span>
+                    <span class="overlay-value" id="cardiac-output">5.2L/m</span>
+                </div>
+                <div class="body-overlay" id="overlay-lungs">
+                    <span class="overlay-label">O₂ EXCHANGE</span>
+                    <span class="overlay-value" id="o2-exchange">250ml/min</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- ──────── LOWER LEFT: NANOMACHINE DEPLOYMENT ──────── -->
+        <section class="panel" id="nano-panel">
+            <div class="panel-header">
+                <span class="panel-icon">⬡</span>
+                <h2>NANOMACHINE DEPLOYMENT</h2>
+                <span class="panel-status good" id="nano-status">OPERATIONAL</span>
+            </div>
+            <div class="panel-body">
+                <div class="nano-viz">
+                    <svg viewBox="0 0 280 140" class="nano-swarm">
+                        <!-- Body silhouette background -->
+                        <ellipse cx="140" cy="70" rx="50" ry="60" fill="none" stroke="#ff3366" stroke-width="0.5" opacity="0.15"/>
+
+                        <!-- Nanomachine particles -->
+                        <circle cx="100" cy="40" r="2" fill="#00ff88" opacity="0.8" class="nano-particle" style="animation-delay: 0s"/>
+                        <circle cx="180" cy="30" r="1.5" fill="#00ff88" opacity="0.7" class="nano-particle" style="animation-delay: 0.3s"/>
+                        <circle cx="120" cy="60" r="2" fill="#4488ff" opacity="0.8" class="nano-particle" style="animation-delay: 0.1s"/>
+                        <circle cx="160" cy="80" r="1.5" fill="#4488ff" opacity="0.6" class="nano-particle" style="animation-delay: 0.5s"/>
+                        <circle cx="200" cy="55" r="2" fill="#00ff88" opacity="0.7" class="nano-particle" style="animation-delay: 0.2s"/>
+                        <circle cx="80" cy="80" r="1.5" fill="#aa66ff" opacity="0.6" class="nano-particle" style="animation-delay: 0.7s"/>
+                        <circle cx="220" cy="75" r="2" fill="#00ff88" opacity="0.8" class="nano-particle" style="animation-delay: 0.4s"/>
+                        <circle cx="140" cy="50" r="1.5" fill="#ffaa00" opacity="0.7" class="nano-particle" style="animation-delay: 0.6s"/>
+                        <circle cx="90" cy="55" r="2" fill="#4488ff" opacity="0.7" class="nano-particle" style="animation-delay: 0.15s"/>
+                        <circle cx="170" cy="100" r="1.5" fill="#00ff88" opacity="0.6" class="nano-particle" style="animation-delay: 0.45s"/>
+                        <circle cx="130" cy="35" r="2" fill="#aa66ff" opacity="0.7" class="nano-particle" style="animation-delay: 0.25s"/>
+                        <circle cx="210" cy="95" r="1.5" fill="#4488ff" opacity="0.8" class="nano-particle" style="animation-delay: 0.55s"/>
+                        <circle cx="60" cy="65" r="2" fill="#00ff88" opacity="0.5" class="nano-particle" style="animation-delay: 0.35s"/>
+                        <circle cx="240" cy="45" r="1.5" fill="#ffaa00" opacity="0.6" class="nano-particle" style="animation-delay: 0.65s"/>
+                        <circle cx="155" cy="65" r="2" fill="#00ff88" opacity="0.9" class="nano-particle" style="animation-delay: 0.05s"/>
+                        <circle cx="110" cy="95" r="1.5" fill="#4488ff" opacity="0.6" class="nano-particle" style="animation-delay: 0.38s"/>
+                        <circle cx="190" cy="45" r="2" fill="#aa66ff" opacity="0.7" class="nano-particle" style="animation-delay: 0.12s"/>
+                        <circle cx="70" cy="110" r="1.5" fill="#00ff88" opacity="0.5" class="nano-particle" style="animation-delay: 0.52s"/>
+                        <circle cx="230" cy="105" r="2" fill="#4488ff" opacity="0.7" class="nano-particle" style="animation-delay: 0.28s"/>
+                        <circle cx="160" cy="40" r="1.5" fill="#ffaa00" opacity="0.6" class="nano-particle" style="animation-delay: 0.72s"/>
+
+                        <!-- Deployment paths (curved lines) -->
+                        <path d="M140 70 Q100 40, 80 80 Q60 110, 90 90" fill="none" stroke="#00ff88" stroke-width="0.5" opacity="0.15" class="deploy-path"/>
+                        <path d="M140 70 Q180 30, 220 60 Q240 80, 210 100" fill="none" stroke="#4488ff" stroke-width="0.5" opacity="0.15" class="deploy-path"/>
+                        <path d="M140 70 Q120 90, 100 120 Q80 130, 70 110" fill="none" stroke="#aa66ff" stroke-width="0.5" opacity="0.15" class="deploy-path"/>
+                        <path d="M140 70 Q200 90, 240 50 Q260 30, 230 40" fill="none" stroke="#ffaa00" stroke-width="0.5" opacity="0.15" class="deploy-path"/>
+
+                        <!-- Center deployment hub -->
+                        <circle cx="140" cy="70" r="5" fill="#00ff88" opacity="0.4" class="deploy-hub"/>
+                    </svg>
+                </div>
+                <div class="nano-stats">
+                    <div class="stat-row">
+                        <span class="stat-label">ACTIVE UNITS</span>
+                        <span class="stat-value" id="nano-active">4.7M / 5.0M</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">DEPLOYMENT ZONES</span>
+                        <span class="stat-value" id="nano-zones">6/6 — OPTIMAL</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">REPAIR RATE</span>
+                        <span class="stat-value good" id="nano-repair">+12.3%/hr</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">ENERGY RESERVE</span>
+                        <span class="stat-value" id="nano-energy">78.4%</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">LAST REDPLOY</span>
+                        <span class="stat-value" id="nano-last">02:47:12 ago</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ──────── LOWER RIGHT: TOXIN LEVELS ──────── -->
+        <section class="panel" id="toxin-panel">
+            <div class="panel-header">
+                <span class="panel-icon">⚗</span>
+                <h2>TOXIN ANALYSIS</h2>
+                <span class="panel-status warn" id="toxin-status">ELEVATED</span>
+            </div>
+            <div class="panel-body">
+                <div class="toxin-bars">
+                    <div class="toxin-row">
+                        <div class="toxin-label">
+                            <span class="toxin-name">LEAD</span>
+                            <span class="toxin-ppm" id="toxin-lead-val">347 ppm</span>
+                        </div>
+                        <div class="toxin-bar-container">
+                            <div class="toxin-bar" id="toxin-lead-bar" style="width: 69%"></div>
+                        </div>
+                        <span class="toxin-threshold">THRESH: 500ppm</span>
+                    </div>
+
+                    <div class="toxin-row">
+                        <div class="toxin-label">
+                            <span class="toxin-name">MERCURY</span>
+                            <span class="toxin-ppm" id="toxin-hg-val">89 ppm</span>
+                        </div>
+                        <div class="toxin-bar-container">
+                            <div class="toxin-bar warn" id="toxin-hg-bar" style="width: 44%"></div>
+                        </div>
+                        <span class="toxin-threshold">THRESH: 200ppm</span>
+                    </div>
+
+                    <div class="toxin-row">
+                        <div class="toxin-label">
+                            <span class="toxin-name">CYANIDE METAB.</span>
+                            <span class="toxin-ppm" id="toxin-cyan-val">12.4 ppm</span>
+                        </div>
+                        <div class="toxin-bar-container">
+                            <div class="toxin-bar bad" id="toxin-cyan-bar" style="width: 83%"></div>
+                        </div>
+                        <span class="toxin-threshold">THRESH: 15ppm</span>
+                    </div>
+
+                    <div class="toxin-row">
+                        <div class="toxin-label">
+                            <span class="toxin-name">NANOPLASTICS</span>
+                            <span class="toxin-ppm" id="toxin-nano-val">1,240 ppm</span>
+                        </div>
+                        <div class="toxin-bar-container">
+                            <div class="toxin-bar warn" id="toxin-nano-bar" style="width: 62%"></div>
+                        </div>
+                        <span class="toxin-threshold">THRESH: 2,000ppm</span>
+                    </div>
+
+                    <div class="toxin-row">
+                        <div class="toxin-label">
+                            <span class="toxin-name">RADIATION (Sv)</span>
+                            <span class="toxin-ppm" id="toxin-rad-val">0.84 mSv</span>
+                        </div>
+                        <div class="toxin-bar-container">
+                            <div class="toxin-bar" id="toxin-rad-bar" style="width: 28%"></div>
+                        </div>
+                        <span class="toxin-threshold">THRESH: 3.0 mSv</span>
+                    </div>
+
+                    <div class="toxin-row">
+                        <div class="toxin-label">
+                            <span class="toxin-name">ETHANOL</span>
+                            <span class="toxin-ppm" id="toxin-eth-val">BAC 0.02%</span>
+                        </div>
+                        <div class="toxin-bar-container">
+                            <div class="toxin-bar" id="toxin-eth-bar" style="width: 16%"></div>
+                        </div>
+                        <span class="toxin-threshold">THRESH: 0.08%</span>
+                    </div>
+
+                    <div class="toxin-row">
+                        <div class="toxin-label">
+                            <span class="toxin-name">CHLORINE</span>
+                            <span class="toxin-ppm" id="toxin-cl-val">22 ppm</span>
+                        </div>
+                        <div class="toxin-bar-container">
+                            <div class="toxin-bar warn" id="toxin-cl-bar" style="width: 37%"></div>
+                        </div>
+                        <span class="toxin-threshold">THRESH: 60ppm</span>
+                    </div>
+                </div>
+                <div class="toxin-summary">
+                    <span class="summary-label">TOXIC LOAD INDEX</span>
+                    <span class="summary-value warn" id="tox-index">MODERATE — 4.2/10</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- ──────── BOTTOM CENTER: ORGAN STATUS ──────── -->
+        <section class="panel" id="organ-status-panel">
+            <div class="panel-header">
+                <span class="panel-icon">♥</span>
+                <h2>ORGAN STATUS MONITOR</h2>
+                <span class="panel-status" id="organ-overall">6/6 CRITICAL</span>
+            </div>
+            <div class="panel-body">
+                <div class="organ-grid">
+                    <div class="organ-card" id="card-heart">
+                        <div class="organ-indicator heart-beat"></div>
+                        <div class="organ-name">HEART</div>
+                        <div class="organ-status good">OPTIMAL</div>
+                        <div class="organ-detail">EF: 68% | RHR: 72bpm</div>
+                    </div>
+                    <div class="organ-card" id="card-lungs">
+                        <div class="organ-indicator lung-breathe"></div>
+                        <div class="organ-name">LUNGS</div>
+                        <div class="organ-status good">STABLE</div>
+                        <div class="organ-detail">FEV1: 91% | O₂: 98.4%</div>
+                    </div>
+                    <div class="organ-card" id="card-liver">
+                        <div class="organ-indicator liver-pulse"></div>
+                        <div class="organ-name">LIVER</div>
+                        <div class="organ-status warn">STRESSED</div>
+                        <div class="organ-detail">ALT: 142 U/L | TOXIN LOAD: HIGH</div>
+                    </div>
+                    <div class="organ-card" id="card-kidneys">
+                        <div class="organ-indicator kidney-pulse"></div>
+                        <div class="organ-name">KIDNEYS</div>
+                        <div class="organ-status warn">ELEVATED LOAD</div>
+                        <div class="organ-detail">GFR: 78ml/min | CR: 1.3mg/dL</div>
+                    </div>
+                    <div class="organ-card" id="card-brain">
+                        <div class="organ-indicator brain-pulse"></div>
+                        <div class="organ-name">BRAIN</div>
+                        <div class="organ-status good">NOMINAL</div>
+                        <div class="organ-detail">WMN: 94.7% | SYNC: LOCKED</div>
+                    </div>
+                    <div class="organ-card" id="card-pancreas">
+                        <div class="organ-indicator pancreas-pulse"></div>
+                        <div class="organ-name">PANCREAS</div>
+                        <div class="organ-status warn">AUGMENTED</div>
+                        <div class="organ-detail">INS SYNTH: ACTIVE | GLUCOSE: 94mg/dL</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══════════════════ GENE-SPLICE MATRIX (overlay) ═══════════════════ -->
+        <div class="overlay-panel" id="gene-splice-overlay">
+            <div class="overlay-header">
+                <span class="panel-icon">⛧</span>
+                <h3>GENE-SPLICE COMPATIBILITY MATRIX</h3>
+                <button class="overlay-close" id="close-gene-matrix">✕</button>
+            </div>
+            <div class="overlay-body">
+                <table class="gene-matrix">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th>SPLICE-α</th>
+                            <th>SPLICE-β</th>
+                            <th>SPLICE-γ</th>
+                            <th>SYNTH-Ω</th>
+                            <th>NEO-X</th>
+                            <th>CRYO-V</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="gene-label">HOST REC</td>
+                            <td class="compat perfect">98.7%</td>
+                            <td class="compat good">87.2%</td>
+                            <td class="compat warn">64.1%</td>
+                            <td class="compat perfect">99.1%</td>
+                            <td class="compat bad">31.4%</td>
+                            <td class="compat good">82.6%</td>
+                        </tr>
+                        <tr>
+                            <td class="gene-label">NEURAL</td>
+                            <td class="compat good">84.3%</td>
+                            <td class="compat warn">72.8%</td>
+                            <td class="compat perfect">97.5%</td>
+                            <td class="compat bad">22.1%</td>
+                            <td class="compat good">91.0%</td>
+                            <td class="compat warn">58.3%</td>
+                        </tr>
+                        <tr>
+                            <td class="gene-label">CIRCULATORY</td>
+                            <td class="compat perfect">99.2%</td>
+                            <td class="compat good">91.4%</td>
+                            <td class="compat warn">48.7%</td>
+                            <td class="compat good">88.9%</td>
+                            <td class="compat bad">19.8%</td>
+                            <td class="compat perfect">96.3%</td>
+                        </tr>
+                        <tr>
+                            <td class="gene-label">MUSCULAR</td>
+                            <td class="compat good">79.1%</td>
+                            <td class="compat warn">61.3%</td>
+                            <td class="compat good">85.4%</td>
+                            <td class="compat bad">44.2%</td>
+                            <td class="compat perfect">97.8%</td>
+                            <td class="compat good">83.5%</td>
+                        </tr>
+                        <tr>
+                            <td class="gene-label">IMMUNE</td>
+                            <td class="compat warn">58.9%</td>
+                            <td class="compat good">83.2%</td>
+                            <td class="compat bad">29.1%</td>
+                            <td class="compat good">92.7%</td>
+                            <td class="compat warn">67.4%</td>
+                            <td class="compat perfect">99.8%</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="matrix-legend">
+                    <span><span class="dot perfect-dot"></span> &gt;90% Optimal</span>
+                    <span><span class="dot good-dot"></span> 70-90% Compatible</span>
+                    <span><span class="dot warn-dot"></span> 50-70% Caution</span>
+                    <span><span class="dot bad-dot"></span> &lt;50% Reject</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════════════════ SYSTEM LOG (bottom bar) ═══════════════════ -->
+        <div id="bottom-bar">
+            <div id="log-container">
+                <span class="log-prefix">SYS_LOG▶</span>
+                <span id="log-text" class="log-text"></span>
+            </div>
+            <div id="status-icons">
+                <span class="status-icon" title="Cardiac Monitor">♥ <span id="s-heart">OK</span></span>
+                <span class="status-icon" title="Neural Link">⊕ <span id="s-neural">LOCKED</span></span>
+                <span class="status-icon" title="Nanomachines">⬡ <span id="s-nano">ACTIVE</span></span>
+                <span class="status-icon" title="Gene Therapy">⛧ <span id="s-gene">STANDBY</span></span>
+                <span class="status-icon" title="Life Support">◉ <span id="s-life">ONLINE</span></span>
+            </div>
+        </div>
+    </main>
+
+    <!-- ═══════════════════ ACTION BUTTONS ═══════════════════ -->
+    <div id="action-buttons">
+        <button class="hud-btn" id="btn-gene-splice" title="Open Gene-Splice Matrix">⛧ GENE-SPLICE</button>
+        <button class="hud-btn" id="btn-fullscreen" title="Toggle Fullscreen">⛶ FULLSCREEN</button>
+        <button class="hud-btn" id="btn-scan" title="Trigger Deep Scan">⚡ DEEP SCAN</button>
+    </div>
+
+    <script src="scripts.js"></script>
+</body>
+</html>

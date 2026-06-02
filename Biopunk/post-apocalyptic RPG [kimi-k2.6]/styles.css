@@ -1,0 +1,1105 @@
+/* ============================================
+   FLESH/PROTOCOL — BIOPUNK RPG STYLES
+   ============================================ */
+
+/* CSS Custom Properties */
+:root {
+  /* The Palette: Sickly, corrupted, organic */
+  --color-flesh-primary: #c8ff00;
+  --color-flesh-dim: #8ab300;
+  --color-vein: #8B0000;
+  --color-vein-bright: #ff4444;
+  --color-gastric: #ff8800;
+  --color-quiet: #8888ff;
+  --color-bone: #d4c5b0;
+  --color-bone-dark: #8a7a6a;
+  
+  /* Background depths */
+  --bg-deep: #050503;
+  --bg-mid: #0a0a08;
+  --bg-surface: #11110e;
+  --bg-elevated: #1a1a14;
+  
+  /* Functional */
+  --color-danger: #ff4444;
+  --color-warning: #ff8800;
+  --color-success: #c8ff00;
+  --color-muted: #555;
+  
+  /* Typography */
+  --font-terminal: 'VT323', monospace;
+  --font-body: 'Cormorant Garamond', Georgia, serif;
+  --font-mono: 'Space Mono', monospace;
+  
+  /* Timing */
+  --pulse-slow: 4s;
+  --pulse-medium: 2s;
+  --pulse-fast: 0.8s;
+}
+
+/* ============================================
+   RESET & BASE
+   ============================================ */
+
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background-color: var(--bg-deep);
+  color: var(--color-flesh-primary);
+  font-family: var(--font-body);
+  line-height: 1.6;
+  min-height: 100vh;
+  overflow-x: hidden;
+  cursor: crosshair;
+}
+
+/* ============================================
+   ATMOSPHERIC OVERLAYS
+   ============================================ */
+
+.scanlines {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1000;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.15) 2px,
+    rgba(0, 0, 0, 0.15) 4px
+  );
+  opacity: 0.6;
+}
+
+.grain {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 999;
+  opacity: 0.04;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 256px;
+}
+
+.vein-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 998;
+  opacity: 0.03;
+  background-image: 
+    radial-gradient(ellipse 600px 400px at 20% 30%, var(--color-vein) 0%, transparent 70%),
+    radial-gradient(ellipse 400px 600px at 80% 70%, var(--color-flesh-dim) 0%, transparent 60%);
+}
+
+/* ============================================
+   BOOT SEQUENCE
+   ============================================ */
+
+.boot-sequence {
+  position: fixed;
+  inset: 0;
+  background: var(--bg-deep);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  transition: opacity 1.5s ease, visibility 1.5s;
+}
+
+.boot-sequence.complete {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.boot-content {
+  text-align: center;
+  max-width: 600px;
+  padding: 2rem;
+}
+
+.boot-logo {
+  font-family: var(--font-terminal);
+  font-size: 0.75rem;
+  line-height: 1.2;
+  color: var(--color-flesh-primary);
+  text-shadow: 0 0 10px var(--color-flesh-dim);
+  margin-bottom: 2rem;
+  white-space: pre;
+  overflow: hidden;
+}
+
+.boot-status {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-height: 150px;
+}
+
+.boot-line {
+  display: block;
+  font-family: var(--font-terminal);
+  font-size: 1.1rem;
+  color: var(--color-muted);
+  opacity: 0;
+  transform: translateX(-10px);
+  transition: opacity 0.3s, transform 0.3s, color 0.5s;
+}
+
+.boot-line.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.boot-line.warning {
+  color: var(--color-warning);
+}
+
+.boot-line.granted {
+  color: var(--color-flesh-primary);
+  text-shadow: 0 0 8px var(--color-flesh-dim);
+}
+
+.boot-pulse {
+  width: 60px;
+  height: 60px;
+  margin: 2rem auto 0;
+  border: 2px solid var(--color-flesh-dim);
+  border-radius: 50%;
+  position: relative;
+  opacity: 0;
+  animation: bootPulse 2s ease-in-out infinite;
+}
+
+.boot-pulse.visible {
+  opacity: 1;
+}
+
+@keyframes bootPulse {
+  0%, 100% { transform: scale(1); opacity: 0.5; }
+  50% { transform: scale(1.1); opacity: 1; }
+}
+
+/* ============================================
+   MAIN INTERFACE
+   ============================================ */
+
+.main-interface {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  opacity: 0;
+  transition: opacity 2s ease;
+}
+
+.main-interface.visible {
+  opacity: 1;
+}
+
+.main-interface.hidden {
+  display: none;
+}
+
+/* ============================================
+   HEADER / VITAL SIGNS
+   ============================================ */
+
+.site-header {
+  padding: 1.5rem 2rem;
+  border-bottom: 1px solid rgba(200, 255, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  position: relative;
+}
+
+.site-header::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--color-flesh-dim), transparent);
+  animation: headerPulse 4s ease-in-out infinite;
+}
+
+@keyframes headerPulse {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}
+
+.header-vitals {
+  display: flex;
+  gap: 2rem;
+}
+
+.vital-pulse {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.vital-label {
+  font-family: var(--font-terminal);
+  font-size: 0.75rem;
+  color: var(--color-muted);
+  letter-spacing: 0.15em;
+}
+
+.vital-value {
+  font-family: var(--font-mono);
+  font-size: 1.25rem;
+  color: var(--color-flesh-primary);
+  font-weight: 700;
+  animation: vitalFlicker 3s ease-in-out infinite;
+}
+
+@keyframes vitalFlicker {
+  0%, 90%, 100% { opacity: 1; }
+  92%, 96% { opacity: 0.3; }
+}
+
+.site-title {
+  font-family: var(--font-terminal);
+  font-size: 2rem;
+  font-weight: 400;
+  letter-spacing: 0.2em;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.title-flesh {
+  color: var(--color-flesh-primary);
+  text-shadow: 0 0 20px rgba(200, 255, 0, 0.3);
+}
+
+.title-divider {
+  color: var(--color-muted);
+  animation: dividerPulse 2s ease-in-out infinite;
+}
+
+@keyframes dividerPulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+.title-protocol {
+  color: var(--color-bone);
+}
+
+.header-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.25rem;
+}
+
+.meta-station {
+  font-family: var(--font-terminal);
+  font-size: 0.8rem;
+  color: var(--color-muted);
+}
+
+.meta-station em {
+  color: var(--color-flesh-dim);
+  font-style: normal;
+}
+
+.meta-time {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--color-flesh-primary);
+}
+
+/* ============================================
+   BIOMECHANICAL NAVIGATION
+   ============================================ */
+
+.biomech-nav {
+  display: flex;
+  padding: 0 2rem;
+  gap: 0;
+  border-bottom: 1px solid rgba(200, 255, 0, 0.08);
+  background: linear-gradient(180deg, var(--bg-surface) 0%, var(--bg-mid) 100%);
+}
+
+.nav-tab {
+  position: relative;
+  padding: 1rem 2rem;
+  background: none;
+  border: none;
+  color: var(--color-muted);
+  font-family: var(--font-terminal);
+  font-size: 0.9rem;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  transition: color 0.3s, background 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  overflow: hidden;
+}
+
+.nav-tab:hover {
+  color: var(--color-flesh-dim);
+  background: rgba(200, 255, 0, 0.03);
+}
+
+.nav-tab.active {
+  color: var(--color-flesh-primary);
+}
+
+.tab-icon {
+  font-size: 1.1rem;
+  opacity: 0.7;
+}
+
+.nav-tab.active .tab-icon {
+  opacity: 1;
+  animation: iconPulse 2s ease-in-out infinite;
+}
+
+@keyframes iconPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+}
+
+.tab-vein {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 0;
+  height: 2px;
+  background: var(--color-flesh-primary);
+  transition: width 0.4s ease, left 0.4s ease;
+  box-shadow: 0 0 8px var(--color-flesh-dim);
+}
+
+.nav-tab.active .tab-vein {
+  width: 80%;
+  left: 10%;
+}
+
+/* ============================================
+   CONTENT SECTIONS
+   ============================================ */
+
+.content-container {
+  flex: 1;
+  padding: 2rem;
+  position: relative;
+}
+
+.content-section {
+  display: none;
+  animation: sectionEnter 0.6s ease;
+}
+
+.content-section.active {
+  display: block;
+}
+
+@keyframes sectionEnter {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.section-header {
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(200, 255, 0, 0.08);
+}
+
+.section-title {
+  font-family: var(--font-terminal);
+  font-size: 1.5rem;
+  font-weight: 400;
+  letter-spacing: 0.15em;
+  color: var(--color-flesh-primary);
+  margin-bottom: 0.5rem;
+  text-shadow: 0 0 15px rgba(200, 255, 0, 0.2);
+}
+
+.section-desc {
+  font-family: var(--font-body);
+  font-size: 1.05rem;
+  color: var(--color-bone-dark);
+  font-style: italic;
+}
+
+/* ============================================
+   MUTATION CATALOG
+   ============================================ */
+
+.mutation-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 1.5rem;
+}
+
+.mutation-card {
+  background: var(--bg-surface);
+  border: 1px solid rgba(200, 255, 0, 0.1);
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  transition: border-color 0.3s, transform 0.3s, box-shadow 0.3s;
+}
+
+.mutation-card:hover {
+  border-color: rgba(200, 255, 0, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 20px rgba(200, 255, 0, 0.05);
+}
+
+.mutation-visual {
+  position: relative;
+  height: 140px;
+  overflow: hidden;
+  border-bottom: 1px solid rgba(200, 255, 0, 0.08);
+}
+
+.mutation-organic {
+  position: absolute;
+  inset: 0;
+  opacity: 0.15;
+  transition: opacity 0.5s;
+}
+
+.mutation-card:hover .mutation-organic {
+  opacity: 0.25;
+}
+
+/* Organic patterns via CSS gradients */
+.chitin-pattern {
+  background: 
+    repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 10px,
+      var(--color-flesh-dim) 10px,
+      var(--color-flesh-dim) 12px
+    ),
+    repeating-linear-gradient(
+      -45deg,
+      transparent,
+      transparent 10px,
+      var(--color-flesh-dim) 10px,
+      var(--color-flesh-dim) 12px
+    );
+}
+
+.tendril-pattern {
+  background: 
+    radial-gradient(circle at 30% 70%, var(--color-vein-bright) 2px, transparent 2px),
+    radial-gradient(circle at 70% 30%, var(--color-vein-bright) 2px, transparent 2px),
+    radial-gradient(circle at 50% 50%, var(--color-vein) 1px, transparent 1px);
+  background-size: 30px 30px, 40px 40px, 20px 20px;
+}
+
+.gastric-pattern {
+  background: 
+    radial-gradient(ellipse at 50% 50%, var(--color-gastric) 0%, transparent 60%),
+    repeating-radial-gradient(circle at 50% 50%, transparent 0, transparent 8px, var(--color-gastric) 8px, var(--color-gastric) 10px);
+  opacity: 0.2;
+}
+
+.ocular-pattern {
+  background: 
+    radial-gradient(circle at 30% 30%, var(--color-flesh-primary) 5px, transparent 5px),
+    radial-gradient(circle at 70% 50%, var(--color-flesh-primary) 8px, transparent 8px),
+    radial-gradient(circle at 40% 80%, var(--color-flesh-dim) 6px, transparent 6px);
+  background-size: 50px 50px;
+}
+
+.heart-pattern {
+  background: 
+    radial-gradient(ellipse 20px 30px at 50% 50%, var(--color-vein-bright) 0%, transparent 70%);
+  animation: heartThrob 1.5s ease-in-out infinite;
+}
+
+@keyframes heartThrob {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+.spore-pattern {
+  background: 
+    radial-gradient(circle, var(--color-flesh-dim) 2px, transparent 2px);
+  background-size: 20px 20px;
+  animation: sporeFloat 4s ease-in-out infinite;
+}
+
+@keyframes sporeFloat {
+  0%, 100% { background-position: 0 0; }
+  50% { background-position: 10px -10px; }
+}
+
+.mutation-tier {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  font-family: var(--font-terminal);
+  font-size: 0.7rem;
+  letter-spacing: 0.15em;
+  color: var(--color-muted);
+  background: rgba(0, 0, 0, 0.5);
+  padding: 0.2rem 0.5rem;
+}
+
+.mutation-info {
+  padding: 1.25rem;
+}
+
+.mutation-name {
+  font-family: var(--font-terminal);
+  font-size: 1.2rem;
+  font-weight: 400;
+  color: var(--color-flesh-primary);
+  margin-bottom: 0.5rem;
+}
+
+.mutation-lore {
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  color: var(--color-bone);
+  line-height: 1.7;
+  margin-bottom: 1rem;
+  font-style: italic;
+}
+
+.mutation-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.stat-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.stat-name {
+  font-family: var(--font-terminal);
+  font-size: 0.75rem;
+  color: var(--color-muted);
+  width: 70px;
+  flex-shrink: 0;
+  letter-spacing: 0.05em;
+}
+
+.stat-bar {
+  flex: 1;
+  height: 6px;
+  background: rgba(200, 255, 0, 0.05);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.stat-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-flesh-dim), var(--color-flesh-primary));
+  border-radius: 3px;
+  transition: width 1s ease;
+  position: relative;
+}
+
+.stat-fill.danger {
+  background: linear-gradient(90deg, var(--color-vein), var(--color-vein-bright));
+}
+
+.stat-fill::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: var(--color-flesh-primary);
+  opacity: 0.5;
+}
+
+.mutation-tags {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.tag {
+  font-family: var(--font-terminal);
+  font-size: 0.7rem;
+  padding: 0.2rem 0.5rem;
+  background: rgba(200, 255, 0, 0.08);
+  border: 1px solid rgba(200, 255, 0, 0.15);
+  color: var(--color-flesh-dim);
+}
+
+.tag-warning {
+  background: rgba(255, 136, 0, 0.08);
+  border-color: rgba(255, 136, 0, 0.2);
+  color: var(--color-gastric);
+}
+
+.tag-danger {
+  background: rgba(255, 68, 68, 0.08);
+  border-color: rgba(255, 68, 68, 0.2);
+  color: var(--color-vein-bright);
+}
+
+.mutation-expand {
+  padding: 0.75rem 1.25rem;
+  border-top: 1px solid rgba(200, 255, 0, 0.05);
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.expand-hint {
+  font-family: var(--font-terminal);
+  font-size: 0.75rem;
+  color: var(--color-muted);
+  transition: color 0.3s;
+}
+
+.mutation-card:hover .expand-hint {
+  color: var(--color-flesh-dim);
+}
+
+/* ============================================
+   CONTAMINATION ZONES
+   ============================================ */
+
+.zone-interface {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 2rem;
+  align-items: start;
+}
+
+.zone-map-container {
+  background: var(--bg-mid);
+  border: 1px solid rgba(200, 255, 0, 0.1);
+  position: relative;
+}
+
+.zone-map {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.zone-area {
+  cursor: pointer;
+  transition: stroke-width 0.3s, opacity 0.3s;
+}
+
+.zone-area:hover {
+  stroke-width: 2;
+  opacity: 0.9;
+}
+
+.zone-name {
+  pointer-events: none;
+  font-family: var(--font-terminal);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.zone-details {
+  background: var(--bg-surface);
+  border: 1px solid rgba(200, 255, 0, 0.08);
+  padding: 1.5rem;
+  min-height: 200px;
+}
+
+.zone-select-hint {
+  font-family: var(--font-terminal);
+  color: var(--color-muted);
+  font-size: 0.9rem;
+  text-align: center;
+  padding: 2rem 0;
+}
+
+/* ============================================
+   TECH TREE
+   ============================================ */
+
+.techtree-container {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 2rem;
+  align-items: start;
+}
+
+.techtree-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  background: var(--bg-mid);
+  border: 1px solid rgba(200, 255, 0, 0.08);
+}
+
+.tree-node {
+  cursor: pointer;
+  transition: opacity 0.3s;
+}
+
+.tree-node:hover circle {
+  stroke: var(--color-flesh-primary);
+  stroke-width: 2.5;
+}
+
+.tree-node:hover text {
+  fill: var(--color-flesh-primary);
+}
+
+.tree-path {
+  stroke: #333;
+  transition: stroke 0.5s;
+}
+
+.tree-path.active {
+  stroke: var(--color-flesh-dim);
+  animation: pathPulse 2s ease-in-out infinite;
+}
+
+@keyframes pathPulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+.techtree-panel {
+  background: var(--bg-surface);
+  border: 1px solid rgba(200, 255, 0, 0.08);
+  padding: 1.5rem;
+  min-height: 200px;
+}
+
+.techtree-hint {
+  font-family: var(--font-terminal);
+  color: var(--color-muted);
+  font-size: 0.9rem;
+  text-align: center;
+  padding: 2rem 0;
+}
+
+/* ============================================
+   SURVIVAL JOURNAL
+   ============================================ */
+
+.survival-journal {
+  position: relative;
+  max-width: 700px;
+  margin: 0 auto;
+  background: var(--bg-surface);
+  border: 1px solid rgba(200, 255, 0, 0.08);
+  min-height: 500px;
+}
+
+.journal-spine {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 30px;
+  background: linear-gradient(90deg, var(--bg-deep), var(--bg-surface));
+  border-right: 1px solid rgba(200, 255, 0, 0.06);
+}
+
+.journal-page {
+  padding: 2.5rem 2.5rem 2.5rem 3.5rem;
+  display: none;
+  animation: pageTurn 0.5s ease;
+}
+
+.journal-page.active-page {
+  display: block;
+}
+
+@keyframes pageTurn {
+  from { opacity: 0; transform: rotateY(-5deg); }
+  to { opacity: 1; transform: rotateY(0); }
+}
+
+.page-number {
+  font-family: var(--font-terminal);
+  font-size: 3rem;
+  color: rgba(200, 255, 0, 0.08);
+  position: absolute;
+  top: 1rem;
+  right: 1.5rem;
+  line-height: 1;
+}
+
+.entry-title {
+  font-family: var(--font-body);
+  font-size: 1.6rem;
+  font-weight: 600;
+  color: var(--color-bone);
+  margin-bottom: 1.25rem;
+  position: relative;
+}
+
+.entry-title::after {
+  content: '';
+  display: block;
+  width: 60px;
+  height: 2px;
+  background: var(--color-flesh-dim);
+  margin-top: 0.5rem;
+  opacity: 0.5;
+}
+
+.entry-handwritten {
+  font-family: var(--font-body);
+  font-size: 1.05rem;
+  line-height: 1.9;
+  color: var(--color-bone);
+  margin-bottom: 1rem;
+}
+
+.entry-handwritten em {
+  color: var(--color-flesh-dim);
+  font-style: italic;
+}
+
+.entry-scribble {
+  font-family: var(--font-terminal);
+  font-size: 0.85rem;
+  color: var(--color-vein-bright);
+  letter-spacing: 0.1em;
+  display: inline-block;
+  transform: rotate(-1deg);
+  border-bottom: 1px dashed var(--color-vein);
+  padding-bottom: 0.2rem;
+}
+
+.entry-sketch {
+  width: 120px;
+  height: 80px;
+  margin: 1.5rem 0;
+  opacity: 0.3;
+  border: 1px dashed var(--color-bone-dark);
+  position: relative;
+}
+
+.entry-sketch::after {
+  content: '[SKETCH]';
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-terminal);
+  font-size: 0.7rem;
+  color: var(--color-muted);
+}
+
+.water-sketch {
+  background: 
+    radial-gradient(ellipse at 50% 50%, var(--color-quiet) 20%, transparent 20%),
+    repeating-linear-gradient(0deg, transparent, transparent 5px, var(--color-quiet) 5px, var(--color-quiet) 6px);
+  background-size: 100% 100%, 100% 10px;
+}
+
+.trader-sketch {
+  background: 
+    radial-gradient(circle at 30% 40%, var(--color-flesh-dim) 15%, transparent 15%),
+    radial-gradient(circle at 70% 40%, var(--color-flesh-dim) 15%, transparent 15%),
+    radial-gradient(circle at 50% 70%, var(--color-gastric) 20%, transparent 20%);
+}
+
+.chitin-sketch {
+  background: 
+    repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 8px,
+      var(--color-flesh-dim) 8px,
+      var(--color-flesh-dim) 10px
+    );
+}
+
+.quiet-sketch {
+  background: 
+    radial-gradient(circle, transparent 30%, var(--color-quiet) 30%, var(--color-quiet) 31%, transparent 31%);
+}
+
+.entry-date {
+  display: block;
+  font-family: var(--font-terminal);
+  font-size: 0.75rem;
+  color: var(--color-muted);
+  margin-top: 1.5rem;
+  letter-spacing: 0.1em;
+}
+
+.journal-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  padding: 1rem;
+  border-top: 1px solid rgba(200, 255, 0, 0.06);
+}
+
+.journal-prev,
+.journal-next {
+  background: none;
+  border: 1px solid rgba(200, 255, 0, 0.15);
+  color: var(--color-flesh-dim);
+  font-family: var(--font-terminal);
+  font-size: 1.2rem;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.journal-prev:hover,
+.journal-next:hover {
+  background: rgba(200, 255, 0, 0.08);
+  color: var(--color-flesh-primary);
+}
+
+.journal-dots {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.journal-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-muted);
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.journal-dot.active {
+  background: var(--color-flesh-primary);
+  box-shadow: 0 0 6px var(--color-flesh-dim);
+}
+
+/* ============================================
+   FOOTER
+   ============================================ */
+
+.site-footer {
+  padding: 1.5rem 2rem;
+  border-top: 1px solid rgba(200, 255, 0, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  background: var(--bg-mid);
+}
+
+.footer-organism {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-family: var(--font-terminal);
+  font-size: 0.8rem;
+}
+
+.footer-pulse {
+  color: var(--color-flesh-primary);
+  animation: footerPulse 2s ease-in-out infinite;
+}
+
+@keyframes footerPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.footer-status {
+  color: var(--color-flesh-dim);
+}
+
+.footer-separator {
+  color: var(--color-muted);
+}
+
+.footer-version {
+  color: var(--color-muted);
+}
+
+.footer-warning {
+  font-family: var(--font-terminal);
+  font-size: 0.7rem;
+  color: var(--color-vein);
+  letter-spacing: 0.15em;
+  animation: warningBlink 3s ease-in-out infinite;
+}
+
+@keyframes warningBlink {
+  0%, 85%, 100% { opacity: 1; }
+  90%, 95% { opacity: 0.3; }
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 900px) {
+  .zone-interface,
+  .techtree-container {
+    grid-template-columns: 1fr;
+  }
+  
+  .mutation-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .site-header {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .header-vitals,
+  .header-meta {
+    justify-content: center;
+  }
+  
+  .biomech-nav {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  .site-footer {
+    flex-direction: column;
+    text-align: center;
+  }
+}
+
+@media (max-width: 600px) {
+  .content-container {
+    padding: 1rem;
+  }
+  
+  .site-title {
+    font-size: 1.5rem;
+  }
+  
+  .journal-page {
+    padding: 1.5rem 1.5rem 1.5rem 2.5rem;
+  }
+}

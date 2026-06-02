@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DARKNET::GRID - Underground Network Feed</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=VT323&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- CRT Overlay Effects -->
+    <div class="crt-overlay"></div>
+    <div class="scanlines"></div>
+    <div class="noise-overlay"></div>
+    
+    <!-- Trace Detected Warning Popup -->
+    <div id="trace-warning" class="trace-warning hidden">
+        <div class="trace-warning-content">
+            <div class="trace-warning-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polygon points="12,2 22,22 2,22"></polygon>
+                    <line x1="12" y1="9" x2="12" y2="13"></line>
+                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                </svg>
+            </div>
+            <h2 class="trace-warning-title">⚠ TRACE DETECTED ⚠</h2>
+            <p class="trace-warning-message">INCOMING TRACE INITIATED FROM [UNKNOWN NODE]</p>
+            <div class="trace-warning-details">
+                <div class="trace-detail">
+                    <span class="trace-label">ORIGIN:</span>
+                    <span class="trace-value glitch-text" data-text="77.45.201.92">77.45.201.92</span>
+                </div>
+                <div class="trace-detail">
+                    <span class="trace-label">METHOD:</span>
+                    <span class="trace-value">BACKTRACE EXPLOIT</span>
+                </div>
+                <div class="trace-detail">
+                    <span class="trace-label">ETA TO BREACH:</span>
+                    <span class="trace-value countdown">00:47</span>
+                </div>
+            </div>
+            <div class="trace-warning-actions">
+                <button class="trace-btn trace-btn-danger" onclick="initiateSweep()">INITIATE SWEEP</button>
+                <button class="trace-btn trace-btn-warn" onclick="routeTor()">ROUTE THROUGH TOR</button>
+                <button class="trace-btn trace-btn-safe" onclick="disconnect()">EMERGENCY DISCONNECT</button>
+            </div>
+            <div class="trace-warning-footer">
+                <span class="trace-blink">CONNECTION COMPROMISED</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Header -->
+        <header class="network-header">
+            <div class="header-left">
+                <div class="logo-container">
+                    <div class="logo-icon">
+                        <div class="logo-eye">
+                            <div class="logo-pupil"></div>
+                        </div>
+                    </div>
+                    <div class="logo-text">
+                        <h1 class="logo-title glitch-text" data-text="DARKNET::GRID">DARKNET::GRID</h1>
+                        <span class="logo-subtitle">UNDERGROUND NETWORK FEED v3.7.1</span>
+                    </div>
+                </div>
+            </div>
+            <div class="header-center">
+                <nav class="main-nav">
+                    <button class="nav-btn active" data-filter="all">
+                        <span class="nav-icon">◈</span> ALL FEEDS
+                    </button>
+                    <button class="nav-btn" data-filter="jobs">
+                        <span class="nav-icon">⟐</span> JOBS
+                    </button>
+                    <button class="nav-btn" data-filter="intel">
+                        <span class="nav-icon">◉</span> INTEL
+                    </button>
+                    <button class="nav-btn" data-filter="market">
+                        <span class="nav-icon">◆</span> MARKET
+                    </button>
+                    <button class="nav-btn" data-filter="social">
+                        <span class="nav-icon">◎</span> SOCIAL
+                    </button>
+                </nav>
+            </div>
+            <div class="header-right">
+                <div class="user-profile">
+                    <div class="user-avatar-container">
+                        <canvas class="avatar-canvas user-avatar" width="40" height="40" data-seed="user001"></canvas>
+                        <div class="avatar-status online"></div>
+                    </div>
+                    <div class="user-info">
+                        <span class="user-handle">@NETRUNNER_X</span>
+                        <div class="user-reputation">
+                            <div class="reputation-hologram" data-rep="847">
+                                <span class="rep-value">847</span>
+                                <span class="rep-label">REP</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Network Status Bar -->
+        <div class="status-bar">
+            <div class="status-item">
+                <span class="status-dot pulse-green"></span>
+                <span class="status-label">NETWORK</span>
+                <span class="status-value">ONLINE</span>
+            </div>
+            <div class="status-item">
+                <span class="status-dot pulse-yellow"></span>
+                <span class="status-label">ENCRYPTION</span>
+                <span class="status-value">AES-256-GCM</span>
+            </div>
+            <div class="status-item">
+                <span class="status-dot pulse-cyan"></span>
+                <span class="status-label">NODES</span>
+                <span class="status-value" id="node-count">2,847</span>
+            </div>
+            <div class="status-item">
+                <span class="status-dot pulse-magenta"></span>
+                <span class="status-label">ACTIVE JOBS</span>
+                <span class="status-value" id="job-count">142</span>
+            </div>
+            <div class="status-item">
+                <span class="status-dot pulse-red"></span>
+                <span class="status-label">THREAT LEVEL</span>
+                <span class="status-value threat-medium">ELEVATED</span>
+            </div>
+            <div class="status-item status-time">
+                <span class="system-time" id="system-time">2087.12.15 // 23:47:33</span>
+            </div>
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="content-wrapper">
+            <!-- Sidebar Left -->
+            <aside class="sidebar sidebar-left">
+                <div class="sidebar-section">
+                    <h3 class="sidebar-title">
+                        <span class="title-icon">⬡</span> YOUR CREDITS
+                    </h3>
+                    <div class="credits-display">
+                        <span class="credits-symbol">◈</span>
+                        <span class="credits-value" id="user-credits">47,892</span>
+                        <span class="credits-label">XMR</span>
+                    </div>
+                    <div class="credits-actions">
+                        <button class="credit-btn">TRANSFER</button>
+                        <button class="credit-btn">EXCHANGE</button>
+                    </div>
+                </div>
+
+                <div class="sidebar-section">
+                    <h3 class="sidebar-title">
+                        <span class="title-icon">⬢</span> ACTIVE CONTRACTS
+                    </h3>
+                    <div class="contracts-list">
+                        <div class="contract-item">
+                            <div class="contract-status active"></div>
+                            <div class="contract-info">
+                                <span class="contract-name">DataExfil_Net7</span>
+                                <span class="contract-deadline">⏱ 23:47:12</span>
+                            </div>
+                            <span class="contract-payment">◈ 15,000</span>
+                        </div>
+                        <div class="contract-item">
+                            <div class="contract-status pending"></div>
+                            <div class="contract-info">
+                                <span class="contract-name">CorpBreach_Alpha</span>
+                                <span class="contract-deadline">⏱ PENDING</span>
+                            </div>
+                            <span class="contract-payment">◈ 45,000</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sidebar-section">
+                    <h3 class="sidebar-title">
+                        <span class="title-icon">◈</span> TRUSTED CONTACTS
+                    </h3>
+                    <div class="contacts-list">
+                        <div class="contact-item">
+                            <canvas class="avatar-canvas contact-avatar" width="32" height="32" data-seed="cipher99"></canvas>
+                            <div class="contact-info">
+                                <span class="contact-name">@CIPHER_99</span>
+                                <span class="contact-status-text online">ONLINE</span>
+                            </div>
+                        </div>
+                        <div class="contact-item">
+                            <canvas class="avatar-canvas contact-avatar" width="32" height="32" data-seed="ghost"></canvas>
+                            <div class="contact-info">
+                                <span class="contact-name">@GH0ST_PROTOCOL</span>
+                                <span class="contact-status-text away">AWAY</span>
+                            </div>
+                        </div>
+                        <div class="contact-item">
+                            <canvas class="avatar-canvas contact-avatar" width="32" height="32" data-seed="zero"></canvas>
+                            <div class="contact-info">
+                                <span class="contact-name">@ZERO_COOL</span>
+                                <span class="contact-status-text offline">OFFLINE</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Feed Area -->
+            <main class="feed-container">
+                <!-- Compose Post -->
+                <div class="compose-box">
+                    <div class="compose-header">
+                        <canvas class="avatar-canvas compose-avatar" width="48" height="48" data-seed="user001"></canvas>
+                        <div class="compose-input-wrapper">
+                            <textarea class="compose-input" placeholder="Broadcast to the network... [Use {enc}tags{/enc} for encrypted content]" rows="1"></textarea>
+                        </div>
+                    </div>
+                    <div class="compose-footer">
+                        <div class="compose-options">
+                            <button class="compose-option" title="Encrypt Message">
+                                <span>🔐</span> ENCRYPT
+                            </button>
+                            <button class="compose-option" title="Attach File">
+                                <span>📎</span> ATTACH
+                            </button>
+                            <button class="compose-option" title="Set Threat Level">
+                                <span>⚠️</span> THREAT
+                            </button>
+                            <select class="post-type-select">
+                                <option value="social">SOCIAL</option>
+                                <option value="jobs">JOB POSTING</option>
+                                <option value="intel">INTEL DROP</option>
+                                <option value="market">MARKET LISTING</option>
+                            </select>
+                        </div>
+                        <button class="compose-submit">
+                            <span class="submit-icon">⟐</span> BROADCAST
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Feed Posts -->
+                <div class="feed-posts" id="feed-posts">
+                    
+                    <!-- Post 1: Job Posting - Critical Threat -->
+                    <article class="post-card" data-type="jobs" data-threat="critical">
+                        <div class="post-header">
+                            <div class="post-author">
+                                <div class="avatar-container">
+                                    <canvas class="avatar-canvas" width="48" height="48" data-seed="shadowbroker"></canvas>
+                                    <div class="avatar-glow critical"></div>
+                                </div>
+                                <div class="author-info">
+                                    <div class="author-name-row">
+                                        <span class="author-handle">@SHADOW_BROKER</span>
+                                        <span class="author-badge badge-legendary">LEGENDARY</span>
+                                    </div>
+                                    <div class="author-meta">
+                                        <div class="reputation-hologram small" data-rep="2847">
+                                            <span class="rep-value">2847</span>
+                                        </div>
+                                        <span class="author-role">FIXER</span>
+                                        <span class="post-time" data-timestamp="2087-12-15T23:41:00">4m ago</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="post-threat critical">
+                                <span class="threat-icon">☠</span>
+                                <span class="threat-label">CRITICAL</span>
+                            </div>
+                        </div>
+                        <div class="post-content">
+                            <div class="post-type-indicator">
+                                <span class="type-icon">⟐</span> JOB POSTING
+                            </div>
+                            <h2 class="post-title">REQUIREMENT: Corporate Data Extraction - Militech Division</h2>
+                            <p class="post-body">
+                                Seeking experienced netrunner team for high-risk data extraction. Target: <span class="redacted">MILITECH CENTRAL SERVER</span>. 
+                                Payment upon verification of deliverables. Clean extraction required - NO TRACES.
+                            </p>
+                            <div class="encrypted-message" data-encrypted="aHR0cHM6Ly9kYXJrbmV0LmdyaWQvdGFyZ2V0X2JyaWVmLnBkZg==" data-key="MILITECH_BREACH_2087">
+                                <div class="encrypted-header">
+                                    <span class="encrypted-icon">🔒</span>
+                                    <span class="encrypted-label">ENCRYPTED PREVIEW</span>
+                                    <span class="encrypted-hint">[ HOVER TO DECRYPT ]</span>
+                                </div>
+                                <div class="encrypted-content">
+                                    <span class="encrypted-cipher">████████████████████████████████</span>
+                                    <span class="encrypted-decrypted"></span>
+                                </div>
+                                <div class="encrypted-footer">
+                                    <span class="encryption-type">AES-256 // PGP</span>
+                                </div>
+                            </div>
+                            <div class="job-details">
+                                <div class="job-detail">
+                                    <span class="detail-label">PAYMENT:</span>
+                                    <span class="detail-value payment">◈ 250,000 XMR</span>
+                                </div>
+                                <div class="job-detail">
+                                    <span class="detail-label">DEADLINE:</span>
+                                    <span class="detail-value">72 HOURS</span>
+                                </div>
+                                <div class="job-detail">
+                                    <span class="detail-label">TEAM SIZE:</span>
+                                    <span class="detail-value">3-5 OPERATIVES</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="post-footer">
+                            <div class="post-stats">
+                                <button class="stat-btn">
+                                    <span class="stat-icon">◈</span>
+                                    <span class="stat-value">47</span>
+                                    <span class="stat-label">BIDS</span>
+                                </button>
+                                <button class="stat-btn">
+                                    <span class="stat-icon">◎</span>
+                                    <span class="stat-value">182</span>
+                                    <span class="stat-label">COMMENTS</span>
+                                </button>
+                                <button class="stat-btn">
+                                    <span class="stat-icon">⟁</span>
+                                    <span class="stat-value">89</span>
+                                    <span class="stat-label">SHARE</span>
+                                </button>
+                            </div>
+                            <div class="post-actions">
+                                <button class="action-btn action-apply">APPLY FOR JOB</button>
+                                <button class="action-btn action-save">SAVE</button>
+                            </div>
+                        </div>
+                    </article>
+
+                    <!-- Post 2: Intel Drop - High Threat -->
+                    <article class="post-card" data-type="intel" data-threat="high">
+                        <div class="post-header">
+                            <div class="post-author">
+                                <div class="avatar-container">
+                                    <canvas class="avatar-canvas" width="48" height="48" data-seed="dataleak"></canvas>
+                                    <div class="avatar-glow high"></div>
+                                </div>
+                                <div class="author-info">
+                                    <div class="author-name-row">
+                                        <span class="author-handle">@DATA_WRAITH</span>
+                                        <span class="author-badge badge-elite">ELITE</span>
+                                    </div>
+                                    <div class="author-meta">
+                                        <div class="reputation-hologram small" data-rep="1923">
+                                            <span class="rep-value">1923</span>
+                                        </div>
+                                        <span class="author-role">NETRUNNER</span>
+                                        <span class="post-time" data-timestamp="2087-12-15T23:33:00">14m ago</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="post-threat high">
+                                <span class="threat-icon">⚠</span>
+                                <span class="threat-label">HIGH</span>
+                            </div>
+                        </div>
+                        <div class="post-content">
+                            <div class="post-type-indicator">
+                                <span class="type-icon">◉</span> INTEL DROP
+                            </div>
+                            <h2 class="post-title">LEAKED: Arasaka Internal Memo - Project NIGHTFALL</h2>
+                            <p class="post-body">
+                                Got my hands on some juicy corporate garbage. Arasaka is planning something big - 
+                                looks like a new breed of ICE designed to <span class="highlight">permanently flatline netrunners</span>. 
+                                Full docs attached below. Share before they scrub this.
+                            </p>
+                            <div class="code-paste-block">
+                                <div class="code-header">
+                                    <span class="code-filename">arasaka_memo_nightfall.txt</span>
+                                    <div class="code-actions">
+                                        <button class="code-btn copy-btn" title="Copy">📋</button>
+                                        <button class="code-btn expand-btn" title="Expand">⬜</button>
+                                    </div>
+                                </div>
+                                <pre class="code-content"><code><span class="code-keyword">CLASSIFICATION:</span> <span class="code-string">TOP SECRET // EYES ONLY</span>
+<span class="code-keyword">FROM:</span> Arasaka Tactical Division
+<span class="code-keyword">TO:</span> Security Operations Command
+
+<span class="code-comment">// Project NIGHTFALL - Phase 3 Implementation</span>
+
+ATTN: All division heads,
+
+As discussed in yesterday's briefing, we are moving forward 
+with the deployment of NIGHTFALL ICE across all subsidiary 
+networks. This new generation of intrusion countermeasures 
+features:
+
+- Neural-feedback pulse capability
+- Auto-trace protocols (undetectable)
+- Memory-wipe cascades for captured operatives
+
+<span class="code-warning">WARNING:</span> This system is NOT to be tested on live targets 
+without executive authorization.
+
+<span class="code-keyword">DEPLOYMENT:</span> 2087.12.20
+<span class="code-keyword">AUTHORIZATION:</span> [REDACTED]</code></pre>
+                            </div>
+                            <div class="intel-sources">
+                                <span class="sources-label">VERIFIED SOURCES:</span>
+                                <span class="source-tag">INTERNAL_MEMO</span>
+                                <span class="source-tag">CONFIRMED</span>
+                                <span class="source-tag">TIER-1_ACCESS</span>
+                            </div>
+                        </div>
+                        <div class="post-footer">
+                            <div class="post-stats">
+                                <button class="stat-btn">
+                                    <span class="stat-icon">↑</span>
+                                    <span class="stat-value">892</span>
+                                    <span class="stat-label">BOOST</span>
+                                </button>
+                                <button class="stat-btn">
+                                    <span class="stat-icon">◎</span>
+                                    <span class="stat-value">423</span>
+                                    <span class="stat-label">COMMENTS</span>
+                                </button>
+                                <button class="stat-btn">
+                                    <span class="stat-icon">⟁</span>
+                                    <span class="stat-value">1.2K</span>
+                                    <span class="stat-label">SHARE</span>
+                                </button>
+                            </div>
+                            <div class="post-actions">
+                                <button class="action-btn action-download">DOWNLOAD</button>
+                                <button class="action-btn action-save">SAVE</button>
+                            </div>
+                        </div>
+                    </article>
+
+                    <!-- Post 3: Market Listing - Medium Threat -->
+                    <article class="post-card" data-type="market" data-threat="medium">
+                        <div class="post-header">
+                            <div class="post-author">
+                                <div class="avatar-container">
+                                    <canvas class="avatar-canvas" width="48" height="48" data-seed="blackmarket"></canvas>
+                                    <div class="avatar-glow medium"></div>
+                                </div>
+                                <div class="author-info">
+                                    <div class="author-name-row">
+                                        <span class="author-handle">@CHROME_DEALER</span>
+                                        <span class="author-badge badge-trusted">TRUSTED</span>
+                                    </div>
+                                    <div class="author-meta">
+                                        <div class="reputation-hologram small" data-rep="1205">
+                                            <span class="rep-value">1205</span>
+                                        </div>
+                                        <span class="author-role">VENDOR</span>
+                                        <span class="post-time" data-timestamp="2087-12-15T23:27:00">20m ago</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="post-threat medium">
+                                <span class="threat-icon">△</span>
+                                <span class="threat-label">MEDIUM</span>
+                            </div>
+                        </div>
+                        <div class="post-content">
+                            <div class="post-type-indicator">
+                                <span class="type-icon">◆</span> BLACK MARKET LISTING
+                            </div>
+                            <h2 class="post-title">FOR SALE: Military-Grade Cyberware - Barely Used</h2>
+                            <p class="post-body">
+                                Clearing out my workshop. All items verified and clean - no serial tracking, no corporate backdoors. 
+                                First come, first served. Serious inquiries only.
+                            </p>
+                            <div class="market-grid">
+                                <div class="market-item">
+                                    <div class="item-image">
+                                        <div class="item-placeholder">
+                                            <span class="item-icon">⚙</span>
+                                        </div>
+                                    </div>
+                                    <div class="item-details">
+                                        <span class="item-name">Neural Interface Mk.IV</span>
+                                        <span class="item-desc">Direct brain-computer link, 10TB/s bandwidth</span>
+                                        <span class="item-price">◈ 45,000 XMR</span>
+                                    </div>
+                                    <span class="item-stock">x2</span>
+                                </div>
+                                <div class="market-item">
+                                    <div class="item-image">
+                                        <div class="item-placeholder">
+                                            <span class="item-icon">👁</span>
+                                        </div>
+                                    </div>
+                                    <div class="item-details">
+                                        <span class="item-name">Kiroshi Optics v7</span>
+                                        <span class="item-desc">Enhanced zoom, thermal, and detection modes</span>
+                                        <span class="item-price">◈ 28,000 XMR</span>
+                                    </div>
+                                    <span class="item-stock">x1</span>
+                                </div>
+                                <div class="market-item">
+                                    <div class="item-image">
+                                        <div class="item-placeholder">
+                                            <span class="item-icon">🦾</span>
+                                        </div>
+                                    </div>
+                                    <div class="item-details">
+                                        <span class="item-name">Gorilla Arms (Refurbished)</span>
+                                        <span class="item-desc">Hydraulic enhancement, 850kg grip strength</span>
+                                        <span class="item-price">◈ 67,500 XMR</span>
+                                    </div>
+                                    <span class="item-stock">x1</span>
+                                </div>
+                            </div>
+                            <div class="market-note">
+                                <span class="note-icon">💬</span>
+                                <span class="note-text">PM for bulk discounts. Can arrange dead drop in Watson district.</span>
+                            </div>
+                        </div>
+                        <div class="post-footer">
+                            <div class="post-stats">
+                                <button class="stat-btn">
+                                    <span class="stat-icon">◈</span>
+                                    <span class="stat-value">23</span>
+                                    <span class="stat-label">OFFERS</span>
+                                </button>
+                                <button class="stat-btn">
+                                    <span class="stat-icon">◎</span>
+                                    <span class="stat-value">67</span>
+                                    <span class="stat-label">COMMENTS</span>
+                                </button>
+                                <button class="stat-btn">
+                                    <span class="stat-icon">♡</span>
+                                    <span class="stat-value">156</span>
+                                    <span class="stat-label">SAVED</span>
+                                </button>
+                            </div>
+                            <div class="post-actions">
+                                <button class="action-btn action-buy">MAKE OFFER</button>
+                                <button class="action-btn action-message">MESSAGE</button>
+                            </div>
+                        </div>
+                    </article>
+
+                    <!-- Post 4: Social - Low Threat -->
+                    <article class="post-card" data-type="social" data-threat="low">
+                        <div class="post-header">
+                            <div class="post-author">
+                                <div class="avatar-container">
+                                    <canvas class="avatar-canvas" width="48" height="48" data-seed="phantom"></canvas>
+                                    <div class="avatar-glow low"></div>
+                                </div>
+                                <div class="author-info">
+                                    <div class="author-name-row">
+                                        <span class="author-handle">@PHANTOM.byte</span>
+                                        <span class="author-badge badge-member">MEMBER</span>
+                                    </div>
+                                    <div class="author-meta">
+                                        <div class="reputation-hologram small" data-rep="412">
+                                            <span class="rep-value">412</span>
+                                        </div>
+                                        <span class="author-role">RUNNER</span>
+                                        <span class="post-time" data-timestamp="2087-12-15T23:19:00">28m ago</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="post-threat low">
+                                <span class="threat-icon">◇</span>
+                                <span class="threat-label">LOW</span>
+                            </div>
+                        </div>
+                        <div class="post-content">
+                            <div class="post-type-indicator">
+                                <span class="type-icon">◎</span> SOCIAL POST
+                            </div>
+                            <p class="post-body large">
+                                Anyone else notice the increased corpo activity in the Badlands? Saw three AV transports heading 
+                                towards the old biotech facility at 0300. Something's brewing. Stay frosty, choombas.
+                            </p>
+                            <div class="post-image-container">
+                                <div class="post-image">
+                                    <div class="image-placeholder">
+                                        <span class="image-static"></span>
+                                        <span class="image-label">CAPTURE_2087.12.15_0314.mpg</span>
+                                    </div>
+                                </div>
+                                <div class="image-metadata">
+                                    <span>📍 BADLANDS SECTOR 7</span>
+                                    <span>🕐 03:14:22</span>
+                                    <span>📷 SPYCAM MK.II</span>
+                                </div>
+                            </div>
+                            <div class="post-tags">
+                                <span class="tag">#BadlandsIntel</span>
+                                <span class="tag">#CorpoWatch</span>
+                                <span class="tag">#StayFrosty</span>
+                            </div>
+                        </div>
+                        <div class="post-footer">
+                            <div class="post-stats">
+                                <button class="stat-btn">
+                                    <span class="stat-icon">↑</span>
+                                    <span class="stat-value">234</span>
+                                    <span class="stat-label">BOOST</span>
+                                </button>
+                                <button class="stat-btn">
+                                    <span class="stat-icon">◎</span>
+                                    <span class="stat-value">89</span>
+                                    <span class="stat-label">COMMENTS</span>
+                                </button>
+                                <button class="stat-btn">
+                                    <span class="stat-icon">⟁</span>
+                                    <span class="stat-value">45</span>
+                                    <span class="stat-label">SHARE</span>
+                                </button>
+                            </div>
+                            <div class="post-actions">
+                                <button class="action-btn action-boost">BOOST</button>
+                                <button class="action-btn action-reply">REPLY</button>
+                            </div>
+                        </div>
+                    </article>
+
+                    <!-- Post 5: Encrypted Job - Critical -->
+                    <article class="post-card" data-type="jobs" data-threat="critical">
+                        <div class="post-header">
+                            <div class="post-author">
+                                <div class="avatar-container">
+                                    <canvas class="avatar-canvas" width="48" height="48" data-seed="anonymous"></canvas>
+                                    <div class="avatar-glow critical"></div>
+                                </div>
+                                <div class="author-info">
+                                    <div class="author-name-row">
+                                        <span class="author-handle">@[REDACTED]</span>
+                                        <span class="author-badge badge-unknown">UNKNOWN</span>
+                                    </div>
+                                    <div class="author-meta">
+                                        <div class="reputation-hologram small unknown" data-rep="???">
+                                            <span class="rep-value">???</span>
+                                        </div>
+                                        <span class="author-role">[HIDDEN]</span>
+                                        <span class="post-time" data-timestamp="2087-12-15T23:12:00">35m ago</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="post-threat critical">
+                                <span class="threat-icon">☠</span>
+                                <span class="threat-label">CRITICAL</span>
+                            </div>
+                        </div>
+                        <div class="post-content">
+                            <div class="post-type-indicator">
+                                <span class="type-icon">⟐</span> ENCRYPTED JOB
+                            </div>
+                            <div class="fully-encrypted-notice">
+                                <div class="encrypted-lock-icon">🔐</div>
+                                <p class="encrypted-notice-text">
+                                    THIS POST IS FULLY ENCRYPTED<br>
+                                    <span class="notice-sub">Clearance Level 3+ required to decrypt</span>
+                                </p>
+                                <button class="decrypt-attempt-btn" onclick="attemptDecrypt()">
+                                    ATTEMPT DECRYPTION
+                                </button>
+                            </div>
+                        </div>
+                        <div class="post-footer">
+                            <div class="post-stats">
+                                <button class="stat-btn disabled">
+                                    <span class="stat-icon">◈</span>
+                                    <span class="stat-value">--</span>
+                                    <span class="stat-label">BIDS</span>
+                                </button>
+                                <button class="stat-btn disabled">
+                                    <span class="stat-icon">◎</span>
+                                    <span class="stat-value">--</span>
+                                    <span class="stat-label">COMMENTS</span>
+                                </button>
+                                <button class="stat-btn disabled">
+                                    <span class="stat-icon">⟁</span>
+                                    <span class="stat-value">--</span>
+                                    <span class="stat-label">SHARE</span>
+                                </button>
+                            </div>
+                            <div class="post-actions">
+                                <button class="action-btn action-decrypt" onclick="attemptDecrypt()">REQUEST ACCESS</button>
+                            </div>
+                        </div>
+                    </article>
+
+                </div>
+
+                <!-- Load More -->
+                <div class="load-more-container">
+                    <button class="load-more-btn" id="load-more">
+                        <span class="load-icon">⟲</span> LOAD MORE POSTS
+                    </button>
+                    <span class="load-hint">Displaying 5 of 2,847 posts</span>
+                </div>
+            </main>
+
+            <!-- Sidebar Right -->
+            <aside class="sidebar sidebar-right">
+                <div class="sidebar-section">
+                    <h3 class="sidebar-title">
+                        <span class="title-icon">◉</span> TRENDING INTEL
+                    </h3>
+                    <div class="trending-list">
+                        <div class="trending-item">
+                            <span class="trending-rank">01</span>
+                            <div class="trending-info">
+                                <span class="trending-tag">#MilitechBreach</span>
+                                <span class="trending-count">2.3K posts</span>
+                            </div>
+                            <span class="trending-indicator up">↑</span>
+                        </div>
+                        <div class="trending-item">
+                            <span class="trending-rank">02</span>
+                            <div class="trending-info">
+                                <span class="trending-tag">#NightCityRaid</span>
+                                <span class="trending-count">1.8K posts</span>
+                            </div>
+                            <span class="trending-indicator up">↑</span>
+                        </div>
+                        <div class="trending-item">
+                            <span class="trending-rank">03</span>
+                            <div class="trending-info">
+                                <span class="trending-tag">#ICEWarning</span>
+                                <span class="trending-count">1.2K posts</span>
+                            </div>
+                            <span class="trending-indicator new">NEW</span>
+                        </div>
+                        <div class="trending-item">
+                            <span class="trending-rank">04</span>
+                            <div class="trending-info">
+                                <span class="trending-tag">#BlackMarketDeals</span>
+                                <span class="trending-count">956 posts</span>
+                            </div>
+                            <span class="trending-indicator stable">—</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sidebar-section">
+                    <h3 class="sidebar-title">
+                        <span class="title-icon">⚡</span> QUICK HACKS
+                    </h3>
+                    <div class="quick-actions">
+                        <button class="quick-action-btn">
+                            <span class="qa-icon">🔑</span>
+                            <span class="qa-label">GEN KEYS</span>
+                        </button>
+                        <button class="quick-action-btn">
+                            <span class="qa-icon">🧹</span>
+                            <span class="qa-label">WIPE TRACE</span>
+                        </button>
+                        <button class="quick-action-btn">
+                            <span class="qa-icon">🌐</span>
+                            <span class="qa-label">NEW NODE</span>
+                        </button>
+                        <button class="quick-action-btn">
+                            <span class="qa-icon">💀</span>
+                            <span class="qa-label">NUKE ID</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="sidebar-section">
+                    <h3 class="sidebar-title">
+                        <span class="title-icon">⚠</span> THREAT MATRIX
+                    </h3>
+                    <div class="threat-matrix">
+                        <div class="threat-level-display">
+                            <div class="threat-bar">
+                                <div class="threat-fill" style="height: 65%"></div>
+                            </div>
+                            <div class="threat-labels">
+                                <span class="threat-label-item critical">CRITICAL</span>
+                                <span class="threat-label-item high">HIGH</span>
+                                <span class="threat-label-item medium">MEDIUM</span>
+                                <span class="threat-label-item low">LOW</span>
+                            </div>
+                        </div>
+                        <div class="threat-stats">
+                            <div class="threat-stat">
+                                <span class="ts-label">Active Traces:</span>
+                                <span class="ts-value danger">12</span>
+                            </div>
+                            <div class="threat-stat">
+                                <span class="ts-label">Corpo Activity:</span>
+                                <span class="ts-value warning">HIGH</span>
+                            </div>
+                            <div class="threat-stat">
+                                <span class="ts-label">Network Status:</span>
+                                <span class="ts-value safe">SECURE</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sidebar-section">
+                    <h3 class="sidebar-title">
+                        <span class="title-icon">📡</span> LIVE FEED
+                    </h3>
+                    <div class="live-feed" id="live-feed">
+                        <div class="feed-item">
+                            <span class="feed-time">23:47:01</span>
+                            <span class="feed-msg">Node <span class="highlight">@ghost_7</span> connected</span>
+                        </div>
+                        <div class="feed-item">
+                            <span class="feed-time">23:46:45</span>
+                            <span class="feed-msg">New job posted: <span class="highlight">DataExfil</span></span>
+                        </div>
+                        <div class="feed-item">
+                            <span class="feed-time">23:46:12</span>
+                            <span class="feed-msg">Transaction: <span class="highlight">◈ 15,000 XMR</span></span>
+                        </div>
+                        <div class="feed-item">
+                            <span class="feed-time">23:45:33</span>
+                            <span class="feed-msg warning">⚠ Trace attempt blocked</span>
+                        </div>
+                        <div class="feed-item">
+                            <span class="feed-time">23:45:01</span>
+                            <span class="feed-msg">Intel verified: <span class="highlight">Arasaka</span></span>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+        </div>
+
+        <!-- Footer -->
+        <footer class="network-footer">
+            <div class="footer-left">
+                <span class="footer-logo">DARKNET::GRID</span>
+                <span class="footer-version">v3.7.1 // BUILD 20871215</span>
+            </div>
+            <div class="footer-center">
+                <span class="footer-notice">⚠ ALL COMMUNICATIONS ARE ENCRYPTED ⚠</span>
+            </div>
+            <div class="footer-right">
+                <span class="footer-connection">CONNECTION: <span class="status-secure">SECURE</span></span>
+                <span class="footer-latency">LATENCY: <span id="latency">47ms</span></span>
+            </div>
+        </footer>
+    </div>
+
+    <script src="scripts.js"></script>
+</body>
+</html>

@@ -1,0 +1,1273 @@
+/* ============================================
+   DEADWOOD TERRITORY BOUNTY BOARD
+   Old West Immersive Experience
+   ============================================ */
+
+/* --- CSS Variables & Reset --- */
+:root {
+  /* Wood tones */
+  --wood-dark: #2a1810;
+  --wood-medium: #5c3a21;
+  --wood-light: #8b5a2b;
+  --wood-bleached: #a67c52;
+  
+  /* Parchment tones */
+  --parchment-dark: #b8956e;
+  --parchment-medium: #d4b896;
+  --parchment-light: #e8d5b7;
+  --parchment-burnt: #c4a574;
+  
+  /* Accent colors */
+  --gold: #d4af37;
+  --gold-dark: #b8960c;
+  --silver: #c0c0c0;
+  --silver-dark: #a8a8a8;
+  --bronze: #cd7f32;
+  --bronze-dark: #a05a20;
+  --blood-red: #8b0000;
+  --ink-black: #1a0f0a;
+  
+  /* Textures */
+  --grain-opacity: 0.08;
+  
+  /* Spacing */
+  --space-xs: 0.5rem;
+  --space-sm: 1rem;
+  --space-md: 2rem;
+  --space-lg: 3rem;
+  --space-xl: 5rem;
+  
+  /* Borders */
+  --rope-width: 12px;
+  --poster-radius: 2px;
+  
+  /* Shadows */
+  --shadow-soft: 0 4px 20px rgba(0,0,0,0.3);
+  --shadow-hard: 0 8px 32px rgba(0,0,0,0.5);
+  --shadow-inset: inset 0 2px 8px rgba(0,0,0,0.2);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'IM Fell English', Georgia, serif;
+  background: var(--wood-dark);
+  color: var(--parchment-dark);
+  line-height: 1.6;
+  overflow-x: hidden;
+  min-height: 100vh;
+  position: relative;
+}
+
+/* --- Background Textures --- */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: 
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.03) 2px,
+      rgba(0,0,0,0.03) 4px
+    ),
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.03) 2px,
+      rgba(0,0,0,0.03) 4px
+    ),
+    linear-gradient(
+      135deg,
+      #3d2412 0%,
+      #5c3a21 25%,
+      #4a2c18 50%,
+      #5c3a21 75%,
+      #3d2412 100%
+    );
+  z-index: -2;
+  pointer-events: none;
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.08'/%3E%3C/svg%3E");
+  opacity: var(--grain-opacity);
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* --- Dust Particle Overlay --- */
+.dust-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1000;
+  overflow: hidden;
+}
+
+.dust-particle {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  background: rgba(212, 184, 150, 0.6);
+  border-radius: 50%;
+  animation: dustFloat linear infinite;
+}
+
+@keyframes dustFloat {
+  0% {
+    transform: translateY(-10px) translateX(0) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh) translateX(100px) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+/* --- Tumbleweed Animation --- */
+.tumbleweed-container {
+  position: fixed;
+  top: 20%;
+  left: -100px;
+  z-index: 999;
+  pointer-events: none;
+  animation: tumbleweedRoll 25s linear infinite;
+}
+
+.tumbleweed {
+  font-size: 3rem;
+  opacity: 0.7;
+  filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.4));
+  animation: tumbleweedSpin 2s linear infinite;
+}
+
+@keyframes tumbleweedRoll {
+  0% {
+    left: -100px;
+    top: 20%;
+  }
+  25% {
+    top: 35%;
+  }
+  50% {
+    top: 25%;
+  }
+  75% {
+    top: 40%;
+  }
+  100% {
+    left: 110vw;
+    top: 30%;
+  }
+}
+
+@keyframes tumbleweedSpin {
+  0% { transform: rotate(0deg) scale(1); }
+  50% { transform: rotate(180deg) scale(1.1); }
+  100% { transform: rotate(360deg) scale(1); }
+}
+
+/* --- Main Wooden Board --- */
+.wooden-board {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: var(--space-md);
+  position: relative;
+  background: 
+    linear-gradient(
+      180deg,
+      rgba(92, 58, 33, 0.3) 0%,
+      rgba(139, 90, 43, 0.2) 50%,
+      rgba(92, 58, 33, 0.3) 100%
+    );
+  min-height: 100vh;
+}
+
+/* --- Rope Borders --- */
+.rope-border {
+  position: relative;
+  height: var(--rope-width);
+  background: repeating-linear-gradient(
+    90deg,
+    #8b5a2b 0px,
+    #a67c52 2px,
+    #6b4423 4px,
+    #8b5a2b 6px
+  );
+  border-radius: 6px;
+  box-shadow: 
+    0 2px 4px rgba(0,0,0,0.3),
+    inset 0 1px 0 rgba(255,255,255,0.1);
+}
+
+.rope-border::before,
+.rope-border::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  background: radial-gradient(circle, #a67c52 30%, #6b4423 70%);
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+}
+
+.rope-border::before { left: -10px; }
+.rope-border::after { right: -10px; }
+
+/* --- Header Section --- */
+.board-header {
+  text-align: center;
+  padding: var(--space-xl) var(--space-md);
+  margin-bottom: var(--space-lg);
+  background: 
+    linear-gradient(180deg, rgba(212, 184, 150, 0.1) 0%, transparent 100%);
+  border: 3px solid var(--wood-medium);
+  border-radius: 4px;
+  position: relative;
+  box-shadow: var(--shadow-hard);
+}
+
+.board-header::before {
+  content: '';
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  right: 10px;
+  bottom: 10px;
+  border: 1px solid rgba(212, 184, 150, 0.3);
+  border-radius: 2px;
+  pointer-events: none;
+}
+
+.header-content {
+  position: relative;
+  z-index: 2;
+}
+
+.sheriff-badge {
+  display: inline-block;
+  width: 80px;
+  height: 80px;
+  background: radial-gradient(circle, #d4af37 0%, #b8960c 70%, #8b6914 100%);
+  border-radius: 50%;
+  margin-bottom: var(--space-md);
+  box-shadow: 
+    0 4px 12px rgba(0,0,0,0.5),
+    inset 0 2px 4px rgba(255,255,255,0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: badgePulse 3s ease-in-out infinite;
+}
+
+@keyframes badgePulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+.badge-star {
+  font-size: 3rem;
+  color: var(--wood-dark);
+  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.wanted-title {
+  font-family: 'Rye', cursive;
+  font-size: clamp(3rem, 8vw, 6rem);
+  color: var(--blood-red);
+  text-shadow: 
+    2px 2px 0 var(--wood-dark),
+    4px 4px 8px rgba(0,0,0,0.5);
+  letter-spacing: 0.1em;
+  margin-bottom: var(--space-xs);
+  animation: titleGlow 2s ease-in-out infinite alternate;
+}
+
+@keyframes titleGlow {
+  0% { text-shadow: 2px 2px 0 var(--wood-dark), 4px 4px 8px rgba(0,0,0,0.5); }
+  100% { text-shadow: 2px 2px 0 var(--wood-dark), 4px 4px 12px rgba(139, 0, 0, 0.3); }
+}
+
+.header-subtitle {
+  font-family: 'Special Elite', monospace;
+  font-size: 1.2rem;
+  color: var(--parchment-light);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin-bottom: var(--space-sm);
+}
+
+.header-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  margin: var(--space-md) 0;
+}
+
+.divider-dot {
+  width: 8px;
+  height: 8px;
+  background: var(--gold);
+  border-radius: 50%;
+  box-shadow: 0 0 8px rgba(212, 175, 55, 0.5);
+}
+
+.divider-line {
+  width: 100px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+}
+
+.territory {
+  font-family: 'IM Fell English', serif;
+  font-style: italic;
+  font-size: 1.1rem;
+  color: var(--parchment-dark);
+  opacity: 0.8;
+}
+
+/* --- Section Headers --- */
+.section-header {
+  text-align: center;
+  margin-bottom: var(--space-lg);
+  position: relative;
+}
+
+.section-title {
+  font-family: 'Rye', cursive;
+  font-size: clamp(2rem, 4vw, 3rem);
+  color: var(--parchment-light);
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+  display: inline-block;
+  padding: 0 var(--space-md);
+  position: relative;
+}
+
+.section-title::before,
+.section-title::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 60px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--parchment-dark));
+}
+
+.section-title::before {
+  right: 100%;
+  background: linear-gradient(90deg, transparent, var(--parchment-dark));
+}
+
+.section-title::after {
+  left: 100%;
+  background: linear-gradient(90deg, var(--parchment-dark), transparent);
+}
+
+.title-ornament {
+  display: block;
+  text-align: center;
+  font-size: 1.5rem;
+  color: var(--gold);
+  margin-top: var(--space-xs);
+  opacity: 0.8;
+}
+
+/* --- Posters Section --- */
+.posters-section {
+  margin-bottom: var(--space-xl);
+}
+
+.posters-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: var(--space-lg);
+  padding: var(--space-md);
+}
+
+/* --- Wanted Poster --- */
+.wanted-poster {
+  position: relative;
+  perspective: 1000px;
+  animation: posterAppear 0.8s ease-out backwards;
+}
+
+.wanted-poster:nth-child(1) { animation-delay: 0.1s; }
+.wanted-poster:nth-child(2) { animation-delay: 0.2s; }
+.wanted-poster:nth-child(3) { animation-delay: 0.3s; }
+.wanted-poster:nth-child(4) { animation-delay: 0.4s; }
+
+@keyframes posterAppear {
+  0% {
+    opacity: 0;
+    transform: translateY(30px) rotateX(10deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) rotateX(0);
+  }
+}
+
+.poster-curl-top,
+.poster-curl-bottom {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 30px;
+  z-index: 3;
+}
+
+.poster-curl-top {
+  top: -15px;
+  background: linear-gradient(180deg, var(--parchment-dark) 0%, transparent 100%);
+  border-radius: 4px 4px 50% 50% / 4px 4px 20px 20px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.poster-curl-bottom {
+  bottom: -15px;
+  background: linear-gradient(0deg, var(--parchment-dark) 0%, transparent 100%);
+  border-radius: 50% 50% 4px 4px / 20px 20px 4px 4px;
+  box-shadow: 0 -4px 8px rgba(0,0,0,0.2);
+}
+
+.poster-inner {
+  background: 
+    linear-gradient(135deg, var(--parchment-light) 0%, var(--parchment-medium) 50%, var(--parchment-burnt) 100%);
+  padding: var(--space-md);
+  border-radius: var(--poster-radius);
+  box-shadow: var(--shadow-hard);
+  position: relative;
+  border: 1px solid rgba(139, 90, 43, 0.3);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.wanted-poster:hover .poster-inner {
+  transform: translateY(-8px) rotateX(2deg);
+  box-shadow: 
+    0 16px 40px rgba(0,0,0,0.4),
+    0 0 0 1px rgba(212, 175, 55, 0.2);
+}
+
+.poster-inner::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url("data:image/svg+xml,%3Csvg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.06'/%3E%3C/svg%3E");
+  pointer-events: none;
+  border-radius: var(--poster-radius);
+}
+
+.poster-shadow {
+  position: absolute;
+  bottom: -20px;
+  left: 10%;
+  right: 10%;
+  height: 20px;
+  background: radial-gradient(ellipse at center, rgba(0,0,0,0.4) 0%, transparent 70%);
+  filter: blur(4px);
+  z-index: -1;
+}
+
+/* --- Outlaw Portrait --- */
+.outlaw-portrait {
+  text-align: center;
+  margin-bottom: var(--space-md);
+}
+
+.portrait-frame {
+  display: inline-block;
+  padding: 8px;
+  background: linear-gradient(135deg, var(--wood-light) 0%, var(--wood-medium) 100%);
+  border-radius: 4px;
+  box-shadow: var(--shadow-soft);
+  position: relative;
+}
+
+.portrait-frame::before {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  right: 4px;
+  bottom: 4px;
+  border: 1px solid rgba(212, 184, 150, 0.3);
+  border-radius: 2px;
+  pointer-events: none;
+}
+
+.portrait-inner {
+  width: 120px;
+  height: 120px;
+  background: var(--parchment-medium);
+  border-radius: 2px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 0 20px rgba(0,0,0,0.1);
+}
+
+.outlaw-svg {
+  width: 100%;
+  height: 100%;
+  filter: sepia(0.3) contrast(1.1);
+}
+
+.portrait-shadow {
+  width: 80%;
+  height: 10px;
+  background: radial-gradient(ellipse at center, rgba(0,0,0,0.3) 0%, transparent 70%);
+  margin: var(--space-xs) auto 0;
+  filter: blur(3px);
+}
+
+/* --- Poster Details --- */
+.poster-details {
+  text-align: center;
+}
+
+.outlaw-name {
+  font-family: 'Rye', cursive;
+  font-size: 1.5rem;
+  color: var(--ink-black);
+  margin-bottom: var(--space-xs);
+  text-shadow: 1px 1px 0 rgba(255,255,255,0.3);
+  line-height: 1.2;
+}
+
+.outlaw-aka {
+  font-family: 'Special Elite', monospace;
+  font-size: 0.85rem;
+  color: var(--wood-dark);
+  opacity: 0.8;
+  margin-bottom: var(--space-sm);
+  font-style: italic;
+}
+
+.crime-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-xs);
+  margin-bottom: var(--space-md);
+}
+
+.crime-tag {
+  font-family: 'Special Elite', monospace;
+  font-size: 0.75rem;
+  padding: 4px 10px;
+  background: rgba(139, 0, 0, 0.1);
+  border: 1px solid rgba(139, 0, 0, 0.3);
+  border-radius: 2px;
+  color: var(--blood-red);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* --- Reward Box --- */
+.reward-box {
+  padding: var(--space-sm);
+  margin: var(--space-md) 0;
+  border-radius: 4px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.reward-box::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url("data:image/svg+xml,%3Csvg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.1'/%3E%3C/svg%3E");
+  pointer-events: none;
+}
+
+.gold-reward {
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.2) 0%, rgba(184, 150, 12, 0.2) 100%);
+  border: 2px solid var(--gold);
+  box-shadow: 
+    0 0 20px rgba(212, 175, 55, 0.2),
+    inset 0 0 20px rgba(212, 175, 55, 0.1);
+}
+
+.silver-reward {
+  background: linear-gradient(135deg, rgba(192, 192, 192, 0.2) 0%, rgba(168, 168, 168, 0.2) 100%);
+  border: 2px solid var(--silver);
+  box-shadow: 
+    0 0 20px rgba(192, 192, 192, 0.2),
+    inset 0 0 20px rgba(192, 192, 192, 0.1);
+}
+
+.bronze-reward {
+  background: linear-gradient(135deg, rgba(205, 127, 50, 0.2) 0%, rgba(160, 90, 32, 0.2) 100%);
+  border: 2px solid var(--bronze);
+  box-shadow: 
+    0 0 20px rgba(205, 127, 50, 0.2),
+    inset 0 0 20px rgba(205, 127, 50, 0.1);
+}
+
+.reward-coins {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-xs);
+  margin-bottom: var(--space-xs);
+}
+
+.coin {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.gold-reward .coin {
+  background: radial-gradient(circle at 30% 30%, #ffd700, #b8960c);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.silver-reward .coin {
+  background: radial-gradient(circle at 30% 30%, #e8e8e8, #a8a8a8);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.bronze-reward .coin {
+  background: radial-gradient(circle at 30% 30%, #e09050, #a05a20);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.reward-text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.reward-amount {
+  font-family: 'Rye', cursive;
+  font-size: 2rem;
+  color: var(--ink-black);
+  text-shadow: 1px 1px 0 rgba(255,255,255,0.3);
+}
+
+.reward-label {
+  font-family: 'Special Elite', monospace;
+  font-size: 0.8rem;
+  letter-spacing: 0.2em;
+  color: var(--wood-dark);
+  opacity: 0.8;
+}
+
+/* --- Poster Footer --- */
+.poster-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: var(--space-md);
+  padding-top: var(--space-sm);
+  border-top: 1px dashed rgba(139, 90, 43, 0.3);
+  font-family: 'Special Elite', monospace;
+  font-size: 0.75rem;
+  color: var(--wood-dark);
+}
+
+.sheriff {
+  font-weight: bold;
+}
+
+/* --- Wax Seal --- */
+.wax-seal {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  width: 40px;
+  height: 40px;
+  background: radial-gradient(circle at 30% 30%, #c41e3a 0%, #8b0000 70%, #5c0000 100%);
+  border-radius: 50%;
+  box-shadow: 
+    0 3px 8px rgba(0,0,0,0.4),
+    inset 0 1px 2px rgba(255,255,255,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: rotate(-15deg);
+  animation: sealWobble 4s ease-in-out infinite;
+}
+
+@keyframes sealWobble {
+  0%, 100% { transform: rotate(-15deg); }
+  50% { transform: rotate(-12deg); }
+}
+
+.seal-inner {
+  font-family: 'Rye', cursive;
+  font-size: 1.2rem;
+  color: rgba(255,255,255,0.8);
+  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+}
+
+/* --- Reward Tiers Section --- */
+.reward-tiers-section {
+  margin-bottom: var(--space-xl);
+  padding: var(--space-md);
+}
+
+.tiers-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--space-lg);
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.tier-card {
+  background: 
+    linear-gradient(135deg, var(--parchment-light) 0%, var(--parchment-medium) 100%);
+  padding: var(--space-lg);
+  border-radius: 8px;
+  text-align: center;
+  box-shadow: var(--shadow-soft);
+  border: 2px solid transparent;
+  position: relative;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.tier-card:hover {
+  transform: translateY(-8px);
+  box-shadow: var(--shadow-hard);
+}
+
+.bronze-tier { border-color: var(--bronze); }
+.silver-tier { border-color: var(--silver); }
+.gold-tier { border-color: var(--gold); }
+
+.tier-card::before {
+  content: '';
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  right: 10px;
+  bottom: 10px;
+  border: 1px solid rgba(139, 90, 43, 0.2);
+  border-radius: 4px;
+  pointer-events: none;
+}
+
+.tier-medal {
+  width: 70px;
+  height: 70px;
+  margin: 0 auto var(--space-md);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-soft);
+}
+
+.bronze-tier .tier-medal {
+  background: radial-gradient(circle at 30% 30%, #e09050 0%, #a05a20 100%);
+}
+
+.silver-tier .tier-medal {
+  background: radial-gradient(circle at 30% 30%, #e8e8e8 0%, #a8a8a8 100%);
+}
+
+.gold-tier .tier-medal {
+  background: radial-gradient(circle at 30% 30%, #ffd700 0%, #b8960c 100%);
+}
+
+.medal-star {
+  font-size: 2.5rem;
+  color: rgba(255,255,255,0.9);
+  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.tier-name {
+  font-family: 'Rye', cursive;
+  font-size: 1.8rem;
+  color: var(--ink-black);
+  margin-bottom: var(--space-xs);
+}
+
+.tier-range {
+  font-family: 'Special Elite', monospace;
+  font-size: 1rem;
+  color: var(--wood-dark);
+  margin-bottom: var(--space-md);
+  opacity: 0.8;
+}
+
+.tier-perks {
+  list-style: none;
+  text-align: left;
+  padding: 0;
+}
+
+.tier-perks li {
+  font-family: 'IM Fell English', serif;
+  font-size: 0.95rem;
+  color: var(--wood-dark);
+  padding: var(--space-xs) 0;
+  padding-left: var(--space-md);
+  position: relative;
+}
+
+.tier-perks li::before {
+  content: '★';
+  position: absolute;
+  left: 0;
+  color: var(--gold);
+  font-size: 0.8rem;
+}
+
+/* --- Dispatch Section --- */
+.dispatch-section {
+  margin-bottom: var(--space-xl);
+  padding: var(--space-md);
+}
+
+.dispatch-log {
+  max-width: 900px;
+  margin: 0 auto;
+  background: 
+    linear-gradient(180deg, var(--parchment-light) 0%, var(--parchment-medium) 100%);
+  padding: var(--space-lg);
+  border-radius: 4px;
+  box-shadow: var(--shadow-hard);
+  position: relative;
+  border: 1px solid rgba(139, 90, 43, 0.3);
+}
+
+.dispatch-log::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url("data:image/svg+xml,%3Csvg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.08'/%3E%3C/svg%3E");
+  pointer-events: none;
+  border-radius: 4px;
+}
+
+.log-entry {
+  padding: var(--space-md) 0;
+  border-bottom: 1px dashed rgba(139, 90, 43, 0.3);
+  position: relative;
+  z-index: 1;
+}
+
+.log-entry:last-child {
+  border-bottom: none;
+}
+
+.entry-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-sm);
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+}
+
+.entry-date {
+  font-family: 'Special Elite', monospace;
+  font-size: 0.85rem;
+  color: var(--wood-dark);
+  font-weight: bold;
+}
+
+.entry-priority {
+  font-family: 'Special Elite', monospace;
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  border-radius: 2px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: bold;
+}
+
+.entry-priority.high {
+  background: rgba(139, 0, 0, 0.15);
+  color: var(--blood-red);
+  border: 1px solid rgba(139, 0, 0, 0.3);
+  animation: urgentPulse 1.5s ease-in-out infinite;
+}
+
+.entry-priority.medium {
+  background: rgba(205, 127, 50, 0.15);
+  color: var(--bronze-dark);
+  border: 1px solid rgba(205, 127, 50, 0.3);
+}
+
+.entry-priority.low {
+  background: rgba(192, 192, 192, 0.15);
+  color: var(--silver-dark);
+  border: 1px solid rgba(192, 192, 192, 0.3);
+}
+
+@keyframes urgentPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.entry-content {
+  font-family: 'IM Fell English', serif;
+  font-size: 1rem;
+  line-height: 1.7;
+  color: var(--ink-black);
+  margin-bottom: var(--space-sm);
+  text-align: justify;
+}
+
+.entry-footer {
+  font-family: 'Special Elite', monospace;
+  font-size: 0.8rem;
+  color: var(--wood-dark);
+  text-align: right;
+  font-style: italic;
+}
+
+.dispatch-stamp {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  font-family: 'Rye', cursive;
+  font-size: 1.5rem;
+  color: rgba(139, 0, 0, 0.15);
+  transform: rotate(-12deg);
+  border: 3px solid rgba(139, 0, 0, 0.15);
+  padding: 4px 12px;
+  border-radius: 4px;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* --- Revolver Navigation --- */
+.revolver-nav {
+  position: fixed;
+  right: 30px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.revolver-cylinder {
+  width: 60px;
+  height: 120px;
+  background: linear-gradient(90deg, #2a2a2a 0%, #4a4a4a 50%, #2a2a2a 100%);
+  border-radius: 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-around;
+  padding: 10px 0;
+  box-shadow: 
+    0 4px 12px rgba(0,0,0,0.5),
+    inset 0 2px 4px rgba(255,255,255,0.1);
+  border: 2px solid #1a1a1a;
+  position: relative;
+}
+
+.revolver-cylinder::before {
+  content: '';
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  right: 5px;
+  height: 2px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 2px;
+}
+
+.chamber {
+  width: 30px;
+  height: 30px;
+  background: radial-gradient(circle at 30% 30%, #1a1a1a 0%, #0a0a0a 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Special Elite', monospace;
+  font-size: 0.7rem;
+  color: var(--silver);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid #333;
+}
+
+.chamber:hover {
+  background: radial-gradient(circle at 30% 30%, #333 0%, #1a1a1a 100%);
+  transform: scale(1.1);
+}
+
+.chamber.active {
+  background: radial-gradient(circle at 30% 30%, #8b0000 0%, #5c0000 100%);
+  border-color: var(--blood-red);
+  box-shadow: 0 0 10px rgba(139, 0, 0, 0.5);
+}
+
+.revolver-trigger {
+  width: 20px;
+  height: 40px;
+  background: linear-gradient(90deg, #2a2a2a 0%, #4a4a4a 50%, #2a2a2a 100%);
+  border-radius: 4px;
+  margin-top: var(--space-xs);
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+  transition: transform 0.1s ease;
+}
+
+.revolver-trigger:hover {
+  transform: scale(1.1);
+}
+
+.revolver-trigger:active {
+  transform: scale(0.95) translateY(2px);
+}
+
+/* --- Footer --- */
+.board-footer {
+  text-align: center;
+  padding: var(--space-lg) var(--space-md);
+  margin-top: var(--space-xl);
+  position: relative;
+}
+
+.footer-content {
+  padding: var(--space-md);
+  background: rgba(42, 24, 16, 0.3);
+  border-radius: 4px;
+}
+
+.footer-text {
+  font-family: 'IM Fell English', serif;
+  font-style: italic;
+  font-size: 1.2rem;
+  color: var(--parchment-light);
+  margin-bottom: var(--space-xs);
+}
+
+.footer-subtext {
+  font-family: 'Special Elite', monospace;
+  font-size: 0.9rem;
+  color: var(--parchment-dark);
+  opacity: 0.7;
+  margin-bottom: var(--space-md);
+}
+
+.footer-badges {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+}
+
+.badge {
+  font-family: 'Special Elite', monospace;
+  font-size: 0.75rem;
+  padding: 4px 12px;
+  background: rgba(139, 0, 0, 0.2);
+  border: 1px solid rgba(139, 0, 0, 0.4);
+  border-radius: 2px;
+  color: var(--blood-red);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+/* --- Torn Paper Edges --- */
+.torn-edge {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  width: 40px;
+  z-index: 50;
+  pointer-events: none;
+}
+
+.torn-left {
+  left: 0;
+  background: linear-gradient(90deg, 
+    var(--wood-dark) 0%, 
+    transparent 100%
+  );
+}
+
+.torn-right {
+  right: 0;
+  background: linear-gradient(-90deg, 
+    var(--wood-dark) 0%, 
+    transparent 100%
+  );
+}
+
+/* --- Responsive Design --- */
+@media (max-width: 768px) {
+  .wooden-board {
+    padding: var(--space-sm);
+  }
+  
+  .posters-grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-md);
+  }
+  
+  .tiers-container {
+    grid-template-columns: 1fr;
+  }
+  
+  .revolver-nav {
+    right: 10px;
+    transform: translateY(-50%) scale(0.8);
+  }
+  
+  .header-divider {
+    flex-direction: column;
+    gap: var(--space-xs);
+  }
+  
+  .divider-line {
+    width: 60px;
+  }
+  
+  .dispatch-stamp {
+    position: relative;
+    top: auto;
+    right: auto;
+    display: block;
+    text-align: center;
+    margin-bottom: var(--space-md);
+    transform: rotate(-12deg);
+  }
+}
+
+@media (max-width: 480px) {
+  .wanted-title {
+    font-size: 2.5rem;
+  }
+  
+  .poster-inner {
+    padding: var(--space-sm);
+  }
+  
+  .reward-amount {
+    font-size: 1.5rem;
+  }
+  
+  .revolver-nav {
+    display: none;
+  }
+}
+
+/* --- Selection Styling --- */
+::selection {
+  background: rgba(212, 175, 55, 0.3);
+  color: var(--ink-black);
+}
+
+/* --- Scrollbar Styling --- */
+::-webkit-scrollbar {
+  width: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--wood-dark);
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, var(--wood-light) 0%, var(--wood-medium) 100%);
+  border-radius: 6px;
+  border: 2px solid var(--wood-dark);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, var(--wood-medium) 0%, var(--wood-dark) 100%);
+}
+
+/* --- Loading Animation --- */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.board-header {
+  animation: fadeInUp 0.8s ease-out;
+}
+
+.posters-section {
+  animation: fadeInUp 0.8s ease-out 0.2s backwards;
+}
+
+.reward-tiers-section {
+  animation: fadeInUp 0.8s ease-out 0.4s backwards;
+}
+
+.dispatch-section {
+  animation: fadeInUp 0.8s ease-out 0.6s backwards;
+}
+
+/* --- Print Styles --- */
+@media print {
+  .dust-overlay,
+  .tumbleweed-container,
+  .revolver-nav,
+  .torn-edge {
+    display: none;
+  }
+  
+  body {
+    background: white;
+    color: black;
+  }
+  
+  .wanted-poster {
+    break-inside: avoid;
+  }
+}

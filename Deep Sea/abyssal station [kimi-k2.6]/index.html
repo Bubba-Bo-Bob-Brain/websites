@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ABYSSAL STATION ORPHEUS — Primary Operations</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Viewport frame — submarine porthole structure -->
+    <div class="viewport-frame">
+        <div class="viewport-bolts">
+            <div class="bolt bolt-1"></div>
+            <div class="bolt bolt-2"></div>
+            <div class="bolt bolt-3"></div>
+            <div class="bolt bolt-4"></div>
+            <div class="bolt bolt-5"></div>
+            <div class="bolt bolt-6"></div>
+            <div class="bolt bolt-7"></div>
+            <div class="bolt bolt-8"></div>
+            <div class="bolt bolt-9"></div>
+            <div class="bolt bolt-10"></div>
+            <div class="bolt bolt-11"></div>
+            <div class="bolt bolt-12"></div>
+        </div>
+        <div class="viewport-ring"></div>
+        <div class="viewport-glass">
+            <div class="glass-scratches"></div>
+        </div>
+    </div>
+
+    <!-- Particle canvas layer -->
+    <canvas id="bioluminescent-particles"></canvas>
+
+    <!-- Sonar ripple layer -->
+    <canvas id="sonar-canvas"></canvas>
+
+    <!-- Current flow visualization -->
+    <canvas id="current-canvas"></canvas>
+
+    <!-- Main dashboard container -->
+    <div class="dashboard">
+        <!-- Top status bar -->
+        <header class="status-bar">
+            <div class="station-ident">
+                <span class="station-label">STATION</span>
+                <span class="station-name">ORPHEUS</span>
+                <span class="station-designation">HADAL-CLASS RESEARCH PLATFORM</span>
+            </div>
+            <div class="mission-timer">
+                <span class="timer-label">MISSION ELAPSED</span>
+                <span class="timer-value" id="mission-timer">000:00:00:00</span>
+            </div>
+            <div class="environment-status">
+                <span class="env-label">EXTERNAL ENVIRONMENT</span>
+                <span class="env-value" id="env-status">NOMINAL</span>
+            </div>
+        </header>
+
+        <!-- Pressure warning klaxon bar -->
+        <div class="klaxon-bar" id="klaxon-bar">
+            <div class="klaxon-light"></div>
+            <span class="klaxon-text">HULL PRESSURE CRITICAL — DESCENT HALTED</span>
+            <div class="klaxon-light"></div>
+        </div>
+
+        <!-- Main grid layout -->
+        <main class="dashboard-grid">
+            <!-- Left column -->
+            <aside class="column-left">
+                <!-- Depth gauge module -->
+                <section class="module depth-module">
+                    <div class="module-header">
+                        <span class="module-title">Depth Telemetry</span>
+                        <span class="module-status active">● LIVE</span>
+                    </div>
+                    <div class="depth-display">
+                        <div class="depth-rings">
+                            <div class="depth-ring ring-1"></div>
+                            <div class="depth-ring ring-2"></div>
+                            <div class="depth-ring ring-3"></div>
+                        </div>
+                        <div class="depth-value-container">
+                            <span class="depth-number" id="depth-value">10,847</span>
+                            <span class="depth-unit">meters</span>
+                        </div>
+                        <div class="depth-zone-indicator" id="depth-zone">HADAL ZONE</div>
+                        <div class="depth-gradient-overlay" id="depth-gradient"></div>
+                    </div>
+                    <div class="depth-chart">
+                        <svg viewBox="0 0 300 80" class="depth-svg" id="depth-chart-svg">
+                            <defs>
+                                <linearGradient id="chartGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                                    <stop offset="0%" stop-color="var(--accent-cyan)"/>
+                                    <stop offset="100%" stop-color="transparent"/>
+                                </linearGradient>
+                            </defs>
+                            <polyline id="depth-polyline" points="" fill="none" stroke="var(--accent-cyan)" stroke-width="1.5"/>
+                            <polygon id="depth-polygon" points="" fill="url(#chartGrad)" opacity="0.3"/>
+                        </svg>
+                    </div>
+                    <div class="depth-meta">
+                        <div class="meta-item">
+                            <span class="meta-label">Descent Rate</span>
+                            <span class="meta-value" id="descent-rate">+0.3 m/min</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">Seafloor Distance</span>
+                            <span class="meta-value" id="seafloor-dist">2,153 m</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">Max Rated</span>
+                            <span class="meta-value">11,000 m</span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Pressure monitoring -->
+                <section class="module pressure-module">
+                    <div class="module-header">
+                        <span class="module-title">Hull Pressure</span>
+                        <span class="module-status active">● LIVE</span>
+                    </div>
+                    <div class="pressure-gauge">
+                        <div class="gauge-face">
+                            <div class="gauge-arc"></div>
+                            <div class="gauge-needle" id="pressure-needle"></div>
+                            <div class="gauge-center">
+                                <span class="gauge-value" id="pressure-value">1,086</span>
+                                <span class="gauge-unit">bar</span>
+                            </div>
+                        </div>
+                        <div class="gauge-marks">
+                            <span class="mark safe">SAFE</span>
+                            <span class="mark caution">CAUTION</span>
+                            <span class="mark critical">CRITICAL</span>
+                        </div>
+                    </div>
+                    <div class="pressure-details">
+                        <div class="pressure-bar-container">
+                            <div class="pressure-bar" id="pressure-bar"></div>
+                            <div class="pressure-zone-marks">
+                                <div class="zone-mark" style="left: 60%"></div>
+                                <div class="zone-mark" style="left: 85%"></div>
+                            </div>
+                        </div>
+                        <div class="pressure-readings">
+                            <div class="reading">
+                                <span class="reading-label">Differential</span>
+                                <span class="reading-value" id="pressure-diff">0.02 bar</span>
+                            </div>
+                            <div class="reading">
+                                <span class="reading-label">Integrity Margin</span>
+                                <span class="reading-value" id="integrity-margin">14.3%</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </aside>
+
+            <!-- Center column — main viewport and sonar -->
+            <div class="column-center">
+                <!-- External camera feed -->
+                <section class="module camera-module">
+                    <div class="module-header">
+                        <span class="module-title">External Observation — Camera Array 7</span>
+                        <span class="module-status active">● LIVE</span>
+                    </div>
+                    <div class="camera-feed">
+                        <div class="feed-overlay">
+                            <div class="crosshair horizontal"></div>
+                            <div class="crosshair vertical"></div>
+                            <div class="crosshair-center"></div>
+                            <div class="range-rings">
+                                <div class="r-ring"></div>
+                                <div class="r-ring"></div>
+                                <div class="r-ring"></div>
+                            </div>
+                        </div>
+                        <div class="feed-data">
+                            <span class="feed-coords" id="camera-coords">35°42'15"S  142°19'33"E</span>
+                            <span class="feed-timestamp" id="camera-timestamp">2024.184.06:23:17</span>
+                            <span class="feed-label">CAM-07 / WIDE SPECTRUM / IR-ENHANCED</span>
+                        </div>
+                        <div class="feed-static" id="feed-static"></div>
+                        <!-- Simulated deep sea view -->
+                        <div class="deep-sea-bg" id="deep-sea-bg"></div>
+                    </div>
+                </section>
+
+                <!-- Sonar display -->
+                <section class="module sonar-module">
+                    <div class="module-header">
+                        <span class="module-title">Active Sonar — 360° Sweep</span>
+                        <span class="module-status active">● LIVE</span>
+                    </div>
+                    <div class="sonar-display">
+                        <div class="sonar-screen">
+                            <div class="sonar-sweep" id="sonar-sweep"></div>
+                            <div class="sonar-grid">
+                                <div class="grid-ring"></div>
+                                <div class="grid-ring"></div>
+                                <div class="grid-ring"></div>
+                                <div class="grid-ring"></div>
+                            </div>
+                            <div class="sonar-axis horizontal"></div>
+                            <div class="sonar-axis vertical"></div>
+                            <div class="sonar-blips" id="sonar-blips"></div>
+                        </div>
+                        <div class="sonar-readout">
+                            <div class="sonar-contact" id="sonar-contact-active">
+                                <span class="contact-label">CONTACT</span>
+                                <span class="contact-brg" id="contact-bearing">247°</span>
+                                <span class="contact-dist" id="contact-distance">1,240 m</span>
+                                <span class="contact-class" id="contact-class">UNKNOWN BIOLOGICAL</span>
+                            </div>
+                            <div class="sonar-history" id="sonar-history">
+                                <div class="history-item">
+                                    <span class="hist-time">06:22:14</span>
+                                    <span class="hist-brg">198°</span>
+                                    <span class="hist-dist">2,800 m</span>
+                                    <span class="hist-class">SEAFLOOR CONTACT</span>
+                                </div>
+                                <div class="history-item">
+                                    <span class="hist-time">06:21:55</span>
+                                    <span class="hist-brg">015°</span>
+                                    <span class="hist-dist">4,100 m</span>
+                                    <span class="hist-class">THERMOCLINE BOUNDARY</span>
+                                </div>
+                                <div class="history-item">
+                                    <span class="hist-time">06:20:33</span>
+                                    <span class="hist-brg">312°</span>
+                                    <span class="hist-dist">890 m</span>
+                                    <span class="hist-class">UNKNOWN BIOLOGICAL</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Right column -->
+            <aside class="column-right">
+                <!-- Bioluminescent fauna tracking -->
+                <section class="module fauna-module">
+                    <div class="module-header">
+                        <span class="module-title">Fauna Tracking — Bioluminescent</span>
+                        <span class="module-status active">● LIVE</span>
+                    </div>
+                    <div class="fauna-display">
+                        <div class="fauna-map" id="fauna-map">
+                            <div class="map-grid"></div>
+                            <div class="fauna-tracker tracker-1" id="tracker-1">
+                                <div class="tracker-ping"></div>
+                                <div class="tracker-label">A. victoris</div>
+                            </div>
+                            <div class="fauna-tracker tracker-2" id="tracker-2">
+                                <div class="tracker-ping"></div>
+                                <div class="tracker-label">T. glomerosa</div>
+                            </div>
+                            <div class="fauna-tracker tracker-3" id="tracker-3">
+                                <div class="tracker-ping"></div>
+                                <div class="tracker-label">P. lumina</div>
+                            </div>
+                            <div class="fauna-tracker tracker-4" id="tracker-4">
+                                <div class="tracker-ping"></div>
+                                <div class="tracker-label">UNCLASSIFIED</div>
+                            </div>
+                        </div>
+                        <div class="fauna-legend">
+                            <div class="legend-item">
+                                <div class="legend-dot" style="background: var(--accent-cyan)"></div>
+                                <span>Atolla victoris</span>
+                                <span class="legend-count" id="count-atolla">3</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-dot" style="background: var(--accent-magenta)"></div>
+                                <span>Taningia glomerosa</span>
+                                <span class="legend-count" id="count-taningia">1</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-dot" style="background: var(--accent-lime)"></div>
+                                <span>Psychropotes lumina</span>
+                                <span class="legend-count" id="count-psychro">5</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-dot" style="background: var(--accent-amber)"></div>
+                                <span>Unclassified</span>
+                                <span class="legend-count" id="count-unclass">2</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="fauna-spectra">
+                        <div class="spectra-chart" id="spectra-chart">
+                            <div class="spectra-bar" style="height: 60%; background: var(--accent-cyan)"></div>
+                            <div class="spectra-bar" style="height: 40%; background: var(--accent-magenta)"></div>
+                            <div class="spectra-bar" style="height: 80%; background: var(--accent-lime)"></div>
+                            <div class="spectra-bar" style="height: 25%; background: var(--accent-amber)"></div>
+                            <div class="spectra-bar" style="height: 55%; background: var(--accent-cyan)"></div>
+                        </div>
+                        <div class="spectra-labels">
+                            <span>450nm</span>
+                            <span>500nm</span>
+                            <span>550nm</span>
+                            <span>600nm</span>
+                            <span>650nm</span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Hull integrity -->
+                <section class="module hull-module">
+                    <div class="module-header">
+                        <span class="module-title">Hull Integrity — Titanium-Ceramic Composite</span>
+                        <span class="module-status active">● LIVE</span>
+                    </div>
+                    <div class="hull-display">
+                        <div class="hull-schematic" id="hull-schematic">
+                            <svg viewBox="0 0 200 280" class="hull-svg">
+                                <!-- Hull outline -->
+                                <ellipse cx="100" cy="140" rx="85" ry="125" fill="none" stroke="var(--border-dim)" stroke-width="2"/>
+                                <ellipse cx="100" cy="140" rx="75" ry="115" fill="none" stroke="var(--border-bright)" stroke-width="1" opacity="0.5"/>
+                                <!-- Pressure bulkheads -->
+                                <line x1="15" y1="140" x2="185" y2="140" stroke="var(--border-dim)" stroke-width="1" opacity="0.3"/>
+                                <line x1="100" y1="15" x2="100" y2="265" stroke="var(--border-dim)" stroke-width="1" opacity="0.3"/>
+                                <!-- Viewport -->
+                                <ellipse cx="100" cy="80" rx="30" ry="35" fill="none" stroke="var(--accent-cyan)" stroke-width="1.5" opacity="0.6"/>
+                                <!-- Stress indicators -->
+                                <circle class="stress-point" cx="45" cy="80" r="4" fill="var(--accent-lime)"/>
+                                <circle class="stress-point" cx="155" cy="80" r="4" fill="var(--accent-lime)"/>
+                                <circle class="stress-point" cx="100" cy="200" r="4" fill="var(--accent-lime)"/>
+                                <circle class="stress-point" cx="70" cy="140" r="4" fill="var(--accent-amber)"/>
+                                <circle class="stress-point" cx="130" cy="140" r="4" fill="var(--accent-lime)"/>
+                                <circle class="stress-point" cx="100" cy="50" r="4" fill="var(--accent-lime)"/>
+                                <circle class="stress-point" cx="100" cy="230" r="4" fill="var(--accent-lime)"/>
+                                <!-- Stress waves -->
+                                <circle class="stress-wave" cx="70" cy="140" r="8" fill="none" stroke="var(--accent-amber)" stroke-width="1" opacity="0"/>
+                            </svg>
+                        </div>
+                        <div class="hull-readings">
+                            <div class="hull-ring">
+                                <div class="ring-label">RING A — FORWARD</div>
+                                <div class="ring-bar">
+                                    <div class="ring-fill" style="width: 94%"></div>
+                                </div>
+                                <span class="ring-value">94.2%</span>
+                            </div>
+                            <div class="hull-ring">
+                                <div class="ring-label">RING B — MIDSHIP</div>
+                                <div class="ring-bar">
+                                    <div class="ring-fill warning" style="width: 87%"></div>
+                                </div>
+                                <span class="ring-value warn">87.3%</span>
+                            </div>
+                            <div class="hull-ring">
+                                <div class="ring-label">RING C — AFT</div>
+                                <div class="ring-bar">
+                                    <div class="ring-fill" style="width: 96%"></div>
+                                </div>
+                                <span class="ring-value">96.1%</span>
+                            </div>
+                            <div class="hull-ring">
+                                <div class="ring-label">RING D — STERN</div>
+                                <div class="ring-bar">
+                                    <div class="ring-fill" style="width: 98%"></div>
+                                </div>
+                                <span class="ring-value">98.5%</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="hull-aggregate">
+                        <div class="aggregate-ring">
+                            <svg viewBox="0 0 120 120">
+                                <circle cx="60" cy="60" r="50" fill="none" stroke="var(--border-dim)" stroke-width="8"/>
+                                <circle class="aggregate-progress" cx="60" cy="60" r="50" fill="none" stroke="var(--accent-lime)" stroke-width="8" stroke-dasharray="251" stroke-dashoffset="32" stroke-linecap="round" transform="rotate(-90 60 60)"/>
+                            </svg>
+                            <div class="aggregate-center">
+                                <span class="aggregate-value" id="hull-aggregate">93.8%</span>
+                                <span class="aggregate-label">OVERALL</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Current flow -->
+                <section class="module current-module">
+                    <div class="module-header">
+                        <span class="module-title">Current Flow — Thermohaline</span>
+                        <span class="module-status active">● LIVE</span>
+                    </div>
+                    <div class="current-display" id="current-display">
+                        <canvas id="current-flow-canvas"></canvas>
+                        <div class="current-readings">
+                            <div class="current-metric">
+                                <span class="current-label">VELOCITY</span>
+                                <span class="current-value" id="current-velocity">0.12 m/s</span>
+                            </div>
+                            <div class="current-metric">
+                                <span class="current-label">DIRECTION</span>
+                                <span class="current-value" id="current-direction">247° SW</span>
+                            </div>
+                            <div class="current-metric">
+                                <span class="current-label">TEMPERATURE</span>
+                                <span class="current-value" id="current-temp">1.4°C</span>
+                            </div>
+                            <div class="current-metric">
+                                <span class="current-label">SALINITY</span>
+                                <span class="current-value" id="current-salinity">34.7 PSU</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </aside>
+        </main>
+
+        <!-- Bottom system bar -->
+        <footer class="system-bar">
+            <div class="system-segment">
+                <span class="sys-label">LIFE SUPPORT</span>
+                <span class="sys-value ok">NOMINAL</span>
+            </div>
+            <div class="system-segment">
+                <span class="sys-label">POWER</span>
+                <span class="sys-value ok">98.7%</span>
+            </div>
+            <div class="system-segment">
+                <span class="sys-label">O₂ RESERVE</span>
+                <span class="sys-value ok">94 DAYS</span>
+            </div>
+            <div class="system-segment">
+                <span class="sys-label">COMMUNICATIONS</span>
+                <span class="sys-value warn">ACOUSTIC ONLY</span>
+            </div>
+            <div class="system-segment">
+                <span class="sys-label">EMERGENCY BUOY</span>
+                <span class="sys-value ok">ARMED</span>
+            </div>
+            <div class="system-segment">
+                <span class="sys-label">CREW STATUS</span>
+                <span class="sys-value ok">6 ACTIVE</span>
+            </div>
+            <div class="system-clock" id="system-clock">06:23:17 UTC</div>
+        </footer>
+    </div>
+
+    <!-- Overlay effects -->
+    <div class="vignette-overlay"></div>
+    <div class="scanlines"></div>
+    <div class="chromatic-aberration"></div>
+
+    <script src="scripts.js"></script>
+</body>
+</html>

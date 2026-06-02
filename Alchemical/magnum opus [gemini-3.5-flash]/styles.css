@@ -1,0 +1,1032 @@
+/* ==========================================================================
+   THE ALCHEMIST'S LABORATORY - DESIGN SYSTEM
+   ========================================================================== */
+
+:root {
+    /* Color Palette */
+    --bg-dark: #0a0805;
+    --wood-panel: #140f0a;
+    --ink-color: #2c1d11;
+    --parchment-base: #e6dfcb;
+    --parchment-light: #f2ebd9;
+    --gold-leaf: #d4af37;
+    --gold-glow: rgba(212, 175, 55, 0.4);
+    --copper: #b87333;
+    --verdigris: #437069;
+    --iron: #3a3a3a;
+    
+    /* Stage Themes (Dynamic Overlays controlled by JS) */
+    --phase-color: #1a1a1a;
+    --phase-glow: rgba(255, 255, 255, 0.05);
+    --phase-accent: #333333;
+
+    /* Fonts */
+    --font-display: 'Cinzel Decorative', Georgia, serif;
+    --font-serif: 'EB Garamond', Garamond, serif;
+    --font-gothic: 'UnifrakturMaguntia', 'Cinzel', serif;
+    --font-sans: 'Cinzel', sans-serif;
+}
+
+/* Base Setup */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: var(--bg-dark);
+    color: #dfd5c6;
+    font-family: var(--font-serif);
+    font-size: 17px;
+    line-height: 1.6;
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+    position: relative;
+    user-select: none;
+}
+
+/* ==========================================================================
+   AMBIENT LAYER & TEXTURES
+   ========================================================================== */
+
+/* Dark vignette framing the screen */
+.vignette {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle, transparent 30%, rgba(0, 0, 0, 0.85) 90%);
+    pointer-events: none;
+    z-index: 10;
+}
+
+/* Magical glowing atmosphere shifting color based on the alchemical stage */
+.ambient-glow {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80vw;
+    height: 80vh;
+    background: radial-gradient(circle, var(--phase-glow) 0%, transparent 70%);
+    filter: blur(80px);
+    pointer-events: none;
+    z-index: 1;
+    transition: background 2s ease-in-out;
+}
+
+/* ==========================================================================
+   MAIN LAYOUT & CONTAINERS
+   ========================================================================== */
+
+.workbench {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    width: 100vw;
+    padding: 15px;
+    justify-content: space-between;
+}
+
+/* Header Area */
+.lab-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+    padding-bottom: 10px;
+    margin-bottom: 10px;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.constellation-symbol {
+    color: var(--gold-leaf);
+    font-size: 1.4rem;
+    animation: pulse 3s infinite ease-in-out;
+}
+
+.location-stamp {
+    font-family: var(--font-sans);
+    font-size: 0.8rem;
+    letter-spacing: 3px;
+    color: #8c8275;
+}
+
+.main-title {
+    font-family: var(--font-display);
+    font-size: 2.2rem;
+    font-weight: 900;
+    text-align: center;
+    color: var(--gold-leaf);
+    text-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
+    letter-spacing: 4px;
+}
+
+/* Stage Progress Bar (Top Right) */
+.stage-tracker {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    background: rgba(20, 15, 10, 0.6);
+    padding: 6px 15px;
+    border: 1px solid rgba(212, 175, 55, 0.15);
+    border-radius: 4px;
+}
+
+.stage-node {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    opacity: 0.4;
+    transition: all 0.8s ease;
+    cursor: default;
+}
+
+.stage-node.active {
+    opacity: 1;
+    text-shadow: 0 0 8px var(--phase-accent);
+}
+
+.stage-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #666;
+    margin-bottom: 4px;
+    transition: all 0.8s ease;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.stage-node.active .stage-dot {
+    background: var(--phase-accent);
+    box-shadow: 0 0 10px var(--phase-accent);
+    transform: scale(1.3);
+}
+
+.stage-name {
+    font-family: var(--font-sans);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+.stage-desc {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: 0.65rem;
+    color: #8c8275;
+}
+
+.stage-arrow {
+    color: rgba(212, 175, 55, 0.3);
+    font-size: 0.8rem;
+}
+
+/* ==========================================================================
+   WORK AREA GRID
+   ========================================================================== */
+
+.workspace-grid {
+    display: grid;
+    grid-template-columns: 24% 50% 24%;
+    gap: 1%;
+    flex-grow: 1;
+    height: calc(100vh - 140px);
+    overflow: hidden;
+}
+
+/* Reusable Panel Styling */
+.panel {
+    background: #140f0a;
+    border-left: 2px solid rgba(212, 175, 55, 0.15);
+    border-right: 2px solid rgba(212, 175, 55, 0.15);
+    position: relative;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.8);
+}
+
+.panel-border-top, .panel-border-bottom {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 8px;
+    background-image: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.4), transparent);
+}
+.panel-border-top { top: 0; }
+.panel-border-bottom { bottom: 0; }
+
+/* ==========================================================================
+   LEFT COLUMN: THE GRIMOIRE (ANCIENT SCROLL)
+   ========================================================================== */
+
+.grimoire-panel {
+    padding: 5px;
+}
+
+.grimoire-book {
+    height: 100%;
+    overflow-y: auto;
+    padding-right: 6px;
+}
+
+/* Beautiful custom scrollbar to match ancient aesthetic */
+.grimoire-book::-webkit-scrollbar {
+    width: 6px;
+}
+.grimoire-book::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.3);
+}
+.grimoire-book::-webkit-scrollbar-thumb {
+    background: var(--gold-leaf);
+    border-radius: 3px;
+}
+
+.parchment-page {
+    background-color: var(--parchment-base);
+    background-image: radial-gradient(circle, rgba(255,255,255,0.15) 0%, rgba(0,0,0,0.08) 100%);
+    color: var(--ink-color);
+    padding: 25px 20px;
+    border-radius: 4px;
+    box-shadow: 2px 5px 15px rgba(0, 0, 0, 0.5);
+    min-height: 100%;
+    border: 1px solid #c2b59b;
+    position: relative;
+}
+
+.marginalia-decor-top {
+    height: 15px;
+    border-bottom: 1px double var(--ink-color);
+    margin-bottom: 15px;
+    opacity: 0.6;
+}
+
+.gothic-title {
+    font-family: var(--font-gothic);
+    font-size: 2.2rem;
+    text-align: center;
+    margin-bottom: 2px;
+}
+
+.latin-sub {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: 0.8rem;
+    text-align: center;
+    color: #4c3c2e;
+    margin-bottom: 25px;
+    border-bottom: 1px solid rgba(44, 29, 17, 0.2);
+    padding-bottom: 15px;
+}
+
+.formula-section {
+    margin-bottom: 25px;
+    border-bottom: 1px dashed rgba(44, 29, 17, 0.15);
+    padding-bottom: 15px;
+    transition: background-color 0.5s ease;
+}
+
+.formula-section.active-recipe {
+    background-color: rgba(212, 175, 55, 0.08);
+    border-left: 2px solid var(--gold-leaf);
+    padding-left: 8px;
+}
+
+.section-heading {
+    font-family: var(--font-sans);
+    font-size: 0.95rem;
+    font-weight: bold;
+    color: #1a120b;
+    margin-bottom: 8px;
+}
+
+.formula-text {
+    font-size: 0.95rem;
+    text-align: justify;
+}
+
+.formula-text .highlight {
+    font-weight: bold;
+    border-bottom: 1px solid #7a634e;
+    color: #1a120b;
+}
+
+/* Ouroboros Hand-drawn vector section */
+.ouroboros-illustration {
+    margin-top: 30px;
+    text-align: center;
+}
+
+.ink-drawing {
+    width: 120px;
+    height: 120px;
+    margin: 0 auto;
+    opacity: 0.85;
+}
+
+.ouroboros-illustration .caption {
+    display: block;
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: 0.75rem;
+    color: #5c4a3b;
+    margin-top: 5px;
+}
+
+/* ==========================================================================
+   CENTER COLUMN: CELESTIAL HEARTH
+   ========================================================================== */
+
+.central-hearth {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+}
+
+/* Transmutation Circle Area */
+.transmutation-chamber {
+    position: relative;
+    width: 100%;
+    max-width: 420px;
+    aspect-ratio: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.transmutation-circle {
+    width: 100%;
+    height: 100%;
+    filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.15));
+}
+
+/* Custom glow based on the active transmutation phase */
+.ring {
+    fill: none;
+    stroke: var(--gold-leaf);
+    stroke-width: 1.5px;
+    transform-origin: 250px 250px;
+    opacity: 0.65;
+    transition: stroke 1.5s ease;
+}
+
+.outer-ring {
+    animation: rotateClockwise 60s linear infinite;
+}
+
+.middle-ring {
+    stroke-dasharray: 12, 6;
+    animation: rotateCounterClockwise 45s linear infinite;
+}
+
+.inner-ring {
+    stroke-dasharray: 4, 12;
+    animation: rotateClockwise 30s linear infinite;
+}
+
+.geom-path {
+    fill: none;
+    stroke: var(--gold-leaf);
+    stroke-width: 1px;
+    opacity: 0.4;
+    transform-origin: 250px 250px;
+    transition: stroke 1.5s ease, opacity 0.5s ease;
+}
+
+.triangle-1 {
+    animation: rotateClockwise 120s linear infinite;
+}
+
+.triangle-2 {
+    animation: rotateCounterClockwise 90s linear infinite;
+}
+
+/* Curved text alignment inside the circle */
+.circle-latin-text {
+    font-family: var(--font-sans);
+    font-size: 11px;
+    fill: var(--gold-leaf);
+    letter-spacing: 5px;
+    opacity: 0.8;
+}
+
+/* Clickable Node styling on circle */
+.node-group {
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+
+.node-bg {
+    fill: #1c150d;
+    stroke: var(--gold-leaf);
+    stroke-width: 1.5px;
+    transition: all 0.5s ease;
+}
+
+.node-group:hover .node-bg {
+    fill: #2c1d11;
+    stroke: #ffffff;
+    filter: drop-shadow(0 0 8px rgba(255,255,255,0.6));
+}
+
+.glyph {
+    font-family: Arial, sans-serif;
+    font-size: 1.25rem;
+    fill: var(--gold-leaf);
+    text-anchor: middle;
+    pointer-events: none;
+    transition: fill 0.5s ease;
+}
+
+.node-group:hover .glyph {
+    fill: #ffffff;
+}
+
+.node-label {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: 0.65rem;
+    fill: #8c8275;
+    text-anchor: middle;
+    opacity: 0;
+    transition: opacity 0.3s ease, fill 0.3s ease;
+    pointer-events: none;
+}
+
+.node-group:hover .node-label {
+    opacity: 1;
+    fill: #ffffff;
+}
+
+/* Central Sol Glyph Node */
+.node-bg.central {
+    fill: var(--bg-dark);
+    stroke: var(--gold-leaf);
+    stroke-width: 2px;
+}
+
+.center-glyph {
+    font-size: 1.8rem;
+    font-weight: bold;
+}
+
+/* Philosopher's Stone Manifestation Container */
+.stone-container {
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    pointer-events: none;
+}
+
+/* The actual Stone which starts transparent and becomes glorious */
+.philosophers-stone {
+    width: 10px;
+    height: 10px;
+    background: radial-gradient(circle, #ffffff 0%, var(--phase-accent) 80%);
+    clip-path: polygon(50% 0%, 100% 35%, 80% 100%, 20% 100%, 0% 35%);
+    opacity: 0;
+    transform: scale(0.1) rotate(0deg);
+    transition: all 3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    filter: drop-shadow(0 0 0px transparent);
+}
+
+.philosophers-stone.reveal {
+    opacity: 1;
+    width: 50px;
+    height: 60px;
+    transform: scale(1) rotate(360deg);
+    animation: floatStone 4s ease-in-out infinite alternate;
+}
+
+/* ==========================================================================
+   CRUCIBLE AND THE COAL FURNACE
+   ========================================================================== */
+
+.crucible-station {
+    width: 100%;
+    max-width: 300px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.crucible-hood {
+    width: 120px;
+    height: 15px;
+    background: #0f0a07;
+    border-radius: 50% 50% 0 0;
+    border: 1px solid rgba(212, 175, 55, 0.15);
+}
+
+.crucible-pot {
+    width: 160px;
+    height: 120px;
+    background: radial-gradient(ellipse at top, #3c2a1a 0%, #17110c 100%);
+    border-radius: 10px 10px 80px 80px;
+    border: 2px solid #281d14;
+    box-shadow: inset 0 10px 20px rgba(0,0,0,0.8), 0 5px 15px rgba(0,0,0,0.6);
+    position: relative;
+    overflow: hidden;
+    z-index: 3;
+}
+
+/* Liquid inside the crucible pot */
+.crucible-liquid {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 65%;
+    background: var(--phase-color);
+    box-shadow: inset 0 5px 15px rgba(255, 255, 255, 0.1);
+    transition: background 1.5s ease-in-out;
+}
+
+/* Chemical Steam/Vapor floating from mixture */
+.elemental-vapor {
+    position: absolute;
+    top: -30px;
+    left: 20px;
+    width: 120px;
+    height: 40px;
+    background: radial-gradient(ellipse, rgba(255,255,255,0.08) 0%, transparent 70%);
+    filter: blur(5px);
+    animation: floatVapor 6s infinite ease-in-out;
+    pointer-events: none;
+    mix-blend-mode: screen;
+}
+
+/* Bubbles Container inside Crucible */
+.bubbles-container {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    overflow: hidden;
+}
+
+.bubble {
+    position: absolute;
+    bottom: -10px;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 50%;
+    animation: riseBubble 4s infinite linear;
+}
+
+.crucible-lip {
+    position: absolute;
+    top: 0;
+    left: -5px;
+    width: 170px;
+    height: 12px;
+    background: #332418;
+    border-radius: 6px;
+    border: 1px solid #4a3524;
+}
+
+.crucible-etchings {
+    position: absolute;
+    bottom: 15px;
+    width: 100%;
+    text-align: center;
+    font-size: 0.85rem;
+    color: rgba(212, 175, 55, 0.15);
+    letter-spacing: 5px;
+    pointer-events: none;
+}
+
+/* Glowing Charcoal Fire Underneath Crucible */
+.furnace-fire {
+    position: relative;
+    width: 120px;
+    height: 40px;
+    margin-top: -10px;
+    z-index: 1;
+}
+
+.flame {
+    position: absolute;
+    bottom: 0;
+    width: 15px;
+    height: 35px;
+    background: #ff5500;
+    border-radius: 50% 50% 20% 20%;
+    filter: blur(1px);
+    transform-origin: bottom center;
+}
+
+.fire-1 { left: 35px; animation: flicker 1.8s infinite alternate; }
+.fire-2 { left: 52px; animation: flicker 1.2s infinite alternate-reverse; height: 45px; background: #ffaa00; }
+.fire-3 { left: 70px; animation: flicker 1.5s infinite alternate; }
+
+.coal-glow {
+    position: absolute;
+    bottom: -10px;
+    left: 10px;
+    width: 100px;
+    height: 20px;
+    background: radial-gradient(ellipse, #ff3300 0%, transparent 80%);
+    animation: pulseGlow 4s infinite alternate;
+}
+
+/* ==========================================================================
+   RIGHT COLUMN: APOTHECARY CABINET & INGREDIENTS
+   ========================================================================== */
+
+.apothecary-panel {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.cabinet-section {
+    flex-grow: 1;
+}
+
+.section-subtitle {
+    font-family: var(--font-sans);
+    font-size: 0.75rem;
+    color: #8c8275;
+    text-align: center;
+    margin-bottom: 15px;
+    letter-spacing: 1.5px;
+}
+
+.ingredient-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+}
+
+/* Small Drawer design for Ingredient Cabinet */
+.ingredient-card {
+    background: radial-gradient(circle at center, #1e1710 0%, #0d0906 100%);
+    border: 1px solid rgba(212, 175, 55, 0.15);
+    border-radius: 4px;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.4);
+}
+
+.ingredient-card:hover {
+    border-color: var(--gold-leaf);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(212, 175, 55, 0.15);
+}
+
+.ingredient-card.selected {
+    border-color: #ffffff;
+    background: radial-gradient(circle at center, #2e2318 0%, #150f0b 100%);
+    box-shadow: inset 0 0 8px rgba(255,255,255,0.1), 0 0 10px rgba(255,255,255,0.15);
+}
+
+.ingredient-icon {
+    font-size: 1.4rem;
+    color: var(--gold-leaf);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(212, 175, 55, 0.1);
+}
+
+.ingredient-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.ing-name {
+    font-family: var(--font-sans);
+    font-size: 0.8rem;
+    font-weight: bold;
+}
+
+.ing-type {
+    font-size: 0.65rem;
+    color: #8c8275;
+}
+
+/* ==========================================================================
+   MORTAR & PESTLE ASSEMBLY
+   ========================================================================== */
+
+.mortar-section {
+    border-top: 1px double rgba(212, 175, 55, 0.2);
+    padding-top: 15px;
+    margin-top: 15px;
+}
+
+.section-heading-center {
+    font-family: var(--font-sans);
+    font-size: 0.85rem;
+    text-align: center;
+    letter-spacing: 2px;
+    color: var(--gold-leaf);
+    margin-bottom: 5px;
+}
+
+.mortar-instruction {
+    font-size: 0.72rem;
+    color: #8c8275;
+    text-align: center;
+    margin-bottom: 12px;
+    line-height: 1.4;
+}
+
+.mortar-assembly {
+    position: relative;
+    width: 100px;
+    height: 90px;
+    margin: 0 auto;
+    cursor: pointer;
+}
+
+.mortar-bowl {
+    position: absolute;
+    bottom: 0;
+    left: 10px;
+    width: 80px;
+    height: 50px;
+    background: radial-gradient(ellipse at top, #3a3a3a 0%, #1a1a1a 100%);
+    border-radius: 0 0 40px 40px;
+    border: 2px solid #2d2d2d;
+    overflow: hidden;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+}
+
+/* Powder accumulating in the mortar */
+.mortar-contents {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 0%;
+    background: #555;
+    transition: height 0.5s ease, background 0.5s ease;
+    border-radius: 0 0 40px 40px;
+}
+
+.pestle {
+    position: absolute;
+    top: 5px;
+    left: 45px;
+    width: 16px;
+    height: 55px;
+    background: linear-gradient(90deg, #444, #222);
+    border-radius: 8px 8px 4px 4px;
+    transform-origin: bottom center;
+    transform: rotate(15deg);
+    transition: transform 0.1s ease;
+    box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+}
+
+/* Grinding Animation triggers when grinding */
+.pestle.grind {
+    animation: performGrind 0.3s ease-in-out;
+}
+
+/* Progress bar displaying particle grind density */
+.grind-progress-container {
+    width: 100%;
+    height: 4px;
+    background: rgba(0,0,0,0.4);
+    border-radius: 2px;
+    margin: 10px 0;
+    overflow: hidden;
+    border: 1px solid rgba(212, 175, 55, 0.1);
+}
+
+.grind-progress-bar {
+    width: 0%;
+    height: 100%;
+    background: var(--gold-leaf);
+    transition: width 0.3s ease;
+}
+
+/* Action Button to trigger Alchemy stage progression */
+.transmute-btn {
+    width: 100%;
+    background: linear-gradient(135deg, #2b1c11 0%, #150e09 100%);
+    border: 1px solid var(--gold-leaf);
+    color: var(--gold-leaf);
+    font-family: var(--font-sans);
+    font-size: 0.75rem;
+    font-weight: bold;
+    letter-spacing: 2px;
+    padding: 10px;
+    cursor: pointer;
+    border-radius: 4px;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+}
+
+.transmute-btn:not(.disabled):hover {
+    background: var(--gold-leaf);
+    color: #1a120b;
+    box-shadow: 0 0 15px var(--gold-glow);
+}
+
+.transmute-btn.disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+    border-color: rgba(212, 175, 55, 0.15);
+    color: rgba(212, 175, 55, 0.3);
+}
+
+.btn-shine {
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
+    transform: skewX(-25deg);
+}
+
+.transmute-btn:not(.disabled):hover .btn-shine {
+    animation: shine 1.5s infinite;
+}
+
+/* ==========================================================================
+   FOOTER: ALCHEMIST JOURNAL & CLOCK
+   ========================================================================== */
+
+.lab-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid rgba(212, 175, 55, 0.2);
+    padding-top: 10px;
+    margin-top: 10px;
+}
+
+.chronometer {
+    font-family: var(--font-sans);
+    font-size: 0.72rem;
+    display: flex;
+    gap: 8px;
+    color: #8c8275;
+}
+
+.chrono-label {
+    letter-spacing: 1px;
+}
+
+.chrono-time {
+    color: var(--gold-leaf);
+}
+
+/* Live Scrolling Journal Log console output */
+.journal-log-wrapper {
+    display: flex;
+    align-items: center;
+    flex-grow: 1;
+    margin: 0 40px;
+    max-width: 60%;
+}
+
+.journal-bracket {
+    font-family: var(--font-sans);
+    color: var(--gold-leaf);
+    font-size: 1.4rem;
+    opacity: 0.5;
+}
+
+.journal-log {
+    width: 100%;
+    height: 24px;
+    overflow: hidden;
+    position: relative;
+    padding-left: 10px;
+}
+
+.log-entry {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: 0.85rem;
+    color: #b0a495;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    animation: slideInLog 0.4s ease-out;
+}
+
+.log-entry.system-msg {
+    color: #908474;
+}
+
+.log-entry.stage-up-msg {
+    color: #ffb700;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.reset-lab-btn {
+    background: transparent;
+    border: 1px solid rgba(139, 0, 0, 0.4);
+    color: rgba(223, 213, 198, 0.6);
+    font-family: var(--font-sans);
+    font-size: 0.65rem;
+    letter-spacing: 1.5px;
+    padding: 4px 10px;
+    cursor: pointer;
+    border-radius: 3px;
+    transition: all 0.3s ease;
+}
+
+.reset-lab-btn:hover {
+    background: rgba(139, 0, 0, 0.2);
+    border-color: #ff3333;
+    color: #ffffff;
+}
+
+/* ==========================================================================
+   ANIMATIONS
+   ========================================================================== */
+
+@keyframes rotateClockwise {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+@keyframes rotateCounterClockwise {
+    from { transform: rotate(360deg); }
+    to { transform: rotate(0deg); }
+}
+
+@keyframes flicker {
+    0% { transform: scaleX(1) scaleY(1); opacity: 0.8; }
+    50% { transform: scaleX(0.8) scaleY(1.2); opacity: 1; }
+    100% { transform: scaleX(1.1) scaleY(0.9); opacity: 0.7; }
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; filter: drop-shadow(0 0 5px var(--gold-leaf)); }
+}
+
+@keyframes pulseGlow {
+    0% { opacity: 0.4; }
+    100% { opacity: 1; }
+}
+
+@keyframes riseBubble {
+    0% { transform: translateY(0) scale(0.6); opacity: 0; }
+    15% { opacity: 0.6; }
+    90% { opacity: 0.4; }
+    100% { transform: translateY(-75px) scale(1.2); opacity: 0; }
+}
+
+@keyframes floatVapor {
+    0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.08; }
+    50% { transform: translate(10px, -15px) scale(1.15); opacity: 0.25; }
+}
+
+@keyframes floatStone {
+    0% { transform: scale(1) rotate(0deg) translateY(0px); filter: drop-shadow(0 0 10px var(--phase-accent)); }
+    50% { transform: scale(1.05) rotate(180deg) translateY(-8px); filter: drop-shadow(0 0 25px var(--phase-accent)); }
+    100% { transform: scale(1) rotate(360deg) translateY(0px); filter: drop-shadow(0 0 10px var(--phase-accent)); }
+}
+
+@keyframes performGrind {
+    0% { transform: rotate(15deg) translateY(0); }
+    30% { transform: rotate(-5deg) translateY(8px); }
+    70% { transform: rotate(-10deg) translateY(6px); }
+    100% { transform: rotate(15deg) translateY(0); }
+}
+
+@keyframes slideInLog {
+    from { transform: translateY(15px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes shine {
+    100% { left: 125%; }
+}

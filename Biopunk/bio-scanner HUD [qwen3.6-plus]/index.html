@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BIOSYNC // Medical Telemetry HUD v4.7.2</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;500;700;900&family=Special+Elite&display=swap" rel="stylesheet">
+</head>
+<body class="hud-active">
+    <!-- Scanline Overlay -->
+    <div class="scanline-overlay"></div>
+    
+    <!-- CRT Vignette -->
+    <div class="vignette-overlay"></div>
+
+    <!-- Background Organic Grid -->
+    <svg class="organic-grid" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice">
+        <defs>
+            <pattern id="hexGrid" width="60" height="103.923" patternUnits="userSpaceOnUse">
+                <path d="M30 0 L60 17.32 L60 51.96 L30 69.28 L0 51.96 L0 17.32 Z" fill="none" stroke="var(--grid-color)" stroke-width="0.5" opacity="0.15"/>
+                <path d="M30 103.92 L60 86.6 L60 51.96 L30 69.28 L0 51.96 L0 86.6 Z" fill="none" stroke="var(--grid-color)" stroke-width="0.5" opacity="0.15"/>
+            </pattern>
+            <filter id="glow">
+                <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                <feMerge>
+                    <feMergeNode in="coloredBlur"/>
+                    <feMergeNode in="SourceGraphic"/>
+                </feMerge>
+            </filter>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#hexGrid)"/>
+    </svg>
+
+    <!-- Heartbeat Baseline -->
+    <svg class="heartbeat-baseline" viewBox="0 0 1920 60" preserveAspectRatio="none">
+        <polyline id="ecg-line" fill="none" stroke="var(--heartbeat-color)" stroke-width="2" opacity="0.6"
+                  points="0,30 50,30 60,30 70,5 80,50 90,20 100,35 110,30 200,30 250,30 260,30 270,5 280,50 290,20 300,35 310,30 400,30 450,30 460,30 470,5 480,50 490,20 500,35 510,30 600,30 650,30 660,30 670,5 680,50 690,20 700,35 710,30 800,30 850,30 860,30 870,5 880,50 890,20 900,35 910,30 1000,30 1050,30 1060,30 1070,5 1080,50 1090,20 1100,35 1110,30 1200,30 1250,30 1260,30 1270,5 1280,50 1290,20 1300,35 1310,30 1400,30 1450,30 1460,30 1470,5 1480,50 1490,20 1500,35 1510,30 1600,30 1650,30 1660,30 1670,5 1680,50 1690,20 1700,35 1710,30 1800,30 1850,30 1860,30 1870,5 1880,50 1890,20 1900,35 1910,30 1920,30"/>
+    </svg>
+
+    <!-- MAIN HUD CONTAINER -->
+    <main class="hud-container">
+        
+        <!-- HEADER BAR -->
+        <header class="hud-header">
+            <div class="header-left">
+                <span class="classification-tag">CLASSIFIED // BIOWEAPONS DIV</span>
+                <span class="system-id">BIOSYNC v4.7.2</span>
+            </div>
+            <div class="header-center">
+                <h1 class="hud-title">MEDICAL TELEMETRY INTERFACE</h1>
+                <span class="scan-status">◉ LIVE SCAN ACTIVE</span>
+            </div>
+            <div class="header-right">
+                <span class="timestamp" id="current-time">00:00:00.000</span>
+                <span class="session-id">SESSION #BIO-7749-X</span>
+            </div>
+        </header>
+
+        <!-- LEFT COLUMN - ORGAN STATUS -->
+        <aside class="hud-panel organ-status-panel">
+            <div class="panel-header">
+                <span class="panel-icon">⬡</span>
+                <h2>ORGAN STATUS</h2>
+                <span class="panel-indicator warning"></span>
+            </div>
+            
+            <div class="organ-grid">
+                <!-- Heart -->
+                <div class="organ-card" data-organ="heart">
+                    <div class="organ-header">
+                        <svg class="organ-icon" viewBox="0 0 24 24">
+                            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="currentColor"/>
+                        </svg>
+                        <span class="organ-name">CARDIAC UNIT</span>
+                        <span class="organ-status critical">CRITICAL</span>
+                    </div>
+                    <div class="organ-metrics">
+                        <div class="metric">
+                            <span class="metric-label">BPM</span>
+                            <span class="metric-value" id="heart-rate">147</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">O₂ SAT</span>
+                            <span class="metric-value" id="o2-sat">89%</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">PRESSURE</span>
+                            <span class="metric-value" id="bp">142/91</span>
+                        </div>
+                    </div>
+                    <div class="organ-bar">
+                        <div class="bar-fill critical" style="width: 34%"></div>
+                    </div>
+                    <span class="bar-label">INTEGRITY: 34%</span>
+                </div>
+
+                <!-- Lungs -->
+                <div class="organ-card" data-organ="lungs">
+                    <div class="organ-header">
+                        <svg class="organ-icon" viewBox="0 0 24 24">
+                            <path d="M12 2C9.5 2 7.5 4 7.5 6.5c0 .5.1 1 .2 1.5C6 8.5 4.5 10.2 4.5 12.5c0 1.5.5 2.8 1.4 3.8C5 17.2 4.5 18.3 4.5 19.5 4.5 21.2 5.8 22.5 7.5 22.5c1 0 1.8-.5 2.3-1.2.4.1.8.2 1.2.2s.8-.1 1.2-.2c.5.7 1.3 1.2 2.3 1.2 1.7 0 3-1.3 3-3 0-1.2-.5-2.3-1.4-3.2.9-1 1.4-2.3 1.4-3.8 0-2.3-1.5-4-3.2-4.5.1-.5.2-1 .2-1.5C14.5 4 12.5 2 12 2z" fill="currentColor"/>
+                        </svg>
+                        <span class="organ-name">PULMONARY SYS</span>
+                        <span class="organ-status degraded">DEGRADED</span>
+                    </div>
+                    <div class="organ-metrics">
+                        <div class="metric">
+                            <span class="metric-label">CAPACITY</span>
+                            <span class="metric-value" id="lung-cap">67%</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">RATE</span>
+                            <span class="metric-value" id="resp-rate">28/min</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">FLUID</span>
+                            <span class="metric-value" id="lung-fluid">ELEVATED</span>
+                        </div>
+                    </div>
+                    <div class="organ-bar">
+                        <div class="bar-fill degraded" style="width: 67%"></div>
+                    </div>
+                    <span class="bar-label">INTEGRITY: 67%</span>
+                </div>
+
+                <!-- Brain -->
+                <div class="organ-card" data-organ="brain">
+                    <div class="organ-header">
+                        <svg class="organ-icon" viewBox="0 0 24 24">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z" fill="currentColor"/>
+                        </svg>
+                        <span class="organ-name">NEURAL CORTEX</span>
+                        <span class="organ-status stable">STABLE</span>
+                    </div>
+                    <div class="organ-metrics">
+                        <div class="metric">
+                            <span class="metric-label">WAVE</span>
+                            <span class="metric-value" id="brain-wave">θ-δ MIX</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">ACTIVITY</span>
+                            <span class="metric-value" id="brain-act">73%</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">SYNAPSE</span>
+                            <span class="metric-value" id="synapse">NOMINAL</span>
+                        </div>
+                    </div>
+                    <div class="organ-bar">
+                        <div class="bar-fill stable" style="width: 78%"></div>
+                    </div>
+                    <span class="bar-label">INTEGRITY: 78%</span>
+                </div>
+
+                <!-- Liver -->
+                <div class="organ-card" data-organ="liver">
+                    <div class="organ-header">
+                        <svg class="organ-icon" viewBox="0 0 24 24">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8 0-1.85.63-3.55 1.69-4.9L16.9 18.31C15.55 19.37 13.85 20 12 20zm6.31-3.1L7.1 5.69C8.45 4.63 10.15 4 12 4c4.42 0 8 3.58 8 8 0 1.85-.63 3.55-1.69 4.9z" fill="currentColor"/>
+                        </svg>
+                        <span class="organ-name">HEPATIC FILTER</span>
+                        <span class="organ-status critical">FAILING</span>
+                    </div>
+                    <div class="organ-metrics">
+                        <div class="metric">
+                            <span class="metric-label">ENZYME</span>
+                            <span class="metric-value" id="liver-enz">340%</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">TOXIN LOAD</span>
+                            <span class="metric-value" id="toxin-load">CRITICAL</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">REGEN</span>
+                            <span class="metric-value" id="liver-regen">12%</span>
+                        </div>
+                    </div>
+                    <div class="organ-bar">
+                        <div class="bar-fill critical" style="width: 23%"></div>
+                    </div>
+                    <span class="bar-label">INTEGRITY: 23%</span>
+                </div>
+
+                <!-- Kidneys -->
+                <div class="organ-card" data-organ="kidneys">
+                    <div class="organ-header">
+                        <svg class="organ-icon" viewBox="0 0 24 24">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" fill="currentColor"/>
+                        </svg>
+                        <span class="organ-name">RENAL SYSTEM</span>
+                        <span class="organ-status degraded">DEGRADED</span>
+                    </div>
+                    <div class="organ-metrics">
+                        <div class="metric">
+                            <span class="metric-label">GFR</span>
+                            <span class="metric-value" id="gfr">41 mL</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">CREAT</span>
+                            <span class="metric-value" id="creat">2.1 mg</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">OUTPUT</span>
+                            <span class="metric-value" id="output">LOW</span>
+                        </div>
+                    </div>
+                    <div class="organ-bar">
+                        <div class="bar-fill degraded" style="width: 52%"></div>
+                    </div>
+                    <span class="bar-label">INTEGRITY: 52%</span>
+                </div>
+
+                <!-- Immune -->
+                <div class="organ-card" data-organ="immune">
+                    <div class="organ-header">
+                        <svg class="organ-icon" viewBox="0 0 24 24">
+                            <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z" fill="currentColor"/>
+                        </svg>
+                        <span class="organ-name">IMMUNE MATRIX</span>
+                        <span class="organ-status unstable">UNSTABLE</span>
+                    </div>
+                    <div class="organ-metrics">
+                        <div class="metric">
+                            <span class="metric-label">WBC</span>
+                            <span class="metric-value" id="wbc">14.2k</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">AUTO-ATK</span>
+                            <span class="metric-value" id="auto-attack">ACTIVE</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">CYTOKINE</span>
+                            <span class="metric-value" id="cytokine">STORM</span>
+                        </div>
+                    </div>
+                    <div class="organ-bar">
+                        <div class="bar-fill unstable" style="width: 41%"></div>
+                    </div>
+                    <span class="bar-label">INTEGRITY: 41%</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- CENTER - BODY WIREFRAME -->
+        <section class="hud-center">
+            <div class="body-container">
+                <!-- SVG Body Wireframe -->
+                <svg class="body-wireframe" viewBox="0 0 400 800" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <filter id="organGlow">
+                            <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+                            <feMerge>
+                                <feMergeNode in="coloredBlur"/>
+                                <feMergeNode in="SourceGraphic"/>
+                            </feMerge>
+                        </filter>
+                        <filter id="scanBeam">
+                            <feGaussianBlur stdDeviation="8" result="blur"/>
+                            <feMerge>
+                                <feMergeNode in="blur"/>
+                                <feMergeNode in="SourceGraphic"/>
+                            </feMerge>
+                        </filter>
+                        <linearGradient id="bodyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" style="stop-color:var(--primary-glow);stop-opacity:0.8"/>
+                            <stop offset="100%" style="stop-color:var(--primary-dim);stop-opacity:0.2"/>
+                        </linearGradient>
+                        <radialGradient id="organHighlight" cx="50%" cy="50%" r="50%">
+                            <stop offset="0%" style="stop-color:var(--warning-color);stop-opacity:0.9"/>
+                            <stop offset="100%" style="stop-color:var(--warning-color);stop-opacity:0"/>
+                        </radialGradient>
+                    </defs>
+                    
+                    <!-- Body Outline -->
+                    <g class="body-outline" filter="url(#organGlow)">
+                        <!-- Head -->
+                        <ellipse cx="200" cy="60" rx="35" ry="45" fill="none" stroke="var(--primary-glow)" stroke-width="1.5" opacity="0.7"/>
+                        <!-- Neck -->
+                        <line x1="190" y1="105" x2="190" y2="130" stroke="var(--primary-glow)" stroke-width="1.5" opacity="0.6"/>
+                        <line x1="210" y1="105" x2="210" y2="130" stroke="var(--primary-glow)" stroke-width="1.5" opacity="0.6"/>
+                        <!-- Torso -->
+                        <path d="M160 130 Q140 140 135 180 L135 380 Q135 420 160 440 L240 440 Q265 420 265 380 L265 180 Q260 140 240 130 Z" 
+                              fill="none" stroke="var(--primary-glow)" stroke-width="1.5" opacity="0.6"/>
+                        <!-- Arms -->
+                        <path d="M135 140 Q100 150 80 220 Q70 260 75 320 L85 320 Q80 260 95 220 Q110 170 135 160" 
+                              fill="none" stroke="var(--primary-glow)" stroke-width="1.5" opacity="0.5"/>
+                        <path d="M265 140 Q300 150 320 220 Q330 260 325 320 L315 320 Q320 260 305 220 Q290 170 265 160" 
+                              fill="none" stroke="var(--primary-glow)" stroke-width="1.5" opacity="0.5"/>
+                        <!-- Legs -->
+                        <path d="M160 440 L155 550 L150 650 L155 720 L170 720 L165 650 L170 550 L175 440" 
+                              fill="none" stroke="var(--primary-glow)" stroke-width="1.5" opacity="0.5"/>
+                        <path d="M240 440 L245 550 L250 650 L245 720 L230 720 L235 650 L230 550 L225 440" 
+                              fill="none" stroke="var(--primary-glow)" stroke-width="1.5" opacity="0.5"/>
+                    </g>
+
+                    <!-- Organ Hotspots -->
+                    <g class="organ-hotspots">
+                        <!-- Brain -->
+                        <circle cx="200" cy="55" r="20" fill="url(#organHighlight)" opacity="0.6" class="hotspot" data-organ="brain"/>
+                        <circle cx="200" cy="55" r="3" fill="var(--primary-glow)" class="hotspot-core"/>
+                        
+                        <!-- Heart -->
+                        <circle cx="185" cy="190" r="15" fill="url(#organHighlight)" opacity="0.7" class="hotspot" data-organ="heart"/>
+                        <circle cx="185" cy="190" r="4" fill="var(--critical-color)" class="hotspot-core critical-pulse"/>
+                        <circle cx="185" cy="190" r="8" fill="none" stroke="var(--critical-color)" stroke-width="1" opacity="0.5" class="hotspot-ring"/>
+                        
+                        <!-- Lungs -->
+                        <ellipse cx="170" cy="185" rx="18" ry="25" fill="url(#organHighlight)" opacity="0.4" class="hotspot" data-organ="lungs"/>
+                        <ellipse cx="230" cy="185" rx="18" ry="25" fill="url(#organHighlight)" opacity="0.4" class="hotspot" data-organ="lungs"/>
+                        
+                        <!-- Liver -->
+                        <ellipse cx="215" cy="250" rx="20" ry="15" fill="url(#organHighlight)" opacity="0.6" class="hotspot" data-organ="liver"/>
+                        <circle cx="215" cy="250" r="4" fill="var(--critical-color)" class="hotspot-core critical-pulse"/>
+                        
+                        <!-- Kidneys -->
+                        <ellipse cx="170" cy="290" rx="12" ry="15" fill="url(#organHighlight)" opacity="0.5" class="hotspot" data-organ="kidneys"/>
+                        <ellipse cx="230" cy="290" rx="12" ry="15" fill="url(#organHighlight)" opacity="0.5" class="hotspot" data-organ="kidneys"/>
+                    </g>
+
+                    <!-- Scan Beam -->
+                    <line class="scan-beam" x1="120" y1="50" x2="280" y2="50" stroke="var(--scan-color)" stroke-width="2" opacity="0.8" filter="url(#scanBeam)"/>
+                    
+                    <!-- Data Points -->
+                    <g class="data-points" opacity="0.7">
+                        <text x="225" y="58" class="data-label" font-family="Share Tech Mono, monospace" font-size="10" fill="var(--primary-glow)">NEURAL ACTIVITY</text>
+                        <text x="210" y="195" class="data-label" font-family="Share Tech Mono, monospace" font-size="10" fill="var(--critical-color)">⚠ ARRHYTHMIA</text>
+                        <text x="250" y="253" class="data-label" font-family="Share Tech Mono, monospace" font-size="10" fill="var(--warning-color)">TOXIN ACCUMULATION</text>
+                    </g>
+                </svg>
+            </div>
+        </section>
+
+        <!-- RIGHT COLUMN - MUTATION / NANOMACHINES / TOXINS -->
+        <aside class="hud-panel telemetry-panel">
+            
+            <!-- Mutation Progression -->
+            <div class="panel-section mutation-section">
+                <div class="panel-header">
+                    <span class="panel-icon">☣</span>
+                    <h2>MUTATION PROGRESSION</h2>
+                    <span class="panel-indicator danger"></span>
+                </div>
+                <div class="mutation-tracker">
+                    <div class="mutation-item">
+                        <span class="mutation-label">CELLULAR DECAY</span>
+                        <div class="mutation-bar">
+                            <div class="mutation-fill" style="width: 78%" data-value="78"></div>
+                        </div>
+                        <span class="mutation-value">78.3%</span>
+                    </div>
+                    <div class="mutation-item">
+                        <span class="mutation-label">GENE SPLICING</span>
+                        <div class="mutation-bar">
+                            <div class="mutation-fill warning" style="width: 45%" data-value="45"></div>
+                        </div>
+                        <span class="mutation-value">45.1%</span>
+                    </div>
+                    <div class="mutation-item">
+                        <span class="mutation-label">NEURAL DIVERGENCE</span>
+                        <div class="mutation-bar">
+                            <div class="mutation-fill stable" style="width: 23%" data-value="23"></div>
+                        </div>
+                        <span class="mutation-value">23.7%</span>
+                    </div>
+                    <div class="mutation-item">
+                        <span class="mutation-label">ORGAN REJECTION</span>
+                        <div class="mutation-bar">
+                            <div class="mutation-fill critical" style="width: 89%" data-value="89"></div>
+                        </div>
+                        <span class="mutation-value">89.2%</span>
+                    </div>
+                </div>
+                
+                <!-- Gene Splice Matrix -->
+                <div class="gene-matrix">
+                    <h3 class="subsection-title">GENE-SPLICE COMPATIBILITY</h3>
+                    <div class="matrix-grid">
+                        <div class="matrix-cell compatible" title="Compatible"></div>
+                        <div class="matrix-cell incompatible" title="Incompatible"></div>
+                        <div class="matrix-cell compatible" title="Compatible"></div>
+                        <div class="matrix-cell unstable" title="Unstable"></div>
+                        <div class="matrix-cell compatible" title="Compatible"></div>
+                        <div class="matrix-cell unstable" title="Unstable"></div>
+                        <div class="matrix-cell incompatible" title="Incompatible"></div>
+                        <div class="matrix-cell compatible" title="Compatible"></div>
+                        <div class="matrix-cell unstable" title="Unstable"></div>
+                        <div class="matrix-cell compatible" title="Compatible"></div>
+                        <div class="matrix-cell compatible" title="Compatible"></div>
+                        <div class="matrix-cell incompatible" title="Incompatible"></div>
+                        <div class="matrix-cell unstable" title="Unstable"></div>
+                        <div class="matrix-cell compatible" title="Compatible"></div>
+                        <div class="matrix-cell incompatible" title="Incompatible"></div>
+                        <div class="matrix-cell unstable" title="Unstable"></div>
+                    </div>
+                    <div class="matrix-legend">
+                        <span><span class="legend-dot compatible"></span> Compatible</span>
+                        <span><span class="legend-dot incompatible"></span> Rejected</span>
+                        <span><span class="legend-dot unstable"></span> Unstable</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Nanomachine Deployment -->
+            <div class="panel-section nanomachine-section">
+                <div class="panel-header">
+                    <span class="panel-icon">⬢</span>
+                    <h2>NANOMACHINE SWARM</h2>
+                    <span class="panel-indicator active"></span>
+                </div>
+                <div class="swarm-visualizer">
+                    <svg class="swarm-display" viewBox="0 0 200 200">
+                        <defs>
+                            <filter id="nanoGlow">
+                                <feGaussianBlur stdDeviation="1.5" result="blur"/>
+                                <feMerge>
+                                    <feMergeNode in="blur"/>
+                                    <feMergeNode in="SourceGraphic"/>
+                                </feMerge>
+                            </filter>
+                        </defs>
+                        <circle cx="100" cy="100" r="60" fill="none" stroke="var(--primary-dim)" stroke-width="0.5" opacity="0.3"/>
+                        <circle cx="100" cy="100" r="40" fill="none" stroke="var(--primary-dim)" stroke-width="0.5" opacity="0.3"/>
+                        <circle cx="100" cy="100" r="20" fill="none" stroke="var(--primary-dim)" stroke-width="0.5" opacity="0.3"/>
+                        <!-- Nanoparticles -->
+                        <g class="nanoparticles" filter="url(#nanoGlow)">
+                            <circle class="nano" cx="85" cy="75" r="2" fill="var(--primary-glow)"/>
+                            <circle class="nano" cx="110" cy="80" r="1.5" fill="var(--primary-glow)"/>
+                            <circle class="nano" cx="95" cy="105" r="2" fill="var(--warning-color)"/>
+                            <circle class="nano" cx="115" cy="95" r="1.5" fill="var(--primary-glow)"/>
+                            <circle class="nano" cx="80" cy="100" r="2" fill="var(--primary-glow)"/>
+                            <circle class="nano" cx="105" cy="70" r="1.5" fill="var(--primary-glow)"/>
+                            <circle class="nano" cx="90" cy="115" r="2" fill="var(--primary-glow)"/>
+                            <circle class="nano" cx="120" cy="110" r="1.5" fill="var(--warning-color)"/>
+                            <circle class="nano" cx="75" cy="85" r="2" fill="var(--primary-glow)"/>
+                            <circle class="nano" cx="100" cy="90" r="1.5" fill="var(--primary-glow)"/>
+                            <circle class="nano" cx="88" cy="65" r="2" fill="var(--primary-glow)"/>
+                            <circle class="nano" cx="112" cy="105" r="1.5" fill="var(--primary-glow)"/>
+                        </g>
+                    </svg>
+                </div>
+                <div class="swarm-stats">
+                    <div class="stat-row">
+                        <span class="stat-label">DEPLOYED</span>
+                        <span class="stat-value" id="nano-deployed">2.4 × 10¹²</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">ACTIVE</span>
+                        <span class="stat-value" id="nano-active">87.3%</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">TARGET</span>
+                        <span class="stat-value" id="nano-target">CARDIAC TISSUE</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">REPAIR RATE</span>
+                        <span class="stat-value" id="nano-repair">0.04%/s</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Toxin Levels -->
+            <div class="panel-section toxin-section">
+                <div class="panel-header">
+                    <span class="panel-icon">☠</span>
+                    <h2>TOXIN ANALYSIS</h2>
+                    <span class="panel-indicator danger"></span>
+                </div>
+                <div class="toxin-list">
+                    <div class="toxin-item critical">
+                        <div class="toxin-header">
+                            <span class="toxin-name">NEUROTOXIN-X7</span>
+                            <span class="toxin-level">LETHAL DOSE: 340%</span>
+                        </div>
+                        <div class="toxin-bar">
+                            <div class="toxin-fill" style="width: 92%"></div>
+                        </div>
+                    </div>
+                    <div class="toxin-item warning">
+                        <div class="toxin-header">
+                            <span class="toxin-name">HEMOTOXIN-β</span>
+                            <span class="toxin-level">ELEVATED: 180%</span>
+                        </div>
+                        <div class="toxin-bar">
+                            <div class="toxin-fill warning" style="width: 67%"></div>
+                        </div>
+                    </div>
+                    <div class="toxin-item elevated">
+                        <div class="toxin-header">
+                            <span class="toxin-name">CYANIDE DERIV.</span>
+                            <span class="toxin-level">ELEVATED: 120%</span>
+                        </div>
+                        <div class="toxin-bar">
+                            <div class="toxin-fill elevated" style="width: 45%"></div>
+                        </div>
+                    </div>
+                    <div class="toxin-item nominal">
+                        <div class="toxin-header">
+                            <span class="toxin-name">HEAVY METALS</span>
+                            <span class="toxin-level">NOMINAL: 15%</span>
+                        </div>
+                        <div class="toxin-bar">
+                            <div class="toxin-fill nominal" style="width: 15%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- BOTTOM BAR - Neural Link & Diagnostics -->
+        <footer class="hud-footer">
+            <div class="neural-link-section">
+                <div class="panel-header">
+                    <span class="panel-icon">⧫</span>
+                    <h2>NEURAL LINK INTEGRITY</h2>
+                </div>
+                <div class="neural-metrics">
+                    <div class="neural-ring-container">
+                        <svg class="neural-ring" viewBox="0 0 100 100">
+                            <circle cx="50" cy="50" r="40" fill="none" stroke="var(--primary-dim)" stroke-width="6" opacity="0.3"/>
+                            <circle cx="50" cy="50" r="40" fill="none" stroke="var(--primary-glow)" stroke-width="6" 
+                                    stroke-dasharray="251.2" stroke-dashoffset="50.24" stroke-linecap="round" 
+                                    transform="rotate(-90 50 50)" class="ring-progress"/>
+                        </svg>
+                        <span class="ring-value">80%</span>
+                    </div>
+                    <div class="neural-details">
+                        <div class="detail-row">
+                            <span class="detail-label">SYNC RATE</span>
+                            <span class="detail-value" id="sync-rate">94.2%</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">LATENCY</span>
+                            <span class="detail-value" id="latency">2.3ms</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">PACKET LOSS</span>
+                            <span class="detail-value" id="packet-loss">0.01%</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">SIGNAL</span>
+                            <span class="detail-value" id="signal">STRONG</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="diagnostics-section">
+                <div class="panel-header">
+                    <span class="panel-icon">⚙</span>
+                    <h2>SYSTEM DIAGNOSTICS</h2>
+                </div>
+                <div class="diag-grid">
+                    <div class="diag-item">
+                        <span class="diag-label">CPU LOAD</span>
+                        <span class="diag-value" id="cpu-load">34%</span>
+                    </div>
+                    <div class="diag-item">
+                        <span class="diag-label">MEMORY</span>
+                        <span class="diag-value" id="memory">12.4GB</span>
+                    </div>
+                    <div class="diag-item">
+                        <span class="diag-label">TEMP</span>
+                        <span class="diag-value" id="temp">38.7°C</span>
+                    </div>
+                    <div class="diag-item">
+                        <span class="diag-label">UPTIME</span>
+                        <span class="diag-value" id="uptime">72:14:33</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="log-section">
+                <div class="panel-header">
+                    <span class="panel-icon">▤</span>
+                    <h2>EVENT LOG</h2>
+                </div>
+                <div class="log-feed" id="log-feed">
+                    <div class="log-entry"><span class="log-time">[14:32:01]</span> <span class="log-level critical">CRIT</span> Cardiac arrhythmia detected</div>
+                    <div class="log-entry"><span class="log-time">[14:31:47]</span> <span class="log-level warning">WARN</span> Toxin levels exceeding threshold</div>
+                    <div class="log-entry"><span class="log-time">[14:31:22]</span> <span class="log-level info">INFO</span> Nanomachine swarm redeployed to cardiac tissue</div>
+                    <div class="log-entry"><span class="log-time">[14:30:58]</span> <span class="log-level warning">WARN</span> Hepatic function declining</div>
+                    <div class="log-entry"><span class="log-time">[14:30:15]</span> <span class="log-level info">INFO</span> Neural sync calibration complete</div>
+                </div>
+            </div>
+        </footer>
+
+    </main>
+
+    <!-- Patient Info Overlay -->
+    <div class="patient-info">
+        <div class="patient-photo">
+            <svg viewBox="0 0 60 60" class="patient-avatar">
+                <circle cx="30" cy="25" r="15" fill="none" stroke="var(--primary-glow)" stroke-width="1.5"/>
+                <path d="M10 55 Q10 40 30 38 Q50 40 50 55" fill="none" stroke="var(--primary-glow)" stroke-width="1.5"/>
+                <text x="30" y="30" text-anchor="middle" font-family="Share Tech Mono" font-size="12" fill="var(--primary-glow)">?</text>
+            </svg>
+        </div>
+        <div class="patient-details">
+            <span class="patient-name">SUBJECT #7749-X</span>
+            <span class="patient-id">ID: BWP-007749-X</span>
+            <span class="patient-status">STATUS: <span class="status-critical">CRITICAL</span></span>
+            <span class="patient-clearance">CLEARANCE: LEVEL 5</span>
+        </div>
+    </div>
+
+    <script src="scripts.js"></script>
+</body>
+</html>

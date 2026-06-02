@@ -1,0 +1,422 @@
+/* =========================================
+   CYBERPUNK TERMINAL - CORE STYLES
+   ========================================= */
+
+:root {
+    --color-bg: #050505;
+    --color-primary: #00ff41; /* Toxic Lime */
+    --color-primary-dim: #008f11;
+    --color-secondary: #00f3ff; /* Cyber Cyan */
+    --color-alert: #ff003c; /* Alert Red */
+    --color-text: #e0e0e0;
+    --color-glass: rgba(10, 15, 10, 0.85);
+    
+    --font-mono: 'VT323', monospace;
+    
+    --glitch-offset: 2px;
+    --scanline-opacity: 0.15;
+    --flicker-speed: 0.15s;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    cursor: crosshair; /* Immersive cursor */
+}
+
+body {
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    font-family: var(--font-mono);
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.2rem;
+    line-height: 1.4;
+}
+
+/* =========================================
+   BACKGROUND: MATRIX CANVAS
+   ========================================= */
+#matrix-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    opacity: 0.3; /* Subtle background */
+}
+
+/* =========================================
+   CRT OVERLAY EFFECTS
+   ========================================= */
+.crt-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1000;
+    pointer-events: none;
+    background: radial-gradient(circle, rgba(0,0,0,0) 60%, rgba(0,0,0,0.6) 100%);
+}
+
+/* Scanlines */
+.scanlines {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        to bottom,
+        rgba(255,255,255,0),
+        rgba(255,255,255,0) 50%,
+        rgba(0,0,0, var(--scanline-opacity)) 50%,
+        rgba(0,0,0, var(--scanline-opacity))
+    );
+    background-size: 100% 4px;
+    animation: scrollScanlines 10s linear infinite;
+}
+
+/* Screen Flicker */
+.flicker {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.02);
+    opacity: 0;
+    animation: flicker 0.15s infinite;
+}
+
+/* Vignette */
+.vignette {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle, rgba(0,0,0,0) 50%, rgba(0,0,0,0.8) 100%);
+}
+
+/* =========================================
+   MAIN TERMINAL CONTAINER
+   ========================================= */
+.terminal-wrapper {
+    position: relative;
+    z-index: 10;
+    width: 90%;
+    max-width: 900px;
+    height: 85vh;
+    background: var(--color-glass);
+    border: 1px solid var(--color-primary-dim);
+    box-shadow: 0 0 20px rgba(0, 255, 65, 0.2), inset 0 0 20px rgba(0, 255, 65, 0.1);
+    display: flex;
+    flex-direction: column;
+    backdrop-filter: blur(5px);
+    overflow: hidden;
+    animation: powerOn 0.5s ease-out forwards;
+}
+
+/* Top Border Accent */
+.terminal-wrapper::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: var(--color-primary);
+    box-shadow: 0 0 10px var(--color-primary);
+}
+
+/* =========================================
+   HEADER & GLITCH TEXT
+   ========================================= */
+.terminal-header {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--color-primary-dim);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(0, 20, 0, 0.6);
+}
+
+.logo-container {
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+}
+
+.glitch {
+    font-size: 3rem;
+    font-weight: bold;
+    color: var(--color-primary);
+    text-transform: uppercase;
+    position: relative;
+    text-shadow: 0 0 5px var(--color-primary);
+}
+
+/* Glitch Animation Implementation */
+.glitch::before,
+.glitch::after {
+    content: attr(data-text);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--color-glass); /* Matches wrapper to hide original text */
+}
+
+.glitch::before {
+    left: 2px;
+    text-shadow: -1px 0 var(--color-alert);
+    clip-path: inset(44% 0 61% 0);
+    animation: glitch-anim-1 2s infinite linear alternate-reverse;
+}
+
+.glitch::after {
+    left: -2px;
+    text-shadow: -1px 0 var(--color-secondary);
+    clip-path: inset(54% 0 10% 0);
+    animation: glitch-anim-2 3s infinite linear alternate-reverse;
+}
+
+.version-tag {
+    font-size: 1rem;
+    color: var(--color-secondary);
+    border: 1px solid var(--color-secondary);
+    padding: 0.1rem 0.4rem;
+    border-radius: 2px;
+    box-shadow: 0 0 5px var(--color-secondary);
+}
+
+.connection-status {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    color: var(--color-primary);
+    text-shadow: 0 0 5px var(--color-primary);
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    background-color: var(--color-primary);
+    border-radius: 50%;
+    box-shadow: 0 0 8px var(--color-primary);
+    animation: pulse 1s infinite;
+}
+
+/* =========================================
+   TERMINAL BODY & OUTPUT
+   ========================================= */
+.terminal-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 1.5rem;
+    overflow: hidden;
+    position: relative;
+}
+
+.terminal-output {
+    flex: 1;
+    overflow-y: auto;
+    margin-bottom: 1rem;
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-primary-dim) var(--color-bg);
+}
+
+/* Custom Scrollbar */
+.terminal-output::-webkit-scrollbar {
+    width: 8px;
+}
+.terminal-output::-webkit-scrollbar-track {
+    background: var(--color-bg);
+}
+.terminal-output::-webkit-scrollbar-thumb {
+    background-color: var(--color-primary-dim);
+    border: 1px solid var(--color-primary);
+}
+
+.log-entry {
+    margin-bottom: 0.5rem;
+    color: var(--color-text);
+    text-shadow: 0 0 2px rgba(255,255,255,0.3);
+}
+
+.timestamp {
+    color: var(--color-secondary);
+    margin-right: 0.5rem;
+    opacity: 0.8;
+}
+
+.success {
+    color: var(--color-primary);
+    font-weight: bold;
+}
+
+.highlight {
+    color: var(--color-alert);
+    text-shadow: 0 0 5px var(--color-alert);
+}
+
+/* =========================================
+   INPUT AREA
+   ========================================= */
+.input-area {
+    display: flex;
+    align-items: center;
+    background: rgba(0, 20, 0, 0.3);
+    padding: 0.5rem;
+    border: 1px solid var(--color-primary-dim);
+    border-radius: 4px;
+}
+
+.prompt-symbol {
+    color: var(--color-primary);
+    margin-right: 0.8rem;
+    font-weight: bold;
+    text-shadow: 0 0 5px var(--color-primary);
+}
+
+#command-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--color-text);
+    font-family: var(--font-mono);
+    font-size: 1.2rem;
+    outline: none;
+    caret-color: var(--color-primary);
+}
+
+.cursor-blink {
+    color: var(--color-primary);
+    animation: blink 1s step-end infinite;
+}
+
+/* =========================================
+   STATUS BAR (FOOTER)
+   ========================================= */
+.status-bar {
+    border-top: 1px solid var(--color-primary-dim);
+    padding: 0.8rem 1.5rem;
+    background: rgba(0, 20, 0, 0.8);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.9rem;
+    color: var(--color-primary-dim);
+}
+
+.metric {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 100px;
+}
+
+.label {
+    width: 30px;
+    color: var(--color-text);
+}
+
+.bar-container {
+    flex: 1;
+    height: 6px;
+    background: #111;
+    border: 1px solid var(--color-primary-dim);
+    position: relative;
+}
+
+.bar-fill {
+    height: 100%;
+    background: var(--color-primary);
+    box-shadow: 0 0 5px var(--color-primary);
+    transition: width 0.5s ease;
+}
+
+.value {
+    width: 40px;
+    text-align: right;
+    color: var(--color-primary);
+}
+
+.clock {
+    font-size: 1.1rem;
+    color: var(--color-secondary);
+    text-shadow: 0 0 5px var(--color-secondary);
+    letter-spacing: 2px;
+}
+
+/* =========================================
+   ANIMATIONS
+   ========================================= */
+@keyframes scrollScanlines {
+    0% { background-position: 0 0; }
+    100% { background-position: 0 100%; }
+}
+
+@keyframes flicker {
+    0% { opacity: 0.02; }
+    5% { opacity: 0.05; }
+    10% { opacity: 0.02; }
+    15% { opacity: 0.06; }
+    20% { opacity: 0.02; }
+    50% { opacity: 0.02; }
+    55% { opacity: 0.05; }
+    60% { opacity: 0.02; }
+    100% { opacity: 0.02; }
+}
+
+@keyframes pulse {
+    0% { opacity: 0.4; }
+    50% { opacity: 1; }
+    100% { opacity: 0.4; }
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+}
+
+@keyframes powerOn {
+    0% { transform: scale(0.95); opacity: 0; filter: brightness(5); }
+    100% { transform: scale(1); opacity: 1; filter: brightness(1); }
+}
+
+@keyframes glitch-anim-1 {
+    0% { clip-path: inset(20% 0 80% 0); }
+    20% { clip-path: inset(60% 0 10% 0); }
+    40% { clip-path: inset(40% 0 50% 0); }
+    60% { clip-path: inset(80% 0 5% 0); }
+    80% { clip-path: inset(10% 0 70% 0); }
+    100% { clip-path: inset(30% 0 50% 0); }
+}
+
+@keyframes glitch-anim-2 {
+    0% { clip-path: inset(10% 0 60% 0); }
+    20% { clip-path: inset(30% 0 20% 0); }
+    40% { clip-path: inset(70% 0 10% 0); }
+    60% { clip-path: inset(20% 0 50% 0); }
+    80% { clip-path: inset(50% 0 30% 0); }
+    100% { clip-path: inset(0% 0 80% 0); }
+}
+
+/* Responsive Adjustments */
+@media (max-width: 600px) {
+    .glitch { font-size: 2rem; }
+    .status-bar { flex-direction: column; gap: 0.5rem; align-items: flex-start; }
+    .metric { width: 100%; }
+    .clock { align-self: flex-end; }
+}

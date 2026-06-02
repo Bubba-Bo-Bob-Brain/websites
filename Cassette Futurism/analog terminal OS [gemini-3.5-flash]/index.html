@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CHRONOS-76 Analog Operating System</title>
+    <!-- Retro & Cyberpunk Display Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Space+Grotesk:wght@500;700&family=VT323&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="theme-amber power-on">
+
+    <!-- Outer heavy industrial metal cabinet -->
+    <div class="console-cabinet">
+        
+        <!-- CRT Monitor Bezel with Glass curve and screen filters -->
+        <div class="crt-bezel">
+            <div class="screen-glass">
+                <div class="phosphor-glow"></div>
+                <div class="scanlines"></div>
+                <div class="screen-flicker"></div>
+                
+                <!-- Inside the Screen: Digital UI -->
+                <div class="crt-screen">
+                    
+                    <!-- Top Diagnostic Bar -->
+                    <header class="sys-header">
+                        <div class="header-segment title-block">
+                            <span class="brand">CHRONOS <span class="version">v7.62</span></span>
+                            <span class="status-indicator-light blinking"></span>
+                        </div>
+                        <div class="header-segment diagnostics">
+                            <span class="label">SYS-STAT:</span> <span class="value" id="sys-status-val">MONITORING</span>
+                            <span class="label">CORE:</span> <span class="value">98.4 kHz</span>
+                            <span class="label">SECTOR:</span> <span class="value" id="active-sector">0x7F4A</span>
+                        </div>
+                        <div class="header-segment tape-status">
+                            <span class="label">TAPE DRIVE:</span> <span class="value idlespeed" id="tape-state-text">STANDBY</span>
+                        </div>
+                    </header>
+
+                    <!-- Main Operating Interface Grid -->
+                    <main class="workspace-grid">
+                        
+                        <!-- Left Deck: Reel-to-Reel Tape & System Instruments -->
+                        <section class="control-deck-left">
+                            
+                            <!-- Reel-to-Reel Tape Drive -->
+                            <div class="module-card tape-drive-card">
+                                <div class="module-header">
+                                    <span class="module-title">MAG-TAPE CORE MODULE [DRIVE A]</span>
+                                    <div class="tape-counter" id="tape-counter">0000</div>
+                                </div>
+                                <div class="tape-deck-container">
+                                    <svg class="reel-to-reel-svg" viewBox="0 0 600 240">
+                                        <!-- Background Deck Plate -->
+                                        <rect width="600" height="240" fill="#151515" rx="4" />
+                                        <path d="M 50 20 L 550 20 L 550 220 L 50 220 Z" fill="#0c0c0c" stroke="#333" stroke-width="2"/>
+                                        
+                                        <!-- Tape Path Guides -->
+                                        <circle cx="120" cy="190" r="10" fill="#222" stroke="#555" stroke-width="2" />
+                                        <circle cx="480" cy="190" r="10" fill="#222" stroke="#555" stroke-width="2" />
+                                        <circle cx="300" cy="150" r="15" fill="#333" stroke="#666" stroke-width="2" />
+                                        
+                                        <!-- Left Reel -->
+                                        <g id="left-reel" class="tape-reel">
+                                            <circle cx="180" cy="110" r="75" fill="#2a2a2a" stroke="#444" stroke-width="3" />
+                                            <!-- Magnetic Tape Thickness (shrinks as tape plays) -->
+                                            <circle id="left-tape-mass" cx="180" cy="110" r="68" fill="transparent" stroke="#554433" stroke-width="24" opacity="0.85" />
+                                            <!-- Metallic Hub Face -->
+                                            <circle cx="180" cy="110" r="25" fill="#111" stroke="#888" stroke-width="3" />
+                                            <line x1="180" y1="35" x2="180" y2="185" stroke="#888" stroke-width="4" />
+                                            <line x1="105" y1="110" x2="255" y2="110" stroke="#888" stroke-width="4" />
+                                            <circle cx="180" cy="110" r="10" fill="#222" />
+                                        </g>
+                                        
+                                        <!-- Right Reel -->
+                                        <g id="right-reel" class="tape-reel">
+                                            <circle cx="420" cy="110" r="75" fill="#2a2a2a" stroke="#444" stroke-width="3" />
+                                            <!-- Magnetic Tape Thickness (grows as tape plays) -->
+                                            <circle id="right-tape-mass" cx="420" cy="110" r="40" fill="transparent" stroke="#554433" stroke-width="12" opacity="0.85" />
+                                            <!-- Metallic Hub Face -->
+                                            <circle cx="420" cy="110" r="25" fill="#111" stroke="#888" stroke-width="3" />
+                                            <line x1="420" y1="35" x2="420" y2="185" stroke="#888" stroke-width="4" />
+                                            <line x1="345" y1="110" x2="495" y2="110" stroke="#888" stroke-width="4" />
+                                            <circle cx="420" cy="110" r="10" fill="#222" />
+                                        </g>
+
+                                        <!-- Tape thread lines connecting reels -->
+                                        <path id="tape-ribbon" d="M 125 145 Q 300 175 475 145" fill="none" stroke="#554433" stroke-width="3" />
+                                    </svg>
+                                </div>
+                                <div class="tape-controls">
+                                    <button class="btn-tape-control" id="btn-rewind" title="Rewind Tape (FAST)">
+                                        <span class="icon">&#9664;&#9664;</span> REW
+                                    </button>
+                                    <button class="btn-tape-control" id="btn-stop" title="Halt Tape Drive">
+                                        <span class="icon">&#9632;</span> STOP
+                                    </button>
+                                    <button class="btn-tape-control" id="btn-play" title="Read Tape Sequence">
+                                        <span class="icon">&#9654;</span> READ
+                                    </button>
+                                    <button class="btn-tape-control" id="btn-fastforward" title="Fast Forward Tape">
+                                        <span class="icon">&#9654;&#9654;</span> FWD
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Dual VU Meters (Analog Gauges) -->
+                            <div class="module-card gauges-card">
+                                <div class="module-header">
+                                    <span class="module-title">ANALOG SIGNAL CALIBRATION</span>
+                                </div>
+                                <div class="gauges-container">
+                                    <!-- VU Meter 1: Read Level -->
+                                    <div class="vu-meter">
+                                        <svg class="vu-svg" viewBox="0 0 160 100">
+                                            <path d="M 10 90 A 80 80 0 0 1 150 90" fill="none" stroke="#444" stroke-width="6" />
+                                            <path d="M 10 90 A 80 80 0 0 1 100 90" fill="none" stroke="var(--primary-glow)" stroke-width="6" class="meter-active-track" />
+                                            <!-- Danger Zone -->
+                                            <path d="M 110 90 A 80 80 0 0 1 150 90" fill="none" stroke="#e74c3c" stroke-width="6" />
+                                            <!-- Scale Ticks -->
+                                            <line x1="80" y1="10" x2="80" y2="18" stroke="var(--primary-color)" stroke-width="2" />
+                                            <line x1="40" y1="28" x2="46" y2="34" stroke="var(--primary-color)" stroke-width="2" />
+                                            <line x1="120" y1="28" x2="114" y2="34" stroke="#e74c3c" stroke-width="2" />
+                                            <!-- Indicator Needle -->
+                                            <g id="needle-read-group" transform="rotate(0, 80, 90)">
+                                                <line id="needle-read" x1="80" y1="90" x2="80" y2="15" stroke="var(--primary-color)" stroke-width="2.5" />
+                                                <circle cx="80" cy="90" r="6" fill="#111" stroke="var(--primary-color)" stroke-width="2" />
+                                            </g>
+                                            <text x="80" y="80" text-anchor="middle" class="vu-label">AZIMUTH DB</text>
+                                        </svg>
+                                        <span class="gauge-subtext">READ GAIN</span>
+                                    </div>
+
+                                    <!-- VU Meter 2: Core Flux -->
+                                    <div class="vu-meter">
+                                        <svg class="vu-svg" viewBox="0 0 160 100">
+                                            <path d="M 10 90 A 80 80 0 0 1 150 90" fill="none" stroke="#444" stroke-width="6" />
+                                            <path d="M 10 90 A 80 80 0 0 1 85 90" fill="none" stroke="var(--primary-glow)" stroke-width="6" class="meter-active-track" />
+                                            <!-- Danger Zone -->
+                                            <path d="M 110 90 A 80 80 0 0 1 150 90" fill="none" stroke="#e74c3c" stroke-width="6" />
+                                            <!-- Scale Ticks -->
+                                            <line x1="80" y1="10" x2="80" y2="18" stroke="var(--primary-color)" stroke-width="2" />
+                                            <line x1="40" y1="28" x2="46" y2="34" stroke="var(--primary-color)" stroke-width="2" />
+                                            <line x1="120" y1="28" x2="114" y2="34" stroke="#e74c3c" stroke-width="2" />
+                                            <!-- Indicator Needle -->
+                                            <g id="needle-flux-group" transform="rotate(0, 80, 90)">
+                                                <line id="needle-flux" x1="80" y1="90" x2="80" y2="15" stroke="var(--primary-color)" stroke-width="2.5" />
+                                                <circle cx="80" cy="90" r="6" fill="#111" stroke="var(--primary-color)" stroke-width="2" />
+                                            </g>
+                                            <text x="80" y="80" text-anchor="middle" class="vu-label">CORE FLUX</text>
+                                        </svg>
+                                        <span class="gauge-subtext">BIAS INDUCTION</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <!-- Right Deck: Analog File Manager & Log Streamer -->
+                        <section class="control-deck-right">
+                            
+                            <!-- Analog-Style File Selector -->
+                            <div class="module-card file-manager-card">
+                                <div class="module-header">
+                                    <span class="module-title">MAGNETIC TRACK REGISTER [FILE INDEX]</span>
+                                    <span class="track-count" id="track-count-display">8 SEGMENTS DETECTED</span>
+                                </div>
+                                
+                                <div class="file-manager-layout">
+                                    <!-- Left side: Radio-dial mechanical index slider -->
+                                    <div class="tuner-column">
+                                        <div class="tuner-track" id="tuner-track">
+                                            <div class="tuner-scale">
+                                                <span>90</span>
+                                                <span>80</span>
+                                                <span>70</span>
+                                                <span>60</span>
+                                                <span>50</span>
+                                                <span>40</span>
+                                                <span>30</span>
+                                                <span>20</span>
+                                                <span>10</span>
+                                            </div>
+                                            <!-- Physical Red Line Slider Indicator -->
+                                            <div class="tuner-slider" id="tuner-slider-needle">
+                                                <div class="slider-bead"></div>
+                                            </div>
+                                        </div>
+                                        <span class="tuner-label">TAPE INDEX</span>
+                                    </div>
+
+                                    <!-- Right side: Interactive Tape Track Segments -->
+                                    <div class="tracks-list" id="tracks-list">
+                                        <!-- Track 1 -->
+                                        <div class="track-row active" data-index="0" data-sector="0x11A4" data-size="4.2KB">
+                                            <div class="track-num">TRK 01</div>
+                                            <div class="track-details">
+                                                <div class="track-name">SYS_BOOT.DAT</div>
+                                                <div class="track-meta">SEC: 0x11A4 | LEN: 120s | RATE: 9.6kbps</div>
+                                            </div>
+                                            <div class="track-status">SYS</div>
+                                        </div>
+                                        <!-- Track 2 -->
+                                        <div class="track-row" data-index="1" data-sector="0x23F8" data-size="12.8KB">
+                                            <div class="track-num">TRK 02</div>
+                                            <div class="track-details">
+                                                <div class="track-name">PROJECT_AEON.DOC</div>
+                                                <div class="track-meta">SEC: 0x23F8 | LEN: 240s | RATE: 19.2kbps</div>
+                                            </div>
+                                            <div class="track-status">DOC</div>
+                                        </div>
+                                        <!-- Track 3 -->
+                                        <div class="track-row" data-index="2" data-sector="0x3AC1" data-size="8.1KB">
+                                            <div class="track-num">TRK 03</div>
+                                            <div class="track-details">
+                                                <div class="track-name">MATRIX_CALIBRATION.DAT</div>
+                                                <div class="track-meta">SEC: 0x3AC1 | LEN: 180s | RATE: 9.6kbps</div>
+                                            </div>
+                                            <div class="track-status">SYS</div>
+                                        </div>
+                                        <!-- Track 4 -->
+                                        <div class="track-row" data-index="3" data-sector="0x5C8D" data-size="32.0KB">
+                                            <div class="track-num">TRK 04</div>
+                                            <div class="track-details">
+                                                <div class="track-name">SUB_GRID_ALPHA.NET</div>
+                                                <div class="track-meta">SEC: 0x5C8D | LEN: 310s | RATE: 38.4kbps</div>
+                                            </div>
+                                            <div class="track-status">NET</div>
+                                        </div>
+                                        <!-- Track 5 -->
+                                        <div class="track-row" data-index="4" data-sector="0x7B02" data-size="1.5KB">
+                                            <div class="track-num">TRK 05</div>
+                                            <div class="track-details">
+                                                <div class="track-name">USER_JOURNAL_76.TXT</div>
+                                                <div class="track-meta">SEC: 0x7B02 | LEN: 090s | RATE: 4.8kbps</div>
+                                            </div>
+                                            <div class="track-status">USR</div>
+                                        </div>
+                                        <!-- Track 6 -->
+                                        <div class="track-row" data-index="5" data-sector="0x9E22" data-size="64.5KB">
+                                            <div class="track-num">TRK 06</div>
+                                            <div class="track-details">
+                                                <div class="track-name">CYPHER_DEC_ALGO.KEY</div>
+                                                <div class="track-meta">SEC: 0x9E22 | LEN: 420s | RATE: 38.4kbps</div>
+                                            </div>
+                                            <div class="track-status">KEY</div>
+                                        </div>
+                                        <!-- Track 7 -->
+                                        <div class="track-row" data-index="6" data-sector="0xC30A" data-size="14.2KB">
+                                            <div class="track-num">TRK 07</div>
+                                            <div class="track-details">
+                                                <div class="track-name">TELEMETRY_LOG.PRN</div>
+                                                <div class="track-meta">SEC: 0xC30A | LEN: 200s | RATE: 19.2kbps</div>
+                                            </div>
+                                            <div class="track-status">LOG</div>
+                                        </div>
+                                        <!-- Track 8 -->
+                                        <div class="track-row" data-index="7" data-sector="0xF19F" data-size="120.4KB">
+                                            <div class="track-num">TRK 08</div>
+                                            <div class="track-details">
+                                                <div class="track-name">ORBITAL_RE_ENTRY.SIM</div>
+                                                <div class="track-meta">SEC: 0xF19F | LEN: 600s | RATE: 76.8kbps</div>
+                                            </div>
+                                            <div class="track-status">SIM</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Mechanical Ticker Tape Output Console -->
+                            <div class="module-card ticker-card">
+                                <div class="module-header">
+                                    <span class="module-title">THERMAL TICKER-TAPE LOG OUTPUT</span>
+                                    <button class="btn-clear-logs" id="btn-clear-ticker" title="Clear Ticker Stream">TEAR TAPE</button>
+                                </div>
+                                <div class="ticker-paper-feeder">
+                                    <div class="ticker-paper" id="ticker-paper-stream">
+                                        <div class="ticker-line">[76-08-14 10:24:02] INITIALIZING MAGNETIC CORES... OK.</div>
+                                        <div class="ticker-line">[76-08-14 10:24:05] SYSTEM CONSOLE READY. CHRONOS OS LOADS SUCCESSFULLY.</div>
+                                        <div class="ticker-line">[76-08-14 10:24:06] STANDBY FOR DIRECTIVES...</div>
+                                    </div>
+                                    <div class="paper-tear-shadow"></div>
+                                </div>
+                            </div>
+                        </section>
+                    </main>
+
+                    <!-- Bottom interactive terminal command prompt and output deck -->
+                    <footer class="bottom-shell">
+                        <div class="terminal-shell">
+                            <div class="terminal-history" id="terminal-history">
+                                <div>&gt;&gt; CHRONOS INDUSTRIAL CORE SYSTEMS - BOOT SEQUENCED IN ROM BANK 0.</div>
+                                <div>&gt;&gt; TYPE <span class="cmd-highlight">"HELP"</span> OR CHOOSE PRESET OPERATORS TO RUN EXPERIMENTS.</div>
+                            </div>
+                            <div class="terminal-prompt-line">
+                                <span class="prompt-arrow">&gt;</span>
+                                <input type="text" id="terminal-input" placeholder="ENTER SYSTEM COMMAND..." autofocus autocomplete="off" spellcheck="false" maxlength="40">
+                                <span class="custom-cursor"></span>
+                            </div>
+                        </div>
+
+                        <!-- Macro command shortcut buttons -->
+                        <div class="macro-shortcuts">
+                            <span class="shortcut-label">MACRO INJECTORS:</span>
+                            <button class="macro-btn" data-cmd="DIR">DIR</button>
+                            <button class="macro-btn" data-cmd="READ">READ</button>
+                            <button class="macro-btn" data-cmd="TENSION">TENSION</button>
+                            <button class="macro-btn" data-cmd="DUMP">DUMP</button>
+                            <button class="macro-btn" data-cmd="SATELLITE">SATELLITE</button>
+                            <button class="macro-btn" data-cmd="CLEAR">CLEAR</button>
+                        </div>
+                    </footer>
+
+                </div> <!-- End CRT Screen -->
+            </div> <!-- End Screen Glass -->
+        </div> <!-- End CRT Bezel -->
+
+        <!-- Bottom Tactile Hardware Deck Panel -->
+        <div class="hardware-panel">
+            <div class="deck-plate-texture"></div>
+            
+            <div class="hardware-row">
+                <!-- Power Section with Safety Flip Switch -->
+                <div class="control-station power-station">
+                    <span class="station-label">POWER INTAKE</span>
+                    <div class="switch-housing">
+                        <span class="switch-indicator-text off">OFF</span>
+                        <div class="toggle-switch-wrapper">
+                            <input type="checkbox" id="power-toggle" checked>
+                            <label for="power-toggle" class="chunky-toggle-switch"></label>
+                        </div>
+                        <span class="switch-indicator-text on">ON</span>
+                    </div>
+                </div>
+
+                <!-- Screen Contrast & Tension Mechanical Knobs -->
+                <div class="control-station knobs-station">
+                    <div class="knob-assembly">
+                        <span class="station-label">AZIMUTH FINE TUNE</span>
+                        <div class="rotary-knob" id="knob-azimuth" data-value="50">
+                            <div class="knob-indicator"></div>
+                        </div>
+                        <span class="knob-value" id="val-azimuth">0.00</span>
+                    </div>
+
+                    <div class="knob-assembly">
+                        <span class="station-label">BIAS COUPLING</span>
+                        <div class="rotary-knob" id="knob-bias" data-value="75">
+                            <div class="knob-indicator"></div>
+                        </div>
+                        <span class="knob-value" id="val-bias">7.50</span>
+                    </div>
+                </div>
+
+                <!-- CRT Phosphor Selection Buttons (Amber, Green, Cyan) -->
+                <div class="control-station color-station">
+                    <span class="station-label">PHOSPHOR COLOR SPEC</span>
+                    <div class="radio-button-deck">
+                        <button class="radio-btn active" id="btn-theme-amber" data-theme="theme-amber">
+                            <span class="btn-lamp"></span> AMBER (590nm)
+                        </button>
+                        <button class="radio-btn" id="btn-theme-green" data-theme="theme-green">
+                            <span class="btn-lamp"></span> P1 GREEN (525nm)
+                        </button>
+                        <button class="radio-btn" id="btn-theme-cyan" data-theme="theme-cyan">
+                            <span class="btn-lamp"></span> P4 CYAN (490nm)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Acoustic Audio Feedback Toggle Switch -->
+                <div class="control-station audio-station">
+                    <span class="station-label">ACOUSTIC COUPLER</span>
+                    <div class="switch-housing">
+                        <span class="switch-indicator-text">MUTED</span>
+                        <div class="toggle-switch-wrapper">
+                            <input type="checkbox" id="audio-toggle" checked>
+                            <label for="audio-toggle" class="chunky-toggle-switch audio-switch"></label>
+                        </div>
+                        <span class="switch-indicator-text">AUDIBLE</span>
+                    </div>
+                </div>
+            </div>
+        </div> <!-- End Hardware Panel -->
+
+    </div> <!-- End Console Cabinet -->
+
+    <!-- Audio Synthesis Notice Overlay for User Consent (Chrome Autoplay compatibility) -->
+    <div class="consent-overlay" id="consent-overlay">
+        <div class="consent-modal">
+            <h2>CHRONOS-76 ANALOG OPERATING SYSTEM</h2>
+            <p>This immersive virtual machine synthesizes retro electromagnetic tape hums, relays, clicky keyboards, and dynamic core alerts in real-time using the Web Audio API.</p>
+            <p>Engage primary power grids to initialize acoustic coils.</p>
+            <button class="init-system-btn" id="btn-initialize">INITIALIZE AC VOLTAGE</button>
+        </div>
+    </div>
+
+    <!-- Background Magnetic Hum Loop Source -->
+    <script src="scripts.js"></script>
+</body>
+</html>

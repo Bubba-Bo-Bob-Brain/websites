@@ -1,0 +1,486 @@
+/* ===== BASE STYLES ===== */
+:root {
+  /* Color Palette (Dark Ages Gothic) */
+  --parchment-light: #f5e7c1;
+  --parchment-dark: #2a1e18;
+  --ink: #1a1008;
+  --gold: #d4af37;
+  --blood-red: #8c2f39;
+  --sky-day: #87ceeb;
+  --sky-night: #0a0a1a;
+  --shadow: #00000080;
+
+  /* Pixel Art Scaling (for crispness) */
+  --pixel-scale: 2;
+
+  /* Animation Timing */
+  --transition-fast: 0.2s;
+  --transition-medium: 0.5s;
+}
+
+/* Day/Night Theme Variables */
+[data-theme="light"] {
+  --bg-color: var(--parchment-light);
+  --text-color: var(--ink);
+  --border-color: var(--gold);
+  --sky-color: var(--sky-day);
+  --torch-opacity: 0;
+}
+[data-theme="dark"] {
+  --bg-color: var(--parchment-dark);
+  --text-color: var(--parchment-light);
+  --border-color: var(--blood-red);
+  --sky-color: var(--sky-night);
+  --torch-opacity: 1;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'MedievalSharp', 'UnifrakturMaguntia', cursive;
+  background-color: var(--sky-color);
+  color: var(--text-color);
+  overflow-x: hidden;
+  /* Subtle parchment texture */
+  background-image:
+    radial-gradient(circle at 1px 1px, var(--text-color) 1px, transparent 0),
+    radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.1) 1px, transparent 0);
+  background-size: 20px 20px;
+  background-position: 0 0, 10px 10px;
+  transition: background-color var(--transition-medium) ease;
+}
+
+/* ===== PARCHMENT CONTAINER ===== */
+.parchment-container {
+  max-width: 1000px;
+  margin: 2rem auto;
+  background-color: var(--bg-color);
+  border-radius: 8px;
+  box-shadow:
+    0 0 20px var(--shadow),
+    0 0 40px var(--shadow);
+  position: relative;
+  overflow: hidden;
+  /* Subtle edge wear */
+  border: 4px solid var(--border-color);
+  border-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="8" height="8" viewBox="0 0 8 8"><rect width="8" height="8" fill="%23d4af37"/><rect x="1" y="1" width="6" height="6" fill="%232a1e18"/></svg>') 8 stretch;
+  transition: background-color var(--transition-medium) ease;
+}
+
+/* ===== ILLUMINATED MANUSCRIPT BORDERS ===== */
+.illuminated-border {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.border-top,
+.border-bottom {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 16px;
+  background:
+    linear-gradient(90deg,
+      var(--border-color) 0%,
+      var(--border-color) 4%,
+      transparent 4%,
+      transparent 8%,
+      var(--border-color) 8%,
+      var(--border-color) 12%,
+      transparent 12%,
+      transparent 16%,
+      var(--border-color) 16%,
+      var(--border-color) 20%,
+      transparent 20%
+    );
+  background-size: 20px 100%;
+}
+
+.border-top { top: 0; }
+.border-bottom { bottom: 0; }
+
+.border-left,
+.border-right {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 16px;
+  background:
+    linear-gradient(var(--border-color) 4px, transparent 4px),
+    linear-gradient(var(--border-color) 4px, transparent 4px);
+  background-size: 4px 16px;
+}
+
+.border-left { left: 0; }
+.border-right { right: 0; }
+
+.corner {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  background-color: var(--border-color);
+}
+.corner-tl { top: 0; left: 0; }
+.corner-tr { top: 0; right: 0; }
+.corner-bl { bottom: 0; left: 0; }
+.corner-br { bottom: 0; right: 0; }
+
+/* Animate borders on scroll */
+.parchment-container {
+  animation: borderGlow 3s ease-in-out infinite alternate;
+}
+@keyframes borderGlow {
+  0% { box-shadow: 0 0 10px var(--border-color); }
+  100% { box-shadow: 0 0 20px var(--gold); }
+}
+
+/* ===== TYPOGRAPHY ===== */
+h1, h2, h3 {
+  font-family: 'UnifrakturMaguntia', cursive;
+  text-align: center;
+  letter-spacing: 1px;
+  color: var(--border-color);
+  text-shadow: 2px 2px 0 var(--text-color);
+}
+.title {
+  font-size: 3rem;
+  margin: 3rem 0 0.5rem;
+  padding-top: 16px; /* Account for border */
+}
+.subtitle {
+  font-size: 1.2rem;
+  margin-bottom: 2rem;
+  font-family: 'MedievalSharp', sans-serif;
+}
+
+/* ===== HERO SECTION (TOLLING BELL) ===== */
+.hero-section {
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+.bell-container {
+  position: relative;
+  margin: 2rem 0;
+}
+.bell {
+  width: 60px;
+  height: 80px;
+  position: relative;
+  margin: 0 auto;
+  cursor: pointer;
+  transition: transform 0.1s ease;
+}
+.bell-body {
+  width: 60px;
+  height: 50px;
+  background-color: var(--border-color);
+  position: relative;
+  border-radius: 30px 30px 0 0;
+}
+.bell-body::before {
+  content: '';
+  position: absolute;
+  top: -5px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 10px;
+  height: 10px;
+  background-color: var(--gold);
+  border-radius: 50%;
+}
+.bell-clapper {
+  width: 10px;
+  height: 15px;
+  background-color: var(--gold);
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-radius: 5px;
+  transition: transform 0.1s ease;
+}
+.bell-rope {
+  width: 4px;
+  height: 100px;
+  background-color: var(--ink);
+  position: absolute;
+  top: -100px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: -1;
+}
+.bell-caption {
+  text-align: center;
+  font-size: 0.9rem;
+  margin-top: 1rem;
+  color: var(--border-color);
+}
+
+/* ===== KINGDOM MAP ===== */
+.kingdom-map {
+  padding: 2rem;
+  position: relative;
+}
+.map-container {
+  margin: 0 auto;
+  max-width: 600px;
+}
+.map-frame {
+  background-color: var(--ink);
+  padding: 10px;
+  border-radius: 4px;
+  box-shadow: 0 0 10px var(--shadow);
+}
+.map {
+  background-color: #5a3e2b;
+  background-image:
+    linear-gradient(rgba(0,0,0,0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,0,0,0.1) 1px, transparent 1px);
+  background-size: 20px 20px;
+  height: 400px;
+  position: relative;
+  overflow: hidden;
+  border: 2px solid var(--ink);
+}
+.map-location {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  cursor: pointer;
+  transition: transform 0.2s ease, filter 0.2s ease;
+  z-index: 2;
+}
+.map-location:hover {
+  transform: scale(1.2);
+  filter: drop-shadow(0 0 5px var(--gold));
+}
+.village {
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20"><rect x="6" y="8" width="8" height="8" fill="%238B4513"/><polygon points="6,8 10,4 14,8" fill="%23B22222"/></svg>');
+}
+.castle {
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20"><rect x="4" y="12" width="12" height="6" fill="%23555"/><rect x="6" y="8" width="2" height="4" fill="%23888"/><rect x="12" y="8" width="2" height="4" fill="%23888"/><polygon points="10,4 6,8 14,8" fill="%23333"/></svg>');
+}
+.forest {
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20"><circle cx="6" cy="12" r="3" fill="%23228B22"/><circle cx="14" cy="10" r="3" fill="%2332CD32"/><circle cx="10" cy="14" r="3" fill="%23228B22"/></svg>');
+}
+.river {
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20"><path d="M2 10 Q10 5 18 10 T2 10" stroke="%231E90FF" stroke-width="2" fill="none"/></svg>');
+}
+.plague-doctor-path {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20"><circle cx="10" cy="10" r="1" fill="%2300000030"/></svg>');
+  background-size: 20px 20px;
+  pointer-events: none;
+  opacity: 0.5;
+  animation: pathGlow 4s ease-in-out infinite alternate;
+}
+@keyframes pathGlow {
+  0% { opacity: 0.3; }
+  100% { opacity: 0.7; }
+}
+
+.map-legend {
+  display: flex;
+  justify-content: center;
+  margin-top: 1rem;
+  gap: 1rem;
+}
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+}
+.icon-village, .icon-castle, .icon-forest, .icon-river {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  background-size: contain;
+}
+.icon-village { background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 20 20"><rect x="6" y="8" width="8" height="8" fill="%238B4513"/><polygon points="6,8 10,4 14,8" fill="%23B22222"/></svg>'); }
+.icon-castle { background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 20 20"><rect x="4" y="12" width="12" height="6" fill="%23555"/><polygon points="10,4 6,8 14,8" fill="%23333"/></svg>'); }
+.icon-forest { background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 20 20"><circle cx="8" cy="10" r="2" fill="%23228B22"/></svg>'); }
+.icon-river { background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 20 20"><path d="M2 8 Q10 4 18 8" stroke="%231E90FF" stroke-width="1" fill="none"/></svg>'); }
+
+/* ===== PLAGUE DOCTORS ===== */
+.plague-doctor {
+  position: absolute;
+  width: 30px;
+  height: 40px;
+  z-index: 10;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+.plague-doctor:hover {
+  transform: scale(1.1);
+}
+.doctor-mask {
+  width: 30px;
+  height: 20px;
+  background-color: var(--border-color);
+  position: relative;
+  border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+}
+.doctor-mask::before {
+  content: '';
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  width: 8px;
+  height: 8px;
+  background-color: var(--gold);
+  border-radius: 50%;
+}
+.doctor-mask::after {
+  content: '';
+  position: absolute;
+  top: 8px;
+  left: 15px;
+  width: 10px;
+  height: 2px;
+  background-color: var(--gold);
+}
+.doctor-robe {
+  width: 30px;
+  height: 20px;
+  background-color: var(--blood-red);
+  position: relative;
+  border-radius: 0 0 5px 5px;
+}
+.doctor-robe::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 20px;
+  height: 5px;
+  background-color: var(--gold);
+  border-radius: 2px;
+}
+.doctor-staff {
+  position: absolute;
+  top: 0;
+  right: -10px;
+  width: 4px;
+  height: 30px;
+  background-color: var(--ink);
+}
+.doctor-staff::after {
+  content: '';
+  position: absolute;
+  top: -5px;
+  left: -3px;
+  width: 10px;
+  height: 10px;
+  background-color: var(--gold);
+  border-radius: 50%;
+}
+
+/* ===== DAY/NIGHT CYCLE ===== */
+.cycle-toggle {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 100;
+}
+#toggle-cycle {
+  background: var(--border-color);
+  color: var(--bg-color);
+  border: none;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 10px var(--shadow);
+  transition: transform 0.3s ease;
+}
+#toggle-cycle:hover {
+  transform: scale(1.1);
+}
+.icon-sun, .icon-moon {
+  font-size: 1.5rem;
+  transition: opacity 0.3s ease;
+}
+[data-theme="dark"] .icon-sun {
+  opacity: 0;
+}
+[data-theme="light"] .icon-moon {
+  opacity: 0;
+}
+
+/* ===== SEASONAL DECORATIONS ===== */
+.seasonal-decorations {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: -1;
+  transition: opacity 1s ease;
+}
+.leaf {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  background-color: var(--blood-red);
+  border-radius: 50% 0 50% 0;
+  opacity: 0.8;
+  animation: leafFall 10s linear infinite;
+}
+
+/* ===== FOOTER ===== */
+.manuscript-footer {
+  text-align: center;
+  padding: 2rem;
+  position: relative;
+}
+.manuscript-footer p {
+  font-size: 0.9rem;
+  margin: 0.5rem 0;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .parchment-container {
+    margin: 0;
+    border-radius: 0;
+  }
+  .title {
+    font-size: 2rem;
+  }
+  .map {
+    height: 300px;
+  }
+}
+
+/* ===== PIXEL ART SCALING ===== */
+@media (min-resolution: 1.5dppx) {
+  body {
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
+  }
+}

@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="dark">
+    <title>WEATHER_SYS_v3.2 // RAW_FEED</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=VT323&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- GRAIN TEXTURE OVERLAY -->
+    <div class="grain-overlay" aria-hidden="true"></div>
+    
+    <!-- SCANLINE EFFECT -->
+    <div class="scanlines" aria-hidden="true"></div>
+
+    <!-- STATION ID MARQUEE -->
+    <div class="marquee-container">
+        <div class="marquee-content">
+            ⚠ WEATHER TERMINAL KX-79 /// LAT: 40.7128° N /// LON: 74.0060° W /// ELEV: 10M /// STATUS: OPERATIONAL ⚠
+        </div>
+    </div>
+
+    <!-- MAIN GRID CONTAINER -->
+    <main class="brutalist-grid">
+        
+        <!-- COLUMN 1: LOCATION & CONTROLS -->
+        <section class="col-loc panel-raw">
+            <div class="panel-header">
+                <span class="bracket">[</span>
+                <span class="label">LOCATION_SELECT</span>
+                <span class="bracket">]</span>
+            </div>
+            <div class="loc-input-wrapper">
+                <input type="text" id="location-input" class="raw-input" value="NEW YORK CITY" autocomplete="off">
+                <button id="loc-submit" class="raw-btn">EXECUTE</button>
+            </div>
+            <div class="coords-display">
+                <div class="coord-row">
+                    <span class="coord-label">LAT:</span>
+                    <span id="lat-display" class="coord-val">40.7128</span>
+                </div>
+                <div class="coord-row">
+                    <span class="coord-label">LON:</span>
+                    <span id="lon-display" class="coord-val">-74.0060</span>
+                </div>
+                <div class="coord-row">
+                    <span class="coord-label">TZ:</span>
+                    <span id="timezone-display" class="coord-val">UTC-5</span>
+                </div>
+            </div>
+            <div class="system-time">
+                <span id="clock" class="clock-display">00:00:00</span>
+            </div>
+        </section>
+
+        <!-- COLUMN 2: MASSIVE TEMPERATURE DISPLAY -->
+        <section class="col-temp panel-overlap">
+            <div class="temp-wrapper">
+                <div class="temp-unit">°F</div>
+                <div id="current-temp" class="temp-display">72</div>
+                <div class="temp-condition" id="temp-condition">PARTLY CLOUDY</div>
+            </div>
+            <!-- WIND DIRECTION ARROW (PURE CSS) -->
+            <div class="wind-arrow-container">
+                <div id="wind-arrow" class="wind-arrow" style="--wind-deg: 45deg;"></div>
+                <div class="wind-speed-display">
+                    <span id="wind-speed">12</span> MPH
+                </div>
+            </div>
+        </section>
+
+        <!-- COLUMN 3: DETAILS PANEL -->
+        <section class="col-details panel-raw">
+            <div class="panel-header">
+                <span class="bracket">[</span>
+                <span class="label">METRICS</span>
+                <span class="bracket">]</span>
+            </div>
+            <div class="metrics-grid">
+                <div class="metric-item">
+                    <span class="metric-label">HUMIDITY</span>
+                    <span id="humidity" class="metric-val">65%</span>
+                </div>
+                <div class="metric-item">
+                    <span class="metric-label">PRESSURE</span>
+                    <span id="pressure" class="metric-val">1013 hPa</span>
+                </div>
+                <div class="metric-item">
+                    <span class="metric-label">VISIBILITY</span>
+                    <span id="visibility" class="metric-val">10 mi</span>
+                </div>
+                <div class="metric-item">
+                    <span class="metric-label">UV INDEX</span>
+                    <span id="uv-index" class="metric-val">5</span>
+                </div>
+                <div class="metric-item">
+                    <span class="metric-label">DEWPOINT</span>
+                    <span id="dewpoint" class="metric-val">58°F</span>
+                </div>
+                <div class="metric-item">
+                    <span class="metric-label">CLOUD COVER</span>
+                    <span id="cloud-cover" class="metric-val">45%</span>
+                </div>
+            </div>
+            <div class="sun-times">
+                <div class="sun-item">
+                    <span class="sun-label">SUNRISE</span>
+                    <span id="sunrise" class="sun-val">06:15 AM</span>
+                </div>
+                <div class="sun-item">
+                    <span class="sun-label">SUNSET</span>
+                    <span id="sunset" class="sun-val">07:45 PM</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- COLUMN 4: ALERTS PANEL (JARRING COLOR SHIFT) -->
+        <section class="col-alerts panel-alert" id="alerts-panel" style="display: none;">
+            <div class="alert-header">
+                <span class="alert-icon">⚠</span>
+                <span class="alert-title">WEATHER ALERT</span>
+            </div>
+            <div class="alert-content" id="alert-message">
+                <!-- Dynamic alert content -->
+            </div>
+            <div class="alert-footer">
+                <span class="alert-expires">EXPIRES: <span id="alert-expiry">--:--</span></span>
+            </div>
+        </section>
+
+        <!-- COLUMN 5: HOURLY FORECAST TABLE (RAW HTML TABLE) -->
+        <section class="col-hourly panel-raw full-width">
+            <div class="panel-header">
+                <span class="bracket">[</span>
+                <span class="label">HOURLY_FORECAST</span>
+                <span class="bracket">]</span>
+            </div>
+            <div class="table-wrapper">
+                <table id="hourly-table" class="raw-table">
+                    <thead>
+                        <tr>
+                            <th>TIME</th>
+                            <th>TEMP</th>
+                            <th>COND</th>
+                            <th>PRCP %</th>
+                            <th>WIND</th>
+                            <th>HUM</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Rows generated by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- COLUMN 6: 7-DAY FORECAST (BRUTALIST CARDS) -->
+        <section class="col-weekly panel-raw full-width">
+            <div class="panel-header">
+                <span class="bracket">[</span>
+                <span class="label">EXTENDED_FORECAST</span>
+                <span class="bracket">]</span>
+            </div>
+            <div class="weekly-grid" id="weekly-forecast">
+                <!-- Cards generated by JS -->
+            </div>
+        </section>
+
+        <!-- DECORATIVE ELEMENTS -->
+        <div class="corner-decor top-left"></div>
+        <div class="corner-decor top-right"></div>
+        <div class="corner-decor bottom-left"></div>
+        <div class="corner-decor bottom-right"></div>
+        
+        <!-- SYSTEM STATUS FOOTER -->
+        <footer class="system-footer">
+            <div class="footer-line">
+                <span>DATA_SOURCE: NOAA/NWS</span>
+                <span>UPDATED: <span id="last-update">--:--</span></span>
+                <span>LATENCY: <span id="latency">0</span>ms</span>
+                <span class="blink">● LIVE</span>
+            </div>
+        </footer>
+
+    </main>
+
+    <!-- WEATHER ICONS (PURE CSS/SVG) -->
+    <svg style="display: none;">
+        <symbol id="icon-sun" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="5"/>
+            <g stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="2" x2="12" y2="4"/>
+                <line x1="12" y1="20" x2="12" y2="22"/>
+                <line x1="4" y1="12" x2="6" y2="12"/>
+                <line x1="18" y1="12" x2="20" y2="12"/>
+                <line x1="5" y1="5" x2="7" y2="7"/>
+                <line x1="17" y1="17" x2="19" y2="19"/>
+                <line x1="5" y1="19" x2="7" y2="17"/>
+                <line x1="17" y1="7" x2="19" y2="5"/>
+            </g>
+        </symbol>
+        <symbol id="icon-cloud" viewBox="0 0 24 24">
+            <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z" fill="currentColor"/>
+        </symbol>
+        <symbol id="icon-rain" viewBox="0 0 24 24">
+            <path d="M16 13v2H8v-2c0-2.21 3.58-4 8-4s8 1.79 8 4z" fill="currentColor"/>
+            <path d="M10 21v-4a2 2 0 0 1 4 0v4" stroke="currentColor" stroke-width="2"/>
+        </symbol>
+        <symbol id="icon-snow" viewBox="0 0 24 24">
+            <path d="M12 2v20M8 6l4-4 4 4M8 18l4 4 4-4" stroke="currentColor" stroke-width="2"/>
+        </symbol>
+        <symbol id="icon-storm" viewBox="0 0 24 24">
+            <path d="M19 16.9A5 5 0 0 0 18 7h-1.26a8 8 0 1 0-11.62 9" fill="currentColor"/>
+            <path d="M13 11l9 5" stroke="currentColor" stroke-width="2"/>
+            <path d="M13 15l9-5" stroke="currentColor" stroke-width="2"/>
+        </symbol>
+        <symbol id="icon-fog" viewBox="0 0 24 24">
+            <path d="M4 12h16M4 16h16M4 8h16" stroke="currentColor" stroke-width="2"/>
+        </symbol>
+    </svg>
+
+    <script src="scripts.js"></script>
+</body>
+</html>

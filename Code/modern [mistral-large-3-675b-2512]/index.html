@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Neon Forge – Source Code Command Center</title>
+  <meta name="description" content="Immersive source code management with glowing visualizations and real-time collaboration." />
+
+  <!-- Favicon -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>" />
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Fira+Code:wght@400;700&display=swap" rel="stylesheet" />
+
+  <!-- Prism.js for syntax highlighting -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="styles.css" />
+
+  <!-- Custom Cursor Script -->
+  <style>
+    /* Inline minimal cursor for immediate effect */
+    .cursor {
+      position: fixed;
+      width: 8px;
+      height: 8px;
+      background-color: #00f2ff;
+      border-radius: 50%;
+      z-index: 9999;
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+      mix-blend-mode: screen;
+      transition: transform 0.1s ease-out;
+    }
+    .cursor::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle, rgba(0,242,255,0.4) 0%, transparent 70%);
+      border-radius: 50%;
+      opacity: 0.7;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0% { transform: scale(1); opacity: 0.7; }
+      50% { transform: scale(1.5); opacity: 0.3; }
+      100% { transform: scale(2); opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Custom Cursor -->
+  <div class="cursor"></div>
+
+  <!-- Grain Overlay -->
+  <div class="grain"></div>
+
+  <!-- Animated Background Grid -->
+  <div class="bg-grid"></div>
+
+  <!-- Top Navigation -->
+  <nav class="navbar">
+    <div class="navbar-container">
+      <div class="navbar-left">
+        <a href="#" class="logo">
+          <svg viewBox="0 0 48 48" width="32" height="32">
+            <path d="M24 4L8 16l16 12 16-12z" fill="url(#logoGradient)" />
+            <path d="M8 20L24 32 40 20" fill="url(#logoGradient2)" opacity="0.7" />
+            <defs>
+              <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#00f2ff" />
+                <stop offset="100%" stop-color="#b559ff" />
+              </linearGradient>
+              <linearGradient id="logoGradient2" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#b559ff" />
+                <stop offset="100%" stop-color="#ff00ff" />
+              </linearGradient>
+            </defs>
+          </svg>
+          <span>NEON FORGE</span>
+        </a>
+      </div>
+      <div class="navbar-center">
+        <div class="search-bar">
+          <input type="text" placeholder="Search or jump to..." />
+          <span class="search-icon">🔍</span>
+        </div>
+      </div>
+      <div class="navbar-right">
+        <a href="#" class="nav-link">Dashboard</a>
+        <a href="#" class="nav-link">Pull Requests</a>
+        <a href="#" class="nav-link">Issues</a>
+        <a href="#" class="nav-link">Code</a>
+        <a href="#" class="nav-link">Projects</a>
+        <a href="#" class="nav-link">Settings</a>
+        <div class="user-avatar">
+          <img src="https://avatars.githubusercontent.com/u/583231?v=4" alt="User Avatar" />
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <!-- Repository Header -->
+    <div class="repo-header">
+      <div class="repo-title">
+        <h1>neon-forge / <span>immersive-code-platform</span></h1>
+        <div class="repo-meta">
+          <span class="visibility">Public</span>
+          <a href="#" class="meta-link">⭐ 1.2k</a>
+          <a href="#" class="meta-link">🍴 48</a>
+          <a href="#" class="meta-link">🔒 3 open</a>
+        </div>
+      </div>
+      <div class="repo-actions">
+        <button class="btn">⭐ Star</button>
+        <button class="btn">🍴 Fork</button>
+        <div class="branch-selector">
+          <button class="btn branch-btn">
+            <span class="branch-name">main</span>
+            <span class="dropdown-arrow">▼</span>
+          </button>
+          <div class="branch-dropdown">
+            <input type="text" placeholder="Find or create a branch..." />
+            <div class="branch-list">
+              <div class="branch-item">main</div>
+              <div class="branch-item">dev</div>
+              <div class="branch-item">feature/glowing-diff</div>
+              <div class="branch-item">bugfix/login-auth</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Commit Graph & Main Grid -->
+    <div class="main-grid">
+      <!-- Left Sidebar: File Explorer -->
+      <aside class="file-explorer">
+        <div class="explorer-header">
+          <span>Files</span>
+          <div class="explorer-actions">
+            <button>+</button>
+            <button>⋯</button>
+          </div>
+        </div>
+        <div class="file-tree">
+          <div class="tree-node folder" data-path=".github">
+            <div class="node-header">
+              <span class="node-icon">📁</span>
+              <span class="node-name">.github</span>
+              <span class="node-arrow">▶</span>
+            </div>
+            <div class="node-children">
+              <div class="tree-node file" data-path=".github/ISSUE_TEMPLATE.md">
+                <span class="node-icon">📄</span>
+                <span class="node-name">ISSUE_TEMPLATE.md</span>
+              </div>
+              <div class="tree-node file" data-path=".github/PULL_REQUEST_TEMPLATE.md">
+                <span class="node-icon">📄</span>
+                <span class="node-name">PULL_REQUEST_TEMPLATE.md</span>
+              </div>
+            </div>
+          </div>
+          <div class="tree-node folder" data-path="client">
+            <div class="node-header">
+              <span class="node-icon">📁</span>
+              <span class="node-name">client</span>
+              <span class="node-arrow">▶</span>
+            </div>
+            <div class="node-children">
+              <div class="tree-node file" data-path="client/package.json">
+                <span class="node-icon">📄</span>
+                <span class="node-name">package.json</span>
+              </div>
+              <div class="tree-node file" data-path="client/src">
+                <div class="node-header">
+                  <span class="node-icon">📁</span>
+                  <span class="node-name">src</span>
+                  <span class="node-arrow">▼</span>
+                </div>
+                <div class="node-children">
+                  <div class="tree-node file" data-path="client/src/App.vue">
+                    <span class="node-icon">📄</span>
+                    <span class="node-name">App.vue</span>
+                  </div>
+                  <div class="tree-node file" data-path="client/src/main.js">
+                    <span class="node-icon">📄</span>
+                    <span class="node-name">main.js</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="tree-node folder" data-path="server">
+            <div class="node-header">
+              <span class="node-icon">📁</span>
+              <span class="node-name">server</span>
+              <span class="node-arrow">▶</span>
+            </div>
+          </div>
+          <div class="tree-node file" data-path="README.md">
+            <span class="node-icon">📖</span>
+            <span class="node-name">README.md</span>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Center: Commit Graph & Diff Viewer -->
+      <div class="content-center">
+        <!-- Commit Graph Visualization -->
+        <div class="commit-graph-container">
+          <canvas id="commitGraph"></canvas>
+          <div class="graph-overlay">
+            <div class="graph-tooltip" id="graphTooltip">
+              <div class="commit-hash">#abc1234</div>
+              <div class="commit-message">feat: add glowing diff animation</div>
+              <div class="commit-author">by <span>alice</span></div>
+              <div class="commit-date">2 hours ago</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Code Diff Viewer -->
+        <div class="diff-viewer">
+          <div class="diff-header">
+            <div class="diff-path">src/components/CodeDiff.vue</div>
+            <div class="diff-actions">
+              <button>🔍</button>
+              <button>⚙️</button>
+              <button>↗</button>
+            </div>
+          </div>
+          <div class="diff-meta">
+            <span class="diff-branch">main</span>
+            <span class="diff-arrow">↔</span>
+            <span class="diff-branch">feature/glowing-diff</span>
+          </div>
+          <div class="diff-container">
+            <div class="diff-line-numbers">
+              <div class="line-number">1</div>
+              <div class="line-number">2</div>
+              <div class="line-number">3</div>
+              <div class="line-number">4</div>
+              <div class="line-number deleted">5</div>
+              <div class="line-number">6</div>
+              <div class="line-number added">7</div>
+              <div class="line-number">8</div>
+            </div>
+            <div class="diff-code">
+              <pre><code class="language-diff">
+  <span class="diff-line unchanged">  &lt;template&gt;</span>
+  <span class="diff-line unchanged">    &lt;div class="diff-container"&gt;</span>
+  <span class="diff-line unchanged">      &lt;div class="diff-view"&gt;</span>
+  <span class="diff-line deleted">        &lt;div class="old-code"&gt;&lt;/div&gt;</span>
+  <span class="diff-line unchanged">      &lt;/div&gt;</span>
+  <span class="diff-line added">        &lt;div class="new-code glowing"&gt;&lt;/div&gt;</span>
+  <span class="diff-line unchanged">    &lt;/div&gt;</span>
+  <span class="diff-line unchanged">  &lt;/template&gt;</span>
+              </code></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Sidebar: PRs, Activity, Heatmap -->
+      <aside class="right-sidebar">
+        <!-- Pull Requests -->
+        <div class="sidebar-card">
+          <div class="card-header">
+            <h3>Pull Requests <span class="badge">3</span></h3>
+          </div>
+          <div class="pr-list">
+            <div class="pr-item">
+              <div class="pr-status glowing-open"></div>
+              <div class="pr-title">feat: add glowing diff animation</div>
+              <div class="pr-meta">#42 by <span>alice</span></div>
+              <div class="pr-assignees">
+                <img src="https://avatars.githubusercontent.com/u/583231?v=4" alt="Assignee" title="bob" />
+              </div>
+            </div>
+            <div class="pr-item">
+              <div class="pr-status glowing-merged"></div>
+              <div class="pr-title">fix: cursor trail lag</div>
+              <div class="pr-meta">#41 by <span>bob</span></div>
+            </div>
+            <div class="pr-item">
+              <div class="pr-status"></div>
+              <div class="pr-title">docs: update README</div>
+              <div class="pr-meta">#40 by <span>charlie</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Contribution Heatmap -->
+        <div class="sidebar-card">
+          <div class="card-header">
+            <h3>Contribution Activity</h3>
+          </div>
+          <div class="heatmap-container">
+            <div class="heatmap-months">
+              <span>Jan</span><span>Feb</span><span>Mar</span><span>Apr</span><span>May</span><span>Jun</span>
+            </div>
+            <div class="heatmap-grid">
+              <!-- Will be populated by JS -->
+            </div>
+            <div class="heatmap-legend">
+              <span>Less</span>
+              <div class="legend-steps">
+                <div class="legend-step"></div>
+                <div class="legend-step"></div>
+                <div class="legend-step"></div>
+                <div class="legend-step"></div>
+                <div class="legend-step"></div>
+              </div>
+              <span>More</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Activity Feed -->
+        <div class="sidebar-card">
+          <div class="card-header">
+            <h3>Recent Activity</h3>
+          </div>
+          <div class="activity-feed">
+            <div class="activity-item">
+              <div class="activity-icon commit">🔧</div>
+              <div class="activity-content">
+                <span>alice</span> pushed 3 commits to <span>main</span>
+                <div class="activity-time">2 hours ago</div>
+              </div>
+            </div>
+            <div class="activity-item">
+              <div class="activity-icon pr">🔄</div>
+              <div class="activity-content">
+                <span>bob</span> opened PR <span>#41</span>
+                <div class="activity-time">5 hours ago</div>
+              </div>
+            </div>
+            <div class="activity-item">
+              <div class="activity-icon comment">💬</div>
+              <div class="activity-content">
+                <span>charlie</span> commented on <span>#40</span>
+                <div class="activity-time">1 day ago</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <!-- Scripts -->
+  <script src="scripts.js"></script>
+</body>
+</html>

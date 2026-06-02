@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ABYSSAL-7 | Deep Research Station — Operations Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Audiowide&family=Chakra+Petch:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <div class="ambient-overlay"></div>
+    <div class="scanline-overlay"></div>
+    <canvas id="particleCanvas"></canvas>
+    <canvas id="currentCanvas"></canvas>
+
+    <div class="dashboard">
+
+        <header class="dash-header">
+            <div class="header-col header-left">
+                <div class="station-id">
+                    <span class="station-prefix">DRS</span>
+                    <h1 class="station-name">ABYSSAL-7</h1>
+                </div>
+                <div class="station-subtitle">DEEP RESEARCH STATION &bull; HADOPELAGIC ZONE</div>
+                <div class="utc-clock">
+                    <span class="clock-label">UTC</span>
+                    <span class="clock-value" id="utcClock">14:33:07</span>
+                </div>
+            </div>
+
+            <div class="header-col header-center">
+                <div class="depth-gauge-wrapper">
+                    <div class="depth-gauge">
+                        <div class="depth-track">
+                            <div class="depth-fill" id="depthFill"></div>
+                            <div class="depth-crush-marker" id="crushMarker">
+                                <span class="crush-label">CRUSH DEPTH</span>
+                            </div>
+                        </div>
+                        <div class="depth-ticks">
+                            <span class="tick" data-depth="0">0</span>
+                            <span class="tick" data-depth="2000">2K</span>
+                            <span class="tick" data-depth="4000">4K</span>
+                            <span class="tick" data-depth="6000">6K</span>
+                            <span class="tick" data-depth="8000">8K</span>
+                            <span class="tick" data-depth="10000">10K</span>
+                            <span class="tick" data-depth="11000">11K</span>
+                        </div>
+                    </div>
+                    <div class="depth-readout">
+                        <div class="depth-value-row">
+                            <span class="depth-value" id="depthValue">10,847</span>
+                            <span class="depth-unit">m</span>
+                        </div>
+                        <div class="depth-zone" id="depthZone">HADOPELAGIC</div>
+                        <div class="depth-trend">
+                            <span class="trend-arrow" id="depthTrendArrow">&#9660;</span>
+                            <span class="trend-value" id="depthTrendValue">+2.3m/h</span>
+                            <span class="trend-label">DESCENT</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="header-col header-right">
+                <div class="mission-clock">
+                    <span class="mission-label">MISSION ELAPSED</span>
+                    <span class="mission-value" id="missionClock">287:14:33:07</span>
+                </div>
+                <div class="alert-status" id="alertStatus">
+                    <div class="alert-dot"></div>
+                    <span class="alert-text" id="alertText">NOMINAL</span>
+                </div>
+                <div class="comms-status">
+                    <span class="comms-label">SURFACE UPLINK</span>
+                    <div class="comms-indicator">
+                        <span class="comms-dot" id="commsDot"></span>
+                        <span class="comms-text" id="commsText">DELAYED</span>
+                    </div>
+                    <span class="comms-latency" id="commsLatency">4.2s LATENCY</span>
+                </div>
+            </div>
+        </header>
+
+        <main class="dash-main">
+
+            <aside class="panel panel-left">
+
+                <section class="panel-section pressure-section">
+                    <div class="section-header">
+                        <div class="section-icon icon-pressure">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"/>
+                                <path d="M12 6v6l4 2"/>
+                            </svg>
+                        </div>
+                        <h2 class="section-title">PRESSURE MONITOR</h2>
+                        <div class="section-badge badge-nominal" id="pressureBadge">NOMINAL</div>
+                    </div>
+                    <div class="pressure-main">
+                        <div class="pressure-big-readout">
+                            <span class="pressure-value" id="pressureValue">1,089.3</span>
+                            <span class="pressure-unit">ATM</span>
+                        </div>
+                        <div class="pressure-bar-wrapper">
+                            <div class="pressure-bar">
+                                <div class="pressure-bar-fill" id="pressureBarFill"></div>
+                            </div>
+                            <div class="pressure-bar-zones">
+                                <span class="zone zone-safe">SAFE</span>
+                                <span class="zone zone-caution">CAUTION</span>
+                                <span class="zone zone-critical">CRITICAL</span>
+                            </div>
+                            <div class="pressure-bar-marker" id="pressureMarker"></div>
+                        </div>
+                    </div>
+                    <div class="pressure-details">
+                        <div class="pressure-detail-row">
+                            <span class="detail-label">EXTERNAL</span>
+                            <span class="detail-value" id="pressureExt">1,089.3 ATM</span>
+                            <span class="detail-trend trend-up" id="pressureExtTrend">&#9650;</span>
+                        </div>
+                        <div class="pressure-detail-row">
+                            <span class="detail-label">INTERNAL</span>
+                            <span class="detail-value" id="pressureInt">1.0 ATM</span>
+                            <span class="detail-trend trend-stable" id="pressureIntTrend">&#9472;</span>
+                        </div>
+                        <div class="pressure-detail-row">
+                            <span class="detail-label">DIFFERENTIAL</span>
+                            <span class="detail-value detail-critical" id="pressureDiff">1,088.3 ATM</span>
+                            <span class="detail-trend trend-up" id="pressureDiffTrend">&#9650;</span>
+                        </div>
+                        <div class="pressure-detail-row">
+                            <span class="detail-label">TEMP (EXT)</span>
+                            <span class="detail-value" id="pressureTemp">1.4&deg;C</span>
+                            <span class="detail-trend trend-down" id="pressureTempTrend">&#9660;</span>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="panel-section fauna-section">
+                    <div class="section-header">
+                        <div class="section-icon icon-fauna">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c1 0 2-.15 3-.4"/>
+                                <circle cx="12" cy="8" r="1.5" fill="currentColor"/>
+                                <path d="M8 14c1.5 2 5 2 7 0"/>
+                                <path d="M20 4c-2 2-3 5-2 8"/>
+                                <path d="M22 2c-1 1-1.5 2.5-1 4"/>
+                            </svg>
+                        </div>
+                        <h2 class="section-title">BIOLUMINESCENT FAUNA</h2>
+                        <div class="section-badge badge-active" id="faunaBadge">TRACKING</div>
+                    </div>
+                    <div class="fauna-summary">
+                        <div class="fauna-count-block">
+                            <span class="fauna-count-value" id="faunaCount">14</span>
+                            <span class="fauna-count-label">SPECIES DETECTED</span>
+                        </div>
+                        <div class="fauna-activity-block">
+                            <span class="activity-label">BIOLUM. INTENSITY</span>
+                            <div class="activity-bar">
+                                <div class="activity-bar-fill" id="activityFill"></div>
+                            </div>
+                            <span class="activity-value" id="activityValue">67%</span>
+                        </div>
+                    </div>
+                    <ul class="fauna-list" id="faunaList">
+                        <li class="fauna-item" data-species="anglerfish">
+                            <span class="fauna-dot" style="--glow: #00ffd5"></span>
+                            <span class="fauna-name">Abyssal Anglerfish</span>
+                            <span class="fauna-count-badge">3</span>
+                            <span class="fauna-distance">42m</span>
+                        </li>
+                        <li class="fauna-item" data-species="jellyfish">
+                            <span class="fauna-dot" style="--glow: #cc66ff"></span>
+                            <span class="fauna-name">Atolla Jellyfish</span>
+                            <span class="fauna-count-badge">12</span>
+                            <span class="fauna-distance">18m</span>
+                        </li>
+                        <li class="fauna-item" data-species="tubeworm">
+                            <span class="fauna-dot" style="--glow: #ff3366"></span>
+                            <span class="fauna-name">Giant Tube Worm Colony</span>
+                            <span class="fauna-count-badge">1</span>
+                            <span class="fauna-distance">124m</span>
+                        </li>
+                        <li class="fauna-item" data-species="dragonfish">
+                            <span class="fauna-dot" style="--glow: #ff8800"></span>
+                            <span class="fauna-name">Deep-Sea Dragonfish</span>
+                            <span class="fauna-count-badge">2</span>
+                            <span class="fauna-distance">67m</span>
+                        </li>
+                        <li class="fauna-item" data-species="vampiresquid">
+                            <span class="fauna-dot" style="--glow: #ff00aa"></span>
+                            <span class="fauna-name">Vampire Squid</span>
+                            <span class="fauna-count-badge">1</span>
+                            <span class="fauna-distance">89m</span>
+                        </li>
+                        <li class="fauna-item" data-species="barreleye">
+                            <span class="fauna-dot" style="--glow: #66ffcc"></span>
+                            <span class="fauna-name">Barreleye Fish</span>
+                            <span class="fauna-count-badge">4</span>
+                            <span class="fauna-distance">53m</span>
+                        </li>
+                        <li class="fauna-item" data-species="dumbooctopus">
+                            <span class="fauna-dot" style="--glow: #ff66aa"></span>
+                            <span class="fauna-name">Dumbo Octopus</span>
+                            <span class="fauna-count-badge">1</span>
+                            <span class="fauna-distance">201m</span>
+                        </li>
+                        <li class="fauna-item" data-species="combjelly">
+                            <span class="fauna-dot" style="--glow: #00ccff"></span>
+                            <span class="fauna-name">Comb Jelly</span>
+                            <span class="fauna-count-badge">8</span>
+                            <span class="fauna-distance">31m</span>
+                        </li>
+                    </ul>
+                    <div class="fauna-detection-log">
+                        <span class="log-title">RECENT DETECTIONS</span>
+                        <div class="log-entries" id="faunaLog">
+                            <div class="log-entry">
+                                <span class="log-time">14:31:42</span>
+                                <span class="log-species" style="--glow: #00ccff">Comb Jelly swarm • 8 entities</span>
+                            </div>
+                            <div class="log-entry">
+                                <span class="log-time">14:28:15</span>
+                                <span class="log-species" style="--glow: #ff00aa">Vampire Squid • 1 entity</span>
+                            </div>
+                            <div class="log-entry">
+                                <span class="log-time">14:22:03</span>
+                                <span class="log-species" style="--glow: #cc66ff">Atolla Jellyfish • 12 entities</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </aside>
+
+            <section class="viewport-section">
+                <div class="viewport-frame">
+                    <div class="viewport-rim">
+                        <div class="bolt bolt-tl"></div>
+                        <div class="bolt bolt-tr"></div>
+                        <div class="bolt bolt-bl"></div>
+                        <div class="bolt bolt-br"></div>
+                        <div class="bolt bolt-ml"></div>
+                        <div class="bolt bolt-mr"></div>
+                        <div class="bolt bolt-tm"></div>
+                        <div class="bolt bolt-bm"></div>
+                    </div>
+                    <div class="viewport-glass">
+                        <canvas id="sonarCanvas"></canvas>
+                        <div class="viewport-hud">
+                            <div class="hud-crosshair">
+                                <div class="crosshair-h"></div>
+                                <div class="crosshair-v"></div>
+                                <div class="crosshair-circle"></div>
+                            </div>
+                            <div class="hud-info hud-top-left">
+                                <span class="hud-label">DEPTH</span>
+                                <span class="hud-data" id="hudDepth">10,847m</span>
+                            </div>
+                            <div class="hud-info hud-top-right">
+                                <span class="hud-label">BEARING</span>
+                                <span class="hud-data" id="hudBearing">247&deg;</span>
+                            </div>
+                            <div class="hud-info hud-bottom-left">
+                                <span class="hud-label">RANGE</span>
+                                <span class="hud-data" id="hudRange">500m</span>
+                            </div>
+                            <div class="hud-info hud-bottom-right">
+                                <span class="hud-label">SALINITY</span>
+                                <span class="hud-data" id="hudSalinity">35.2&permil;</span>
+                            </div>
+                            <div class="hud-sonar-ring"></div>
+                            <div class="hud-sonar-ring hud-sonar-ring-2"></div>
+                        </div>
+                        <div class="viewport-caustics"></div>
+                        <div class="viewport-scanline"></div>
+                        <div class="viewport-reflection"></div>
+                        <div class="viewport-vignette"></div>
+                    </div>
+                </div>
+                <div class="viewport-label">MAIN OBSERVATION VIEWPORT &bull; FORWARD FACING &bull; SECTOR 7</div>
+            </section>
+
+            <aside class="panel panel-right">
+
+                <section class="panel-section hull-section">
+                    <div class="section-header">
+                        <div class="section-icon icon-hull">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 2L3 7v10l9 5 9-5V7l-9-5z"/>
+                                <path d="M12 2v20"/>
+                                <path d="M3 7l9 5 9-5"/>
+                            </svg>
+                        </div>
+                        <h2 class="section-title">HULL INTEGRITY</h2>
+                        <div class="section-badge badge-nominal" id="hullBadge">NOMINAL</div>
+                    </div>
+                    <div class="hull-overall">
+                        <div class="hull-ring">
+                            <svg viewBox="0 0 100 100" class="hull-ring-svg">
+                                <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="6"/>
+                                <circle cx="50" cy="50" r="42" fill="none" stroke="var(--hull-ring-color, #00ff88)" stroke-width="6" stroke-dasharray="263.9" stroke-dashoffset="7.1" stroke-linecap="round" class="hull-ring-progress" id="hullRingProgress" transform="rotate(-90 50 50)"/>
+                            </svg>
+                            <div class="hull-ring-value">
+                                <span class="hull-percent" id="hullPercent">97.3</span>
+                                <span class="hull-percent-sign">%</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="hull-diagram">
+                        <svg viewBox="0 0 200 120" class="hull-svg">
+                            <ellipse cx="100" cy="60" rx="80" ry="40" fill="none" stroke="rgba(0,255,136,0.2)" stroke-width="1.5"/>
+                            <line x1="60" y1="25" x2="60" y2="95" stroke="rgba(0,255,136,0.1)" stroke-width="0.5" stroke-dasharray="3,3"/>
+                            <line x1="100" y1="20" x2="100" y2="100" stroke="rgba(0,255,136,0.1)" stroke-width="0.5" stroke-dasharray="3,3"/>
+                            <line x1="140" y1="25" x2="140" y2="95" stroke="rgba(0,255,136,0.1)" stroke-width="0.5" stroke-dasharray="3,3"/>
+                            <ellipse cx="100" cy="60" rx="80" ry="40" fill="none" stroke="rgba(0,255,136,0.4)" stroke-width="2" stroke-dasharray="503" id="hullDiagramRing"/>
+                            <circle cx="40" cy="50" r="3" fill="#00ff88" class="hull-point" data-section="forward-port"/>
+                            <circle cx="40" cy="70" r="3" fill="#00ff88" class="hull-point" data-section="forward-starboard"/>
+                            <circle cx="100" cy="22" r="3" fill="#00ff88" class="hull-point" data-section="dorsal"/>
+                            <circle cx="100" cy="98" r="3" fill="#00ff88" class="hull-point" data-section="ventral"/>
+                            <circle cx="160" cy="50" r="3" fill="#00ff88" class="hull-point" data-section="aft-port"/>
+                            <circle cx="160" cy="70" r="3" fill="#00ff88" class="hull-point" data-section="aft-starboard"/>
+                        </svg>
+                    </div>
+                    <div class="hull-sections" id="hullSections">
+                        <div class="hull-section-row" data-section="forward">
+                            <span class="hull-section-name">FORWARD</span>
+                            <div class="hull-section-bar">
+                                <div class="hull-section-fill" id="hullForward" style="width: 98.1%"></div>
+                            </div>
+                            <span class="hull-section-value" id="hullForwardVal">98.1%</span>
+                        </div>
+                        <div class="hull-section-row" data-section="aft">
+                            <span class="hull-section-name">AFT</span>
+                            <div class="hull-section-bar">
+                                <div class="hull-section-fill" id="hullAft" style="width: 96.7%"></div>
+                            </div>
+                            <span class="hull-section-value" id="hullAftVal">96.7%</span>
+                        </div>
+                        <div class="hull-section-row" data-section="port">
+                            <span class="hull-section-name">PORT</span>
+                            <div class="hull-section-bar">
+                                <div class="hull-section-fill" id="hullPort" style="width: 97.4%"></div>
+                            </div>
+                            <span class="hull-section-value" id="hullPortVal">97.4%</span>
+                        </div>
+                        <div class="hull-section-row" data-section="starboard">
+                            <span class="hull-section-name">STBD</span>
+                            <div class="hull-section-bar">
+                                <div class="hull-section-fill" id="hullStarboard" style="width: 97.8%"></div>
+                            </div>
+                            <span class="hull-section-value" id="hullStarboardVal">97.8%</span>
+                        </div>
+                        <div class="hull-section-row" data-section="dorsal">
+                            <span class="hull-section-name">DORSAL</span>
+                            <div class="hull-section-bar">
+                                <div class="hull-section-fill" id="hullDorsal" style="width: 96.2%"></div>
+                            </div>
+                            <span class="hull-section-value" id="hullDorsalVal">96.2%</span>
+                        </div>
+                        <div class="hull-section-row" data-section="ventral">
+                            <span class="hull-section-name">VENTRAL</span>
+                            <div class="hull-section-bar">
+                                <div class="hull-section-fill" id="hullVentral" style="width: 98.5%"></div>
+                            </div>
+                            <span class="hull-section-value" id="hullVentralVal">98.5%</span>
+                        </div>
+                    </div>
+                    <div class="hull-stress">
+                        <span class="stress-label">STRESS FATIGUE EST.</span>
+                        <span class="stress-value" id="stressValue">14.2% / 85% THRESHOLD</span>
+                        <div class="stress-bar">
+                            <div class="stress-bar-fill" id="stressFill" style="width: 16.7%"></div>
+                            <div class="stress-bar-threshold" style="left: 85%"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="panel-section sonar-section">
+                    <div class="section-header">
+                        <div class="section-icon icon-sonar">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="3"/>
+                                <path d="M12 2a10 10 0 0 1 0 20"/>
+                                <path d="M12 6a6 6 0 0 1 0 12"/>
+                            </svg>
+                        </div>
+                        <h2 class="section-title">SONAR FEED</h2>
+                        <div class="section-badge badge-active" id="sonarBadge">ACTIVE</div>
+                    </div>
+                    <div class="sonar-mini-wrapper">
+                        <div class="sonar-mini">
+                            <canvas id="sonarMiniCanvas"></canvas>
+                            <div class="sonar-sweep"></div>
+                            <div class="sonar-center-dot"></div>
+                        </div>
+                    </div>
+                    <div class="sonar-controls">
+                        <button class="sonar-ping-btn" id="sonarPingBtn">PING</button>
+                        <div class="sonar-range-control">
+                            <span class="range-label">RANGE</span>
+                            <div class="range-btns">
+                                <button class="range-btn active" data-range="250">250m</button>
+                                <button class="range-btn" data-range="500">500m</button>
+                                <button class="range-btn" data-range="1000">1km</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="sonar-contacts">
+                        <div class="contacts-header">
+                            <span class="contacts-col contacts-id">ID</span>
+                            <span class="contacts-col contacts-bearing">BRG</span>
+                            <span class="contacts-col contacts-range">RNG</span>
+                            <span class="contacts-col contacts-type">TYPE</span>
+                        </div>
+                        <div class="contact-row" id="contactAlpha">
+                            <span class="contacts-col contacts-id contacts-id-alpha">ALPHA</span>
+                            <span class="contacts-col contacts-bearing">047&deg;</span>
+                            <span class="contacts-col contacts-range">320m</span>
+                            <span class="contacts-col contacts-type">L-MASS</span>
+                        </div>
+                        <div class="contact-row" id="contactBeta">
+                            <span class="contacts-col contacts-id contacts-id-beta">BETA</span>
+                            <span class="contacts-col contacts-bearing">189&deg;</span>
+                            <span class="contacts-col contacts-range">412m</span>
+                            <span class="contacts-col contacts-type">M-MASS</span>
+                        </div>
+                        <div class="contact-row" id="contactGamma">
+                            <span class="contacts-col contacts-id contacts-id-gamma">GAMMA</span>
+                            <span class="contacts-col contacts-bearing">312&deg;</span>
+                            <span class="contacts-col contacts-range">198m</span>
+                            <span class="contacts-col contacts-type">S-MASS</span>
+                        </div>
+                    </div>
+                    <div class="sonar-signal">
+                        <span class="signal-label">SIGNAL STRENGTH</span>
+                        <div class="signal-bars" id="signalBars">
+                            <div class="signal-bar active"></div>
+                            <div class="signal-bar active"></div>
+                            <div class="signal-bar active"></div>
+                            <div class="signal-bar active"></div>
+                            <div class="signal-bar"></div>
+                            <div class="signal-bar"></div>
+                            <div class="signal-bar"></div>
+                            <div class="signal-bar"></div>
+                        </div>
+                        <span class="signal-value" id="signalValue">-42dB</span>
+                    </div>
+                </section>
+            </aside>
+
+        </main>
+
+        <footer class="dash-footer">
+            <div class="klaxon-bar" id="klaxonBar">
+                <div class="klaxon-strip" id="klaxonStrip"></div>
+                <div class="klaxon-text" id="klaxonText">PRESSURE WARNING — HULL STRESS APPROACHING THRESHOLD</div>
+            </div>
+            <div class="footer-content">
+                <div class="system-statuses">
+                    <div class="system-status">
+                        <span class="status-dot status-ok" id="lifeSupportDot"></span>
+                        <span class="status-label">LIFE SUPPORT</span>
+                        <span class="status-value" id="lifeSupportVal">ONLINE</span>
+                    </div>
+                    <div class="system-status">
+                        <span class="status-dot status-ok" id="powerDot"></span>
+                        <span class="status-label">REACTOR</span>
+                        <span class="status-value" id="powerVal">84% CAPACITY</span>
+                    </div>
+                    <div class="system-status">
+                        <span class="status-dot status-warn" id="commsFooterDot"></span>
+                        <span class="status-label">COMMS</span>
+                        <span class="status-value" id="commsFooterVal">DEGRADED</span>
+                    </div>
+                    <div class="system-status">
+                        <span class="status-dot status-ok" id="navDot"></span>
+                        <span class="status-label">NAVIGATION</span>
+                        <span class="status-value" id="navVal">LOCKED</span>
+                    </div>
+                    <div class="system-status">
+                        <span class="status-dot status-ok" id="ballastDot"></span>
+                        <span class="status-label">BALLAST</span>
+                        <span class="status-value" id="ballastVal">NEUTRAL</span>
+                    </div>
+                </div>
+                <div class="footer-right">
+                    <div class="power-output">
+                        <span class="power-label">POWER OUTPUT</span>
+                        <span class="power-value" id="powerOutput">4.2 MW</span>
+                    </div>
+                    <div class="o2-level">
+                        <span class="o2-label">O&sup2; LEVEL</span>
+                        <span class="o2-value" id="o2Value">21.3%</span>
+                    </div>
+                    <div class="crew-count">
+                        <span class="crew-label">CREW</span>
+                        <span class="crew-value" id="crewValue">8 / 12</span>
+                    </div>
+                </div>
+            </div>
+        </footer>
+
+    </div>
+
+    <script src="scripts.js"></script>
+</body>
+</html>

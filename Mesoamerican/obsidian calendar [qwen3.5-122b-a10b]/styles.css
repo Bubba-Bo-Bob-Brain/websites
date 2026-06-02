@@ -1,0 +1,679 @@
+/* =========================================
+   1. VARIABLES & RESET
+   ========================================= */
+:root {
+    /* Palette: Obsidian, Jade, Blood, Gold */
+    --obsidian-dark: #050505;
+    --obsidian-light: #1a1a1a;
+    --obsidian-gradient: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
+    
+    --jade-primary: #00a86b;
+    --jade-dark: #004d33;
+    --jade-light: #4dffbd;
+    --jade-gradient: linear-gradient(180deg, #006b45 0%, #00a86b 100%);
+    
+    --blood-red: #8a0303;
+    --blood-bright: #ff1a1a;
+    
+    --gold-primary: #d4af37;
+    --gold-light: #f9e394;
+    --gold-dark: #8a6e18;
+    --gold-gradient: linear-gradient(45deg, #8a6e18, #d4af37, #f9e394, #d4af37);
+    
+    /* Typography */
+    --font-display: 'Cinzel Decorative', cursive;
+    --font-ancient: 'Rye', serif;
+    --font-body: 'Lato', sans-serif;
+    
+    /* Effects */
+    --glass-bg: rgba(10, 10, 10, 0.7);
+    --glass-border: rgba(212, 175, 55, 0.3);
+    --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
+    --glow-jade: 0 0 15px rgba(0, 168, 107, 0.4);
+    --glow-gold: 0 0 10px rgba(212, 175, 55, 0.6);
+    
+    /* Spacing */
+    --spacing-sm: 0.5rem;
+    --spacing-md: 1.5rem;
+    --spacing-lg: 3rem;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: var(--obsidian-dark);
+    color: #e0e0e0;
+    font-family: var(--font-body);
+    overflow-x: hidden;
+    line-height: 1.6;
+    min-height: 100vh;
+}
+
+/* =========================================
+   2. AMBIENT & BACKGROUND
+   ========================================= */
+.noise-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 999;
+    opacity: 0.05;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+}
+
+.vignette-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 998;
+    background: radial-gradient(circle, transparent 40%, #000000 100%);
+}
+
+/* =========================================
+   3. SERPENT BORDER (Animation)
+   ========================================= */
+.serpent-border {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 60px;
+    z-index: 1000;
+    pointer-events: none;
+    overflow: hidden;
+    background: linear-gradient(to bottom, #000, transparent);
+}
+
+.serpent-path {
+    fill: none;
+    stroke: var(--gold-primary);
+    stroke-width: 2;
+    stroke-dasharray: 20;
+    animation: flow 20s linear infinite;
+    filter: drop-shadow(0 0 5px var(--gold-primary));
+}
+
+.serpent-eye {
+    fill: var(--blood-bright);
+    animation: blink 4s infinite;
+}
+
+@keyframes flow {
+    to { stroke-dashoffset: -1000; }
+}
+
+@keyframes blink {
+    0%, 90%, 100% { opacity: 1; }
+    95% { opacity: 0.2; }
+}
+
+/* =========================================
+   4. LAYOUT & HERO
+   ========================================= */
+.cosmic-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: var(--spacing-lg) var(--spacing-md);
+    position: relative;
+    z-index: 1;
+}
+
+.hero-section {
+    text-align: center;
+    margin-bottom: var(--spacing-lg);
+    position: relative;
+    padding: 4rem 0;
+}
+
+.main-title {
+    font-family: var(--font-display);
+    font-size: 4rem;
+    font-weight: 900;
+    letter-spacing: 4px;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    background: var(--gold-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 4px 10px rgba(0,0,0,0.5);
+}
+
+.gold-text {
+    /* Fallback for older browsers */
+    color: var(--gold-primary); 
+}
+
+.subtitle {
+    font-family: var(--font-ancient);
+    font-size: 1.2rem;
+    color: var(--jade-light);
+    letter-spacing: 2px;
+    margin-bottom: 2rem;
+    opacity: 0.9;
+}
+
+.current-cycle-display {
+    display: inline-block;
+    padding: 0.5rem 1.5rem;
+    border: 1px solid var(--gold-dark);
+    background: rgba(0,0,0,0.6);
+    border-radius: 50px;
+    font-size: 0.9rem;
+    color: var(--gold-light);
+}
+
+.cycle-label { opacity: 0.7; margin-right: 0.5rem; }
+.cycle-value { font-weight: bold; color: #fff; }
+
+.glyph-decoration {
+    position: absolute;
+    top: 50%;
+    font-size: 3rem;
+    opacity: 0.2;
+    color: var(--gold-primary);
+    transform: translateY(-50%);
+}
+.glyph-decoration.left { left: 0; }
+.glyph-decoration.right { right: 0; }
+
+/* =========================================
+   5. NAVIGATION WHEEL
+   ========================================= */
+.navigation-wheel-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 4rem 0;
+    perspective: 1000px;
+}
+
+.wheel-container {
+    position: relative;
+    width: 300px;
+    height: 300px;
+    transform-style: preserve-3d;
+    transition: transform 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.wheel-container:hover {
+    transform: rotateY(10deg) rotateX(5deg);
+}
+
+.wheel-center {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 120px;
+    height: 120px;
+    z-index: 10;
+}
+
+.obsidian-core {
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at 30% 30%, #333, #000);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 20px rgba(0,0,0,0.8), inset 0 0 10px #000;
+    border: 2px solid var(--gold-dark);
+    font-size: 3rem;
+    color: var(--gold-light);
+    animation: pulse-core 4s infinite ease-in-out;
+}
+
+@keyframes pulse-core {
+    0%, 100% { box-shadow: 0 0 20px rgba(0,0,0,0.8), inset 0 0 10px #000; }
+    50% { box-shadow: 0 0 30px rgba(212, 175, 55, 0.3), inset 0 0 15px #000; }
+}
+
+.wheel-ring-1 {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 220px;
+    height: 220px;
+    border-radius: 50%;
+    border: 1px dashed var(--gold-dark);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.nav-btn {
+    position: absolute;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: var(--obsidian-light);
+    border: 1px solid var(--gold-primary);
+    color: var(--gold-light);
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+}
+
+.nav-btn:hover {
+    background: var(--gold-primary);
+    color: #000;
+    box-shadow: 0 0 15px var(--gold-primary);
+    transform: scale(1.1);
+}
+
+/* Positioning buttons in a circle */
+.nav-btn:nth-child(1) { top: 0; left: 50%; transform: translate(-50%, -50%); } /* Top */
+.nav-btn:nth-child(2) { bottom: 0; left: 50%; transform: translate(-50%, 50%); } /* Bottom */
+.nav-btn:nth-child(3) { left: 0; top: 50%; transform: translate(-50%, -50%); } /* Left */
+.nav-btn:nth-child(4) { right: 0; top: 50%; transform: translate(50%, -50%); } /* Right */
+
+.wheel-ring-2 {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 280px;
+    height: 280px;
+    border-radius: 50%;
+    pointer-events: none;
+    animation: spin-reverse 60s linear infinite;
+}
+
+.floating-glyph {
+    position: absolute;
+    font-size: 1.5rem;
+    color: var(--jade-primary);
+    opacity: 0.6;
+}
+
+/* Positioning floating glyphs */
+.floating-glyph:nth-child(1) { top: 0; left: 50%; transform: translate(-50%, -50%); }
+.floating-glyph:nth-child(2) { bottom: 0; left: 50%; transform: translate(-50%, 50%); }
+.floating-glyph:nth-child(3) { left: 0; top: 50%; transform: translate(-50%, -50%); }
+.floating-glyph:nth-child(4) { right: 0; top: 50%; transform: translate(50%, -50%); }
+
+@keyframes spin-reverse {
+    to { transform: translate(-50%, -50%) rotate(-360deg); }
+}
+
+.wheel-instruction {
+    margin-top: 2rem;
+    font-family: var(--font-ancient);
+    color: var(--gold-dark);
+    font-size: 0.9rem;
+    letter-spacing: 1px;
+}
+
+/* =========================================
+   6. ECLIPSE SECTION
+   ========================================= */
+.eclipse-section {
+    background: linear-gradient(to bottom, #1a0000, #000);
+    border: 1px solid var(--blood-red);
+    border-radius: 12px;
+    padding: 3rem;
+    text-align: center;
+    margin: 4rem 0;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 0 30px rgba(138, 3, 3, 0.2);
+}
+
+.section-title {
+    font-family: var(--font-display);
+    color: var(--blood-bright);
+    font-size: 2rem;
+    margin-bottom: 2rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.eclipse-visual {
+    position: relative;
+    width: 150px;
+    height: 150px;
+    margin: 0 auto 2rem;
+}
+
+.sun-orb {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100px;
+    height: 100px;
+    background: #ffd700;
+    border-radius: 50%;
+    box-shadow: 0 0 40px #ffd700;
+    z-index: 1;
+}
+
+.moon-orb {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100px;
+    height: 100px;
+    background: #111;
+    border-radius: 50%;
+    z-index: 2;
+    animation: eclipse-move 10s infinite alternate ease-in-out;
+}
+
+.corona-glow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 120px;
+    height: 120px;
+    border: 2px solid var(--blood-bright);
+    border-radius: 50%;
+    box-shadow: 0 0 20px var(--blood-bright);
+    opacity: 0;
+    animation: corona-flash 10s infinite alternate;
+    z-index: 3;
+}
+
+@keyframes eclipse-move {
+    0% { transform: translate(-60%, -50%); }
+    100% { transform: translate(-40%, -50%); }
+}
+
+@keyframes corona-flash {
+    0%, 90% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+    95% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+}
+
+.countdown-timer {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    font-family: var(--font-ancient);
+}
+
+.time-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.digit {
+    font-size: 2.5rem;
+    color: var(--blood-bright);
+    text-shadow: 0 0 10px var(--blood-red);
+}
+
+.label {
+    font-size: 0.8rem;
+    color: #aaa;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.separator {
+    font-size: 2.5rem;
+    color: var(--gold-primary);
+    align-self: center;
+}
+
+.prophecy-text {
+    margin-top: 1.5rem;
+    font-style: italic;
+    color: var(--jade-light);
+    font-size: 0.9rem;
+}
+
+/* =========================================
+   7. CONTENT GRID & CARDS
+   ========================================= */
+.content-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-bottom: 4rem;
+}
+
+.card {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    backdrop-filter: blur(10px);
+    box-shadow: var(--glass-shadow);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: var(--gold-gradient);
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 40px rgba(0,0,0,0.8);
+    border-color: var(--gold-primary);
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    padding-bottom: 0.5rem;
+}
+
+.jade-text {
+    color: var(--jade-primary);
+    font-family: var(--font-display);
+    font-size: 1.2rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.card-body {
+    font-size: 0.95rem;
+    color: #ccc;
+}
+
+/* Ritual List */
+.ritual-list {
+    list-style: none;
+}
+
+.ritual-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.8rem 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.date-badge {
+    background: rgba(0, 168, 107, 0.2);
+    color: var(--jade-light);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: bold;
+}
+
+.deity-name {
+    color: #fff;
+    font-weight: bold;
+}
+
+.offering {
+    font-size: 0.8rem;
+    color: #888;
+    font-style: italic;
+}
+
+/* Star Chart */
+.star-chart {
+    position: relative;
+    height: 150px;
+    background: radial-gradient(circle at center, #1a1a2e, #000);
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    overflow: hidden;
+}
+
+.constellation {
+    position: absolute;
+    color: var(--gold-light);
+    font-size: 0.8rem;
+    opacity: 0.8;
+}
+
+.planet-venus {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    color: var(--jade-light);
+    font-weight: bold;
+    text-shadow: 0 0 5px var(--jade-primary);
+}
+
+.astro-note {
+    font-size: 0.85rem;
+    color: #aaa;
+    border-left: 2px solid var(--blood-red);
+    padding-left: 10px;
+}
+
+/* Tribute Table */
+.tribute-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.tribute-table th {
+    text-align: left;
+    color: var(--gold-primary);
+    padding: 0.5rem;
+    border-bottom: 1px solid var(--gold-dark);
+}
+
+.tribute-table td {
+    padding: 0.5rem;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.status-pending { color: var(--blood-bright); }
+.status-paid { color: var(--jade-light); }
+
+/* Calendar Grid */
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+}
+
+.day-slot {
+    aspect-ratio: 1;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    cursor: help;
+    transition: background 0.2s;
+}
+
+.day-slot:hover {
+    background: rgba(212, 175, 55, 0.2);
+    border-color: var(--gold-primary);
+}
+
+/* =========================================
+   8. FOOTER & TOOLTIP
+   ========================================= */
+.footer {
+    text-align: center;
+    padding: 2rem;
+    border-top: 1px solid var(--gold-dark);
+    margin-top: 4rem;
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.footer-glyphs {
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
+    letter-spacing: 1rem;
+    color: var(--gold-dark);
+}
+
+.tooltip {
+    position: fixed;
+    background: rgba(0, 0, 0, 0.9);
+    border: 1px solid var(--gold-primary);
+    padding: 10px 15px;
+    border-radius: 4px;
+    z-index: 2000;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s;
+    box-shadow: 0 0 15px rgba(0,0,0,0.8);
+    min-width: 150px;
+}
+
+.tooltip.visible {
+    opacity: 1;
+}
+
+.tooltip-title {
+    display: block;
+    color: var(--gold-light);
+    font-weight: bold;
+    font-family: var(--font-display);
+    margin-bottom: 4px;
+}
+
+.tooltip-desc {
+    display: block;
+    color: #ccc;
+    font-size: 0.85rem;
+}
+
+.hidden {
+    display: none;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .main-title { font-size: 2.5rem; }
+    .wheel-container { transform: scale(0.8); }
+    .countdown-timer { gap: 0.5rem; }
+    .digit { font-size: 1.5rem; }
+}

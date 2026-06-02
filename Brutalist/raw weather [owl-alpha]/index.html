@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEXUS::WEATHER_TERMINAL_v4.2</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <!-- SYSTEM STATUS BAR -->
+    <header id="sys-header">
+        <div class="sys-left">
+            <span class="blink">●</span>
+            <span>SYS::ONLINE</span>
+            <span class="pipe">|</span>
+            <span>STATION_ID: WX-BR-00447</span>
+            <span class="pipe">|</span>
+            <span>LAT: 40.7128° N</span>
+            <span class="pipe">|</span>
+            <span>LONG: 74.0060° W</span>
+        </div>
+        <div class="sys-right">
+            <span id="sys-clock">00:00:00 UTC</span>
+            <span class="pipe">|</span>
+            <span>UPTIME: <span id="uptime">000:00:00</span></span>
+        </div>
+    </header>
+
+    <!-- ALERT BANNER (hidden by default) -->
+    <div id="alert-banner" class="hidden">
+        <div class="alert-inner">
+            <span class="alert-icon">⚠</span>
+            <span id="alert-text">SEVERE THUNDERSTORM WARNING IN EFFECT — SEEK SHELTER IMMEDIATELY</span>
+            <span class="alert-icon">⚠</span>
+        </div>
+    </div>
+
+    <!-- SCROLLING CONDITIONS TICKER -->
+    <div id="ticker-bar">
+        <div id="ticker-content">
+            <span>/// HUMIDITY: 78% RISING ///</span>
+            <span>BAROMETRIC PRESSURE: 1008.3 hPa FALLING RAPIDLY ///</span>
+            <span>UV INDEX: 7 — HIGH ///</span>
+            <span>VISIBILITY: 4.2 KM — REDUCED ///</span>
+            <span>HEAT INDEX: 97°F — CAUTION ///</span>
+            <span>DEWPOINT: 71°F ///</span>
+            <span>RAINFALL 24H: 1.83 IN ///</span>
+            <span>SNOW DEPTH: 0.0 IN ///</span>
+            <span>MOON PHASE: WANING GIBBOUS 72% ILLUM ///</span>
+            <span>/// HUMIDITY: 78% RISING ///</span>
+            <span>BAROMETRIC PRESSURE: 1008.3 hPa FALLING RAPIDLY ///</span>
+            <span>UV INDEX: 7 — HIGH ///</span>
+            <span>VISIBILITY: 4.2 KM — REDUCED ///</span>
+        </div>
+    </div>
+
+    <!-- MAIN TEMPERATURE HERO -->
+    <section id="temp-hero">
+        <div class="hero-grid">
+            <div class="hero-main">
+                <div class="location-line">
+                    <span class="bracket">[</span>
+                    <span class="city">NEW YORK CITY</span>
+                    <span class="bracket">]</span>
+                    <span class="sub-location"> / MANHATTAN / CENTRAL PARK</span>
+                </div>
+                <div class="temp-display">
+                    <span class="temp-sign"></span>
+                    <span class="temp-value" id="main-temp">89</span>
+                    <span class="temp-unit">°F</span>
+                </div>
+                <div class="temp-meta">
+                    <div class="feels-like">FEELS LIKE <span id="feels-like">97°F</span></div>
+                    <div class="condition-line">
+                        <span class="bracket">[</span>
+                        <span id="condition-text">PARTLY CLOUDY</span>
+                        <span class="bracket">]</span>
+                    </div>
+                </div>
+            </div>
+            <div class="hero-offset">
+                <div class="offset-panel">
+                    <div class="panel-label">HIGH / LOW</div>
+                    <div class="panel-data"><span id="temp-high">94°F</span> / <span id="temp-low">76°F</span></div>
+                </div>
+                <div class="offset-panel">
+                    <div class="panel-label">TREND</div>
+                    <div class="panel-data trend-down">▼ FALLING</div>
+                </div>
+                <div class="offset-panel">
+                    <div class="panel-label">RECORD</div>
+                    <div class="panel-data">101°F / 68°F</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <hr class="brutal-hr">
+
+    <!-- DATA PANELS — INTENTIONALLY OVERLAPPING GRIDS -->
+    <section id="data-grid">
+        <div class="grid-row">
+            <!-- WIND COMPASS -->
+            <div class="data-panel panel-compass">
+                <div class="panel-header">
+                    <span class="panel-title">WIND_DATA</span>
+                    <span class="panel-tag">[LIVE]</span>
+                </div>
+                <div class="compass-container">
+                    <div class="compass-ring">
+                        <div class="compass-mark n">N</div>
+                        <div class="compass-mark e">E</div>
+                        <div class="compass-mark s">S</div>
+                        <div class="compass-mark w">W</div>
+                        <div class="compass-mark ne">NE</div>
+                        <div class="compass-mark se">SE</div>
+                        <div class="compass-mark sw">SW</div>
+                        <div class="compass-mark nw">NW</div>
+                        <div class="compass-arrow" id="wind-arrow">
+                            <div class="arrow-shaft"></div>
+                            <div class="arrow-head"></div>
+                        </div>
+                        <div class="compass-center">+</div>
+                    </div>
+                </div>
+                <div class="compass-data">
+                    <div class="wind-speed">
+                        <span class="data-label">SPD:</span>
+                        <span class="data-value" id="wind-speed">14 MPH</span>
+                    </div>
+                    <div class="wind-dir">
+                        <span class="data-label">DIR:</span>
+                        <span class="data-value" id="wind-dir">WSW</span>
+                    </div>
+                    <div class="wind-gust">
+                        <span class="data-label">GST:</span>
+                        <span class="data-value" id="wind-gust">23 MPH</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- HUMIDITY & PRESSURE -->
+            <div class="data-panel panel-gauges">
+                <div class="panel-header">
+                    <span class="panel-title">ATMOSPHERIC</span>
+                    <span class="panel-tag">[REAL_TIME]</span>
+                </div>
+                <div class="gauge-row">
+                    <div class="gauge">
+                        <div class="gauge-label">HUMIDITY</div>
+                        <div class="gauge-bar">
+                            <div class="gauge-fill" id="humidity-bar" style="width: 78%;"></div>
+                            <span class="gauge-text" id="humidity-text">78%</span>
+                        </div>
+                        <div class="gauge-status">HIGH</div>
+                    </div>
+                </div>
+                <div class="gauge-row">
+                    <div class="gauge">
+                        <div class="gauge-label">PRESSURE</div>
+                        <div class="gauge-bar pressure-bar">
+                            <div class="gauge-fill pressure-fill" id="pressure-bar" style="width: 52%;"></div>
+                            <span class="gauge-text" id="pressure-text">1008.3 hPa</span>
+                        </div>
+                        <div class="gauge-status trend-down">FALLING</div>
+                    </div>
+                </div>
+                <div class="gauge-row">
+                    <div class="gauge">
+                        <div class="gauge-label">DEWPOINT</div>
+                        <div class="gauge-bar dewpoint-bar">
+                            <div class="gauge-fill dewpoint-fill" id="dewpoint-bar" style="width: 65%;"></div>
+                            <span class="gauge-text" id="dewpoint-text">71°F</span>
+                        </div>
+                        <div class="gauge-status">MUGGY</div>
+                    </div>
+                </div>
+                <div class="gauge-row">
+                    <div class="gauge">
+                        <div class="gauge-label">UV INDEX</div>
+                        <div class="gauge-bar uv-bar">
+                            <div class="gauge-fill uv-fill" id="uv-bar" style="width: 70%;"></div>
+                            <span class="gauge-text" id="uv-text">7 HIGH</span>
+                        </div>
+                        <div class="gauge-status">PROTECT</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VISIBILITY & CLOUD COVER -->
+            <div class="data-panel panel-alt">
+                <div class="panel-header">
+                    <span class="panel-title">VISIBILITY_CEILING</span>
+                    <span class="panel-tag">[DEGRADED]</span>
+                </div>
+                <div class="alt-display">
+                    <div class="alt-metric">
+                        <span class="alt-label">VIS</span>
+                        <span class="alt-value" id="visibility">4.2</span>
+                        <span class="alt-unit">KM</span>
+                        <span class="alt-status status-warn">REDUCED</span>
+                    </div>
+                    <div class="alt-metric">
+                        <span class="alt-label">CEIL</span>
+                        <span class="alt-value" id="ceiling">3,200</span>
+                        <span class="alt-unit">FT</span>
+                        <span class="alt-status status-ok">OK</span>
+                    </div>
+                    <div class="alt-metric">
+                        <span class="alt-label">CLD</span>
+                        <span class="alt-value" id="cloud-cover">67</span>
+                        <span class="alt-unit">%</span>
+                        <span class="alt-status status-warn">BKN</span>
+                    </div>
+                    <div class="alt-metric">
+                        <span class="alt-label">RAIN</span>
+                        <span class="alt-value" id="rainfall">1.83</span>
+                        <span class="alt-unit">IN</span>
+                        <span class="alt-status status-warn">24H</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid-row row-offset">
+            <!-- SUN TIMES — INTENTIONALLY OVERLAPPING -->
+            <div class="data-panel panel-sun">
+                <div class="panel-header">
+                    <span class="panel-title">SOLAR_CYCLE</span>
+                    <span class="panel-tag">[TODAY]</span>
+                </div>
+                <div class="sun-timeline">
+                    <div class="sun-arc">
+                        <div class="sunrise-point">
+                            <div class="sun-label">SUNRISE</div>
+                            <div class="sun-time" id="sunrise">05:47 AM</div>
+                        </div>
+                        <div class="sun-arc-line"></div>
+                        <div class="sunset-point">
+                            <div class="sun-label">SUNSET</div>
+                            <div class="sun-time" id="sunset">08:22 PM</div>
+                        </div>
+                    </div>
+                    <div class="daylight-info">
+                        <span class="daylight-label">DAYLIGHT:</span>
+                        <span class="daylight-value" id="daylight">14H 35M</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AIR QUALITY -->
+            <div class="data-panel panel-aqi">
+                <div class="panel-header">
+                    <span class="panel-title">AIR_QUALITY</span>
+                    <span class="panel-tag">[EPA]</span>
+                </div>
+                <div class="aqi-display">
+                    <div class="aqi-value" id="aqi-value">87</div>
+                    <div class="aqi-desc" id="aqi-desc">MODERATE</div>
+                </div>
+                <div class="aqi-breakdown">
+                    <div class="aqi-item">
+                        <span class="aqi-pollutant">PM2.5</span>
+                        <span class="aqi-level level-moderate">28.4 µg/m³</span>
+                    </div>
+                    <div class="aqi-item">
+                        <span class="aqi-pollutant">PM10</span>
+                        <span class="aqi-level level-good">41.2 µg/m³</span>
+                    </div>
+                    <div class="aqi-item">
+                        <span class="aqi-pollutant">O₃</span>
+                        <span class="aqi-level level-moderate">0.062 ppm</span>
+                    </div>
+                    <div class="aqi-item">
+                        <span class="aqi-pollutant">NO₂</span>
+                        <span class="aqi-level level-good">18.7 ppb</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MOON -->
+            <div class="data-panel panel-moon">
+                <div class="panel-header">
+                    <span class="panel-title">LUNAR_DATA</span>
+                    <span class="panel-tag">[PHASE]</span>
+                </div>
+                <div class="moon-display">
+                    <div class="moon-icon" id="moon-icon">
+                        <div class="moon-dark"></div>
+                    </div>
+                    <div class="moon-info">
+                        <div class="moon-phase" id="moon-phase">WANING GIBBOUS</div>
+                        <div class="moon-illum" id="moon-illum">72% ILLUMINATED</div>
+                        <div class="moon-rise" id="moon-rise">RISE: 10:34 PM</div>
+                        <div class="moon-set" id="moon-set">SET: 07:18 AM</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <hr class="brutal-hr">
+
+    <!-- HOURLY FORECAST — RAW TABLE -->
+    <section id="hourly-section">
+        <div class="section-header">
+            <span class="section-bracket">[</span>
+            <span class="section-title">HOURLY_FORECAST_24H</span>
+            <span class="section-bracket">]</span>
+            <span class="section-sub"> / NEXT 24 HOURS / RAW FEED</span>
+        </div>
+        <div class="table-wrapper">
+            <table id="hourly-table">
+                <thead>
+                    <tr>
+                        <th>TIME</th>
+                        <th>TEMP</th>
+                        <th>FEELS</th>
+                        <th>COND</th>
+                        <th>WIND_SPD</th>
+                        <th>WIND_DIR</th>
+                        <th>GUST</th>
+                        <th>HUM</th>
+                        <td>PRECIP</td>
+                        <th>PROB</th>
+                        <th>DEWPT</th>
+                        <th>VIS</th>
+                    </tr>
+                </thead>
+                <tbody id="hourly-body">
+                    <!-- Populated by JS -->
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <hr class="brutal-hr">
+
+    <!-- 7-DAY FORECAST -->
+    <section id="daily-section">
+        <div class="section-header">
+            <span class="section-bracket">[</span>
+            <span class="section-title">EXTENDED_FORECAST_7D</span>
+            <span class="section-bracket">]</span>
+            <span class="section-sub"> / 7-DAY OUTLOOK / LOW CONFIDENCE</span>
+        </div>
+        <div class="table-wrapper">
+            <table id="daily-table">
+                <thead>
+                    <tr>
+                        <th>DAY</th>
+                        <th>DATE</th>
+                        <th>HI</th>
+                        <th>LO</th>
+                        <th>CONDITION</th>
+                        <th>WIND</th>
+                        <th>HUMIDITY</th>
+                        <th>PRECIP_CHANCE</th>
+                        <th>RAIN_MM</th>
+                        <th>SNOW_CM</th>
+                        <th>SUNRISE</th>
+                        <th>SUNSET</th>
+                        <th>CONFIDENCE</th>
+                    </tr>
+                </thead>
+                <tbody id="daily-body">
+                    <!-- Populated by JS -->
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <hr class="brutal-hr">
+
+    <!-- WEATHER MAP ASCII SECTION -->
+    <section id="ascii-map-section">
+        <div class="section-header">
+            <span class="section-bracket">[</span>
+            <span class="section-title">RADAR_TEXT_MODE</span>
+            <span class="section-bracket">]</span>
+            <span class="section-sub"> / PRECIP_INTENSITY / ASCII_RENDER</span>
+        </div>
+        <pre id="ascii-radar">
+    42.0°N ┌───────────────────────────────────────┐
+           │         . .  .                         │
+           │       . # # .  .                      │
+    41.5°N │     . # % % # .  .                   │
+           │       . # % # .     .                │
+           │    .  . # # .  .  . .                │
+    41.0°N │         . .  .  . # .               │
+           │              .  # % # .             │
+           │           .  . # % % # .            │
+    40.5°N │              . # % # .   .         │
+           │    * NYC *     . # .               │
+           │                 . .                 │
+    40.0°N │                                     │
+           └───────────────────────────────────────┘
+           74.5°W    74.0°W    73.5°W    73.0°W
+
+    LEGEND: . = TRACE  # = LIGHT  % = MOD  █ = HVY  * = STATION
+        </pre>
+    </section>
+
+    <hr class="brutal-hr">
+
+    <!-- ALERTS PANEL -->
+    <section id="alerts-section">
+        <div class="section-header">
+            <span class="section-bracket">[</span>
+            <span class="section-title">ACTIVE_ALERTS</span>
+            <span class="section-bracket">]</span>
+            <span class="section-sub"> / NWS_ISSUED / <span id="alert-count">2</span> ACTIVE</span>
+        </div>
+        <div id="alerts-container">
+            <div class="alert-card alert-severe">
+                <div class="alert-card-header">
+                    <span class="alert-severe-tag">!!! SEVERE THUNDERSTORM WARNING !!!</span>
+                    <span class="alert-expires">EXPIRES: 09:15 PM EDT</span>
+                </div>
+                <div class="alert-card-body">
+                    NATIONAL WEATHER SERVICE HAS ISSUED A SEVERE THUNDERSTORM WARNING FOR
+                    NEW YORK COUNTY UNTIL 9:15 PM EDT. DAMAGING WINDS TO 70 MPH AND
+                    LARGE HAIL EXPECTED. SEEK IMMEDIATE SHELTER IN AN INTERIOR ROOM
+                    ON THE LOWEST FLOOR OF A STURDY BUILDING.
+                </div>
+                <div class="alert-card-footer">
+                    <span>ISSUED: 07:42 PM EDT</span>
+                    <span>UGC: NYC061</span>
+                    <span>SOURCE: NWS NEW YORK NY</span>
+                </div>
+            </div>
+            <div class="alert-card alert-watch">
+                <div class="alert-card-header">
+                    <span class="alert-watch-tag">!! HEAT ADVISORY !!</span>
+                    <span class="alert-expires">EXPIRES: 08:00 PM EDT TOMORROW</span>
+                </div>
+                <div class="alert-card-body">
+                    HEAT ADVISORY REMAINS IN EFFECT. HEAT INDEX VALUES UP TO 103°F
+                    EXPECTED. DRINK PLENTY OF FLUIDS. STAY IN AN AIR-CONDITIONED ROOM.
+                    CHECK ON NEIGHBORS AND RELATIVES.
+                </div>
+                <div class="alert-card-footer">
+                    <span>ISSUED: 04:00 PM EDT</span>
+                    <span>UGC: NYC047, NYC061</span>
+                    <span>SOURCE: NWS NEW YORK NY</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <hr class="brutal-hr">
+
+    <!-- RAW METAR SECTION -->
+    <section id="metar-section">
+        <div class="section-header">
+            <span class="section-bracket">[</span>
+            <span class="section-title">METAR_RAW_FEED</span>
+            <span class="section-bracket">]</span>
+            <span class="section-sub"> / KNYC / LATEST_OBSERVATION</span>
+        </div>
+        <div class="metar-display">
+            <div class="metar-line">
+                <span class="metar-stn">KNYC</span>
+                <span class="metar-time">021551Z</span>
+                <span class="metar-auto">AUTO</span>
+            </div>
+            <div class="metar-line">
+                <span class="metar-wind">27014G23KT</span>
+                <span class="metar-vis">4SM</span>
+                <span class="metar-weather">-TSRA BR</span>
+            </div>
+            <div class="metar-line">
+                <span class="metar-sky">BKN032 BKN060 OVC090</span>
+            </div>
+            <div class="metar-line">
+                <span class="metar-temp">26/22</span>
+                <span class="metar-dew">A2981</span>
+            </div>
+            <div class="metar-line metar-remark">
+                RMK AO2 PK WND 28027/1523 RAE20SNB20E35 TSB15E44
+                SLP095 T02610222 53012
+            </div>
+            <div class="metar-decoded">
+                <div class="decode-line">DECODED: KNYC 021551Z AUTO 27014G23KT 4SM -TSRA BR BKN032 BKN060 OVC090 26/22 A2981</div>
+                <div class="decode-line">WEST WIND 14KT GUSTING 23KT | VIS 4 MI | TSTORM LIGHT RA MIST | CLOUDS BKN 3200 6000 OVC 9000</div>
+                <div class="decode-line">TEMP 26°C DEW 22°C | ALTIMETER 29.81 INHG | SLIGHT PRESSURE FALL</div>
+            </div>
+        </div>
+    </section>
+
+    <hr class="brutal-hr">
+
+    <!-- FOOTER -->
+    <footer id="footer">
+        <div class="footer-grid">
+            <div class="footer-left">
+                <div class="footer-line">DATA SOURCE: NOAA / NWS / OPEN-METEO</div>
+                <div class="footer-line">STATION: KNYC — CENTRAL PARK, NY</div>
+                <div class="footer-line">ELEVATION: 42m (138ft) AMSL</div>
+                <div class="footer-line">LAST UPDATE: <span id="last-update">--:--:--</span></div>
+            </div>
+            <div class="footer-right">
+                <div class="footer-line">NEXUS WEATHER TERMINAL v4.2.1</div>
+                <div class="footer-line">RENDER: RAW_HTML_CSS_JS</div>
+                <div class="footer-line">NO FRAMEWORKS // NO LIBRARIES // NO MERCY</div>
+                <div class="footer-line">&lt;/END TRANSMISSION&gt;</div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="scripts.js"></script>
+</body>
+</html>

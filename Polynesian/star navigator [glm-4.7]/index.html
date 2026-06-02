@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kāpeka | Celestial Wayfinding Chart</title>
+    
+    <!-- Fonts: Cinzel Decorative for the carved/ancient feel, Lato for readability -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <!-- Loading Screen -->
+    <div id="loading-screen">
+        <div class="loader-symbol">
+            <svg viewBox="0 0 100 100">
+                <path d="M50 0 L55 20 L75 20 L60 35 L65 55 L50 45 L35 55 L40 35 L25 20 L45 20 Z" fill="currentColor"/>
+            </svg>
+        </div>
+        <p>Consulting the Stars...</p>
+    </div>
+
+    <!-- Tapa Cloth Texture Overlay -->
+    <div id="tapa-overlay"></div>
+    
+    <!-- Bioluminescent Cursor Trail -->
+    <div id="cursor-trail"></div>
+
+    <!-- Main Canvas for Stars, Waves, and Islands -->
+    <canvas id="wayfinding-canvas"></canvas>
+
+    <!-- UI: Header / Title -->
+    <header class="ui-element carved-wood">
+        <div class="tiki-motif left">
+            <!-- SVG Tiki Icon -->
+            <svg viewBox="0 0 50 100" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M25 10 C35 10 40 20 40 30 C40 45 30 50 25 50 C20 50 10 45 10 30 C10 20 15 10 25 10 Z" />
+                <path d="M15 50 L15 80 L35 80 L35 50" />
+                <path d="M25 50 L25 90" />
+                <path d="M10 30 Q5 35 10 40" />
+                <path d="M40 30 Q45 35 40 40" />
+                <line x1="20" y1="25" x2="30" y2="25" />
+                <circle cx="25" cy="35" r="2" fill="currentColor"/>
+            </svg>
+        </div>
+        <div class="title-block">
+            <h1>KĀPEKA</h1>
+            <span class="subtitle">Celestial Wayfinding Chart</span>
+        </div>
+        <div class="tiki-motif right">
+            <svg viewBox="0 0 50 100" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M25 10 C35 10 40 20 40 30 C40 45 30 50 25 50 C20 50 10 45 10 30 C10 20 15 10 25 10 Z" />
+                <path d="M15 50 L15 80 L35 80 L35 50" />
+                <path d="M25 50 L25 90" />
+                <path d="M10 30 Q5 35 10 40" />
+                <path d="M40 30 Q45 35 40 40" />
+                <line x1="20" y1="25" x2="30" y2="25" />
+                <circle cx="25" cy="35" r="2" fill="currentColor"/>
+            </svg>
+        </div>
+    </header>
+
+    <!-- UI: Left Panel - Navigation Data -->
+    <aside class="ui-element panel-left">
+        <div class="panel-header">
+            <h3>Star Compass</h3>
+        </div>
+        <div class="compass-container">
+            <div class="compass-ring">
+                <span class="cardinal">N</span>
+                <span class="cardinal">S</span>
+                <span class="cardinal">E</span>
+                <span class="cardinal">W</span>
+                <!-- Quadrants -->
+                <div class="quadrant">Koʻolau</div>
+                <div class="quadrant">Malani</div>
+                <div class="quadrant">Kona</div>
+                <div class="quadrant">Hoʻolua</div>
+            </div>
+        </div>
+        <div class="data-readout">
+            <div class="data-row">
+                <span class="label">Declination:</span>
+                <span class="value" id="declination-val">--°</span>
+            </div>
+            <div class="data-row">
+                <span class="label">House:</span>
+                <span class="value" id="house-val">--</span>
+            </div>
+            <div class="data-row">
+                <span class="label">Swell:</span>
+                <span class="value" id="swell-val">--</span>
+            </div>
+        </div>
+    </aside>
+
+    <!-- UI: Right Panel - Legend & Waypoints -->
+    <aside class="ui-element panel-right">
+        <div class="panel-header">
+            <h3>Wayfinder's Log</h3>
+        </div>
+        <div class="legend-list">
+            <div class="legend-item">
+                <div class="icon star"></div>
+                <span>Hokupa'a (North Star)</span>
+            </div>
+            <div class="legend-item">
+                <div class="icon constellation"></div>
+                <span>Scorpion (Manaiakalani)</span>
+            </div>
+            <div class="legend-item">
+                <div class="icon island"></div>
+                <span>Target Island</span>
+            </div>
+            <div class="legend-item">
+                <div class="icon current"></div>
+                <span>Ocean Current</span>
+            </div>
+        </div>
+        <div class="navigator-tip">
+            <p>"The navigator does not look at the horizon, but through it, to the stars beyond."</p>
+        </div>
+    </aside>
+
+    <!-- UI: Bottom Controls -->
+    <footer class="ui-element controls-bar">
+        <button class="control-btn active" data-layer="stars" aria-label="Toggle Stars">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2 L15.09 8.26 L22 9.27 L17 14.14 L18.18 21.02 L12 17.77 L5.82 21.02 L7 14.14 L2 9.27 L8.91 8.26 Z" />
+            </svg>
+            Stars
+        </button>
+        <button class="control-btn active" data-layer="waves" aria-label="Toggle Swells">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M2 12 C2 12 4 16 8 16 C12 16 12 8 16 8 C20 8 22 12 22 12" />
+                <path d="M2 18 C2 18 4 22 8 22 C12 22 12 14 16 14 C20 14 22 18 22 18" />
+            </svg>
+            Swells
+        </button>
+        <button class="control-btn active" data-layer="currents" aria-label="Toggle Currents">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M5 12 H19" />
+                <path d="M12 5 V19" />
+                <path d="M12 2 L15 5 L12 8" />
+                <path d="M12 22 L9 19 L12 16" />
+            </svg>
+            Currents
+        </button>
+        <div class="separator"></div>
+        <button class="control-btn" id="reset-view" aria-label="Reset View">
+            Center Canoe
+        </button>
+    </footer>
+
+    <script src="scripts.js"></script>
+</body>
+</html>

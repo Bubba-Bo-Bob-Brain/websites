@@ -1,0 +1,505 @@
+/* =========================================
+   1. VARIABLES & RESET
+   ========================================= */
+:root {
+  /* Palette: Dark Ages Retro */
+  --bg-color: #1a1815;
+  --parchment: #d4c5a3;
+  --parchment-dark: #b8a984;
+  --ink-black: #0f0f0f;
+  --blood-red: #8a1c1c;
+  --royal-gold: #d4af37;
+  --neon-gold: #f9d768;
+  --forest-green: #2d4a22;
+  --plague-green: #4a7c2d;
+  
+  /* Dimensions */
+  --border-thickness: 4px;
+  --pixel-scale: 4px;
+  
+  /* Fonts */
+  --font-pixel: 'Press Start 2P', cursive;
+  --font-gothic: 'UnifrakturMaguntia', cursive;
+  --font-body: 'Cinzel', serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--bg-color);
+  color: var(--ink-black);
+  font-family: var(--font-body);
+  line-height: 1.6;
+  overflow-x: hidden;
+  /* Subtle noise texture for atmosphere */
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
+}
+
+/* =========================================
+   2. CRT & ATMOSPHERE EFFECTS
+   ========================================= */
+.scanlines {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0),
+    rgba(255, 255, 255, 0) 50%,
+    rgba(0, 0, 0, 0.2) 50%,
+    rgba(0, 0, 0, 0.2)
+  );
+  background-size: 100% 4px;
+  pointer-events: none;
+  z-index: 9999;
+  animation: scrollScanlines 10s linear infinite;
+}
+
+.flicker-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(255, 255, 255, 0.02);
+  pointer-events: none;
+  z-index: 9998;
+  animation: flicker 0.15s infinite;
+}
+
+@keyframes scrollScanlines {
+  0% { background-position: 0 0; }
+  100% { background-position: 0 100%; }
+}
+
+@keyframes flicker {
+  0% { opacity: 0.9; }
+  50% { opacity: 1.0; }
+  100% { opacity: 0.95; }
+}
+
+/* =========================================
+   3. UTILITIES & TYPOGRAPHY
+   ========================================= */
+.pixel-font {
+  font-family: var(--font-pixel);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.gothic-title {
+  font-family: var(--font-gothic);
+  font-size: 3rem;
+  color: var(--blood-red);
+  margin-bottom: 1rem;
+  text-shadow: 2px 2px 0px rgba(0,0,0,0.5);
+}
+
+.section-title {
+  font-family: var(--font-pixel);
+  font-size: 1.5rem;
+  color: var(--parchment);
+  text-align: center;
+  margin-bottom: 2rem;
+  text-shadow: 4px 4px 0px var(--blood-red);
+  position: relative;
+  display: inline-block;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* =========================================
+   4. LAYOUT & CONTAINERS
+   ========================================= */
+.manuscript-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+  position: relative;
+  z-index: 10;
+}
+
+.content-section {
+  margin: 4rem 0;
+  padding: 0 1rem;
+}
+
+/* =========================================
+   5. HERO SECTION
+   ========================================= */
+.hero-section {
+  text-align: center;
+  margin-bottom: 4rem;
+  position: relative;
+  padding: 4rem 0;
+}
+
+.hero-content {
+  background: var(--parchment);
+  padding: 3rem 2rem;
+  position: relative;
+  /* Pixel Border Effect using box-shadow */
+  box-shadow: 
+    -4px 0 0 0 var(--ink-black),
+    4px 0 0 0 var(--ink-black),
+    0 -4px 0 0 var(--ink-black),
+    0 4px 0 0 var(--ink-black),
+    inset -4px 0 0 0 var(--ink-black),
+    inset 4px 0 0 0 var(--ink-black),
+    inset 0 -4px 0 0 var(--ink-black),
+    inset 0 4px 0 0 var(--ink-black);
+  margin: 20px;
+}
+
+.pixel-title {
+  font-family: var(--font-pixel);
+  font-size: clamp(1.5rem, 5vw, 3rem);
+  color: var(--ink-black);
+  margin-bottom: 1rem;
+  line-height: 1.4;
+  text-shadow: 2px 2px 0px var(--royal-gold);
+  animation: pulseTitle 3s infinite ease-in-out;
+}
+
+.subtitle {
+  font-family: var(--font-gothic);
+  font-size: 1.5rem;
+  color: var(--blood-red);
+  margin-bottom: 2rem;
+}
+
+.scroll-down-indicator {
+  margin-top: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-pixel);
+  font-size: 0.6rem;
+  color: var(--ink-black);
+  animation: bounce 2s infinite;
+}
+
+.pixel-arrow {
+  font-size: 1.2rem;
+}
+
+@keyframes pulseTitle {
+  0%, 100% { text-shadow: 2px 2px 0px var(--royal-gold); }
+  50% { text-shadow: 4px 4px 0px var(--blood-red); }
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
+  40% {transform: translateY(-10px);}
+  60% {transform: translateY(-5px);}
+}
+
+/* Decorative Corners */
+.corner {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border: 4px solid var(--royal-gold);
+  z-index: -1;
+}
+.top-left { top: 0; left: 0; border-right: none; border-bottom: none; }
+.top-right { top: 0; right: 0; border-left: none; border-bottom: none; }
+
+/* =========================================
+   6. NAVIGATION
+   ========================================= */
+.retro-nav {
+  position: sticky;
+  top: 1rem;
+  background: var(--ink-black);
+  border: 4px solid var(--parchment);
+  padding: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 100;
+  margin-bottom: 2rem;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+}
+
+.retro-nav ul {
+  display: flex;
+  list-style: none;
+  gap: 1rem;
+}
+
+.nav-link {
+  font-family: var(--font-pixel);
+  font-size: 0.7rem;
+  color: var(--parchment);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.nav-link:hover {
+  color: var(--neon-gold);
+  text-shadow: 0 0 5px var(--neon-gold);
+}
+
+.bell-trigger {
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: var(--parchment);
+  font-family: var(--font-pixel);
+  font-size: 0.6rem;
+  transition: transform 0.1s;
+}
+
+.bell-trigger:active {
+  transform: scale(0.9);
+}
+
+.bell-icon {
+  font-size: 1.5rem;
+  margin-bottom: 0.2rem;
+}
+
+/* =========================================
+   7. MAP SECTION
+   ========================================= */
+.map-container {
+  background: #2a2a2a;
+  padding: 2rem;
+  position: relative;
+  /* Inner pixel border */
+  outline: 4px solid var(--parchment);
+  outline-offset: -4px;
+}
+
+.map-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.map-cell {
+  background: var(--ink-black);
+  border: 2px solid var(--parchment-dark);
+  padding: 1rem;
+  text-align: center;
+  color: var(--parchment);
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+  font-family: var(--font-pixel);
+  font-size: 0.6rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.map-cell:hover {
+  background: var(--forest-green);
+  border-color: var(--neon-gold);
+  transform: translateY(-4px);
+  box-shadow: 4px 4px 0px var(--ink-black);
+}
+
+.pixel-icon {
+  font-size: 2rem;
+  image-rendering: pixelated;
+}
+
+.map-legend {
+  text-align: center;
+  color: var(--parchment-dark);
+  font-family: var(--font-pixel);
+  font-size: 0.6rem;
+  margin-top: 1rem;
+  border-top: 2px dashed var(--parchment-dark);
+  padding-top: 1rem;
+}
+
+/* =========================================
+   8. CARDS (Daily Life)
+   ========================================= */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+}
+
+.info-card {
+  background: var(--parchment);
+  padding: 1.5rem;
+  position: relative;
+  /* Thick pixel border via shadow */
+  box-shadow: 
+    -6px 0 0 0 var(--ink-black),
+    6px 0 0 0 var(--ink-black),
+    0 -6px 0 0 var(--ink-black),
+    0 6px 0 0 var(--ink-black);
+  margin: 10px 0;
+  transition: transform 0.3s;
+}
+
+.info-card:hover {
+  transform: scale(1.02);
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  border-bottom: 2px solid var(--ink-black);
+  padding-bottom: 0.5rem;
+}
+
+.card-header h3 {
+  font-family: var(--font-pixel);
+  font-size: 0.9rem;
+  color: var(--blood-red);
+}
+
+.info-card p {
+  font-size: 1.1rem;
+  color: #333;
+  text-align: justify;
+}
+
+/* =========================================
+   9. PLAGUE DOCTOR SECTION
+   ========================================= */
+.special-bg {
+  background: linear-gradient(180deg, var(--bg-color) 0%, #1a0505 100%);
+  padding: 3rem 1rem;
+  border-radius: 4px;
+}
+
+.plague-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.6);
+  padding: 2rem;
+  border: 4px solid var(--plague-green);
+  color: var(--parchment);
+  gap: 2rem;
+}
+
+@media (min-width: 768px) {
+  .plague-container {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+}
+
+.plague-visual {
+  font-size: 5rem;
+  filter: drop-shadow(0 0 10px var(--plague-green));
+  animation: float 3s ease-in-out infinite;
+}
+
+.doctor-figure {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.plague-text {
+  max-width: 500px;
+}
+
+.plague-text p {
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+  color: #ccc;
+}
+
+.retro-btn {
+  background: var(--blood-red);
+  color: var(--parchment);
+  border: 4px solid var(--parchment);
+  padding: 1rem 2rem;
+  font-family: var(--font-pixel);
+  font-size: 0.8rem;
+  cursor: pointer;
+  margin-top: 1rem;
+  box-shadow: 4px 4px 0px var(--ink-black);
+  transition: all 0.2s;
+}
+
+.retro-btn:hover {
+  background: var(--ink-black);
+  color: var(--blood-red);
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0px var(--ink-black);
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-15px); }
+}
+
+/* =========================================
+   10. FOOTER
+   ========================================= */
+.main-footer {
+  margin-top: 4rem;
+  padding: 2rem;
+  text-align: center;
+  color: var(--parchment-dark);
+  font-family: var(--font-pixel);
+  font-size: 0.6rem;
+}
+
+.thin-border {
+  border: 2px solid var(--parchment-dark);
+  padding: 1rem;
+  display: inline-block;
+}
+
+.social-pixels {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.social-pixels span {
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.social-pixels span:hover {
+  color: var(--neon-gold);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 600px) {
+  .hero-content {
+    padding: 1.5rem;
+    margin: 10px;
+  }
+  
+  .retro-nav {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .retro-nav ul {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}

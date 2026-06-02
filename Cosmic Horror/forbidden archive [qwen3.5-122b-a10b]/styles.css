@@ -1,0 +1,544 @@
+/* 
+  THE ARCHIVE OF THE VOID - STYLESHEET 
+  Aesthetic: Eldritch Horror / Digital Decay / Non-Euclidean
+*/
+
+:root {
+  /* Palette: Deep Void, Sickly Green, Blood Red, Static Grey */
+  --void-black: #050505;
+  --void-deep: #0a0a0f;
+  --static-grey: #1a1a1f;
+  --eldritch-green: #a8ff60;
+  --eldritch-green-dim: #4a7a2e;
+  --blood-red: #ff003c;
+  --blood-dim: #5c0016;
+  --pale-flesh: #e0d8c0;
+  --bone-white: #f0f0f0;
+  
+  /* Typography */
+  --font-display: 'Cinzel Decorative', cursive;
+  --font-mono: 'JetBrains Mono', monospace;
+  
+  /* Effects */
+  --glitch-offset: 2px;
+  --scanline-speed: 8s;
+  --noise-opacity: 0.08;
+  --card-bg: rgba(20, 20, 25, 0.7);
+  --border-color: rgba(168, 255, 96, 0.15);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  cursor: crosshair; /* Custom cursor */
+}
+
+body {
+  background-color: var(--void-black);
+  color: var(--pale-flesh);
+  font-family: var(--font-mono);
+  overflow-x: hidden;
+  min-height: 100vh;
+  perspective: 1000px;
+}
+
+/* --- OVERLAYS (CRT & NOISE) --- */
+.overlay-crt {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+  background-size: 100% 2px, 3px 100%;
+  pointer-events: none;
+  z-index: 999;
+  animation: flicker 0.15s infinite;
+}
+
+.overlay-noise {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 998;
+  opacity: var(--noise-opacity);
+  animation: noise-move 0.5s steps(4) infinite;
+}
+
+/* --- SANITY INTERFACE (SIDEBAR) --- */
+.sanity-interface {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  width: 280px;
+  background: rgba(10, 10, 15, 0.9);
+  border: 1px solid var(--eldritch-green-dim);
+  padding: 15px;
+  z-index: 100;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(5px);
+  transition: transform 0.3s ease, border-color 0.3s ease;
+}
+
+.sanity-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  border-bottom: 1px solid var(--eldritch-green-dim);
+  padding-bottom: 5px;
+}
+
+.sanity-header .label {
+  font-size: 0.7rem;
+  letter-spacing: 2px;
+  color: var(--eldritch-green);
+  text-transform: uppercase;
+}
+
+.status-indicator {
+  font-size: 0.6rem;
+  padding: 2px 6px;
+  border: 1px solid currentColor;
+}
+
+.status-stable { color: var(--eldritch-green); }
+.status-warn { color: #ffcc00; animation: blink 1s infinite; }
+.status-crit { color: var(--blood-red); animation: shake 0.2s infinite; }
+
+.sanity-bar-container {
+  height: 10px;
+  background: #000;
+  border: 1px solid var(--static-grey);
+  position: relative;
+  margin-bottom: 15px;
+}
+
+.sanity-bar-fill {
+  height: 100%;
+  width: 100%;
+  background: linear-gradient(90deg, var(--eldritch-green), var(--eldritch-green-dim));
+  transition: width 0.5s cubic-bezier(0.1, 0.7, 1.0, 0.1), background 0.5s;
+  box-shadow: 0 0 10px var(--eldritch-green);
+}
+
+.sanity-log {
+  height: 120px;
+  overflow-y: hidden;
+  font-size: 0.65rem;
+  color: var(--eldritch-green-dim);
+  display: flex;
+  flex-direction: column-reverse; /* Newest at bottom visually, but we append to top in JS logic usually, let's adjust */
+  justify-content: flex-end;
+  border-top: 1px solid var(--static-grey);
+  padding-top: 5px;
+}
+
+.sanity-log p {
+  margin-bottom: 2px;
+  opacity: 0.8;
+}
+
+/* --- MAIN ARCHIVE CONTAINER --- */
+.archive-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  position: relative;
+  z-index: 1;
+}
+
+/* --- HEADER --- */
+.header-void {
+  text-align: center;
+  margin-bottom: 80px;
+  position: relative;
+}
+
+.title-wrapper h1 {
+  font-family: var(--font-display);
+  font-size: 4rem;
+  color: var(--bone-white);
+  text-transform: uppercase;
+  letter-spacing: 10px;
+  margin-bottom: 10px;
+  position: relative;
+  text-shadow: 2px 2px 0px var(--blood-dim);
+}
+
+.title-wrapper h1::before, .title-wrapper h1::after {
+  content: attr(data-text);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.8;
+}
+
+.title-wrapper h1::before {
+  color: var(--blood-red);
+  z-index: -1;
+  animation: glitch-anim-1 2.5s infinite linear alternate-reverse;
+}
+
+.title-wrapper h1::after {
+  color: var(--eldritch-green);
+  z-index: -2;
+  animation: glitch-anim-2 3s infinite linear alternate-reverse;
+}
+
+.subtitle {
+  font-size: 0.9rem;
+  color: var(--eldritch-green-dim);
+  letter-spacing: 4px;
+  margin-bottom: 40px;
+}
+
+.search-bar-container {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+#corrupt-search {
+  background: transparent;
+  border: 1px solid var(--eldritch-green-dim);
+  color: var(--bone-white);
+  padding: 10px 20px;
+  font-family: var(--font-mono);
+  width: 100%;
+  font-size: 1rem;
+  outline: none;
+  transition: all 0.3s;
+}
+
+#corrupt-search:focus {
+  border-color: var(--eldritch-green);
+  box-shadow: 0 0 15px rgba(168, 255, 96, 0.2);
+}
+
+.search-btn {
+  background: var(--blood-dim);
+  color: var(--bone-white);
+  border: 1px solid var(--blood-red);
+  padding: 10px 30px;
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  transition: all 0.3s;
+}
+
+.search-btn:hover {
+  background: var(--blood-red);
+  color: #000;
+  box-shadow: 0 0 20px var(--blood-red);
+}
+
+/* --- NON-EUCLIDEAN GRID --- */
+.grid-chaos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 40px;
+  perspective: 1000px;
+}
+
+.archive-item {
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+  opacity: 0; /* JS will fade in */
+  transform: translateY(50px) rotateX(10deg);
+}
+
+.archive-item.visible {
+  opacity: 1;
+  transform: translateY(0) rotateX(0);
+}
+
+/* Hover Effects on Grid Items */
+.archive-item:hover {
+  z-index: 10;
+  transform: scale(1.05) rotateX(-5deg) rotateY(5deg);
+}
+
+/* Tentacle Borders */
+.archive-item::before {
+  content: '';
+  position: absolute;
+  top: -10px; left: -10px; right: -10px; bottom: -10px;
+  border: 1px dashed var(--eldritch-green-dim);
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.5s;
+}
+
+.archive-item:hover::before {
+  opacity: 0.5;
+  animation: border-pulse 2s infinite;
+}
+
+/* --- CARD DESIGN --- */
+.item-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.4s ease;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+.item-card::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: radial-gradient(circle at 50% 50%, transparent 0%, var(--void-black) 100%);
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.7rem;
+  margin-bottom: 15px;
+  border-bottom: 1px solid var(--static-grey);
+  padding-bottom: 5px;
+}
+
+.id-code { color: var(--eldritch-green-dim); }
+.danger-tag, .hazard-tag, .warning-tag, .critical-tag {
+  padding: 2px 5px;
+  font-weight: bold;
+  border: 1px solid currentColor;
+}
+
+.danger-tag { color: var(--blood-red); }
+.hazard-tag { color: #ffcc00; }
+.warning-tag { color: var(--eldritch-green); }
+.critical-tag { color: #fff; background: var(--blood-red); border: none; }
+
+.card-body {
+  position: relative;
+  z-index: 2;
+  min-height: 120px;
+}
+
+.item-title {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  color: var(--bone-white);
+  margin-bottom: 10px;
+  transition: color 0.3s;
+}
+
+.archive-item:hover .item-title {
+  color: var(--eldritch-green);
+  text-shadow: 0 0 5px var(--eldritch-green);
+}
+
+.item-desc {
+  font-size: 0.85rem;
+  line-height: 1.6;
+  color: #aaa;
+  transition: transform 0.3s;
+}
+
+/* Corrupt Text on Hover */
+.archive-item:hover .item-desc {
+  transform: skewX(-5deg);
+  color: var(--blood-red);
+  text-shadow: 1px 0 0 var(--eldritch-green);
+}
+
+.card-footer {
+  margin-top: 20px;
+  text-align: right;
+  position: relative;
+  z-index: 2;
+}
+
+.read-btn, .view-btn, .listen-btn, .inspect-btn, .open-btn {
+  background: transparent;
+  border: 1px solid var(--eldritch-green-dim);
+  color: var(--eldritch-green-dim);
+  padding: 8px 20px;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.3s;
+  position: relative;
+  overflow: hidden;
+}
+
+.read-btn:hover, .view-btn:hover, .listen-btn:hover, .inspect-btn:hover, .open-btn:hover {
+  background: var(--eldritch-green);
+  color: #000;
+  border-color: var(--eldritch-green);
+  box-shadow: 0 0 15px var(--eldritch-green);
+  transform: translateX(5px);
+}
+
+/* --- SPECIFIC ITEM STYLES --- */
+/* Chart Visual */
+.chart-visual {
+  height: 100px;
+  background: radial-gradient(circle, #1a1a1a 0%, #000 100%);
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--static-grey);
+}
+.constellation {
+  position: absolute;
+  width: 100%; height: 100%;
+  background-image: radial-gradient(white 1px, transparent 1px);
+  background-size: 20px 20px;
+  opacity: 0.3;
+  animation: rotate-slow 20s linear infinite;
+}
+
+/* Artifact Visual */
+.artifact-visual {
+  width: 60px;
+  height: 60px;
+  background: #000;
+  border: 2px solid var(--blood-red);
+  margin: 0 auto 15px auto;
+  border-radius: 50%;
+  box-shadow: 0 0 20px var(--blood-dim);
+  animation: pulse-void 3s infinite;
+}
+
+/* --- MODAL --- */
+.modal {
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0,0,0,0.95);
+  z-index: 2000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+}
+
+.modal.active {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.modal-content {
+  background: #000;
+  border: 2px solid var(--blood-red);
+  padding: 40px;
+  text-align: center;
+  max-width: 500px;
+  box-shadow: 0 0 50px var(--blood-red);
+  transform: scale(0.8);
+  transition: transform 0.3s;
+}
+
+.modal.active .modal-content {
+  transform: scale(1);
+}
+
+.glitch-content h2 {
+  font-family: var(--font-display);
+  color: var(--blood-red);
+  font-size: 2rem;
+  margin-bottom: 20px;
+}
+
+.glitch-text {
+  font-size: 1.5rem;
+  color: var(--bone-white);
+  margin-top: 20px;
+  position: relative;
+}
+
+/* --- ANIMATIONS --- */
+@keyframes flicker {
+  0% { opacity: 0.9; }
+  5% { opacity: 0.8; }
+  10% { opacity: 0.95; }
+  15% { opacity: 0.85; }
+  100% { opacity: 0.9; }
+}
+
+@keyframes noise-move {
+  0% { transform: translate(0,0); }
+  25% { transform: translate(-5%,-5%); }
+  50% { transform: translate(-5%,5%); }
+  75% { transform: translate(5%,-5%); }
+  100% { transform: translate(5%,5%); }
+}
+
+@keyframes glitch-anim-1 {
+  0% { clip-path: inset(20% 0 80% 0); transform: translate(-2px, 1px); }
+  20% { clip-path: inset(60% 0 10% 0); transform: translate(2px, -1px); }
+  40% { clip-path: inset(40% 0 50% 0); transform: translate(-2px, 2px); }
+  60% { clip-path: inset(80% 0 5% 0); transform: translate(2px, -2px); }
+  80% { clip-path: inset(10% 0 70% 0); transform: translate(-1px, 1px); }
+  100% { clip-path: inset(30% 0 50% 0); transform: translate(1px, -1px); }
+}
+
+@keyframes glitch-anim-2 {
+  0% { clip-path: inset(10% 0 60% 0); transform: translate(2px, -1px); }
+  20% { clip-path: inset(80% 0 5% 0); transform: translate(-2px, 2px); }
+  40% { clip-path: inset(30% 0 20% 0); transform: translate(2px, 1px); }
+  60% { clip-path: inset(10% 0 80% 0); transform: translate(-1px, -2px); }
+  80% { clip-path: inset(50% 0 30% 0); transform: translate(1px, 2px); }
+  100% { clip-path: inset(70% 0 10% 0); transform: translate(-2px, 1px); }
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+@keyframes shake {
+  0% { transform: translate(1px, 1px) rotate(0deg); }
+  10% { transform: translate(-1px, -2px) rotate(-1deg); }
+  20% { transform: translate(-3px, 0px) rotate(1deg); }
+  30% { transform: translate(3px, 2px) rotate(0deg); }
+  40% { transform: translate(1px, -1px) rotate(1deg); }
+  50% { transform: translate(-1px, 2px) rotate(-1deg); }
+  60% { transform: translate(-3px, 1px) rotate(0deg); }
+  70% { transform: translate(3px, 1px) rotate(-1deg); }
+  80% { transform: translate(-1px, -1px) rotate(1deg); }
+  90% { transform: translate(1px, 2px) rotate(0deg); }
+  100% { transform: translate(1px, -2px) rotate(-1deg); }
+}
+
+@keyframes border-pulse {
+  0% { border-color: var(--eldritch-green-dim); }
+  50% { border-color: var(--eldritch-green); }
+  100% { border-color: var(--eldritch-green-dim); }
+}
+
+@keyframes rotate-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes pulse-void {
+  0% { transform: scale(1); box-shadow: 0 0 20px var(--blood-dim); }
+  50% { transform: scale(1.1); box-shadow: 0 0 40px var(--blood-red); }
+  100% { transform: scale(1); box-shadow: 0 0 20px var(--blood-dim); }
+}
+
+/* Mobile Adjustments */
+@media (max-width: 768px) {
+  .title-wrapper h1 { font-size: 2.5rem; }
+  .sanity-interface { width: 100%; top: auto; bottom: 0; right: 0; border-radius: 10px 10px 0 0; }
+  .sanity-log { height: 80px; }
+}

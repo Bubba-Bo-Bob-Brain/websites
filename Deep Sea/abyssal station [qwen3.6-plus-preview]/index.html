@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Abyssal Research Station — Primary Operations Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@300;400;500&family=Barlow+Condensed:wght@300;400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- Bioluminescent particle background canvas -->
+    <canvas id="particleCanvas" class="bg-canvas"></canvas>
+
+    <!-- Ambient light leak effects -->
+    <div class="light-leak light-leak--top"></div>
+    <div class="light-leak light-leak--bottom"></div>
+
+    <!-- Main viewport frame -->
+    <div class="viewport-frame">
+        
+        <!-- Decorative rivets -->
+        <div class="rivets-container" id="rivetsContainer"></div>
+
+        <!-- Dashboard wrapper -->
+        <div class="dashboard-container">
+
+            <!-- Top Status Bar -->
+            <header class="status-bar">
+                <div class="station-id">
+                    <span class="label">Station</span>
+                    <span class="value">ABYSSAL-7</span>
+                </div>
+                <div class="depth-display">
+                    <span class="label">Current Depth</span>
+                    <div class="depth-value-wrap">
+                        <span class="value depth-value" id="depthValue">11,034</span>
+                        <span class="unit">m</span>
+                    </div>
+                    <div class="depth-bar-container">
+                        <div class="depth-bar" id="depthBar"></div>
+                        <div class="depth-ticks"></div>
+                    </div>
+                </div>
+                <div class="timestamp">
+                    <span class="label">Mission Time</span>
+                    <span class="value" id="missionTime">00:00:00</span>
+                </div>
+                <div class="status-indicators">
+                    <div class="indicator green active">
+                        <span class="dot"></span>
+                        <span class="label">O₂</span>
+                    </div>
+                    <div class="indicator green active">
+                        <span class="dot"></span>
+                        <span class="label">COMM</span>
+                    </div>
+                    <div class="indicator amber active">
+                        <span class="dot"></span>
+                        <span class="label">PWR</span>
+                    </div>
+                    <div class="indicator green active">
+                        <span class="dot"></span>
+                        <span class="label">LSS</span>
+                    </div>
+                    <div class="indicator red" id="pressureIndicator">
+                        <span class="dot"></span>
+                        <span class="label">PRES</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Main Dashboard Grid -->
+            <main class="dashboard-grid">
+
+                <!-- Left Panel: Pressure Monitoring -->
+                <section class="panel pressure-panel">
+                    <h2 class="panel-title">
+                        <span class="panel-icon">⬡</span>
+                        Pressure Monitoring
+                    </h2>
+                    <div class="pressure-gauge-container">
+                        <div class="pressure-value" id="pressureValue">1,086</div>
+                        <div class="pressure-unit">ATM</div>
+                        <div class="pressure-status" id="pressureStatus">NOMINAL</div>
+                    </div>
+                    <div class="pressure-history">
+                        <canvas id="pressureChart"></canvas>
+                    </div>
+                    <div class="pressure-warnings">
+                        <div class="warning-item" id="warning1">
+                            <span class="warning-dot"></span>
+                            <span class="warning-text">External pressure stable</span>
+                        </div>
+                        <div class="warning-item" id="warning2">
+                            <span class="warning-dot"></span>
+                            <span class="warning-text">Differential within limits</span>
+                        </div>
+                        <div class="warning-item critical hidden" id="warning3">
+                            <span class="warning-dot"></span>
+                            <span class="warning-text">⚠ Pressure anomaly detected</span>
+                        </div>
+                    </div>
+                    <div class="klaxon-bar" id="klaxonBar">
+                        <div class="klaxon-fill" id="klaxonFill"></div>
+                        <div class="klaxon-segments" id="klaxonSegments"></div>
+                        <span class="klaxon-label">PRESSURE LOAD</span>
+                    </div>
+                </section>
+
+                <!-- Center Panel: Sonar Feed -->
+                <section class="panel sonar-panel">
+                    <h2 class="panel-title">
+                        <span class="panel-icon">◉</span>
+                        Active Sonar Feed
+                    </h2>
+                    <div class="sonar-display">
+                        <canvas id="sonarCanvas"></canvas>
+                        <div class="sonar-overlay">
+                            <div class="sonar-info">
+                                <span class="sonar-range">RANGE: 2.4 km</span>
+                                <span class="sonar-bearing">BRG: 047°</span>
+                                <span class="sonar-freq">FREQ: 12 kHz</span>
+                            </div>
+                            <div class="contact-list" id="contactList">
+                                <div class="contact-item">
+                                    <span class="contact-id">CT-001</span>
+                                    <span class="contact-dist">1240m</span>
+                                    <span class="contact-bearing">032°</span>
+                                    <span class="contact-type">BIO</span>
+                                </div>
+                                <div class="contact-item">
+                                    <span class="contact-id">CT-002</span>
+                                    <span class="contact-dist">890m</span>
+                                    <span class="contact-bearing">118°</span>
+                                    <span class="contact-type">TOPO</span>
+                                </div>
+                                <div class="contact-item new">
+                                    <span class="contact-id">CT-003</span>
+                                    <span class="contact-dist">2100m</span>
+                                    <span class="contact-bearing">274°</span>
+                                    <span class="contact-type">UNK</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="sonar-sweep-line"></div>
+                    </div>
+                </section>
+
+                <!-- Center Panel: Viewport Window -->
+                <section class="panel viewport-panel">
+                    <h2 class="panel-title">
+                        <span class="panel-icon">◎</span>
+                        External Viewport
+                    </h2>
+                    <div class="viewport-window">
+                        <div class="viewport-glass">
+                            <canvas id="currentCanvas"></canvas>
+                            <div class="viewport-reflection"></div>
+                            <div class="viewport-scanlines"></div>
+                            <div class="vignette"></div>
+                        </div>
+                        <div class="viewport-overlay">
+                            <div class="viewport-coords">
+                                <span>LAT: 11.37°N</span>
+                                <span>LON: 142.59°E</span>
+                            </div>
+                            <div class="viewport-temp">
+                                <span>EXT TEMP: 1.4°C</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Right Panel: Hull Integrity -->
+                <section class="panel hull-panel">
+                    <h2 class="panel-title">
+                        <span class="panel-icon">◆</span>
+                        Hull Integrity
+                    </h2>
+                    <div class="hull-display">
+                        <div class="hull-circle-container">
+                            <canvas id="hullGauge"></canvas>
+                            <div class="hull-value" id="hullValue">97.3%</div>
+                            <div class="hull-label">INTEGRITY</div>
+                        </div>
+                        <div class="hull-segments">
+                            <div class="hull-segment">
+                                <span class="seg-label">BOW</span>
+                                <div class="seg-bar"><div class="seg-fill" style="width: 98%"></div></div>
+                                <span class="seg-value">98%</span>
+                            </div>
+                            <div class="hull-segment">
+                                <span class="seg-label">PORT</span>
+                                <div class="seg-bar"><div class="seg-fill" style="width: 96%"></div></div>
+                                <span class="seg-value">96%</span>
+                            </div>
+                            <div class="hull-segment">
+                                <span class="seg-label">STBD</span>
+                                <div class="seg-bar"><div class="seg-fill" style="width: 97%"></div></div>
+                                <span class="seg-value">97%</span>
+                            </div>
+                            <div class="hull-segment">
+                                <span class="seg-label">AFT</span>
+                                <div class="seg-bar"><div class="seg-fill" style="width: 99%"></div></div>
+                                <span class="seg-value">99%</span>
+                            </div>
+                            <div class="hull-segment">
+                                <span class="seg-label">KEEL</span>
+                                <div class="seg-bar"><div class="seg-fill" style="width: 95%"></div></div>
+                                <span class="seg-value">95%</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="stress-readouts">
+                        <div class="stress-item">
+                            <span class="stress-label">AXIAL</span>
+                            <span class="stress-value" id="axialStress">+0.03</span>
+                            <span class="stress-unit">GPa</span>
+                        </div>
+                        <div class="stress-item">
+                            <span class="stress-label">TORSION</span>
+                            <span class="stress-value" id="torsionStress">-0.01</span>
+                            <span class="stress-unit">GPa</span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Bottom Panel: Bioluminescent Fauna Tracking -->
+                <section class="panel fauna-panel">
+                    <h2 class="panel-title">
+                        <span class="panel-icon">✦</span>
+                        Bioluminescent Fauna Tracking
+                    </h2>
+                    <div class="fauna-grid">
+                        <div class="fauna-card" data-type="siphonophore">
+                            <div class="fauna-header">
+                                <div class="fauna-icon">
+                                    <div class="fauna-glow fauna-glow--cyan"></div>
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                        <circle cx="12" cy="8" r="5"/>
+                                        <path d="M12 13c-2 3-4 6-2 9"/>
+                                        <path d="M12 13c2 3 4 6 2 9"/>
+                                        <path d="M8 15c-1 2-2 4 0 7"/>
+                                        <path d="M16 15c1 2 2 4 0 7"/>
+                                    </svg>
+                                </div>
+                                <div class="fauna-info">
+                                    <span class="fauna-name">Siphonophore</span>
+                                    <span class="fauna-count">3 detected</span>
+                                    <span class="fauna-distance">~42m NE</span>
+                                </div>
+                            </div>
+                            <div class="fauna-signal">
+                                <div class="signal-bar" style="height: 60%"></div>
+                                <div class="signal-bar" style="height: 80%"></div>
+                                <div class="signal-bar" style="height: 45%"></div>
+                                <div class="signal-bar" style="height: 70%"></div>
+                                <div class="signal-bar" style="height: 55%"></div>
+                                <div class="signal-bar" style="height: 65%"></div>
+                                <div class="signal-bar" style="height: 40%"></div>
+                            </div>
+                            <div class="fauna-meta">
+                                <span class="meta-label">EMISSION</span>
+                                <span class="meta-value cyan">485nm</span>
+                            </div>
+                        </div>
+
+                        <div class="fauna-card" data-type="anglerfish">
+                            <div class="fauna-header">
+                                <div class="fauna-icon">
+                                    <div class="fauna-glow fauna-glow--green"></div>
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                        <path d="M4 12c0-4 4-8 8-8s8 4 8 8-4 8-8 8-8-4-8-8z"/>
+                                        <path d="M12 4V2"/>
+                                        <circle cx="12" cy="2" r="1"/>
+                                    </svg>
+                                </div>
+                                <div class="fauna-info">
+                                    <span class="fauna-name">Anglerfish</span>
+                                    <span class="fauna-count">1 detected</span>
+                                    <span class="fauna-distance">~89m SW</span>
+                                </div>
+                            </div>
+                            <div class="fauna-signal">
+                                <div class="signal-bar" style="height: 30%"></div>
+                                <div class="signal-bar" style="height: 50%"></div>
+                                <div class="signal-bar" style="height: 25%"></div>
+                                <div class="signal-bar" style="height: 40%"></div>
+                                <div class="signal-bar" style="height: 35%"></div>
+                                <div class="signal-bar" style="height: 45%"></div>
+                                <div class="signal-bar" style="height: 20%"></div>
+                            </div>
+                            <div class="fauna-meta">
+                                <span class="meta-label">EMISSION</span>
+                                <span class="meta-value green">520nm</span>
+                            </div>
+                        </div>
+
+                        <div class="fauna-card" data-type="vampire-squid">
+                            <div class="fauna-header">
+                                <div class="fauna-icon">
+                                    <div class="fauna-glow fauna-glow--magenta"></div>
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                        <ellipse cx="12" cy="10" rx="6" ry="7"/>
+                                        <circle cx="9" cy="9" r="1.5"/>
+                                        <circle cx="15" cy="9" r="1.5"/>
+                                        <path d="M8 17c-2 2-4 3-4 5"/>
+                                        <path d="M16 17c2 2 4 3 4 5"/>
+                                        <path d="M12 17v5"/>
+                                    </svg>
+                                </div>
+                                <div class="fauna-info">
+                                    <span class="fauna-name">Vampire Squid</span>
+                                    <span class="fauna-count">2 detected</span>
+                                    <span class="fauna-distance">~15m SE</span>
+                                </div>
+                            </div>
+                            <div class="fauna-signal">
+                                <div class="signal-bar" style="height: 85%"></div>
+                                <div class="signal-bar" style="height: 90%"></div>
+                                <div class="signal-bar" style="height: 75%"></div>
+                                <div class="signal-bar" style="height: 95%"></div>
+                                <div class="signal-bar" style="height: 88%"></div>
+                                <div class="signal-bar" style="height: 82%"></div>
+                                <div class="signal-bar" style="height: 78%"></div>
+                            </div>
+                            <div class="fauna-meta">
+                                <span class="meta-label">EMISSION</span>
+                                <span class="meta-value magenta">450nm</span>
+                            </div>
+                        </div>
+
+                        <div class="fauna-card" data-type="comb-jelly">
+                            <div class="fauna-header">
+                                <div class="fauna-icon">
+                                    <div class="fauna-glow fauna-glow--amber"></div>
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                        <path d="M12 4c-3 0-6 3-6 7s3 7 6 7 6-3 6-7-3-7-6-7z"/>
+                                        <path d="M9 11h6"/>
+                                        <path d="M9 14h6"/>
+                                        <path d="M9 17h6"/>
+                                    </svg>
+                                </div>
+                                <div class="fauna-info">
+                                    <span class="fauna-name">Comb Jelly</span>
+                                    <span class="fauna-count">5 detected</span>
+                                    <span class="fauna-distance">~8m NW</span>
+                                </div>
+                            </div>
+                            <div class="fauna-signal">
+                                <div class="signal-bar" style="height: 40%"></div>
+                                <div class="signal-bar" style="height: 65%"></div>
+                                <div class="signal-bar" style="height: 50%"></div>
+                                <div class="signal-bar" style="height: 70%"></div>
+                                <div class="signal-bar" style="height: 55%"></div>
+                                <div class="signal-bar" style="height: 60%"></div>
+                                <div class="signal-bar" style="height: 45%"></div>
+                            </div>
+                            <div class="fauna-meta">
+                                <span class="meta-label">EMISSION</span>
+                                <span class="meta-value amber">560nm</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </main>
+
+            <!-- System Log Footer -->
+            <footer class="system-log">
+                <div class="log-header">
+                    <span class="panel-title small">
+                        <span class="panel-icon">▸</span>
+                        System Log
+                    </span>
+                    <button class="log-clear" id="clearLog">CLEAR</button>
+                </div>
+                <div class="log-entries" id="logEntries">
+                    <div class="log-entry"><span class="log-time">[00:00:00]</span> <span class="log-msg">ABYSSAL-7 primary systems online</span></div>
+                    <div class="log-entry"><span class="log-time">[00:00:01]</span> <span class="log-msg">Depth hold engaged at 11,034m</span></div>
+                    <div class="log-entry"><span class="log-time">[00:00:02]</span> <span class="log-msg">Sonar array calibrated — sweeping active</span></div>
+                    <div class="log-entry"><span class="log-time">[00:00:03]</span> <span class="log-msg">Bioluminescent signature tracking initialized</span></div>
+                    <div class="log-entry info"><span class="log-time">[00:00:04]</span> <span class="log-msg">Hull stress within nominal parameters</span></div>
+                </div>
+            </footer>
+        </div>
+    </div>
+
+    <script src="scripts.js"></script>
+</body>
+</html>

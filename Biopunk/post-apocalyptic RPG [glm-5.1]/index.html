@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BIOFALL — Post-Apocalyptic Biopunk RPG</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&family=Caveat:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body data-contamination="0">
+
+    <div id="bio-loader" aria-label="Loading">
+        <div class="loader-organism">
+            <div class="loader-cell"></div>
+            <div class="loader-cell"></div>
+            <div class="loader-cell"></div>
+            <div class="loader-cell"></div>
+            <div class="loader-cell"></div>
+        </div>
+        <div class="loader-text">
+            <span class="loader-label">INITIALIZING BIO-SCANNER</span>
+            <span class="loader-percent">0%</span>
+        </div>
+        <div class="loader-bar">
+            <div class="loader-bar-fill"></div>
+        </div>
+        <div class="loader-sub">SEQUENCING CONTAMINATION MARKERS...</div>
+    </div>
+
+    <div id="scan-overlay" aria-hidden="true"></div>
+
+    <canvas id="spore-canvas" aria-hidden="true"></canvas>
+
+    <aside id="bio-hud" aria-label="Bio-Status Monitor">
+        <div class="hud-header">
+            <span class="hud-biohazard">&#x2623;</span>
+            <span class="hud-title">BIO-STATUS</span>
+        </div>
+        <div class="hud-stat">
+            <span class="hud-stat-label">CONTAMINATION</span>
+            <div class="hud-stat-bar">
+                <div class="hud-stat-fill contamination-fill"></div>
+            </div>
+            <span class="hud-stat-value contamination-value">0%</span>
+        </div>
+        <div class="hud-stat">
+            <span class="hud-stat-label">MUTATIONS</span>
+            <span class="hud-stat-value mutation-count">0</span>
+        </div>
+        <div class="hud-stat">
+            <span class="hud-stat-label">ZONE</span>
+            <span class="hud-stat-value current-zone">STERILE</span>
+        </div>
+        <div class="hud-radar" aria-hidden="true">
+            <div class="radar-sweep"></div>
+            <div class="radar-ring"></div>
+            <div class="radar-ring"></div>
+            <div class="radar-ring"></div>
+            <div class="radar-dot" style="--dot-x: 30%; --dot-y: 25%;"></div>
+            <div class="radar-dot" style="--dot-x: 65%; --dot-y: 55%;"></div>
+            <div class="radar-dot" style="--dot-x: 45%; --dot-y: 70%;"></div>
+        </div>
+        <div class="hud-footer">
+            <span class="hud-signal">
+                <span class="signal-dot"></span>
+                ONLINE
+            </span>
+        </div>
+    </aside>
+
+    <header id="main-nav">
+        <div class="nav-brand">
+            <span class="brand-biohazard">&#x2623;</span>
+            <span class="brand-text">BIOFALL</span>
+        </div>
+        <nav aria-label="Main navigation">
+            <a href="#mutations" class="nav-link" data-nav>Mutations</a>
+            <a href="#zones" class="nav-link" data-nav>Zone Map</a>
+            <a href="#tech-tree" class="nav-link" data-nav>Enhancements</a>
+            <a href="#survival" class="nav-link" data-nav>Survival</a>
+        </nav>
+        <div class="nav-status">
+            <span class="signal-dot"></span>
+            <span class="signal-text">SIGNAL ACQUIRED</span>
+        </div>
+        <button class="nav-toggle" aria-label="Toggle menu" aria-expanded="false">
+            <span class="toggle-bar"></span>
+            <span class="toggle-bar"></span>
+            <span class="toggle-bar"></span>
+        </button>
+    </header>
+
+    <main>
+        <section id="hero">
+            <div class="hero-content">
+                <div class="hero-classification">CLASSIFICATION: OMEGA-7 CONTAMINATION EVENT</div>
+                <h1 class="hero-title" aria-label="BIOFALL">
+                    <span class="title-letter" data-letter="B">B</span>
+                    <span class="title-letter" data-letter="I">I</span>
+                    <span class="title-letter" data-letter="O">O</span>
+                    <span class="title-letter" data-letter="F">F</span>
+                    <span class="title-letter" data-letter="A">A</span>
+                    <span class="title-letter" data-letter="L">L</span>
+                    <span class="title-letter" data-letter="L">L</span>
+                </h1>
+                <p class="hero-subtitle">The world didn't end in fire. It bloomed.</p>
+                <p class="hero-desc">In the aftermath of the Chromogenic Cataclysm, biology itself became the weapon, the currency, and the law. Navigate contaminated zones, harness forbidden mutations, and survive in a world where flesh is the frontier.</p>
+                <div class="hero-actions">
+                    <a href="#mutations" class="btn btn-primary breathe-border">
+                        <span class="btn-text">Explore Mutations</span>
+                        <span class="btn-glow"></span>
+                    </a>
+                    <a href="#survival" class="btn btn-secondary">
+                        <span class="btn-text">Survival Guide</span>
+                    </a>
+                </div>
+                <div class="hero-stats">
+                    <div class="hero-stat">
+                        <span class="hero-stat-value" data-count="47">0</span>
+                        <span class="hero-stat-label">Known Mutations</span>
+                    </div>
+                    <div class="hero-stat">
+                        <span class="hero-stat-value" data-count="6">0</span>
+                        <span class="hero-stat-label">Contamination Zones</span>
+                    </div>
+                    <div class="hero-stat">
+                        <span class="hero-stat-value" data-count="3">0</span>
+                        <span class="hero-stat-label">Enhancement Paths</span>
+                    </div>
+                </div>
+            </div>
+            <div class="hero-organism" aria-hidden="true">
+                <svg class="organism-svg" viewBox="0 0 500 500">
+                    <defs>
+                        <radialGradient id="orgGlow" cx="50%" cy="50%" r="50%">
+                            <stop offset="0%" stop-color="#39ff14" stop-opacity="0.3"/>
+                            <stop offset="60%" stop-color="#39ff14" stop-opacity="0.05"/>
+                            <stop offset="100%" stop-color="#39ff14" stop-opacity="0"/>
+                        </radialGradient>
+                        <filter id="orgBlur">
+                            <feGaussianBlur stdDeviation="3"/>
+                        </filter>
+                    </defs>
+                    <circle cx="250" cy="250" r="200" fill="url(#orgGlow)" class="organism-membrane"/>
+                    <circle cx="250" cy="250" r="120" fill="none" stroke="#39ff14" stroke-width="0.5" opacity="0.4" class="organism-inner"/>
+                    <circle cx="250" cy="250" r="80" fill="none" stroke="#39ff14" stroke-width="0.3" opacity="0.3" class="organism-inner"/>
+                    <circle cx="250" cy="250" r="40" fill="#39ff14" opacity="0.08" class="organism-nucleus"/>
+                    <ellipse cx="200" cy="200" rx="30" ry="18" fill="#39ff14" opacity="0.06" transform="rotate(-20 200 200)"/>
+                    <ellipse cx="310" cy="180" rx="25" ry="15" fill="#39ff14" opacity="0.05" transform="rotate(15 310 180)"/>
+                    <ellipse cx="280" cy="320" rx="35" ry="20" fill="#39ff14" opacity="0.04" transform="rotate(-10 280 320)"/>
+                    <ellipse cx="170" cy="290" rx="20" ry="12" fill="#39ff14" opacity="0.06" transform="rotate(30 170 290)"/>
+                    <circle cx="220" cy="170" r="8" fill="none" stroke="#39ff14" stroke-width="0.5" opacity="0.3"/>
+                    <circle cx="300" cy="280" r="10" fill="none" stroke="#39ff14" stroke-width="0.5" opacity="0.25"/>
+                    <circle cx="180" cy="260" r="6" fill="none" stroke="#39ff14" stroke-width="0.4" opacity="0.2"/>
+                    <path d="M250 50 C260 100, 300 150, 250 250 C200 350, 240 400, 250 450" fill="none" stroke="#39ff14" stroke-width="0.5" opacity="0.15" class="organism-vein"/>
+                    <path d="M50 250 C100 240, 150 200, 250 250 C350 300, 400 260, 450 250" fill="none" stroke="#39ff14" stroke-width="0.5" opacity="0.15" class="organism-vein"/>
+                    <path d="M100 100 C150 150, 200 200, 250 250 C300 300, 350 350, 400 400" fill="none" stroke="#39ff14" stroke-width="0.4" opacity="0.1" class="organism-vein"/>
+                    <path d="M400 100 C350 150, 300 200, 250 250 C200 300, 150 350, 100 400" fill="none" stroke="#39ff14" stroke-width="0.4" opacity="0.1" class="organism-vein"/>
+                </svg>
+            </div>
+            <div class="hero-vein vein-left" aria-hidden="true"></div>
+            <div class="hero-vein vein-right" aria-hidden="true"></div>
+            <div class="hero-deco-text" aria-hidden="true">
+                <span>CHROMOGENIC CATACLYSM</span>
+                <span>YEAR 7 POST-BLOOM</span>
+                <span>SECTOR 9-OMEGA</span>
+                <span>BIOHAZARD THRESHOLD EXCEEDED</span>
+            </div>
+        </section>
+
+        <section id="mutations">
+            <div class="section-header">
+                <span class="section-tag">// SPECIMEN DATABASE</span>
+                <h2 class="section-title">Mutation Catalog</h2>
+                <p class="section-subtitle">Documented aberrations from the Chromogenic Cataclysm. Each strain carries potential — and consequence.</p>
+                <div class="section-line breathe-border" aria-hidden="true"></div>
+            </div>
+            <div class="mutation-filters" role="tablist" aria-label="Filter mutations by class">
+                <button class="filter-btn active" data-filter="all" role="tab" aria-selected="true">All Strains</button>
+                <button class="filter-btn" data-filter="somatic" role="tab" aria-selected="false">Somatic</button>
+                <button class="filter-btn" data-filter="neural" role="tab" aria-selected="false">Neural</button>
+                <button class="filter-btn" data-filter="toxic" role="tab" aria-selected="false">Toxic</button>
+                <button class="filter-btn" data-filter="symbiotic" role="tab" aria-selected="false">Symbiotic</button>
+            </div>
+            <div class="mutation-grid">
+                <article class="mutation-card" data-mutation-class="somatic" data-risk="low">
+                    <div class="card-visual somatic-visual">
+                        <div class="card-pattern"></div>
+                        <span class="card-class-badge somatic">SOMATIC</span>
+                        <div class="card-pulse-ring" aria-hidden="true"></div>
+                    </div>
+                    <div class="card-body">
+                        <h3 class="card-name">Fungal Carapace</h3>
+                        <div class="card-risk">
+                            <span class="risk-label">RISK</span>
+                            <div class="risk-meter"><div class="risk-fill risk-low"></div></div>
+                            <span class="risk-value risk-low-text">LOW</span>
+                        </div>
+                        <p class="card-desc">A symbiotic fungus colonizes the subdermal layer, forming a hardened chitinous shell. Provides natural armor at the cost of reduced flexibility and intermittent spore release.</p>
+                        <div class="card-meta">
+                            <span class="card-strain">STRAIN: FC-07</span>
+                            <span class="card-incidence">INCIDENCE: 12.4%</span>
+                        </div>
+                        <button class="card-btn" data-mutation="fungal-carapace">View Strain Data</button>
+                    </div>
+                </article>
+
+                <article class="mutation-card" data-mutation-class="neural" data-risk="high">
+                    <div class="card-visual neural-visual">
+                        <div class="card-pattern"></div>
+                        <span class="card-class-badge neural">NEURAL</span>
+                        <div class="card-pulse-ring" aria-hidden="true"></div>
+                    </div>
+                    <div class="card-body">
+                        <h3 class="card-name">Neural Mycelium</h3>
+                        <div class="card-risk">
+                            <span class="risk-label">RISK</span>
+                            <div class="risk-meter"><div class="risk-fill risk-high"></div></div>
+                            <span class="risk-value risk-high-text">HIGH</span>
+                        </div>
+                        <p class="card-desc">Fungal networks colonize the cerebral cortex, linking the host to a distributed hive consciousness. Grants telepathic range but erodes individual identity.</p>
+                        <div class="card-meta">
+                            <span class="card-strain">STRAIN: NM-13</span>
+                            <span class="card-incidence">INCIDENCE: 3.1%</span>
+                        </div>
+                        <button class="card-btn" data-mutation="neural-mycelium">View Strain Data</button>
+                    </div>
+                </article>
+
+                <article class="mutation-card" data-mutation-class="toxic" data-risk="medium">
+                    <div class="card-visual toxic-visual">
+                        <div class="card-pattern"></div>
+                        <span class="card-class-badge toxic">TOXIC</span>
+                        <div class="card-pulse-ring" aria-hidden="true"></div>
+                    </div>
+                    <div class="card-body">
+                        <h3 class="card-name">Venom Glands</h3>
+                        <div class="card-risk">
+                            <span class="risk-label">RISK</span>
+                            <div class="risk-meter"><div class="risk-fill risk-medium"></div></div>
+                            <span class="risk-value risk-medium-text">MEDIUM</span>
+                        </div>
+                        <p class="card-desc">Modified salivary glands produce a potent neurotoxin capable of paralyzing targets within seconds. Overexposure to own venom causes localized tissue necrosis.</p>
+                        <div class="card-meta">
+                            <span class="card-strain">STRAIN: VG-22</span>
+                            <span class="card-incidence">INCIDENCE: 7.8%</span>
+                        </div>
+                        <button class="card-btn" data-mutation="venom-glands">View Strain Data</button>
+                    </div>
+                </article>
+
+                <article class="mutation-card" data-mutation-class="somatic" data-risk="low">
+                    <div class="card-visual somatic-visual">
+                        <div class="card-pattern"></div>
+                        <span class="card-class-badge somatic">SOMATIC</span>
+                        <div class="card-pulse-ring" aria-hidden="true"></div>
+                    </div>
+                    <div class="card-body">
+                        <h3 class="card-name">Photosynthetic Skin</h3>
+                        <div class="card-risk">
+                            <span class="risk-label">RISK</span>
+                            <div class="risk-meter"><div class="risk-fill risk-low"></div></div>
+                            <span class="risk-value risk-low-text">LOW</span>
+                        </div>
+                        <p class="card-desc">Chloroplast-infused dermis enables solar energy absorption, reducing caloric needs by up to 60%. Skin develops vivid green pigmentation and slight luminescence.</p>
+                        <div class="card-meta">
+                            <span class="card-strain">STRAIN: PS-04</span>
+                            <span class="card-incidence">INCIDENCE: 18.6%</span>
+                        </div>
+                        <button class="card-btn" data-mutation="photosynthetic-skin">View Strain Data</button>
+                    </div>
+                </article>
+
+                <article class="mutation-card" data-mutation-class="symbiotic" data-risk="medium">
+                    <div class="card-visual symbiotic-visual">
+                        <div class="card-pattern"></div>
+                        <span class="card-class-badge symbiotic">SYMBIOTIC</span>
+                        <div class="card-pulse-ring" aria-hidden="true"></div>
+                    </div>
+                    <div class="card-body">
+                        <h3 class="card-name">Pheromone Weaving</h3>
+                        <div class="card-risk">
+                            <span class="risk-label">RISK</span>
+                            <div class="risk-meter"><div class="risk-fill risk-medium"></div></div>
+                            <span class="risk-value risk-medium-text">MEDIUM</span>
+                        </div>
+                        <p class="card-desc">Altered sweat glands emit complex chemical signals capable of influencing emotional states and behavior in nearby organisms. Untrained users risk accidental panic induction.</p>
+                        <div class="card-meta">
+                            <span class="card-strain">STRAIN: PW-19</span>
+                            <span class="card-incidence">INCIDENCE: 5.2%</span>
+                        </div>
+                        <button class="card-btn" data-mutation="pheromone-weaving">View Strain Data</button>
+                    </div>
+                </article>
+
+                <article class="mutation-card" data-mutation-class="somatic" data-risk="high">
+                    <div class="card-visual somatic-visual">
+                        <div class="card-pattern"></div>
+                        <span class="card-class-badge somatic">SOMATIC</span>
+                        <div class="card-pulse-ring" aria-hidden="true"></div>
+                    </div>
+                    <div class="card-body">
+                        <h3 class="card-name">Bone Spur Projection</h3>
+                        <div class="card-risk">
+                            <span class="risk-label">RISK</span>
+                            <div class="risk-meter"><div class="risk-fill risk-high"></div></div>
+                            <span class="risk-value risk-high-text">HIGH</span>
+                        </div>
+                        <p class="card-desc">Calcified osseous projections grow from the forearms, capable of being launched as projectiles. Regrowth period is 72 hours. Chronic pain and joint degradation reported.</p>
+                        <div class="card-meta">
+                            <span class="card-strain">STRAIN: BSP-31</span>
+                            <span class="card-incidence">INCIDENCE: 2.9%</span>
+                        </div>
+                        <button class="card-btn" data-mutation="bone-spur-projection">View Strain Data</button>
+                    </div>
+                </article>
+
+                <article class="mutation-card" data-mutation-class="neural" data-risk="medium">
+                    <div class="card-visual neural-visual">
+                        <div class="card-pattern"></div>
+                        <span class="card-class-badge neural">NEURAL</span>
+                        <div class="card-pulse-ring" aria-hidden="true"></div>
+                    </div>
+                    <div class="card-body">
+                        <h3 class="card-name">Empathic Resonance</h3>
+                        <div class="card-risk">
+                            <span class="risk-label">RISK</span>
+                            <div class="risk-meter"><div class="risk-fill risk-medium"></div></div>
+                            <span class="risk-value risk-medium-text">MEDIUM</span>
+                        </div>
+                        <p class="card-desc">Amplified mirror neurons detect the emotional states of nearby organisms within a 30-meter radius. Extended use leads to personality bleed and emotional instability.</p>
+                        <div class="card-meta">
+                            <span class="card-strain">STRAIN: ER-08</span>
+                            <span class="card-incidence">INCIDENCE: 9.3%</span>
+                        </div>
+                        <button class="card-btn" data-mutation="empathic-resonance">View Strain Data</button>
+                    </div>
+                </article>
+
+                <article class="mutation-card" data-mutation-class="toxic" data-risk="critical">
+                    <div class="card-visual toxic-visual">
+                        <div class="card-pattern"></div>
+                        <span class="card-class-badge toxic">TOXIC</span>
+                        <div class="card-pulse-ring" aria-hidden="true"></div>
+                    </div>
+                    <div class="card-body">
+                        <h3 class="card-name">Acid Blood</h3>
+                        <div class="card-risk">
+                            <span class="risk-label">RISK</span>
+                            <div class="risk-meter"><div class="risk-fill risk-critical"></div></div>
+                            <span class="risk-value risk-critical-text">CRITICAL</span>
+                        </div>
+                        <p class="card-desc">Hemoglobin is replaced with a corrosive sulfuric compound. Blood eats through most materials on contact. Wound treatment requires specialized neutralizing agents. Life expectancy reduced by 40%.</p>
+                        <div class="card-meta">
+                            <span class="card-strain">STRAIN: AB-44</span>
+                            <span class="card-incidence">INCIDENCE: 1.1%</span>
+                        </div>
+                        <button class="card-btn" data-mutation="acid-blood">View Strain Data</button>
+                    </div>
+                </article>
+            </div>
+            <div class="mutation-count-display">
+                <span class="count-label">SHOWING</span>
+                <span class="count-value" id="visible-count">8</span>
+                <span class="count-label">OF 47 STRAINS</span>
+            </div>
+        </section>
+
+        <section id="zones">
+            <div class="section-header">
+                <span class="section-tag">// CONTAMINATION ATLAS</span>
+                <h2 class="section-title">Zone Map</h2>
+                <p class="section-subtitle">Satellite-derived contamination overlay. Zone boundaries shift with the Bloom. Click a zone to access field data.</p>
+                <div class="section-line breathe-border" aria-hidden="true"></div>
+            </div>
+            <div class="zone-map-container">
+                <div class="zone-map-wrapper">
+                    <svg class="zone-map" viewBox="0 0 800 500" role="img" aria-label="Contamination zone map">
+                        <defs>
+                            <filter id="zoneGlow">
+                                <feGaussianBlur stdDeviation="4" result="blur"/>
+                                <feMerge>
+                                    <feMergeNode in="blur"/>
+                                    <feMergeNode in="SourceGraphic"/>
+                                </feMerge>
+                            </filter>
+                            <radialGradient id="bloomGrad" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" stop-color="#39ff14" stop-opacity="0.25"/>
+                                <stop offset="100%" stop-color="#39ff14" stop-opacity="0.05"/>
+                            </radialGradient>
+                        </defs>
+
+                        <rect width="800" height="500" fill="#0a0f0a"/>
+
+                        <line x1="0" y1="0" x2="800" y2="500" stroke="#39ff14" stroke-width="0.3" opacity="0.1"/>
+                        <line x1="800" y1="0" x2="0" y2="500" stroke="#39ff14" stroke-width="0.3" opacity="0.1"/>
+                        <line x1="400" y1="0" x2="400" y2="500" stroke="#39ff14" stroke-width="0.3" opacity="0.1"/>
+                        <line x1="0" y1="250" x2="800" y2="250" stroke="#39ff14" stroke-width="0.3" opacity="0.1"/>
+
+                        <g class="zone-grid" aria-hidden="true">
+                            <line x1="0" y1="50" x2="800" y2="50" stroke="#1a2a1a" stroke-width="0.5"/>
+                            <line x1="0" y1="100" x2="800" y2="100" stroke="#1a2a1a" stroke-width="0.5"/>
+                            <line x1="0" y1="150" x2="800" y2="150" stroke="#1a2a1a" stroke-width="0.5"/>
+                            <line x1="0" y1="200" x2="800" y2="200" stroke="#1a2a1a" stroke-width="0.5"/>
+                            <line x1="0" y1="300" x2="800" y2="300" stroke="#1a2a1a" stroke-width="0.5"/>
+                            <line x1="0" y1="350" x2="800" y2="350" stroke="#1a2a1a" stroke-width="0.5"/>
+                            <line x1="0" y1="400" x2="800" y2="400" stroke="#1a2a1a" stroke-width="0.5"/>
+                            <line x1="0" y1="450" x2="800" y2="450" stroke="#1a2a1a" stroke-width="0.5"/>
+                            <line x1="50" y1="0" x2="50" y2="500" stroke="#1a2a1a" stroke-width="0.5"/>
+                            <line x1="100" y1="0" x2="100" y2="500" stroke="#1a2a1a" stroke-width="0.5"/>
+                            <line x1="150" y1="0" x2="150" y2="500" stroke="#1a2a1a" stroke-width="0.5"/>
+                            <line x1="200" y1="0" x2="200" y2="500" stroke="#1a2a1a" stroke-width="0.5"/>
+                            <line x1="300" y1="0" x2="300" y2="500" stroke="#1a2a1a" stroke-width="0.5"/>
+                            <line x1="350" y1="0" x2="350" y2="500" stroke="#1a2a1a" stroke-width="0.5"/>
+                            <line x1="450" y1="0" x2="450" y2="500" stroke="#1a2a1a" stroke-width="0.5"/>
+                            <line x1="500" y1="0" x2="500" y2="500" stroke="#1a2a1a" stroke-width="0.5"/>
+                            <line x1="550" y1="0" x2="550" y2="500" stroke="#1a2a1a" stroke-width="0.5"/>
+                            <line x1="600" y1="0" x2="600" y2="500" stroke="#1a2a1a" stroke-width="0.5"/>
+                            <line x1="650" y1="0" x2="650" y2="500" stroke="#1a2a1a" stroke-width="0.5"/>
+                            <line x1="700" y1="0" x2="700" y2="500" stroke="#1a2a1a" stroke-width="0.5"/>
+                            <line x1="750" y1="0" x2="750" y2="500" stroke="#1a2a1a" stroke-width="0.5"/>
+                        </g>
+
+                        <path class="zone-shape" data-zone="deadwall"
+                              d="M 20,20 L 780,20 L 780,480 L 20,480 Z M 60,60 L 60,440 L 740,440 L 740,60 Z"
+                              fill="#0d1a0d" stroke="#2a4a2a" stroke-width="1" fill-rule="evenodd"/>
+
+                        <path class="zone-shape" data-zone="bloom"
+                              d="M 320,160 C 350,110 440,100 490,140 C 540,180 560,240 530,300 C 500,360 430,380 370,360 C 310,340 270,280 280,230 C 290,180 300,170 320,160 Z"
+                              fill="url(#bloomGrad)" stroke="#39ff14" stroke-width="1.5" filter="url(#zoneGlow)"/>
+
+                        <path class="zone-shape" data-zone="rust-vein"
+                              d="M 80,130 C 110,100 170,90 220,120 C 270,150 280,210 250,260 C 220,310 160,320 120,290 C 80,260 60,200 60,170 C 60,140 70,135 80,130 Z"
+                              fill="rgba(139,26,26,0.15)" stroke="#8b1a1a" stroke-width="1.2"/>
+
+                        <path class="zone-shape" data-zone="sporewood"
+                              d="M 560,60 C 600,40 660,50 700,80 C 740,110 750,170 720,210 C 690,250 630,260 580,230 C 530,200 520,140 530,100 C 535,80 545,65 560,60 Z"
+                              fill="rgba(123,45,142,0.15)" stroke="#7b2d8e" stroke-width="1.2"/>
+
+                        <path class="zone-shape" data-zone="calcium-flats"
+                              d="M 90,310 C 130,280 210,270 280,300 C 330,320 350,380 320,420 C 290,460 220,470 170,450 C 120,430 80,390 70,360 C 60,330 70,315 90,310 Z"
+                              fill="rgba(212,165,116,0.1)" stroke="#d4a574" stroke-width="1.2"/>
+
+                        <path class="zone-shape" data-zone="weeping-gardens"
+                              d="M 500,320 C 540,290 620,280 680,310 C 730,340 740,400 710,440 C 680,470 620,475 570,450 C 520,425 490,380 490,350 C 490,330 495,320 500,320 Z"
+                              fill="rgba(0,180,160,0.1)" stroke="#00b4a0" stroke-width="1.2"/>
+
+                        <text x="400" y="260" fill="#39ff14" font-family="Share Tech Mono" font-size="11" text-anchor="middle" opacity="0.9" class="zone-label" data-zone="bloom">THE BLOOM</text>
+                        <text x="170" y="210" fill="#8b1a1a" font-family="Share Tech Mono" font-size="9" text-anchor="middle" opacity="0.9" class="zone-label" data-zone="rust-vein">RUST VEIN</text>
+                        <text x="640" y="155" fill="#7b2d8e" font-family="Share Tech Mono" font-size="9" text-anchor="middle" opacity="0.9" class="zone-label" data-zone="sporewood">SPOREWOOD</text>
+                        <text x="190" y="380" fill="#d4a574" font-family="Share Tech Mono" font-size="9" text-anchor="middle" opacity="0.9" class="zone-label" data-zone="calcium-flats">CALCIUM FLATS</text>
+                        <text x="610" y="385" fill="#00b4a0" font-family="Share Tech Mono" font-size="9" text-anchor="middle" opacity="0.9" class="zone-label" data-zone="weeping-gardens">WEEPING GARDENS</text>
+                        <text x="400" y="48" fill="#2a4a2a" font-family="Share Tech Mono" font-size="8" text-anchor="middle" opacity="0.7" class="zone-label" data-zone="deadwall">DEADWALL PERIMETER</text>
+
+                        <circle cx="400" cy="240" r="3" fill="#39ff14" opacity="0.8" class="zone-marker"/>
+                        <circle cx="170" cy="195" r="2.5" fill="#8b1a1a" opacity="0.8" class="zone-marker"/>
+                        <circle cx="640" cy="140" r="2.5" fill="#7b2d8e" opacity="0.8" class="zone-marker"/>
+                        <circle cx="190" cy="365" r="2.5" fill="#d4a574" opacity="0.8" class="zone-marker"/>
+                        <circle cx="610" cy="370" r="2.5" fill="#00b4a0" opacity="0.8" class="zone-marker"/>
+                    </svg>
+                    <div class="zone-scan-line" aria-hidden="true"></div>
+                </div>
+
+                <div class="zone-info-panel">
+                    <div class="zone-info-header">
+                        <span class="zone-info-icon">&#x2623;</span>
+                        <h3 class="zone-info-title" id="zone-title">SELECT A ZONE</h3>
+                    </div>
+                    <div class="zone-info-body" id="zone-body">
+                        <p class="zone-info-placeholder">Click a zone on the map to access field intelligence data, contamination readings, and survival advisories.</p>
+                    </div>
+                    <div class="zone-legend">
+                        <h4 class="legend-title">THREAT LEVELS</h4>
+                        <div class="legend-item">
+                            <span class="legend-swatch" style="background: #39ff14;"></span>
+                            <span class="legend-label">Extreme</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-swatch" style="background: #8b1a1a;"></span>
+                            <span class="legend-label">High</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-swatch" style="background: #7b2d8e;"></span>
+                            <span class="legend-label">High</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-swatch" style="background: #d4a574;"></span>
+                            <span class="legend-label">Medium</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-swatch" style="background: #00b4a0;"></span>
+                            <span class="legend-label">Medium</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-swatch" style="background: #2a4a2a;"></span>
+                            <span class="legend-label">Low</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="tech-tree">
+            <div class="section-header">
+                <span class="section-tag">// ENHANCEMENT PROTOCOL</span>
+                <h2 class="section-title">Bio-Enhancement Paths</h2>
+                <p class="section-subtitle">Three divergent evolutionary pathways. Each augmentation compounds — choose your metamorphosis with care.</p>
+                <div class="section-line breathe-border" aria-hidden="true"></div>
+            </div>
+            <div class="tech-tree-container">
+                <div class="tech-origin">
+                    <div class="tech-node origin-node breathe-border" data-tech="origin" data-branch="all">
+                        <span class="tech-node-icon">&#x2623;</span>
+                        <span class="tech-node-name">BASELINE HUMAN</span>
+                        <span class="tech-node-tier">TIER 0</span>
+                    </div>
+                </div>
+                <div class="tech-branches">
+                    <div class="tech-branch" data-branch="biomorph">
+                        <div class="branch-header">
+                            <span class="branch-icon biomorph-icon">&#x2B22;</span>
+                            <h3 class="branch-title">BIOMORPH</h3>
+                            <span class="branch-subtitle">Flesh Resculpted</span>
+                        </div>
+                        <div class="branch-connector" aria-hidden="true"></div>
+                        <div class="tech-node biomorph-node" data-tech="skin-hardening" data-branch="biomorph" data-tier="1">
+                            <span class="tech-node-tier">TIER 1</span>
+                            <span class="tech-node-name">Skin Hardening</span>
+                            <span class="tech-node-desc">Dermal density +40%. Reduced laceration risk.</span>
+                            <span class="tech-node-cost">COST: 2 BIOMASS</span>
+                        </div>
+                        <div class="branch-connector" aria-hidden="true"></div>
+                        <div class="tech-node biomorph-node" data-tech="fungal-carapace" data-branch="biomorph" data-tier="2">
+                            <span class="tech-node-tier">TIER 2</span>
+                            <span class="tech-node-name">Fungal Carapace</span>
+                            <span class="tech-node-desc">Chitinous subdermal armor. Ballistic resistance.</span>
+                            <span class="tech-node-cost">COST: 4 BIOMASS</span>
+                        </div>
+                        <div class="branch-connector" aria-hidden="true"></div>
+                        <div class="tech-node biomorph-node" data-tech="chitinous-plating" data-branch="biomorph" data-tier="3">
+                            <span class="tech-node-tier">TIER 3</span>
+                            <span class="tech-node-name">Chitinous Plating</span>
+                            <span class="tech-node-desc">Full exoskeletal development. -20% agility.</span>
+                            <span class="tech-node-cost">COST: 7 BIOMASS</span>
+                        </div>
+                        <div class="branch-connector" aria-hidden="true"></div>
+                        <div class="tech-node biomorph-node ultimate-node" data-tech="living-armor" data-branch="biomorph" data-tier="4">
+                            <span class="tech-node-tier">ULTIMATE</span>
+                            <span class="tech-node-name">Living Armor</span>
+                            <span class="tech-node-desc">Self-repairing organic plate. Symbiotic defense.</span>
+                            <span class="tech-node-cost">COST: 12 BIOMASS</span>
+                        </div>
+                    </div>
+
+                    <div class="tech-branch" data-branch="neurohack">
+                        <div class="branch-header">
+                            <span class="branch-icon neurohack-icon">&#x25C8;</span>
+                            <h3 class="branch-title">NEUROHACK</h3>
+                            <span class="branch-subtitle">Mind Unleashed</span>
+                        </div>
+                        <div class="branch-connector" aria-hidden="true"></div>
+                        <div class="tech-node neurohack-node" data-tech="neural-boost" data-branch="neurohack" data-tier="1">
+                            <span class="tech-node-tier">TIER 1</span>
+                            <span class="tech-node-name">Neural Boost</span>
+                            <span class="tech-node-desc">Synaptic acceleration. +30% reaction time.</span>
+                            <span class="tech-node-cost">COST: 2 BIOMASS</span>
+                        </div>
+                        <div class="branch-connector" aria-hidden="true"></div>
+                        <div class="tech-node neurohack-node" data-tech="hive-link" data-branch="neurohack" data-tier="2">
+                            <span class="tech-node-tier">TIER 2</span>
+                            <span class="tech-node-name">Hive Link</span>
+                            <span class="tech-node-desc">Telepathic bond with allies. Shared awareness.</span>
+                            <span class="tech-node-cost">COST: 4 BIOMASS</span>
+                        </div>
+                        <div class="branch-connector" aria-hidden="true"></div>
+                        <div class="tech-node neurohack-node" data-tech="pheromone-control" data-branch="neurohack" data-tier="3">
+                            <span class="tech-node-tier">TIER 3</span>
+                            <span class="tech-node-name">Pheromone Control</span>
+                            <span class="tech-node-desc">Chemical manipulation of emotional states.</span>
+                            <span class="tech-node-cost">COST: 7 BIOMASS</span>
+                        </div>
+                        <div class="branch-connector" aria-hidden="true"></div>
+                        <div class="tech-node neurohack-node ultimate-node" data-tech="neural-domination" data-branch="neurohack" data-tier="4">
+                            <span class="tech-node-tier">ULTIMATE</span>
+                            <span class="tech-node-name">Neural Domination</span>
+                            <span class="tech-node-desc">Override motor cortex of lesser organisms.</span>
+                            <span class="tech-node-cost">COST: 12 BIOMASS</span>
+                        </div>
+                    </div>
+
+                    <div class="tech-branch" data-branch="chemosynth">
+                        <div class="branch-header">
+                            <span class="branch-icon chemosynth-icon">&#x2736;</span>
+                            <h3 class="branch-title">CHEMOSYNTH</h3>
+                            <span class="branch-subtitle">Chemistry Weaponized</span>
+                        </div>
+                        <div class="branch-connector" aria-hidden="true"></div>
+                        <div class="tech-node chemosynth-node" data-tech="toxin-resistance" data-branch="chemosynth" data-tier="1">
+                            <span class="tech-node-tier">TIER 1</span>
+                            <span class="tech-node-name">Toxin Resistance</span>
+                            <span class="tech-node-desc">Liver modification. +50% poison resistance.</span>
+                            <span class="tech-node-cost">COST: 2 BIOMASS</span>
+                        </div>
+                        <div class="branch-connector" aria-hidden="true"></div>
+                        <div class="tech-node chemosynth-node" data-tech="acid-blood" data-branch="chemosynth" data-tier="2">
+                            <span class="tech-node-tier">TIER 2</span>
+                            <span class="tech-node-name">Acid Blood</span>
+                            <span class="tech-node-desc">Corrosive hemoglobin. Bleeding damages attackers.</span>
+                            <span class="tech-node-cost">COST: 4 BIOMASS</span>
+                        </div>
+                        <div class="branch-connector" aria-hidden="true"></div>
+                        <div class="tech-node chemosynth-node" data-tech="venom-synthesis" data-branch="chemosynth" data-tier="3">
+                            <span class="tech-node-tier">TIER 3</span>
+                            <span class="tech-node-name">Venom Synthesis</span>
+                            <span class="tech-node-desc">Custom toxin production. Paralytic or necrotic.</span>
+                            <span class="tech-node-cost">COST: 7 BIOMASS</span>
+                        </div>
+                        <div class="branch-connector" aria-hidden="true"></div>
+                        <div class="tech-node chemosynth-node ultimate-node" data-tech="biobomb" data-branch="chemosynth" data-tier="4">
+                            <span class="tech-node-tier">ULTIMATE</span>
+                            <span class="tech-node-name">Biobomb</span>
+                            <span class="tech-node-desc">Volatile organ sacs. Explosive chemical discharge.</span>
+                            <span class="tech-node-cost">COST: 12 BIOMASS</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="tech-biomass-counter">
+                    <span class="biomass-label">AVAILABLE BIOMASS</span>
+                    <span class="biomass-value" id="biomass-count">20</span>
+                </div>
+            </div>
+        </section>
+
+        <section id="survival">
+            <div class="section-header">
+                <span class="section-tag sketch-tag">// FIELD MANUAL — RECOVERED</span>
+                <h2 class="section-title section-title-sketch">Wasteland Survival Guide</h2>
+                <p class="section-subtitle sketch-subtitle">Transcribed from weathered journals found in the ruins. Original authors unknown. Add your own notes — survival depends on shared knowledge.</p>
+            </div>
+            <div class="survival-journal">
+                <div class="journal-spine" aria-hidden="true"></div>
+                <article class="journal-entry" data-entry="1">
+                    <div class="entry-number">01</div>
+                    <div class="entry-content">
+                        <h3 class="entry-title">Water Purification in Contaminated Zones</h3>
+                        <div class="entry-sketch" aria-hidden="true">
+                            <div class="sketch-water"></div>
+                        </div>
+                        <p class="entry-text">Never drink from standing water — even clear pools carry chromogenic spores. Boil for 20 minutes minimum. Add charcoal from burned hardwood if available. The green-tinted condensate on fungal structures looks like water but is a neurotoxin mimic. It will kill you smiling.</p>
+                        <div class="entry-margin-note">
+                            <span class="margin-text">Found: copper tubing in Rust Vein ruins. Makes a crude distillation rig.</span>
+                        </div>
+                        <div class="entry-tags">
+                            <span class="entry-tag">WATER</span>
+                            <span class="entry-tag">CRITICAL</span>
+                            <span class="entry-tag">FIELD CRAFT</span>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="journal-entry" data-entry="2">
+                    <div class="entry-number">02</div>
+                    <div class="entry-content">
+                        <h3 class="entry-title">Identifying Edible Mutations</h3>
+                        <div class="entry-sketch" aria-hidden="true">
+                            <div class="sketch-fungus"></div>
+                        </div>
+                        <p class="entry-text">Bioluminescent fungi are generally safe — their glow comes from luciferin, not toxins. Avoid anything that pulses in rhythm with your heartbeat; it's responding to you, which means it wants something. The amber-capped shelf mushrooms on deadfall are nutritious and common. If it bleeds red, don't eat it. If it bleeds green, maybe. If it doesn't bleed at all, run.</p>
+                        <div class="entry-margin-note">
+                            <span class="margin-text">Sandy almost died eating a mimic mushroom. It bit back.</span>
+                        </div>
+                        <div class="entry-tags">
+                            <span class="entry-tag">FOOD</span>
+                            <span class="entry-tag">FORAGING</span>
+                            <span class="entry-tag">IDENTIFICATION</span>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="journal-entry" data-entry="3">
+                    <div class="entry-number">03</div>
+                    <div class="entry-content">
+                        <h3 class="entry-title">Avoiding Spore Traps</h3>
+                        <div class="entry-sketch" aria-hidden="true">
+                            <div class="sketch-spore"></div>
+                        </div>
+                        <p class="entry-text">Spore traps are the wasteland's landmines. They look like slight depressions in the soil ringed by tiny white fruiting bodies. Step on one and it releases a cloud of hallucinogenic spores that make you walk toward the Bloom. Always. Carry a breathing filter rated for particulates below 0.3 microns. Tie a cloth over your nose in emergencies — it won't stop everything, but it buys time.</p>
+                        <div class="entry-margin-note">
+                            <span class="margin-text">They're spreading south. Found three on the Calcium Flats perimeter last week.</span>
+                        </div>
+                        <div class="entry-tags">
+                            <span class="entry-tag">HAZARDS</span>
+                            <span class="entry-tag">SPORES</span>
+                            <span class="entry-tag">DEFENSE</span>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="journal-entry" data-entry="4">
+                    <div class="entry-number">04</div>
+                    <div class="entry-content">
+                        <h3 class="entry-title">First Aid for Bio-Corruption</h3>
+                        <div class="entry-sketch" aria-hidden="true">
+                            <div class="sketch-aid"></div>
+                        </div>
+                        <p class="entry-text">When the corruption starts — green veins spreading from a wound — you have about six hours. Apply tourniquet above the site immediately. Soak the area in diluted ammonia if available; it slows the mycelial growth. If corruption reaches a lymph node, the limb is lost. Amputate cleanly, cauterize with heated metal. The old antibiotics don't work anymore. Only fungicide-laced bandages have any effect.</p>
+                        <div class="entry-margin-note">
+                            <span class="margin-text">Dr. Kessler's fungicide salve recipe on page 47 of her journal.</span>
+                        </div>
+                        <div class="entry-tags">
+                            <span class="entry-tag">MEDICAL</span>
+                            <span class="entry-tag">CORRUPTION</span>
+                            <span class="entry-tag">URGENT</span>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="journal-entry" data-entry="5">
+                    <div class="entry-number">05</div>
+                    <div class="entry-content">
+                        <h3 class="entry-title">Navigation by Bioluminescence</h3>
+                        <div class="entry-sketch" aria-hidden="true">
+                            <div class="sketch-nav"></div>
+                        </div>
+                        <p class="entry-text">In the deep zones, GPS is dead and compasses spin uselessly near the Bloom's magnetic anomalies. Learn to read the bioluminescent markers: blue-green trails mark safe passages established by the Weeping Gardens' fungal networks. Violet light means you're heading toward the Bloom core. Amber light means Rust Vein territory. Red light means something is hunting you. No light at all means you're already lost.</p>
+                        <div class="entry-margin-note">
+                            <span class="margin-text">The paths shift with the seasons. Re-scout every month.</span>
+                        </div>
+                        <div class="entry-tags">
+                            <span class="entry-tag">NAVIGATION</span>
+                            <span class="entry-tag">BIOLUMINESCENCE</span>
+                            <span class="entry-tag">PATHFINDING</span>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="journal-entry" data-entry="6">
+                    <div class="entry-number">06</div>
+                    <div class="entry-content">
+                        <h3 class="entry-title">Hive-Mind Incursions</h3>
+                        <div class="entry-sketch" aria-hidden="true">
+                            <div class="sketch-hive"></div>
+                        </div>
+                        <p class="entry-text">The hived don't attack individually — they coordinate. If you see one, assume thirty more are aware of you. They communicate through subsonic vibration and chemical signals below human perception. Disrupt their pheromone trails with strong-smelling compounds: ammonia, vinegar, burning rubber. Isolate any group member who starts "hearing the music" — they're being assimilated. You have maybe two hours before they turn.</p>
+                        <div class="entry-margin-note">
+                            <span class="margin-text">Lost Marcus to a hive incursion in '39. He smiled as he walked toward them.</span>
+                        </div>
+                        <div class="entry-tags">
+                            <span class="entry-tag">COMBAT</span>
+                            <span class="entry-tag">HIVE MIND</span>
+                            <span class="entry-tag">THREAT</span>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </section>
+    </main>
+
+    <footer id="site-footer">
+        <div class="footer-veins" aria-hidden="true">
+            <div class="footer-vein"></div>
+            <div class="footer-vein"></div>
+            <div class="footer-vein"></div>
+        </div>
+        <div class="footer-content">
+            <div class="footer-brand">
+                <span class="footer-biohazard">&#x2623;</span>
+                <span class="footer-title">BIOFALL</span>
+                <span class="footer-tagline">Where flesh meets frontier</span>
+            </div>
+            <div class="footer-links">
+                <div class="footer-col">
+                    <h4 class="footer-col-title">DATABASE</h4>
+                    <a href="#mutations" class="footer-link">Mutation Catalog</a>
+                    <a href="#zones" class="footer-link">Zone Atlas</a>
+                    <a href="#tech-tree" class="footer-link">Enhancement Paths</a>
+                    <a href="#survival" class="footer-link">Survival Guide</a>
+                </div>
+                <div class="footer-col">
+                    <h4 class="footer-col-title">INTEL</h4>
+                    <span class="footer-link">Faction Dossiers</span>
+                    <span class="footer-link">Bestiary</span>
+                    <span class="footer-link">Lore Archive</span>
+                    <span class="footer-link">Field Reports</span>
+                </div>
+                <div class="footer-col">
+                    <h4 class="footer-col-title">TRANSMIT</h4>
+                    <span class="footer-link">Signal Board</span>
+                    <span class="footer-link">Caravan Network</span>
+                    <span class="footer-link">Hive Frequency</span>
+                    <span class="footer-link">Dead Drop</span>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <span class="footer-warning">&#x26A0; CONTAMINATION WARNING: Prolonged exposure to this terminal may trigger dormant genetic markers &#x26A0;</span>
+                <span class="footer-copy">BIOFALL RPG &mdash; All biological data is property of the Collective</span>
+            </div>
+        </div>
+    </footer>
+
+    <div id="detail-modal" class="modal" role="dialog" aria-modal="true" aria-hidden="true">
+        <div class="modal-backdrop"></div>
+        <div class="modal-content breathe-border">
+            <button class="modal-close" aria-label="Close modal">&times;</button>
+            <div class="modal-header">
+                <span class="modal-badge"></span>
+                <h3 class="modal-title"></h3>
+                <span class="modal-strain"></span>
+            </div>
+            <div class="modal-body"></div>
+            <div class="modal-footer">
+                <span class="modal-warning">&#x26A0; CAUTION: Unauthorized augmentation may result in irreversible bio-corruption</span>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast-container" aria-live="polite"></div>
+
+    <script src="scripts.js"></script>
+</body>
+</html>

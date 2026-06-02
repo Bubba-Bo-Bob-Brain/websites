@@ -1,0 +1,637 @@
+/* =========================================
+   1. VARIABLES & RESET
+   ========================================= */
+:root {
+  /* Palette: Sun-Bleached & Rust */
+  --wood-dark: #3e2723;
+  --wood-light: #5d4037;
+  --wood-grain: #4e342e;
+  --cork: #8d6e63;
+  --cork-dark: #6d4c41;
+  --paper-base: #f3e5ab;
+  --paper-stain: #d7ccc8;
+  --ink-black: #1a1a1a;
+  --ink-faded: #4e342e;
+  --blood-red: #8a1c1c;
+  --gold: #ffb300;
+  --gold-dull: #bfa15f;
+  
+  /* Typography */
+  --font-display: 'Chomsky', serif; /* The "Wanted" font */
+  --font-header: 'IM Fell English SC', serif; /* Old printing press style */
+  --font-body: 'Special Elite', monospace; /* Typewriter/Rough text */
+  
+  /* Dimensions */
+  --board-width: 1200px;
+  --door-height: 100vh;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--wood-dark);
+  /* Complex wood grain texture using gradients */
+  background-image: 
+    repeating-linear-gradient(90deg, 
+      rgba(0,0,0,0.1) 0px, 
+      rgba(0,0,0,0.1) 2px, 
+      transparent 2px, 
+      transparent 10px),
+    linear-gradient(to bottom, #2a1a15, #3e2723);
+  font-family: var(--font-body);
+  color: var(--ink-black);
+  overflow-x: hidden;
+  height: 100vh;
+  width: 100vw;
+  cursor: crosshair; /* Aim like a gun */
+}
+
+/* =========================================
+   2. ATMOSPHERE & EFFECTS
+   ========================================= */
+#atmosphere-layer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 999;
+  overflow: hidden;
+}
+
+/* Vignette for focus */
+.vignette {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle, transparent 40%, rgba(0,0,0,0.8) 100%);
+}
+
+/* Noise overlay for film grain look */
+.noise-overlay {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  opacity: 0.08;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+}
+
+/* Dust Motes (Heat Haze) */
+.dust-motes {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
+  background-size: 50px 50px;
+  animation: dustFloat 20s linear infinite;
+  opacity: 0.4;
+}
+
+@keyframes dustFloat {
+  0% { transform: translateY(0) scale(1); opacity: 0.3; }
+  50% { transform: translateY(-20px) scale(1.1); opacity: 0.6; }
+  100% { transform: translateY(0) scale(1); opacity: 0.3; }
+}
+
+/* Tumbleweed */
+.tumbleweed-container {
+  position: absolute;
+  bottom: 10%;
+  left: -150px;
+  z-index: 100;
+}
+
+.tumbleweed {
+  width: 100px;
+  height: 40px;
+  background: #8d6e63;
+  border-radius: 50%;
+  position: relative;
+  animation: tumbleRoll 15s linear infinite;
+  opacity: 0.8;
+}
+
+/* Create the spiky shape of a tumbleweed using pseudo elements */
+.tumbleweed::before, .tumbleweed::after {
+  content: '';
+  position: absolute;
+  background: #6d4c41;
+  border-radius: 50%;
+}
+.tumbleweed::before { width: 60px; height: 60px; top: -20px; left: 10px; }
+.tumbleweed::after { width: 40px; height: 40px; top: 10px; left: 60px; }
+
+@keyframes tumbleRoll {
+  0% { transform: translateX(0) rotate(0deg); }
+  100% { transform: translateX(120vw) rotate(720deg); }
+}
+
+/* =========================================
+   3. SALOON DOOR TRANSITION
+   ========================================= */
+.door-transition {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2000;
+  pointer-events: none;
+  display: flex;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.door {
+  width: 50%;
+  height: 50%; /* Half height for saloon doors */
+  background: #5d4037;
+  border: 4px solid #3e2723;
+  position: relative;
+  transform-origin: top center;
+  transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  background-image: repeating-linear-gradient(0deg, transparent, transparent 10px, rgba(0,0,0,0.2) 11px);
+  box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+}
+
+.left-door {
+  border-right: 2px solid #3e2723;
+  border-radius: 0 0 0 10px;
+}
+
+.right-door {
+  border-left: 2px solid #3e2723;
+  border-radius: 0 0 10px 0;
+}
+
+/* Door Knobs */
+.door-knob {
+  position: absolute;
+  top: 50%;
+  width: 20px;
+  height: 20px;
+  background: #ffb300;
+  border-radius: 50%;
+  box-shadow: 2px 2px 5px rgba(0,0,0,0.5);
+}
+.left-door .door-knob { right: 10px; }
+.right-door .door-knob { left: 10px; }
+
+/* Open State */
+.door-transition.open .left-door {
+  transform: rotateX(-80deg);
+}
+.door-transition.open .right-door {
+  transform: rotateX(-80deg);
+}
+
+/* =========================================
+   4. REVOLVER NAVIGATION
+   ========================================= */
+#revolver-nav {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+}
+
+.cylinder {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: #263238; /* Dark metal */
+  border: 4px solid #455a64;
+  position: relative;
+  transition: transform 0.6s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+}
+
+/* The chambers */
+.chamber {
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  background: #37474f;
+  border-radius: 50%;
+  top: 50%;
+  left: 50%;
+  transform-origin: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  color: #cfd8dc;
+  transition: background 0.3s;
+}
+
+/* Positioning 4 chambers */
+.chamber:nth-child(1) { transform: translate(-50%, -100%); }
+.chamber:nth-child(2) { transform: translate(100%, -50%); }
+.chamber:nth-child(3) { transform: translate(-50%, 100%); }
+.chamber:nth-child(4) { transform: translate(-100%, -50%); }
+
+.chamber.active {
+  background: #ffb300; /* Gold highlight */
+  color: #000;
+  box-shadow: 0 0 10px #ffb300;
+}
+
+.trigger-guard {
+  position: absolute;
+  bottom: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 40px;
+  border-bottom: 4px solid #37474f;
+  border-radius: 0 0 30px 30px;
+  pointer-events: none;
+}
+
+#trigger-btn {
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 10px;
+  height: 20px;
+  background: #b71c1c;
+  border-radius: 5px;
+  cursor: pointer;
+  border: none;
+  transition: transform 0.1s;
+  z-index: 1001;
+}
+
+#trigger-btn:active {
+  transform: translateX(-50%) rotate(15deg);
+}
+
+.nav-label {
+  font-family: var(--font-header);
+  color: #cfd8dc;
+  font-size: 0.8rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+}
+
+/* =========================================
+   5. MAIN CONTENT: SHERIFF'S OFFICE
+   ========================================= */
+#sheriffs-office {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 20px;
+  perspective: 1000px;
+}
+
+/* Header */
+.header-section {
+  text-align: center;
+  margin-bottom: 40px;
+  position: relative;
+  z-index: 10;
+}
+
+.main-title {
+  font-family: var(--font-display);
+  font-size: 6rem;
+  color: var(--ink-black);
+  text-transform: uppercase;
+  letter-spacing: 10px;
+  text-shadow: 4px 4px 0px rgba(0,0,0,0.2);
+  margin-bottom: 10px;
+  background: linear-gradient(to bottom, #222, #444);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 5px rgba(0,0,0,0.5));
+}
+
+.subtitle {
+  font-family: var(--font-header);
+  font-size: 2rem;
+  color: var(--blood-red);
+  letter-spacing: 5px;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.sheriff-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 15px;
+  background: var(--gold-dull);
+  padding: 5px 15px;
+  border-radius: 50px;
+  border: 2px solid #8d6e63;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+}
+
+.star {
+  font-size: 1.5rem;
+  color: #fff;
+  text-shadow: 0 0 2px #000;
+}
+
+/* Content Sections */
+.content-section {
+  width: 100%;
+  max-width: var(--board-width);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.hidden {
+  display: none;
+  opacity: 0;
+  transform: scale(0.95);
+}
+
+.visible {
+  display: block;
+  opacity: 1;
+  transform: scale(1);
+  animation: fadeIn 0.5s forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.section-header {
+  font-family: var(--font-header);
+  font-size: 2.5rem;
+  text-align: center;
+  margin-bottom: 30px;
+  color: var(--wood-dark);
+  text-transform: uppercase;
+  border-bottom: 3px double var(--wood-dark);
+  display: inline-block;
+  padding-bottom: 10px;
+  position: relative;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* Wood Frame Container */
+.wood-frame {
+  background: var(--cork);
+  padding: 30px;
+  border: 15px solid var(--wood-dark);
+  border-radius: 5px;
+  box-shadow: 
+    inset 0 0 50px rgba(0,0,0,0.5),
+    0 15px 30px rgba(0,0,0,0.4);
+  position: relative;
+  /* Cork texture */
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.5' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.4'/%3E%3C/svg%3E");
+}
+
+/* =========================================
+   6. DISPATCH LOG (The Tape)
+   ========================================= */
+.dispatch-tape {
+  background: #fff;
+  padding: 20px;
+  font-family: var(--font-body);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  border-left: 4px dashed #ccc;
+  max-height: 300px;
+  overflow-y: auto;
+  /* Scrollbar styling */
+  scrollbar-width: thin;
+  scrollbar-color: var(--wood-dark) #f4e4bc;
+}
+
+.dispatch-tape::-webkit-scrollbar {
+  width: 8px;
+}
+.dispatch-tape::-webkit-scrollbar-track {
+  background: #f4e4bc;
+}
+.dispatch-tape::-webkit-scrollbar-thumb {
+  background: var(--wood-dark);
+  border-radius: 4px;
+}
+
+.tape-entry {
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.timestamp {
+  display: block;
+  font-weight: bold;
+  color: var(--blood-red);
+  font-size: 0.9rem;
+  margin-bottom: 5px;
+}
+
+/* =========================================
+   7. WANTED POSTERS (The Grid)
+   ========================================= */
+.cork-board {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 40px;
+  padding: 20px;
+}
+
+.wanted-poster {
+  position: relative;
+  width: 100%;
+  background-color: var(--paper-base);
+  padding: 20px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+  transform: rotate(-1deg);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  overflow: hidden;
+  /* Paper texture */
+  background-image: linear-gradient(to bottom, rgba(0,0,0,0.05), transparent);
+}
+
+/* Randomize rotation slightly for realism */
+.wanted-poster:nth-child(2n) { transform: rotate(1deg); }
+.wanted-poster:nth-child(3n) { transform: rotate(-2deg); }
+
+.wanted-poster:hover {
+  transform: scale(1.05) rotate(0deg);
+  z-index: 20;
+  box-shadow: 0 15px 30px rgba(0,0,0,0.4);
+}
+
+/* The Nail */
+.nail {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 12px;
+  height: 12px;
+  background: radial-gradient(circle, #555, #111);
+  border-radius: 50%;
+  box-shadow: 2px 2px 4px rgba(0,0,0,0.6);
+  z-index: 10;
+}
+
+.poster-content {
+  text-align: center;
+  margin-top: 15px;
+}
+
+.poster-title {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  color: var(--ink-black);
+  margin-bottom: 10px;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.poster-image {
+  width: 100%;
+  height: 180px;
+  background: #333;
+  margin: 15px 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #000;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Silhouette Placeholder */
+.silhouette {
+  width: 80px;
+  height: 120px;
+  background: #000;
+  clip-path: polygon(20% 0%, 80% 0%, 100% 20%, 100% 100%, 0% 100%, 0% 20%);
+  filter: blur(1px);
+}
+
+.poster-desc {
+  font-size: 0.9rem;
+  line-height: 1.4;
+  color: var(--ink-faded);
+  margin-bottom: 15px;
+}
+
+.poster-reward {
+  font-family: var(--font-header);
+  font-size: 1.8rem;
+  color: var(--blood-red);
+  font-weight: bold;
+  border-top: 2px solid var(--ink-black);
+  padding-top: 10px;
+}
+
+/* Paper Curl Effects (CSS Only) */
+.paper-curl-bottom-right,
+.paper-curl-bottom-left,
+.paper-curl-top-right {
+  position: absolute;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  pointer-events: none;
+}
+
+/* Bottom Right Curl */
+.paper-curl-bottom-right {
+  bottom: 0;
+  right: 0;
+  border-width: 0 0 40px 40px;
+  border-color: transparent transparent rgba(0,0,0,0.2) transparent;
+  background: linear-gradient(135deg, transparent 50%, rgba(0,0,0,0.1) 100%);
+  clip-path: polygon(0 100%, 100% 100%, 100% 0);
+}
+
+/* Bottom Left Curl */
+.paper-curl-bottom-left {
+  bottom: 0;
+  left: 0;
+  border-width: 0 40px 40px 0;
+  border-color: transparent rgba(0,0,0,0.2) transparent transparent;
+  background: linear-gradient(225deg, transparent 50%, rgba(0,0,0,0.1) 100%);
+  clip-path: polygon(0 100%, 0 0, 100% 100%);
+}
+
+/* Top Right Curl */
+.paper-curl-top-right {
+  top: 0;
+  right: 0;
+  border-width: 40px 40px 0 0;
+  border-color: rgba(0,0,0,0.2) transparent transparent transparent;
+  background: linear-gradient(315deg, transparent 50%, rgba(0,0,0,0.1) 100%);
+  clip-path: polygon(0 0, 100% 0, 100% 100%);
+}
+
+/* =========================================
+   8. REWARD TIERS
+   ========================================= */
+.tier-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.tier-item {
+  display: flex;
+  align-items: center;
+  background: rgba(255,255,255,0.8);
+  padding: 15px;
+  border: 1px solid #ccc;
+  border-left: 5px solid var(--gold);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.tier-icon {
+  font-size: 2.5rem;
+  margin-right: 20px;
+}
+
+.tier-info h4 {
+  font-family: var(--font-header);
+  font-size: 1.2rem;
+  margin-bottom: 5px;
+}
+
+.tier-info p {
+  font-size: 0.9rem;
+  color: #555;
+  margin-bottom: 5px;
+}
+
+.price {
+  font-weight: bold;
+  color: var(--blood-red);
+  font-family: var(--font-display);
+}
+
+/* =========================================
+   9. RESPONSIVE
+   ========================================= */
+@media (max-width: 768px) {
+  .main-title { font-size: 3.5rem; }
+  .cylinder { width: 90px; height: 90px; }
+  .chamber { width: 30px; height: 30px; }
+  .cork-board { grid-template-columns: 1fr; }
+  #revolver-nav { bottom: 20px; right: 20px; }
+}

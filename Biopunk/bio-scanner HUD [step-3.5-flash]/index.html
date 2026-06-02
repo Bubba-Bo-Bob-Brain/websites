@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BIO-SYNC // Medical HUD Interface</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Scanline overlay -->
+    <div class="scanlines"></div>
+    
+    <!-- Noise texture overlay -->
+    <div class="noise-overlay"></div>
+    
+    <!-- Heartbeat baseline (drives rhythm) -->
+    <svg class="heartbeat-baseline" viewBox="0 0 1920 1080" preserveAspectRatio="none">
+        <path id="heartbeat-path" d="M0,540 L1920,540" stroke="rgba(0,255,150,0.3)" stroke-width="2" fill="none"/>
+        <path id="heartbeat-pulse" d="M0,540 L1920,540" stroke="rgba(0,255,150,0.8)" stroke-width="3" fill="none" stroke-dasharray="100,200" stroke-dashoffset="300"/>
+    </svg>
+    
+    <!-- Main HUD Container -->
+    <div class="hud-container">
+        
+        <!-- Top Status Bar -->
+        <header class="top-bar">
+            <div class="patient-info">
+                <div class="label">PATIENT</div>
+                <div class="value" id="patient-id">CYB-2077-Δ-8942</div>
+                <div class="status-indicator online"></div>
+            </div>
+            
+            <div class="system-title">
+                <h1>BIO-SYNC <span class="version">v3.7.2</span></h1>
+                <div class="subtitle">NEURAL-MEDICAL INTERFACE</div>
+            </div>
+            
+            <div class="time-display">
+                <div class="time" id="current-time">00:00:00</div>
+                <div class="date" id="current-date">2077.11.15</div>
+            </div>
+            
+            <div class="vitals-summary">
+                <div class="vital">
+                    <span class="vital-label">HR</span>
+                    <span class="vital-value" id="heart-rate">72</span>
+                    <span class="vital-unit">BPM</span>
+                </div>
+                <div class="vital">
+                    <span class="vital-label">SpO₂</span>
+                    <span class="vital-value" id="spo2">98</span>
+                    <span class="vital-unit">%</span>
+                </div>
+                <div class="vital">
+                    <span class="vital-label">BP</span>
+                    <span class="vital-value" id="blood-pressure">120/80</span>
+                    <span class="vital-unit">mmHg</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Left Panel - Organ Status -->
+        <aside class="organ-panel left-panel">
+            <div class="panel-header">
+                <div class="corner-bracket top-left"></div>
+                <div class="corner-bracket top-right"></div>
+                <h2>ORGAN STATUS</h2>
+                <div class="corner-bracket bottom-left"></div>
+                <div class="corner-bracket bottom-right"></div>
+            </div>
+            
+            <div class="organ-grid">
+                <div class="organ-card" data-organ="heart">
+                    <div class="organ-header">
+                        <span class="organ-icon">♥</span>
+                        <span class="organ-name">MYOCARDIUM</span>
+                        <span class="organ-status status-stable">STABLE</span>
+                    </div>
+                    <div class="organ-visualizer">
+                        <svg class="organ-pulse-animation" viewBox="0 0 100 100">
+                            <circle class="pulse-ring" cx="50" cy="50" r="30"/>
+                            <circle class="pulse-ring" cx="50" cy="50" r="30"/>
+                        </svg>
+                    </div>
+                    <div class="organ-stats">
+                        <div class="stat">
+                            <span class="stat-label">EJECTION</span>
+                            <span class="stat-value" id="heart-ejection">62%</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-label">VOLUME</span>
+                            <span class="stat-value" id="heart-volume">72ml</span>
+                        </div>
+                    </div>
+                    <div class="health-bar">
+                        <div class="health-fill" style="width: 94%;"></div>
+                    </div>
+                </div>
+
+                <div class="organ-card" data-organ="lungs">
+                    <div class="organ-header">
+                        <span class="organ-icon">◐</span>
+                        <span class="organ-name">PULMONARY</span>
+                        <span class="organ-status status-warning">ATTENTION</span>
+                    </div>
+                    <div class="organ-visualizer">
+                        <div class="lung-animation">
+                            <div class="lung-lobe left"></div>
+                            <div class="lung-lobe right"></div>
+                        </div>
+                    </div>
+                    <div class="organ-stats">
+                        <div class="stat">
+                            <span class="stat-label">CAPACITY</span>
+                            <span class="stat-value" id="lung-capacity">4.2L</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-label">EFFICIENCY</span>
+                            <span class="stat-value" id="lung-efficiency">87%</span>
+                        </div>
+                    </div>
+                    <div class="health-bar">
+                        <div class="health-fill warning" style="width: 78%;"></div>
+                    </div>
+                </div>
+
+                <div class="organ-card" data-organ="liver">
+                    <div class="organ-header">
+                        <span class="organ-icon">◑</span>
+                        <span class="organ-name">HEPATIC</span>
+                        <span class="organ-status status-critical">DEGRADED</span>
+                    </div>
+                    <div class="organ-visualizer">
+                        <div class="liver-animation">
+                            <div class="liver-lobe"></div>
+                        </div>
+                    </div>
+                    <div class="organ-stats">
+                        <div class="stat">
+                            <span class="stat-label">ENZYMES</span>
+                            <span class="stat-value" id="liver-enzymes">142</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-label">DETOX</span>
+                            <span class="stat-value" id="liver-detox">63%</span>
+                        </div>
+                    </div>
+                    <div class="health-bar">
+                        <div class="health-fill critical" style="width: 42%;"></div>
+                    </div>
+                </div>
+
+                <div class="organ-card" data-organ="kidneys">
+                    <div class="organ-header">
+                        <span class="organ-icon">◕</span>
+                        <span class="organ-name">RENAL</span>
+                        <span class="organ-status status-stable">OPTIMAL</span>
+                    </div>
+                    <div class="organ-visualizer">
+                        <div class="kidney-animation">
+                            <div class="kidney left"></div>
+                            <div class="kidney right"></div>
+                        </div>
+                    </div>
+                    <div class="organ-stats">
+                        <div class="stat">
+                            <span class="stat-label">GFR</span>
+                            <span class="stat-value" id="kidney-gfr">118</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-label">BALANCE</span>
+                            <span class="stat-value" id="kidney-balance">98%</span>
+                        </div>
+                    </div>
+                    <div class="health-bar">
+                        <div class="health-fill" style="width: 92%;"></div>
+                    </div>
+                </div>
+
+                <div class="organ-card" data-organ="brain">
+                    <div class="organ-header">
+                        <span class="organ-icon">◉</span>
+                        <span class="organ-name">NEURAL</span>
+                        <span class="organ-status status-stable">SYNCED</span>
+                    </div>
+                    <div class="organ-visualizer">
+                        <div class="brain-animation">
+                            <div class="brain-hemisphere left"></div>
+                            <div class="brain-hemisphere right"></div>
+                        </div>
+                    </div>
+                    <div class="organ-stats">
+                        <div class="stat">
+                            <span class="stat-label">SYNAPSE</span>
+                            <span class="stat-value" id="brain-synapse">89%</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-label">COHERENCE</span>
+                            <span class="stat-value" id="brain-coherence">94%</span>
+                        </div>
+                    </div>
+                    <div class="health-bar">
+                        <div class="health-fill" style="width: 91%;"></div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Center - Anatomical Wireframe -->
+        <main class="central-display">
+            <div class="wireframe-container">
+                <svg class="anatomical-wireframe" viewBox="0 0 400 800">
+                    <!-- Body silhouette wireframe -->
+                    <path class="body-outline" d="M200,50 C250,50 280,80 280,120 C280,160 260,180 260,200 C260,220 280,240 280,280 C280,320 260,340 260,360 C260,380 280,400 280,440 C280,480 260,500 260,520 C260,540 280,560 280,600 C280,640 260,660 260,680 C260,700 280,720 280,750 L280,800 L120,800 C100,800 80,780 80,760 C80,740 100,720 100,700 C100,680 80,660 80,640 C80,620 100,600 100,580 C100,560 80,540 80,520 C80,500 100,480 100,460 C100,440 80,420 80,400 C80,380 100,360 100,340 C100,320 80,300 80,280 C80,260 100,240 100,220 C100,200 80,180 80,160 C80,140 100,120 100,100 C100,80 120,50 200,50 Z" fill="none" stroke="rgba(0,255,200,0.3)" stroke-width="2"/>
+                    
+                    <!-- Organ highlights -->
+                    <ellipse class="organ-wireframe heart-wireframe" cx="200" cy="180" rx="35" ry="25" fill="rgba(255,50,50,0.1)" stroke="rgba(255,50,50,0.6)" stroke-width="1.5" stroke-dasharray="3,2"/>
+                    
+                    <ellipse class="organ-wireframe lung-wireframe left-lung" cx="160" cy="220" rx="25" ry="35" fill="rgba(100,200,255,0.1)" stroke="rgba(100,200,255,0.6)" stroke-width="1.5"/>
+                    <ellipse class="organ-wireframe lung-wireframe right-lung" cx="240" cy="220" rx="25" ry="35" fill="rgba(100,200,255,0.1)" stroke="rgba(100,200,255,0.6)" stroke-width="1.5"/>
+                    
+                    <ellipse class="organ-wireframe liver-wireframe" cx="200" cy="300" rx="30" ry="20" fill="rgba(255,150,50,0.1)" stroke="rgba(255,150,50,0.6)" stroke-width="1.5"/>
+                    
+                    <ellipse class="organ-wireframe kidney-wireframe left-kidney" cx="150" cy="380" rx="15" ry="25" fill="rgba(150,100,255,0.1)" stroke="rgba(150,100,255,0.6)" stroke-width="1.5"/>
+                    <ellipse class="organ-wireframe kidney-wireframe right-kidney" cx="250" cy="380" rx="15" ry="25" fill="rgba(150,100,255,0.1)" stroke="rgba(150,100,255,0.6)" stroke-width="1.5"/>
+                    
+                    <ellipse class="organ-wireframe brain-wireframe" cx="200" cy="70" rx="40" ry="30" fill="rgba(255,255,100,0.1)" stroke="rgba(255,255,100,0.6)" stroke-width="1.5"/>
+                </svg>
+                
+                <!-- Scanning effect -->
+                <div class="scan-line"></div>
+                <div class="scan-line secondary"></div>
+            </div>
+            
+            <!-- Central heartbeat monitor -->
+            <div class="heartbeat-monitor">
+                <canvas id="heartbeat-canvas"></canvas>
+                <div class="heartbeat-value">
+                    <span class="value" id="heartbeat-number">72</span>
+                    <span class="unit">BPM</span>
+                </div>
+            </div>
+            
+            <!-- Mutation indicator -->
+            <div class="mutation-indicator">
+                <div class="mutation-label">MUTATION RATE</div>
+                <div class="mutation-meter">
+                    <div class="mutation-fill" id="mutation-fill"></div>
+                    <div class="mutation-threshold"></div>
+                </div>
+                <div class="mutation-value" id="mutation-value">0.03%</div>
+            </div>
+        </main>
+
+        <!-- Right Panel - Systems -->
+        <aside class="systems-panel right-panel">
+            <div class="panel-header">
+                <div class="corner-bracket top-left"></div>
+                <div class="corner-bracket top-right"></div>
+                <h2>SYSTEMS</h2>
+                <div class="corner-bracket bottom-left"></div>
+                <div class="corner-bracket bottom-right"></div>
+            </div>
+            
+            <!-- Nanomachine Swarm -->
+            <div class="system-card swarm-card">
+                <div class="card-header">
+                    <h3>NANOMACHINE SWARM</h3>
+                    <div class="status-dot active"></div>
+                </div>
+                <div class="swarm-container">
+                    <canvas id="swarm-canvas"></canvas>
+                    <div class="swarm-stats">
+                        <div class="swarm-stat">
+                            <span class="label">ACTIVE</span>
+                            <span class="value" id="swarm-active">2.4M</span>
+                        </div>
+                        <div class="swarm-stat">
+                            <span class="label">DEPLOYMENT</span>
+                            <span class="value" id="swarm-deployment">87%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Toxin Levels -->
+            <div class="system-card toxins-card">
+                <div class="card-header">
+                    <h3>TOXIN LEVELS</h3>
+                    <div class="warning-indicator" id="toxin-warning">!</div>
+                </div>
+                <div class="toxins-list">
+                    <div class="toxin-item">
+                        <span class="toxin-name">HEAVY METALS</span>
+                        <div class="toxin-bar">
+                            <div class="toxin-fill" style="width: 23%; background: #00ff88;"></div>
+                        </div>
+                        <span class="toxin-value" id="toxin-heavy">0.4</span>
+                    </div>
+                    <div class="toxin-item">
+                        <span class="toxin-name">RADIATION</span>
+                        <div class="toxin-bar">
+                            <div class="toxin-fill" style="width: 45%; background: #ffaa00;"></div>
+                        </div>
+                        <span class="toxin-value" id="toxin-radiation">0.9</span>
+                    </div>
+                    <div class="toxin-item">
+                        <span class="toxin-name">NEURAL TOXINS</span>
+                        <div class="toxin-bar">
+                            <div class="toxin-fill critical" style="width: 67%; background: #ff3366;"></div>
+                        </div>
+                        <span class="toxin-value" id="toxin-neural">1.3</span>
+                    </div>
+                    <div class="toxin-item">
+                        <span class="toxin-name">VIRAL LOAD</span>
+                        <div class="toxin-bar">
+                            <div class="toxin-fill warning" style="width: 34%; background: #ffcc00;"></div>
+                        </div>
+                        <span class="toxin-value" id="toxin-viral">0.7</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Neural Link -->
+            <div class="system-card neural-card">
+                <div class="card-header">
+                    <h3>NEURAL LINK</h3>
+                    <div class="status-dot" id="neural-status"></div>
+                </div>
+                <div class="neural-visualizer">
+                    <div class="signal-pattern" id="signal-pattern"></div>
+                </div>
+                <div class="neural-stats">
+                    <div class="neural-stat">
+                        <span class="label">INTEGRITY</span>
+                        <div class="integrity-bar">
+                            <div class="integrity-fill" id="integrity-fill"></div>
+                        </div>
+                        <span class="value" id="integrity-value">94.2%</span>
+                    </div>
+                    <div class="neural-stat">
+                        <span class="label">LATENCY</span>
+                        <span class="value latency" id="latency-value">12ms</span>
+                    </div>
+                    <div class="neural-stat">
+                        <span class="label">BANDWIDTH</span>
+                        <span class="value" id="bandwidth-value">2.4 TB/s</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Gene Splice Matrix -->
+            <div class="system-card gene-card">
+                <div class="card-header">
+                    <h3>GENE SPLICE MATRIX</h3>
+                </div>
+                <div class="gene-matrix">
+                    <div class="gene-row header">
+                        <span class="gene-cell">TARGET</span>
+                        <span class="gene-cell">COMPAT</span>
+                        <span class="gene-cell">STABILITY</span>
+                        <span class="gene-cell">PROGRESS</span>
+                    </div>
+                    <div class="gene-row">
+                        <span class="gene-cell target">MUSCLE</span>
+                        <div class="compatibility-bar">
+                            <div class="compat-fill" style="width: 88%;"></div>
+                        </div>
+                        <span class="gene-cell compat-value">88%</span>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 72%;"></div>
+                        </div>
+                    </div>
+                    <div class="gene-row">
+                        <span class="gene-cell target">BONE</span>
+                        <div class="compatibility-bar">
+                            <div class="compat-fill" style="width: 95%;"></div>
+                        </div>
+                        <span class="gene-cell compat-value">95%</span>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 91%;"></div>
+                        </div>
+                    </div>
+                    <div class="gene-row">
+                        <span class="gene-cell target">NERVE</span>
+                        <div class="compatibility-bar">
+                            <div class="compat-fill" style="width: 76%;"></div>
+                        </div>
+                        <span class="gene-cell compat-value">76%</span>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 58%;"></div>
+                        </div>
+                    </div>
+                    <div class="gene-row">
+                        <span class="gene-cell target">IMMUNE</span>
+                        <div class="compatibility-bar">
+                            <div class="compat-fill" style="width: 62%;"></div>
+                        </div>
+                        <span class="gene-cell compat-value">62%</span>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 34%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+        
+        <!-- Bottom Panel - Controls -->
+        <footer class="bottom-panel">
+            <div class="control-group">
+                <div class="control-header">
+                    <span class="control-label">NANOMACHINE DEPLOYMENT</span>
+                    <div class="control-toggle active" id="swarm-toggle">ACTIVE</div>
+                </div>
+                <div class="deployment-slider">
+                    <input type="range" id="deployment-slider" min="0" max="100" value="87">
+                    <div class="slider-track">
+                        <div class="slider-fill" id="deployment-fill"></div>
+                    </div>
+                </div>
+                <div class="deployment-modes">
+                    <button class="mode-btn active" data-mode="heal">HEAL</button>
+                    <button class="mode-btn" data-mode="repair">REPAIR</button>
+                    <button class="mode-btn" data-mode="defend">DEFEND</button>
+                    <button class="mode-btn" data-mode="aggressive">AGGRESSIVE</button>
+                </div>
+            </div>
+            
+            <div class="alert-panel" id="alert-panel">
+                <div class="alert-header">
+                    <span class="alert-icon">⚠</span>
+                    <span class="alert-title">SYSTEM ALERTS</span>
+                </div>
+                <div class="alert-list">
+                    <div class="alert-item warning">
+                        <span class="alert-time">14:23:41</span>
+                        <span class="alert-message">Liver enzyme levels elevated</span>
+                    </div>
+                    <div class="alert-item critical">
+                        <span class="alert-time">14:22:18</span>
+                        <span class="alert-message">Neural toxin threshold exceeded</span>
+                    </div>
+                    <div class="alert-item info">
+                        <span class="alert-time">14:20:05</span>
+                        <span class="alert-message">Nanomachine swarm optimized</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="diagnostic-scroll">
+                <div class="scroll-header">DIAGNOSTIC LOG</div>
+                <div class="scroll-content" id="diagnostic-log">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Alert modal -->
+    <div class="alert-modal" id="alert-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="modal-icon">⚠</span>
+                <h3>CRITICAL ALERT</h3>
+            </div>
+            <div class="modal-body" id="modal-message">
+                Neural toxin levels have exceeded safe thresholds.
+            </div>
+            <button class="modal-btn" id="modal-acknowledge">ACKNOWLEDGE</button>
+        </div>
+    </div>
+
+    <script src="scripts.js"></script>
+</body>
+</html>
